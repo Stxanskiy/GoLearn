@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"embed"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -10,14 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-//go:embed all:../templates
-var templateFS embed.FS
-
 type Handler struct {
 	moduleRepo   *repository.ModuleRepo
 	lessonRepo   *repository.LessonRepo
 	progressRepo *repository.ProgressRepo
-	templates    *template.Template
 	log          *slog.Logger
 }
 
