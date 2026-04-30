@@ -1,0 +1,70 @@
+{{define "dashboard"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<h1 style="margin-bottom: 8px;">Go Backend + DevOps: Full Course</h1>
+<p style="color: var(--text-muted); margin-bottom: 24px;">
+    Comprehensive learning path from zero to professional. Daily practice.
+</p>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{.CompletedCount}}/{{.TotalLessons}}</div>
+        <div class="stat-label">Lessons Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{.InProgressCount}}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{printf "%.0f" .AvgQuizScore}}%</div>
+        <div class="stat-label">Avg Quiz Score</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{pct .CompletedCount .TotalLessons}}%</div>
+        <div class="stat-label">Overall Progress</div>
+    </div>
+</div>
+
+<div class="progress-bar" style="margin-bottom: 32px; height: 12px;">
+    <div class="progress-fill" style="width: {{pct .CompletedCount .TotalLessons}}%;"></div>
+</div>
+
+{{range .Modules}}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="font-size: 1.2em;">
+            <a href="/module/{{.Slug}}" style="color: var(--text); text-decoration: none;">{{.Title}}</a>
+        </h2>
+        <span class="badge {{if eq .Completed .Total}}badge-completed{{else if gt .Completed 0}}badge-in-progress{{else}}badge-not-started{{end}}">
+            {{.Completed}}/{{.Total}}
+        </span>
+    </div>
+    <p style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 12px;">{{.Description}}</p>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{pct .Completed .Total}}%;"></div>
+    </div>
+
+    <ul class="lesson-list" style="margin-top: 12px;">
+        {{$slug := .Slug}}
+        {{range .Lessons}}
+        <li class="lesson-item">
+            <div class="lesson-num {{.Status}}">{{.OrderNum}}</div>
+            <a href="/module/{{$slug}}/lesson/{{.Slug}}">{{.Title}}</a>
+            <span class="badge badge-{{.Status}}">
+                {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
+            </span>
+        </li>
+        {{end}}
+    </ul>
+</div>
+{{end}}
+
+{{if not .Modules}}
+<div class="card" style="text-align: center; padding: 60px;">
+    <h2>Course content is loading...</h2>
+    <p style="color: var(--text-muted); margin-top: 8px;">Run the seed command to populate lessons.</p>
+</div>
+{{end}}
+{{end}}

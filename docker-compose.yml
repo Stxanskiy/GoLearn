@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: golearn
+      POSTGRES_USER: golearn
+      POSTGRES_PASSWORD: golearn
+    ports:
+      - "5433:5432"
+    volumes:
+      - golearn_data:/var/lib/postgresql/data
+      - ./migrations/001_init.up.sql:/docker-entrypoint-initdb.d/001_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U golearn"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  golearn_data:

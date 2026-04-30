@@ -1,0 +1,68 @@
+{{define "lesson"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb">
+    <a href="/">Dashboard</a> /
+    <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
+    <span>{{.Lesson.Title}}</span>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h1 style="margin-bottom: 0;">{{.Lesson.Title}}</h1>
+    <div>
+        {{if .Progress}}
+            {{if eq .Progress.Status "completed"}}
+                <span class="badge badge-completed">Completed</span>
+            {{else}}
+                <button class="btn btn-success" onclick="updateProgress({{.Lesson.ID}}, 'completed')">
+                    Mark Complete
+                </button>
+            {{end}}
+        {{else}}
+            <button class="btn btn-success" onclick="updateProgress({{.Lesson.ID}}, 'completed')">
+                Mark Complete
+            </button>
+        {{end}}
+    </div>
+</div>
+
+<div class="content-area">
+    {{safeHTML .ContentHTML}}
+</div>
+
+<div style="display: flex; gap: 12px; margin-top: 20px;">
+    {{if .HasQuiz}}
+        <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz" class="btn btn-primary">Take Quiz</a>
+    {{end}}
+    {{if .HasTasks}}
+        <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/tasks" class="btn btn-outline">View Tasks</a>
+    {{end}}
+</div>
+
+{{if .Progress}}
+    {{if .Progress.QuizScore}}
+    <div style="margin-top: 16px; padding: 12px 16px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
+        Last quiz score: <strong>{{.Progress.QuizScore}}/{{.Progress.QuizTotal}}</strong>
+    </div>
+    {{end}}
+{{end}}
+
+<div class="lesson-nav">
+    <div>
+        {{if .PrevLesson}}
+            <a href="/module/{{.Module.Slug}}/lesson/{{.PrevLesson.Slug}}" class="btn btn-outline">
+                &larr; {{.PrevLesson.Title}}
+            </a>
+        {{end}}
+    </div>
+    <div>
+        {{if .NextLesson}}
+            <a href="/module/{{.Module.Slug}}/lesson/{{.NextLesson.Slug}}" class="btn btn-primary">
+                {{.NextLesson.Title}} &rarr;
+            </a>
+        {{end}}
+    </div>
+</div>
+{{end}}

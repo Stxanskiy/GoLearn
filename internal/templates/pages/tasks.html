@@ -1,0 +1,47 @@
+{{define "tasks"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb">
+    <a href="/">Dashboard</a> /
+    <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> /
+    <span>Tasks</span>
+</div>
+
+<h1 style="margin-bottom: 24px;">Practical Tasks: {{.Lesson.Title}}</h1>
+
+{{range $i, $t := .Tasks}}
+<div class="task-card">
+    <div class="task-header">
+        <h3>Task {{add $i 1}}: {{$t.Title}}</h3>
+    </div>
+    <div class="task-body">
+        <div class="content-area" style="border: none; padding: 0;">
+            {{safeHTML $t.Description}}
+        </div>
+
+        {{if $t.Hints}}
+        <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">Show Hints</button>
+        <div class="hint-content" id="hint-{{$t.ID}}" style="display: none;">
+            <div class="explanation">
+                {{safeHTML $t.Hints}}
+            </div>
+        </div>
+        {{end}}
+
+        {{if $t.Solution}}
+        <button class="solution-toggle" onclick="toggleElement('solution-{{$t.ID}}')">Show Solution</button>
+        <div class="solution-content" id="solution-{{$t.ID}}" style="display: none;">
+            <div class="content-area" style="border-color: var(--green); margin-top: 12px;">
+                {{safeHTML $t.Solution}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+<a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}" class="btn btn-outline" style="margin-top: 16px;">Back to Lesson</a>
+{{end}}

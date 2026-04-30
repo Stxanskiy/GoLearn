@@ -1,0 +1,27 @@
+{{define "module"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb">
+    <a href="/">Dashboard</a> / <span>{{.Module.Title}}</span>
+</div>
+
+<h1 style="margin-bottom: 8px;">{{.Module.Title}}</h1>
+<p style="color: var(--text-muted); margin-bottom: 24px;">{{.Module.Description}}</p>
+
+<div class="card">
+    <ul class="lesson-list">
+        {{$slug := .Module.Slug}}
+        {{range .Lessons}}
+        <li class="lesson-item">
+            <div class="lesson-num {{.Status}}">{{.OrderNum}}</div>
+            <a href="/module/{{$slug}}/lesson/{{.Slug}}">{{.Title}}</a>
+            <span class="badge badge-{{.Status}}">
+                {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
+            </span>
+        </li>
+        {{end}}
+    </ul>
+</div>
+{{end}}

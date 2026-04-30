@@ -1,0 +1,7 @@
+.env
+data/
+*.exe
+server
+tmp/
+.idea/
+.DS_Store

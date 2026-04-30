@@ -1,0 +1,47 @@
+{{define "quiz_result"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb">
+    <a href="/">Dashboard</a> /
+    <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> /
+    <span>Quiz Results</span>
+</div>
+
+<div class="card" style="text-align: center; margin-bottom: 24px;">
+    <h1 style="margin-bottom: 8px;">
+        {{if ge .Percent 80}}Excellent!{{else if ge .Percent 60}}Good job!{{else}}Keep learning!{{end}}
+    </h1>
+    <div class="stat-value" style="font-size: 3em; {{if ge .Percent 80}}color: var(--green);{{else if ge .Percent 60}}color: var(--yellow);{{else}}color: var(--red);{{end}}">
+        {{.Score}}/{{.Total}}
+    </div>
+    <p style="color: var(--text-muted); margin-top: 8px;">{{.Percent}}% correct</p>
+    <div class="progress-bar" style="max-width: 300px; margin: 16px auto; height: 10px;">
+        <div class="progress-fill" style="width: {{.Percent}}%; {{if lt .Percent 60}}background: var(--red);{{else if lt .Percent 80}}background: var(--yellow);{{end}}"></div>
+    </div>
+</div>
+
+{{range $i, $r := .Results}}
+<div class="quiz-question">
+    <h3>Question {{add $i 1}} {{if $r.IsCorrect}}<span style="color: var(--green);">&#10003;</span>{{else}}<span style="color: var(--red);">&#10007;</span>{{end}}</h3>
+    <p style="margin-bottom: 12px;">{{$r.Question}}</p>
+    {{range $j, $opt := $r.Options}}
+    <div class="quiz-option {{if eq $j $r.Correct}}correct{{else if and (eq $j $r.Selected) (not (eq $j $r.Correct))}}wrong{{end}}" style="cursor: default;">
+        {{$opt}}
+        {{if eq $j $r.Correct}} &#10003;{{end}}
+        {{if and (eq $j $r.Selected) (not (eq $j $r.Correct))}} (your answer){{end}}
+    </div>
+    {{end}}
+    {{if $r.Explanation}}
+    <div class="explanation">{{$r.Explanation}}</div>
+    {{end}}
+</div>
+{{end}}
+
+<div style="display: flex; gap: 12px; margin-top: 24px;">
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz" class="btn btn-outline">Retry Quiz</a>
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}" class="btn btn-primary">Back to Lesson</a>
+</div>
+{{end}}

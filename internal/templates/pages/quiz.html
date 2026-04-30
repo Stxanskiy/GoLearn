@@ -1,0 +1,33 @@
+{{define "quiz"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb">
+    <a href="/">Dashboard</a> /
+    <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> /
+    <span>Quiz</span>
+</div>
+
+<h1 style="margin-bottom: 24px;">{{.Quiz.Title}}</h1>
+
+<form method="POST" action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz">
+    {{range $i, $q := .Questions}}
+    <div class="quiz-question">
+        <h3>Question {{add $i 1}}</h3>
+        <p style="margin-bottom: 12px;">{{$q.Question}}</p>
+        {{range $j, $opt := $q.Options}}
+        <label class="quiz-option">
+            <input type="radio" name="q{{$i}}" value="{{$j}}" required>
+            {{$opt}}
+        </label>
+        {{end}}
+    </div>
+    {{end}}
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 16px; font-size: 1.1em; padding: 12px 32px;">
+        Submit Answers
+    </button>
+</form>
+{{end}}
