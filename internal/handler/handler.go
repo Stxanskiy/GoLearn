@@ -64,6 +64,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/api/shell/{taskID}/reset", h.ShellReset)
 		r.Post("/api/git/exec", h.GitExec)
 		r.Post("/api/git/reset", h.GitReset)
+		r.Get("/api/term", h.TermWS)
 	})
 }
 

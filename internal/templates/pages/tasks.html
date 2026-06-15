@@ -10,7 +10,15 @@
     <span>Tasks</span>
 </div>
 
-<h1 style="margin-bottom: 24px;">Practical Tasks: {{.Lesson.Title}}</h1>
+<h1 style="margin-bottom: 24px;">Задания: {{.Lesson.Title}}</h1>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/[email protected]/css/xterm.css">
+<script src="https://cdn.jsdelivr.net/npm/[email protected]/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/[email protected]/lib/xterm-addon-fit.js"></script>
+<style>
+.xterm-host { height:380px; padding:8px 6px 8px 10px; background:#05070a; }
+.xterm-host .xterm { height:100%; }
+.term-launch { position:absolute; inset:36px 0 0 0; display:flex; align-items:center; justify-content:center; background:rgba(5,7,10,.88); backdrop-filter:blur(2px); }
+</style>
 
 {{range $i, $t := .Tasks}}
 <div class="task-card">
@@ -83,23 +91,23 @@
         {{end}}
 
         {{if eq $t.Kind "shell"}}
-        <div class="term-wrap" style="margin-top:16px;">
+        <div class="term-wrap" style="margin-top:16px;position:relative;" id="termwrap-{{$t.ID}}">
             <div class="term-bar">
                 <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
                 <span class="term-title">sandbox &middot; {{if $t.SandboxImage}}{{$t.SandboxImage}}{{else}}ubuntu:24.04{{end}}</span>
-                <span class="term-status" id="term-status-{{$t.ID}}"><span class="led"></span><span>готов</span></span>
+                <span class="term-status" id="term-status-{{$t.ID}}"><span class="led"></span><span>не запущен</span></span>
             </div>
-            <div class="term-body" id="term-body-{{$t.ID}}"><span class="term-dim">Реальная Linux-песочница. Текущий каталог и созданные файлы сохраняются между командами. Введите команду и нажмите Enter.</span></div>
-            <div style="display:flex;align-items:center;gap:8px;background:#05070a;border-top:1px solid var(--border);padding:8px 12px;">
-                <span class="term-prompt" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;white-space:nowrap;">root@sandbox:#</span>
-                <input id="term-input-{{$t.ID}}" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-                    style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;"
-                    placeholder="например: ls -la" onkeydown="shellKey(event, {{$t.ID}})">
+            <div id="xterm-{{$t.ID}}" class="xterm-host"></div>
+            <div class="term-launch" id="termlaunch-{{$t.ID}}">
+                <div style="text-align:center;">
+                    <button class="btn btn-primary" onclick="termStart({{$t.ID}})">▶ Запустить терминал</button>
+                    <div class="muted" style="margin-top:10px;font-size:.82em;">Настоящий bash в изолированной песочнице — работают <code>clear</code>, <code>Ctrl+C</code>, Tab, <code>vim</code>, алиасы.</div>
+                </div>
             </div>
         </div>
         <div class="row mt-16">
             <button class="btn btn-success" onclick="shellCheck({{$t.ID}})">&#10003; Проверить задание</button>
-            <button class="btn btn-ghost" onclick="shellReset({{$t.ID}})">&#8635; Сбросить песочницу</button>
+            <button class="btn btn-ghost" onclick="termReset({{$t.ID}})">&#8635; Сбросить песочницу</button>
         </div>
         <div class="check-result" id="check-{{$t.ID}}"></div>
         {{end}}
@@ -291,36 +299,47 @@ async function runTests(taskId) {
     }
 }
 
-// ═══ SHELL SANDBOX ═══
-function shellAppend(id, text, cls) {
-    const body = document.getElementById('term-body-' + id);
-    const div = document.createElement('div');
-    if (cls) div.className = cls;
-    div.textContent = text;
-    body.appendChild(div);
-    body.scrollTop = body.scrollHeight;
-}
-function shellKey(e, id) {
-    if (e.key !== 'Enter') return;
-    const inp = document.getElementById('term-input-' + id);
-    const cmd = inp.value;
-    if (!cmd.trim()) return;
-    inp.value = '';
-    shellAppend(id, 'root@sandbox:# ' + cmd, 'term-cmd');
-    shellExec(id, cmd);
-}
-async function shellExec(id, cmd) {
+// ═══ SHELL SANDBOX (real PTY over WebSocket) ═══
+const _terms = {};
+function termStart(id) {
+    if (_terms[id]) return;
+    const launch = document.getElementById('termlaunch-' + id);
+    if (launch) launch.style.display = 'none';
+    const host = document.getElementById('xterm-' + id);
     const st = document.getElementById('term-status-' + id);
-    if (st) { st.classList.add('on'); st.querySelector('span:last-child').textContent = 'выполняю…'; }
-    try {
-        const r = await fetch('/api/shell/' + id + '/exec', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({command: cmd})
-        });
-        const d = await r.json();
-        if (d.output && d.output.length) shellAppend(id, d.output.replace(/\n+$/, ''));
-    } catch (e) { shellAppend(id, 'Ошибка соединения: ' + e.message, 'term-err'); }
-    if (st) st.querySelector('span:last-child').textContent = 'готов';
+    const term = new Terminal({
+        fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+        cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' }
+    });
+    const fit = new FitAddon.FitAddon();
+    term.loadAddon(fit);
+    term.open(host);
+    try { fit.fit(); } catch (e) {}
+    if (st) { st.classList.add('on'); st.querySelector('span:last-child').textContent = 'подключаюсь…'; }
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(proto + '://' + location.host + '/api/term?task=' + id);
+    ws.binaryType = 'arraybuffer';
+    _terms[id] = { term: term, ws: ws, fit: fit };
+    ws.onopen = () => { if (st) st.querySelector('span:last-child').textContent = 'подключён'; sendResize(id); term.focus(); };
+    ws.onmessage = (e) => { term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
+    ws.onclose = () => { if (st) { st.classList.remove('on'); st.querySelector('span:last-child').textContent = 'отключён'; } };
+    term.onData((d) => { if (ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
+    term.onResize(() => sendResize(id));
+    setTimeout(() => { try { fit.fit(); sendResize(id); } catch (e) {} }, 150);
+}
+function sendResize(id) {
+    const t = _terms[id];
+    if (t && t.ws.readyState === 1) t.ws.send(JSON.stringify({ resize: [t.term.cols, t.term.rows] }));
+}
+window.addEventListener('resize', () => { for (const id in _terms) { try { _terms[id].fit.fit(); sendResize(id); } catch (e) {} } });
+async function termReset(id) {
+    try { await fetch('/api/shell/' + id + '/reset', { method: 'POST' }); } catch (e) {}
+    const t = _terms[id];
+    if (t) { try { t.ws.close(); } catch (e) {} try { t.term.dispose(); } catch (e) {} delete _terms[id]; }
+    const host = document.getElementById('xterm-' + id); if (host) host.innerHTML = '';
+    const launch = document.getElementById('termlaunch-' + id); if (launch) launch.style.display = 'flex';
+    const st = document.getElementById('term-status-' + id); if (st) { st.classList.remove('on'); st.querySelector('span:last-child').textContent = 'не запущен'; }
+    const box = document.getElementById('check-' + id); if (box) box.style.display = 'none';
 }
 async function shellCheck(id) {
     const box = document.getElementById('check-' + id);

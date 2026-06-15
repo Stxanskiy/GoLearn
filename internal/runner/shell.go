@@ -5,11 +5,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -216,4 +219,89 @@ func shellEnv(k, def string) string {
 		return v
 	}
 	return def
+}
+
+// ── Interactive PTY terminal (xterm.js over WebSocket) ──
+
+// EnsureSession is a public wrapper to create/get the session container.
+func (s *ShellRunner) EnsureSession(ctx context.Context, userID, taskID int, image, setup string) (string, error) {
+	return s.ensure(ctx, userID, taskID, image, setup)
+}
+
+func (s *ShellRunner) signer() (ssh.Signer, error) {
+	data, err := os.ReadFile(s.keyFile)
+	if err != nil {
+		return nil, err
+	}
+	return ssh.ParsePrivateKey(data)
+}
+
+// PTYSession is a live interactive shell into a sandbox container.
+type PTYSession struct {
+	client  *ssh.Client
+	session *ssh.Session
+	Stdin   io.WriteCloser
+	Stdout  io.Reader
+}
+
+func (p *PTYSession) Resize(rows, cols int) { _ = p.session.WindowChange(rows, cols) }
+
+func (p *PTYSession) Close() {
+	if p.session != nil {
+		_ = p.session.Close()
+	}
+	if p.client != nil {
+		_ = p.client.Close()
+	}
+}
+
+// OpenPTY opens an interactive bash (with a real TTY) inside the container.
+func (s *ShellRunner) OpenPTY(container string, cols, rows int) (*PTYSession, error) {
+	if !s.enabled {
+		return nil, fmt.Errorf("sandbox disabled")
+	}
+	sg, err := s.signer()
+	if err != nil {
+		return nil, err
+	}
+	cfg := &ssh.ClientConfig{
+		User:            s.user,
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(sg)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         10 * time.Second,
+	}
+	client, err := ssh.Dial("tcp", s.host+":"+s.port, cfg)
+	if err != nil {
+		return nil, err
+	}
+	session, err := client.NewSession()
+	if err != nil {
+		_ = client.Close()
+		return nil, err
+	}
+	modes := ssh.TerminalModes{ssh.ECHO: 1, ssh.TTY_OP_ISPEED: 14400, ssh.TTY_OP_OSPEED: 14400}
+	if err := session.RequestPty("xterm-256color", rows, cols, modes); err != nil {
+		_ = session.Close()
+		_ = client.Close()
+		return nil, err
+	}
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		_ = session.Close()
+		_ = client.Close()
+		return nil, err
+	}
+	stdout, err := session.StdoutPipe()
+	if err != nil {
+		_ = session.Close()
+		_ = client.Close()
+		return nil, err
+	}
+	cmd := fmt.Sprintf("docker exec -it %s env TERM=xterm-256color HOME=/root bash", container)
+	if err := session.Start(cmd); err != nil {
+		_ = session.Close()
+		_ = client.Close()
+		return nil, err
+	}
+	return &PTYSession{client: client, session: session, Stdin: stdin, Stdout: stdout}, nil
 }
