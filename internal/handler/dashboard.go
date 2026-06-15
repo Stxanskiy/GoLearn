@@ -23,6 +23,8 @@ type ModuleWithProgress struct {
 	Title       string
 	Description string
 	Track       string
+	Category    string
+	Icon        string
 	Lessons     []LessonWithProgress
 	Completed   int
 	Total       int
@@ -64,6 +66,9 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	var data DashboardData
 	data.PageTitle = "TOT — Dashboard"
+	if u := GetUser(ctx); u != nil {
+		data.UserName = u.Name
+	}
 	if stats != nil {
 		data.TotalLessons = stats.TotalLessons
 		data.CompletedCount = stats.CompletedCount
@@ -86,6 +91,8 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 			Track:       mod.Track,
 			Total:       len(lessons),
 		}
+		mwp.Category = categorize(mod.Track, mod.Title, mod.Slug)
+		mwp.Icon = categoryIcon(mwp.Category)
 
 		for _, l := range lessons {
 			status := "not_started"

@@ -3,115 +3,79 @@
 {{end}}
 
 {{define "content"}}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-    <h1 style="margin-bottom: 0;">TOT</h1>
-    <div style="display: flex; gap: 8px; align-items: center;">
-        <a href="/playground" class="btn btn-outline" title="Go Playground">Go Compiler</a>
+<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
+    <div>
+        <h1>{{if .UserName}}Привет, {{.UserName}} 👋{{else}}Обучение{{end}}</h1>
+        <p class="muted">Backend Go · DevOps · Кибербезопасность — от нуля до профессионала.</p>
+    </div>
+    <div class="row">
+        <a href="/courses" class="btn btn-primary">Все курсы</a>
         <a href="/git-trainer" class="btn btn-outline">Git Trainer</a>
-        <a href="/roadmap" class="btn btn-primary">Roadmap</a>
-        <a href="/logout" class="btn btn-outline" style="color: var(--text-muted);">Выход</a>
+        <a href="/playground" class="btn btn-outline">Go Playground</a>
     </div>
 </div>
-<p style="color: var(--text-muted); margin-bottom: 24px;">
-    Backend Go + DevOps + Кибербезопасность. От нуля до профессионала.
-</p>
 
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-value">{{.CompletedCount}}/{{.TotalLessons}}</div>
-        <div class="stat-label">Lessons Completed</div>
+        <div class="stat-label">Уроков пройдено</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{.InProgressCount}}</div>
-        <div class="stat-label">In Progress</div>
+        <div class="stat-label">В процессе</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{printf "%.0f" .AvgQuizScore}}%</div>
-        <div class="stat-label">Avg Quiz Score</div>
+        <div class="stat-label">Средний балл квизов</div>
     </div>
     <div class="stat-card">
         <div class="stat-value">{{pct .CompletedCount .TotalLessons}}%</div>
-        <div class="stat-label">Overall Progress</div>
+        <div class="stat-label">Общий прогресс</div>
     </div>
 </div>
 
-<div class="progress-bar" style="margin-bottom: 32px; height: 12px;">
+<div class="progress-bar" style="margin-bottom: 8px; height: 10px;">
     <div class="progress-fill" style="width: {{pct .CompletedCount .TotalLessons}}%;"></div>
 </div>
 
-<!-- ═══ SHARED BASE ═══ -->
 {{if .SharedModules}}
-<h2 style="font-size: 1.1em; color: var(--accent); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-    Общая база Go
-</h2>
-{{range .SharedModules}}
-{{template "module_card" .}}
-{{end}}
+<div class="section-title">🚀 Общая база Go</div>
+<div class="courses-grid">{{range .SharedModules}}{{template "module_card" .}}{{end}}</div>
 {{end}}
 
-<!-- ═══ BACKEND ═══ -->
 {{if .BackendModules}}
-<h2 style="font-size: 1.1em; color: var(--accent); margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-    &#128187; Backend Go Developer
-</h2>
-{{range .BackendModules}}
-{{template "module_card" .}}
-{{end}}
+<div class="section-title">⚙️ Backend Go Developer</div>
+<div class="courses-grid">{{range .BackendModules}}{{template "module_card" .}}{{end}}</div>
 {{end}}
 
-<!-- ═══ DEVOPS ═══ -->
 {{if .DevopsModules}}
-<h2 style="font-size: 1.1em; color: var(--purple); margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-    &#9881; DevOps Engineer
-</h2>
-{{range .DevopsModules}}
-{{template "module_card" .}}
-{{end}}
+<div class="section-title">♾️ DevOps Engineer</div>
+<div class="courses-grid">{{range .DevopsModules}}{{template "module_card" .}}{{end}}</div>
 {{end}}
 
-<!-- ═══ SECURITY ═══ -->
 {{if .SecurityModules}}
-<h2 style="font-size: 1.1em; color: #f85149; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">
-    &#128274; Кибербезопасность
-</h2>
-{{range .SecurityModules}}
-{{template "module_card" .}}
-{{end}}
+<div class="section-title">🛡️ Кибербезопасность</div>
+<div class="courses-grid">{{range .SecurityModules}}{{template "module_card" .}}{{end}}</div>
 {{end}}
 
 {{if and (not .SharedModules) (not .BackendModules) (not .DevopsModules) (not .SecurityModules)}}
-<div class="card" style="text-align: center; padding: 60px;">
-    <h2>Course content is loading...</h2>
-    <p style="color: var(--text-muted); margin-top: 8px;">Run the seed command to populate lessons.</p>
+<div class="card" style="text-align:center;padding:60px;">
+    <h2>Контент загружается…</h2>
+    <p class="muted" style="margin-top:8px;">Запусти seed, чтобы наполнить уроки.</p>
 </div>
 {{end}}
 {{end}}
 
 {{define "module_card"}}
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 style="font-size: 1.1em;">
-            <a href="/module/{{.Slug}}" style="color: var(--text); text-decoration: none;">{{.Title}}</a>
-        </h2>
-        <span class="badge {{if eq .Completed .Total}}badge-completed{{else if gt .Completed 0}}badge-in-progress{{else}}badge-not-started{{end}}">
-            {{.Completed}}/{{.Total}}
-        </span>
+<a class="course-card" href="/module/{{.Slug}}">
+    <div class="course-cover" data-cat="{{.Category}}">
+        <span class="course-icon">{{.Icon}}</span>
+        {{if gt .Completed 0}}<span class="course-cover-pct">{{pct .Completed .Total}}%</span>{{end}}
     </div>
-    <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 10px;">{{.Description}}</p>
-    <div class="progress-bar">
-        <div class="progress-fill" style="width: {{pct .Completed .Total}}%;"></div>
+    <div class="course-body">
+        <h3 class="course-title">{{.Title}}</h3>
+        <div class="course-meta muted">{{.Completed}}/{{.Total}} уроков</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:{{pct .Completed .Total}}%;"></div></div>
     </div>
-    <ul class="lesson-list" style="margin-top: 10px;">
-        {{$slug := .Slug}}
-        {{range .Lessons}}
-        <li class="lesson-item">
-            <div class="lesson-num {{.Status}}">{{.OrderNum}}</div>
-            <a href="/module/{{$slug}}/lesson/{{.Slug}}">{{.Title}}</a>
-            <span class="badge badge-{{.Status}}">
-                {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
-            </span>
-        </li>
-        {{end}}
-    </ul>
-</div>
+</a>
 {{end}}
