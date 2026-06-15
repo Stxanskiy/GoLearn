@@ -7,27 +7,35 @@
     <title>TOT — Регистрация</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 40px; width: 100%; max-width: 400px; }
-        h1 { font-size: 1.5em; margin-bottom: 8px; color: #58a6ff; }
-        p { color: #8b949e; margin-bottom: 24px; font-size: 0.9em; }
-        label { display: block; font-size: 0.85em; color: #8b949e; margin-bottom: 4px; }
-        input { width: 100%; padding: 10px 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; font-size: 1em; margin-bottom: 16px; }
-        input:focus { outline: none; border-color: #58a6ff; }
-        button { width: 100%; padding: 12px; background: #238636; border: none; border-radius: 6px; color: white; font-size: 1em; font-weight: 600; cursor: pointer; }
-        button:hover { background: #2ea043; }
-        .error { background: #f8514920; border: 1px solid #f85149; color: #f85149; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85em; }
-        .link { text-align: center; margin-top: 16px; font-size: 0.85em; }
-        .link a { color: #58a6ff; text-decoration: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e6edf3;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background:
+                radial-gradient(900px 500px at 100% -10%, rgba(110,168,255,.10), transparent 60%),
+                radial-gradient(800px 500px at -10% 0%, rgba(185,140,255,.09), transparent 55%), #0a0c10;
+        }
+        .card { background: #141a22; border: 1px solid #232b36; border-radius: 16px; padding: 36px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .brand-text { font-size: 1.5em; font-weight: 800; background: linear-gradient(135deg,#6ea8ff,#b98cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        p.sub { color: #9aa7b4; margin-bottom: 22px; font-size: .9em; }
+        label { display: block; font-size: .85em; color: #9aa7b4; margin-bottom: 5px; margin-top: 14px; }
+        input { width: 100%; padding: 11px 13px; background: #0a0c10; border: 1px solid #232b36; border-radius: 9px; color: #e6edf3; font-size: 1em; }
+        input:focus { outline: none; border-color: #6ea8ff; }
+        button { width: 100%; margin-top: 22px; padding: 12px; background: linear-gradient(135deg,#6ea8ff,#b98cff); border: none; border-radius: 9px; color: #0a0c10; font-size: 1em; font-weight: 700; cursor: pointer; transition: box-shadow .2s; }
+        button:hover { box-shadow: 0 6px 20px rgba(110,168,255,.35); }
+        .error { background: rgba(248,81,73,.12); border: 1px solid #f85149; color: #f85149; padding: 10px; border-radius: 8px; margin-bottom: 14px; font-size: .85em; }
+        .link { text-align: center; margin-top: 18px; font-size: .85em; color: #9aa7b4; }
+        .link a { color: #6ea8ff; text-decoration: none; }
     </style>
 </head>
 <body>
 <div class="card">
-    <h1>TOT</h1>
-    <p>Создай аккаунт для отслеживания прогресса</p>
-    {{if and .Error (ne .Error "")}}
-    <div class="error">{{.Error}}</div>
-    {{end}}
+    <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M9 11l5 5-5 5" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 21H23" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient></defs></svg>
+        <span class="brand-text">TOT</span>
+    </div>
+    <p class="sub">Создай аккаунт для отслеживания прогресса</p>
+    {{if and .Error (ne .Error "")}}<div class="error">{{.Error}}</div>{{end}}
     <form method="POST" action="/register">
         <label for="name">Имя</label>
         <input type="text" id="name" name="name" required placeholder="Как тебя зовут?">
