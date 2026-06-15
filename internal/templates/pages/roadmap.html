@@ -3,137 +3,90 @@
 {{end}}
 
 {{define "content"}}
-<h1 style="margin-bottom: 8px;">Learning Roadmap</h1>
-<p style="color: var(--text-muted); margin-bottom: 32px;">
-    Оба трека начинаются с общей базы Go, затем расходятся по специализациям.
-</p>
-
-<!-- ═══ SHARED FOUNDATION ═══ -->
-<div style="margin-bottom: 40px;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 1.2em; background: var(--bg-card); border: 2px solid var(--accent);">
-            &#9881;
-        </div>
-        <div>
-            <h2 style="font-size: 1.2em; margin: 0; color: var(--accent);">Общая база Go</h2>
-            <p style="color: var(--text-muted); font-size: 0.85em; margin: 0;">Фундамент для обоих треков</p>
-        </div>
-    </div>
-
-    {{range .SharedBase}}
-    <div style="margin-bottom: 20px; margin-left: 20px;">
-        <h3 style="font-size: 1em; color: var(--text-muted); margin-bottom: 12px;">{{.Name}}</h3>
-        {{if .Modules}}
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
-            {{range .Modules}}
-            <a href="/module/{{.Slug}}" style="text-decoration: none;">
-                <div class="card" style="margin: 0; padding: 14px 18px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <h4 style="font-size: 0.95em; color: var(--text);">{{.Title}}</h4>
-                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
-                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
-                        </span>
-                    </div>
-                    <div class="progress-bar" style="height: 4px;">
-                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 0.75em; margin-top: 4px;">{{.Completed}}/{{.LessonCount}} lessons</p>
-                </div>
-            </a>
-            {{end}}
-        </div>
-        {{end}}
-    </div>
-    {{end}}
+<div class="page-head">
+    <h1>Дорожная карта</h1>
+    <p class="muted">Оба трека начинаются с общей базы Go, затем расходятся по специализациям.</p>
 </div>
 
-<div style="height: 2px; background: var(--border); margin-bottom: 40px; position: relative;">
-    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--bg);
-        padding: 0 16px; color: var(--text-muted); font-size: 0.85em;">Выбери специализацию</div>
+<div class="section-title">🚀 Общая база Go</div>
+{{range .SharedBase}}
+{{if .Modules}}
+<div style="margin:0 0 18px;">
+    <div class="muted" style="font-size:.82em;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">{{.Name}}</div>
+    <div class="rm-grid">
+        {{range .Modules}}{{template "rm_mod" .}}{{end}}
+    </div>
+</div>
+{{end}}
+{{end}}
+
+<div style="display:flex;align-items:center;gap:14px;margin:36px 0 24px;">
+    <div style="flex:1;height:1px;background:var(--border);"></div>
+    <span class="muted" style="font-size:.85em;">Выбери специализацию</span>
+    <div style="flex:1;height:1px;background:var(--border);"></div>
 </div>
 
-<!-- ═══ TWO TRACKS ═══ -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-
-    <!-- BACKEND -->
+<div class="rm-tracks">
     <div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px;
-            background: var(--bg-card); border: 2px solid var(--accent); border-radius: var(--radius);">
-            <span style="font-size: 1.3em;">&#128187;</span>
-            <div>
-                <h2 style="font-size: 1.1em; margin: 0; color: var(--accent);">Backend Go Developer</h2>
-                <p style="color: var(--text-muted); font-size: 0.8em; margin: 0;">REST API, БД, архитектура, тесты</p>
-            </div>
+        <div class="rm-track-head" style="border-color:var(--accent);">
+            <span style="font-size:1.4em;">⚙️</span>
+            <div><div style="font-weight:700;color:var(--accent);">Backend Go Developer</div>
+            <div class="muted" style="font-size:.8em;">REST API, БД, архитектура, тесты</div></div>
         </div>
-
         {{range .BackendTrack}}
-        <div style="margin-bottom: 20px;">
-            <h3 style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">{{.Name}}</h3>
-            {{if .Modules}}
-            {{range .Modules}}
-            <a href="/module/{{.Slug}}" style="text-decoration: none;">
-                <div class="card" style="margin: 0 0 8px; padding: 12px 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="font-size: 0.9em; color: var(--text);">{{.Title}}</h4>
-                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
-                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
-                        </span>
-                    </div>
-                    <div class="progress-bar" style="height: 3px; margin-top: 6px;">
-                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
-                    </div>
-                </div>
-            </a>
-            {{end}}
-            {{else}}
-            <div style="padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius);
-                color: var(--text-muted); text-align: center; font-size: 0.85em;">Coming soon</div>
-            {{end}}
-        </div>
+        <div class="muted" style="font-size:.8em;font-weight:600;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.04em;">{{.Name}}</div>
+        {{if .Modules}}{{range .Modules}}{{template "rm_row" .}}{{end}}
+        {{else}}<div class="rm-soon">Скоро</div>{{end}}
         {{end}}
     </div>
 
-    <!-- DEVOPS -->
     <div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px;
-            background: var(--bg-card); border: 2px solid var(--purple); border-radius: var(--radius);">
-            <span style="font-size: 1.3em;">&#9881;</span>
-            <div>
-                <h2 style="font-size: 1.1em; margin: 0; color: var(--purple);">DevOps Engineer</h2>
-                <p style="color: var(--text-muted); font-size: 0.8em; margin: 0;">Docker, CI/CD, мониторинг, K8s</p>
-            </div>
+        <div class="rm-track-head" style="border-color:var(--accent-2);">
+            <span style="font-size:1.4em;">♾️</span>
+            <div><div style="font-weight:700;color:var(--accent-2);">DevOps Engineer</div>
+            <div class="muted" style="font-size:.8em;">Linux, Docker, Kubernetes, мониторинг</div></div>
         </div>
-
         {{range .DevopsTrack}}
-        <div style="margin-bottom: 20px;">
-            <h3 style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">{{.Name}}</h3>
-            {{if .Modules}}
-            {{range .Modules}}
-            <a href="/module/{{.Slug}}" style="text-decoration: none;">
-                <div class="card" style="margin: 0 0 8px; padding: 12px 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="font-size: 0.9em; color: var(--text);">{{.Title}}</h4>
-                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
-                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
-                        </span>
-                    </div>
-                    <div class="progress-bar" style="height: 3px; margin-top: 6px;">
-                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
-                    </div>
-                </div>
-            </a>
-            {{end}}
-            {{else}}
-            <div style="padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius);
-                color: var(--text-muted); text-align: center; font-size: 0.85em;">Coming soon</div>
-            {{end}}
-        </div>
+        <div class="muted" style="font-size:.8em;font-weight:600;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.04em;">{{.Name}}</div>
+        {{if .Modules}}{{range .Modules}}{{template "rm_row" .}}{{end}}
+        {{else}}<div class="rm-soon">Скоро</div>{{end}}
         {{end}}
     </div>
 </div>
 
-<div style="margin-top: 32px; text-align: center;">
-    <a href="/" class="btn btn-outline">Back to Dashboard</a>
-</div>
+<div style="margin-top:32px;"><a href="/courses" class="btn btn-primary">Открыть каталог курсов</a></div>
+
+<style>
+.rm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+.rm-mod, .rm-row { display:block; text-decoration:none; color:var(--text); background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:13px 16px; transition:transform .15s, border-color .15s, box-shadow .15s; }
+.rm-mod:hover, .rm-row:hover { transform:translateY(-2px); border-color:var(--accent); box-shadow:var(--shadow); }
+.rm-row { margin-bottom:8px; border-left:3px solid var(--border-strong); }
+.rm-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.rm-head h4 { font-size:.92em; color:var(--text); font-weight:600; }
+.rm-tracks { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.rm-track-head { display:flex; align-items:center; gap:11px; padding:15px; background:var(--bg-card); border:2px solid var(--accent); border-radius:var(--radius); margin-bottom:6px; }
+.rm-soon { padding:14px; border:1px dashed var(--border); border-radius:var(--radius); color:var(--text-dim); text-align:center; font-size:.84em; }
+@media (max-width:768px){ .rm-tracks { grid-template-columns:1fr; } }
+</style>
+{{end}}
+
+{{define "rm_mod"}}
+<a class="rm-mod" href="/module/{{.Slug}}">
+    <div class="rm-head">
+        <h4>{{.Title}}</h4>
+        <span class="badge badge-{{.Status}}" style="font-size:.68em;">{{if eq .Status "completed"}}Готово{{else if eq .Status "in_progress"}}Идёт{{else}}Старт{{end}}</span>
+    </div>
+    <div class="progress-bar" style="height:4px;margin-top:8px;"><div class="progress-fill" style="width:{{pct .Completed .LessonCount}}%;"></div></div>
+    <div class="muted" style="font-size:.73em;margin-top:5px;">{{.Completed}}/{{.LessonCount}} уроков</div>
+</a>
+{{end}}
+
+{{define "rm_row"}}
+<a class="rm-row" href="/module/{{.Slug}}">
+    <div class="rm-head">
+        <h4>{{.Title}}</h4>
+        <span class="badge badge-{{.Status}}" style="font-size:.68em;">{{if eq .Status "completed"}}Готово{{else if eq .Status "in_progress"}}Идёт{{else}}Старт{{end}}</span>
+    </div>
+    <div class="progress-bar" style="height:3px;margin-top:7px;"><div class="progress-fill" style="width:{{pct .Completed .LessonCount}}%;"></div></div>
+</a>
 {{end}}
