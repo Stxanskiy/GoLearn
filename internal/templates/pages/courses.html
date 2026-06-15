@@ -1,0 +1,52 @@
+{{define "courses"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="page-head">
+    <h1>Курсы</h1>
+    <p class="muted">Структурированные курсы по Linux, Docker, Kubernetes, Git и DevOps — от базы до продвинутых практик. Выбери тему.</p>
+</div>
+
+<div class="row" style="margin-bottom:22px;flex-wrap:wrap;gap:8px;">
+    <button class="filter-chip active" onclick="filterCat('Все', this)">Все</button>
+    {{range .Categories}}
+    <button class="filter-chip" onclick="filterCat('{{.}}', this)">{{.}}</button>
+    {{end}}
+</div>
+
+<div class="courses-grid">
+    {{range .Cards}}
+    <a class="course-card" data-cat="{{.Category}}" href="/module/{{.Slug}}">
+        <div class="row" style="justify-content:space-between;align-items:center;">
+            <span class="chip chip-cat">{{.Category}}</span>
+            <span class="muted" style="font-size:.78em;">{{.Lessons}} глав</span>
+        </div>
+        <h3 style="margin:12px 0 10px;font-size:1.1em;line-height:1.3;">{{.Title}}</h3>
+        <div class="progress-bar"><div class="progress-fill" style="width:{{.Pct}}%;"></div></div>
+        <div class="muted" style="font-size:.76em;margin-top:7px;">{{.Pct}}% · {{.Completed}}/{{.Lessons}} уроков · {{.Difficulty}}</div>
+    </a>
+    {{end}}
+</div>
+
+<style>
+.courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.course-card { display:block; text-decoration:none; color:var(--text); background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; transition:border-color .2s, transform .2s, box-shadow .2s; }
+.course-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow); }
+.course-card h3 { color:var(--text); }
+.chip-cat { color:var(--accent); border:1px solid rgba(110,168,255,.35); background:rgba(110,168,255,.08); }
+.filter-chip { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); padding:7px 16px; border-radius:999px; cursor:pointer; font-size:.88em; font-weight:600; transition:all .15s; }
+.filter-chip:hover { color:var(--text); border-color:var(--border-strong); }
+.filter-chip.active { background:var(--grad); color:#0a0c10; border:none; }
+</style>
+
+<script>
+function filterCat(cat, el) {
+    document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+    el.classList.add('active');
+    document.querySelectorAll('.course-card').forEach(function (card) {
+        card.style.display = (cat === 'Все' || card.dataset.cat === cat) ? '' : 'none';
+    });
+}
+</script>
+{{end}}
