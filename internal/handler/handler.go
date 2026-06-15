@@ -68,6 +68,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 }
 
 func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
+	w.Header().Set("Cache-Control", "no-store")
 	tmpl, err := template.New("").Funcs(template.FuncMap{
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },

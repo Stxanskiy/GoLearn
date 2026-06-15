@@ -9,10 +9,32 @@ type CourseCard struct {
 	Title      string
 	Slug       string
 	Category   string
+	Icon       string
 	Difficulty string
 	Lessons    int
 	Completed  int
 	Pct        int
+}
+
+func categoryIcon(cat string) string {
+	switch cat {
+	case "Linux":
+		return "🐧"
+	case "Docker":
+		return "🐳"
+	case "Kubernetes":
+		return "☸️"
+	case "Git":
+		return "🌿"
+	case "DevOps":
+		return "♾️"
+	case "Backend":
+		return "⚙️"
+	case "Security":
+		return "🛡️"
+	default:
+		return "🚀"
+	}
 }
 
 type CoursesData struct {
@@ -80,7 +102,7 @@ func (h *Handler) CoursesPage(w http.ResponseWriter, r *http.Request) {
 		cat := categorize(m.Track, m.Title, m.Slug)
 		catSet[cat] = true
 		cards = append(cards, CourseCard{
-			Title: m.Title, Slug: m.Slug, Category: cat, Difficulty: m.Difficulty,
+			Title: m.Title, Slug: m.Slug, Category: cat, Icon: categoryIcon(cat), Difficulty: m.Difficulty,
 			Lessons: len(lessons), Completed: done, Pct: pct,
 		})
 	}
