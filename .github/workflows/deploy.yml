@@ -30,6 +30,11 @@ jobs:
 
       - name: Build, migrate, seed, deploy
         run: |
+          exec > >(tee -a /tmp/ci-deploy.log) 2>&1
+          echo "===== deploy run $(date -u) ====="
+          id; echo "PATH=$PATH"
+          docker version --format 'server={{.Server.Version}}' || echo "!! DOCKER ACCESS FAIL"
+          docker compose version || echo "!! COMPOSE FAIL"
           set -e
           cd /opt/golearn
           cp src/deploy/berg/docker-compose.yml docker-compose.yml
