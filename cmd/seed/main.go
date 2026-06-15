@@ -198,6 +198,7 @@ func getAllModules() []M {
 		mod_milestone_intermediate(), // 17: ★ Проект REST API (milestone — после архитектуры+тестов)
 		mod13_auth(),             // 18: Аутентификация
 		mod14_concurrency_full(), // 19: Конкурентность (3 урока)
+		mod18_advanced(),         // WebSocket, Redis (realtime/cache)
 
 		// ── Track: backend — advanced ──
 		mod_go_internals(),       // Go Internals (memory, scheduler, GC, interfaces)
@@ -206,11 +207,10 @@ func getAllModules() []M {
 		mod_linux_terminal(),     // Linux: Старт в терминале (интерактив, песочница)
 		mod_linux(),              // Linux: Основные инструменты
 		mod_docker_full(),        // Docker
-		mod_helm(),               // Kubernetes & Helm
+		mod_helm(),               // Helm
 		mod_nginx(),              // Nginx
 		mod_ansible(),            // Ansible
 		mod_grafana(),            // Grafana + Prometheus (мониторинг)
-		mod18_advanced(),         // Advanced: WebSocket, Redis, K8s
 
 		// ── Track: security ──
 		mod_security_offense(),   // Кибербез: Пентест (8 уроков)

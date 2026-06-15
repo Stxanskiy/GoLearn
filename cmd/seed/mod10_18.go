@@ -2068,9 +2068,9 @@ func main() {
 
 func mod18_advanced() M {
 	return M{
-		Slug: "advanced", Title: "WebSocket, Redis, Kubernetes", Order: 18,
-		Description: "Финальный модуль: realtime sync, кеширование, оркестрация контейнеров.",
-		Track: "devops", Difficulty: "expert", Prerequisites: []string{"monitoring"},
+		Slug: "advanced", Title: "WebSocket и Redis", Order: 18,
+		Description: "Realtime-синхронизация через WebSocket и кеширование на Redis.",
+		Track: "backend", Difficulty: "expert", Prerequisites: []string{},
 		Lessons: []L{
 			{
 				Slug: "websocket-deep", Title: "WebSocket для синхронного просмотра", Order: 1,

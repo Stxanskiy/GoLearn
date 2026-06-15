@@ -8,7 +8,7 @@ package main
 func mod_helm() M {
 	return M{
 		Slug:          "helm-k8s",
-		Title:         "Helm & Kubernetes",
+		Title:         "Helm",
 		Description:   "Kubernetes-концепции, Helm charts, templating, releases, production patterns с ArgoCD и Helmfile.",
 		Order:         22,
 		Track:         "devops",
