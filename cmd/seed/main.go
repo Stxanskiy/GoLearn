@@ -39,18 +39,13 @@ func main() {
 	}
 	defer pool.Close()
 
-	pool.Exec(ctx, "DELETE FROM submissions")
-	pool.Exec(ctx, "DELETE FROM progress")
+	// Idempotent seed: rebuild quizzes/questions/tasks (no user progress lives
+	// there), but UPSERT modules/lessons by slug (stable IDs) below and KEEP the
+	// progress table — so user progress survives re-seeds on every deploy.
 	pool.Exec(ctx, "DELETE FROM quiz_questions")
 	pool.Exec(ctx, "DELETE FROM quizzes")
-	pool.Exec(ctx, "DELETE FROM tasks")
-	pool.Exec(ctx, "DELETE FROM lessons")
-	pool.Exec(ctx, "DELETE FROM modules")
-	pool.Exec(ctx, "ALTER SEQUENCE modules_id_seq RESTART WITH 1")
-	pool.Exec(ctx, "ALTER SEQUENCE lessons_id_seq RESTART WITH 1")
-	pool.Exec(ctx, "ALTER SEQUENCE quizzes_id_seq RESTART WITH 1")
-	pool.Exec(ctx, "ALTER SEQUENCE quiz_questions_id_seq RESTART WITH 1")
-	pool.Exec(ctx, "ALTER SEQUENCE tasks_id_seq RESTART WITH 1")
+	pool.Exec(ctx, "DELETE FROM tasks") // cascades submissions (code-attempt history)
+	keepModuleSlugs := []string{}
 
 	modules := getAllModules()
 	for _, mod := range modules {
@@ -64,14 +59,21 @@ func main() {
 		}
 		prereqJSON, _ := json.Marshal(mod.Prerequisites)
 
+		keepModuleSlugs = append(keepModuleSlugs, mod.Slug)
 		var moduleID int
 		err := pool.QueryRow(ctx,
-			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)
+			 ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description,
+			   order_num=EXCLUDED.order_num, track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
+			   prerequisites=EXCLUDED.prerequisites
+			 RETURNING id`,
 			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON).Scan(&moduleID)
 		if err != nil {
-			log.Fatalf("insert module %s: %v", mod.Slug, err)
+			log.Fatalf("upsert module %s: %v", mod.Slug, err)
 		}
 		fmt.Printf("Module %d: %s [%s/%s]\n", mod.Order, mod.Title, track, difficulty)
+		keepLessonSlugs := []string{}
 
 		for _, lesson := range mod.Lessons {
 			lTrack := lesson.Track
@@ -83,12 +85,17 @@ func main() {
 				lDiff = difficulty
 			}
 
+			keepLessonSlugs = append(keepLessonSlugs, lesson.Slug)
 			var lessonID int
 			err := pool.QueryRow(ctx,
-				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7)
+				 ON CONFLICT (module_id, slug) DO UPDATE SET title=EXCLUDED.title, content=EXCLUDED.content,
+				   order_num=EXCLUDED.order_num, difficulty=EXCLUDED.difficulty, track=EXCLUDED.track
+				 RETURNING id`,
 				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack).Scan(&lessonID)
 			if err != nil {
-				log.Fatalf("insert lesson %s: %v", lesson.Slug, err)
+				log.Fatalf("upsert lesson %s: %v", lesson.Slug, err)
 			}
 			fmt.Printf("  Lesson %d: %s [%s]\n", lesson.Order, lesson.Title, lDiff)
 
@@ -124,6 +131,12 @@ func main() {
 				fmt.Printf("    Tasks: %d\n", len(lesson.Tasks))
 			}
 		}
+		if len(keepLessonSlugs) > 0 {
+			pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND slug <> ALL($2)`, moduleID, keepLessonSlugs)
+		}
+	}
+	if len(keepModuleSlugs) > 0 {
+		pool.Exec(ctx, `DELETE FROM modules WHERE slug <> ALL($1)`, keepModuleSlugs)
 	}
 	fmt.Println("\nSeed completed!")
 }
