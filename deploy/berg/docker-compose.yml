@@ -1,0 +1,57 @@
+services:
+  app:
+    build: ./src
+    image: golearn:local
+    container_name: golearn
+    networks: [sandboxnet]
+    ports:
+      - "127.0.0.1:8081:8080"
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://golearn:golearn@db:5432/golearn?sslmode=disable"
+      DATA_DIR: "/app/data"
+      # Sandbox VM transport: app -> (host socat on the fixed bridge gateway) -> VM:22
+      SANDBOX_SSH_HOST: "172.30.0.1"
+      SANDBOX_SSH_PORT: "2222"
+      SANDBOX_SSH_USER: "sandbox"
+      SANDBOX_SSH_KEY: "/sandbox/id_ed25519"
+      SANDBOX_IMAGE: "ubuntu:24.04"
+    volumes:
+      - ./sandbox-vm/id_ed25519:/sandbox/id_ed25519:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: golearn-db
+    networks: [sandboxnet]
+    environment:
+      POSTGRES_DB: golearn
+      POSTGRES_USER: golearn
+      POSTGRES_PASSWORD: golearn
+    volumes:
+      - golearn_data:/var/lib/postgresql/data
+      - ./src/migrations/001_init.up.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./src/migrations/002_tracks_difficulty.up.sql:/docker-entrypoint-initdb.d/02_tracks.sql:ro
+      - ./src/migrations/003_users.up.sql:/docker-entrypoint-initdb.d/03_users.sql:ro
+      - ./src/migrations/004_shell_tasks.up.sql:/docker-entrypoint-initdb.d/04_shell.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U golearn"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  sandboxnet:
+    name: golearn_sandboxnet
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+
+volumes:
+  golearn_data:
+    name: golearn-db-data

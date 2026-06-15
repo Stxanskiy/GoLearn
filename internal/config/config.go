@@ -13,7 +13,7 @@ type Config struct {
 
 func Load() (*Config, error) {
 	port := getEnv("PORT", "8080")
-	dbURL := getEnv("DATABASE_URL", "postgres://golearn:golearn@localhost:5432/golearn?sslmode=disable")
+	dbURL := getEnv("DATABASE_URL", "postgres://golearn:golearn@localhost:5433/golearn?sslmode=disable")
 	dataDir := getEnv("DATA_DIR", "./data")
 
 	if err := os.MkdirAll(dataDir, 0755); err != nil {

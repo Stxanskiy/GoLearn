@@ -1,0 +1,5 @@
+-- 004 down
+ALTER TABLE tasks DROP COLUMN IF EXISTS kind;
+ALTER TABLE tasks DROP COLUMN IF EXISTS sandbox_image;
+ALTER TABLE tasks DROP COLUMN IF EXISTS setup_script;
+ALTER TABLE tasks DROP COLUMN IF EXISTS check_script;

@@ -1,7 +1,22 @@
+# Secrets / local env
 .env
+.env.*
 data/
-*.exe
-server
 tmp/
-.idea/
+*.log
 .DS_Store
+
+# IDE / tooling
+.idea/
+.claude/
+
+# Host-arch build artifacts at repo root (NOT cmd/seed, cmd/server source dirs)
+/seed
+/server
+*.exe
+
+# Scraped third-party content — must never be committed
+output/
+
+# Local infra notes / knowledge base — never commit
+vibibay-brain/

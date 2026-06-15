@@ -1,0 +1,13 @@
+# Build hygiene — small images, never ship secrets/binaries.
+# Anchored (leading /) so cmd/seed and internal/... are NOT matched.
+/.git
+/.env
+/data
+*.log
+# Stray host-arch binaries (Mach-O arm64, useless on linux/amd64)
+/seed
+/server
+# Local brain notes — never ship to an image
+/vibibay-brain
+# Deploy manifests not needed inside the runtime image
+/deploy

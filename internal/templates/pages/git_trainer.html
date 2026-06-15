@@ -1,0 +1,117 @@
+{{define "git_trainer"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/">Дашборд</a> / <span>Git Trainer</span></div>
+
+<div class="page-head">
+    <h1>Git Trainer</h1>
+    <p class="muted">Настоящий <strong>git</strong> в изолированной песочнице — не симуляция. Делай коммиты, ветки, merge, rebase, и сразу смотри реальный результат и граф истории.</p>
+</div>
+
+{{if not .SandboxOK}}
+<div class="card" style="border-color: var(--yellow);">Песочница сейчас недоступна на сервере — терминал работать не будет.</div>
+{{end}}
+
+<div class="term-wrap">
+    <div class="term-bar">
+        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+        <span class="term-title">git sandbox &middot; ~/repo</span>
+        <span class="term-status" id="git-status"><span class="led"></span><span>готов</span></span>
+    </div>
+    <div class="term-body" id="git-body" style="height:420px;"><span class="term-dim">Поднимаю репозиторий…</span></div>
+    <div style="display:flex;align-items:center;gap:8px;background:#05070a;border-top:1px solid var(--border);padding:8px 12px;">
+        <span class="term-prompt" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;white-space:nowrap;">student@git:~/repo$</span>
+        <input id="git-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+            style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;"
+            placeholder="git commit -m ... (стрелки вверх/вниз — история)" onkeydown="gitKey(event)">
+    </div>
+</div>
+
+<div class="row mt-16">
+    <button class="btn btn-primary" onclick="gitGraph()">&#9417; Показать граф</button>
+    <button class="btn btn-outline" onclick="gitRun('git status')">git status</button>
+    <button class="btn btn-outline" onclick="gitRun('git log --oneline --all --decorate')">git log</button>
+    <button class="btn btn-ghost" onclick="gitReset()">&#8635; Новый репозиторий</button>
+</div>
+
+<div class="card" style="margin-top:20px;">
+    <h3 style="margin-bottom:12px;">Шпаргалка</h3>
+    <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:.85em;">
+        <code style="color:var(--green);">git status</code><span class="muted">Состояние рабочего каталога</span>
+        <code style="color:var(--green);">git add &lt;файл&gt;</code><span class="muted">Добавить в индекс (staging)</span>
+        <code style="color:var(--green);">git commit -m "msg"</code><span class="muted">Зафиксировать коммит</span>
+        <code style="color:var(--green);">git switch -c feature</code><span class="muted">Создать ветку и перейти</span>
+        <code style="color:var(--green);">git switch main</code><span class="muted">Переключиться на ветку</span>
+        <code style="color:var(--green);">git merge feature</code><span class="muted">Слить ветку в текущую</span>
+        <code style="color:var(--green);">git rebase main</code><span class="muted">Перебазировать на main</span>
+        <code style="color:var(--green);">git log --oneline --graph --all</code><span class="muted">Граф истории</span>
+        <code style="color:var(--green);">echo text &gt; file.txt</code><span class="muted">Изменить файл (это обычный shell)</span>
+        <code style="color:var(--yellow);">clear</code><span class="muted">Очистить вывод</span>
+    </div>
+</div>
+
+<script>
+(function () {
+    var body = document.getElementById('git-body');
+    var input = document.getElementById('git-input');
+    var status = document.getElementById('git-status');
+    var hist = [], hidx = -1, busy = false;
+
+    function append(text, cls) {
+        var div = document.createElement('div');
+        if (cls) div.className = cls;
+        div.textContent = text;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+    }
+    window.gitRun = async function (cmd, echo) {
+        if (busy) return;
+        busy = true;
+        if (echo !== false) append('student@git:~/repo$ ' + cmd, 'term-cmd');
+        status.classList.add('on'); status.querySelector('span:last-child').textContent = 'выполняю…';
+        try {
+            var r = await fetch('/api/git/exec', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            });
+            var d = await r.json();
+            if (d.output && d.output.length) append(d.output.replace(/\n+$/, ''));
+        } catch (e) { append('Ошибка соединения: ' + e.message, 'term-err'); }
+        status.querySelector('span:last-child').textContent = 'готов';
+        busy = false;
+    };
+    window.gitGraph = function () { gitRun('git log --oneline --graph --all --decorate'); };
+    window.gitReset = async function () {
+        try { await fetch('/api/git/reset', {method: 'POST'}); } catch (e) {}
+        body.innerHTML = '';
+        append('Создан новый репозиторий с первым коммитом.', 'term-dim');
+        gitRun('git log --oneline --all --decorate', false);
+    };
+    window.gitKey = function (e) {
+        if (e.key === 'Enter') {
+            var cmd = input.value.trim();
+            if (!cmd) return;
+            input.value = '';
+            hist.push(cmd); hidx = hist.length;
+            if (cmd === 'clear') { body.innerHTML = ''; return; }
+            gitRun(cmd);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (hidx > 0) { hidx--; input.value = hist[hidx]; }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (hidx < hist.length - 1) { hidx++; input.value = hist[hidx]; }
+            else { hidx = hist.length; input.value = ''; }
+        }
+    };
+
+    // Warm the session + show the starting repo
+    body.innerHTML = '';
+    append('Готов. Это настоящий git — пробуй команды.', 'term-dim');
+    gitRun('git log --oneline --all --decorate', false);
+    input.focus();
+})();
+</script>
+{{end}}

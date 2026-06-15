@@ -49,6 +49,405 @@
     {{end}}
 {{end}}
 
+<!-- Personal Notes -->
+<details style="margin-top: 20px;">
+    <summary style="cursor: pointer; color: var(--accent); font-size: 0.9em; padding: 8px 0;">
+        My Notes
+    </summary>
+    <div style="margin-top: 8px;">
+        <textarea id="lesson-notes" style="width: 100%; min-height: 100px; padding: 12px; background: var(--bg-card);
+            color: var(--text); border: 1px solid var(--border); border-radius: var(--radius);
+            font-family: -apple-system, sans-serif; font-size: 0.9em; resize: vertical; line-height: 1.6;"
+            placeholder="Write your notes here... They will be saved automatically."
+        >{{if .Progress}}{{.Progress.Notes}}{{end}}</textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <span id="notes-status" style="font-size: 0.75em; color: var(--text-muted);"></span>
+            <button onclick="saveNotes()" style="background: var(--accent); color: #fff; border: none;
+                padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em;">Save</button>
+        </div>
+    </div>
+</details>
+<script>
+(function(){
+    const notesEl = document.getElementById('lesson-notes');
+    if (!notesEl) return;
+    let saveTimeout;
+    notesEl.addEventListener('input', () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveNotes, 2000);
+    });
+})();
+async function saveNotes() {
+    const notes = document.getElementById('lesson-notes').value;
+    const status = document.getElementById('notes-status');
+    try {
+        await fetch('/api/progress/{{.Lesson.ID}}/notes', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({notes: notes})
+        });
+        status.textContent = 'Saved'; status.style.color = 'var(--green)';
+        setTimeout(() => { status.textContent = ''; }, 2000);
+    } catch(e) {
+        status.textContent = 'Error saving'; status.style.color = 'var(--red)';
+    }
+}
+</script>
+
+<!-- Git trainer inline widgets — DOM-based with CSS animations -->
+<script>
+document.querySelectorAll('.git-trainer').forEach(container => {
+    const uid = 'gt-' + Math.random().toString(36).substr(2,6);
+    container.innerHTML = `
+    <div class="gt-widget">
+        <div class="gt-left">
+            <div class="gt-input-row">
+                <span class="gt-prompt">$</span>
+                <input type="text" id="input-${uid}" class="gt-input" placeholder='git commit -m "Initial commit"' spellcheck="false">
+                <button onclick="gtRun('${uid}')" class="gt-run-btn">Run</button>
+            </div>
+            <div id="log-${uid}" class="gt-log">
+                <div class="gt-hint">Попробуй: git commit -m "init"</div>
+            </div>
+            <div class="gt-quick-btns">
+                <button class="gtq" onclick="gtQuick('${uid}','commit')">commit</button>
+                <button class="gtq" onclick="gtQuick('${uid}','branch')">branch</button>
+                <button class="gtq" onclick="gtQuick('${uid}','switch')">switch</button>
+                <button class="gtq" onclick="gtQuick('${uid}','merge')">merge</button>
+                <button class="gtq" onclick="gtQuick('${uid}','conflict')">conflict!</button>
+                <button class="gtq gt-reset" onclick="gtQuick('${uid}','reset')">clear</button>
+            </div>
+            <div id="branches-${uid}" class="gt-branches"></div>
+        </div>
+        <div class="gt-right">
+            <div id="graph-${uid}" class="gt-graph">
+                <div class="gt-empty">No commits yet</div>
+            </div>
+        </div>
+    </div>`;
+
+    if (!window.gtSims) window.gtSims = {};
+    window.gtSims[uid] = { commits: [], branches: { main: null }, head: 'main', counter: 0, commitNames: 0, conflictMode: false };
+
+    document.getElementById('input-' + uid).addEventListener('keydown', e => {
+        if (e.key === 'Enter') gtRun(uid);
+    });
+    gtUpdateBranches(uid);
+});
+
+const GT_COLORS = { main:'#58a6ff', feature:'#3fb950', hotfix:'#f85149', develop:'#d29922', release:'#bc8cff', fix:'#f778ba' };
+function gtColor(name) { return GT_COLORS[name] || GT_COLORS[Object.keys(GT_COLORS)[Math.abs(hashStr(name)) % Object.keys(GT_COLORS).length]]; }
+function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i); return h; }
+
+function gtLog(uid, text, type) {
+    const log = document.getElementById('log-' + uid);
+    const div = document.createElement('div');
+    div.className = 'gt-log-line gt-log-' + (type||'info');
+    div.textContent = text;
+    if (type === 'cmd') { div.innerHTML = '<span class="gt-log-dollar">$ </span>' + text.replace(/</g,'&lt;'); }
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+
+function gtRun(uid) {
+    const input = document.getElementById('input-' + uid);
+    const cmd = input.value.trim();
+    input.value = '';
+    if (!cmd) return;
+    const sim = window.gtSims[uid];
+    const raw = cmd.startsWith('git ') ? cmd.substring(4) : cmd;
+    gtLog(uid, 'git ' + raw, 'cmd');
+    const parts = raw.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+    const action = parts[0];
+    let msg = '', ok = true;
+
+    switch(action) {
+        case 'commit': {
+            const mi = parts.indexOf('-m');
+            const m = mi!==-1 && parts[mi+1] ? parts[mi+1].replace(/^"|"$/g,'') : 'commit '+(++sim.commitNames);
+            sim.counter++;
+            const id = 'C' + sim.counter;
+            const parent = sim.branches[sim.head];
+            sim.commits.push({ id, message: m, parents: parent ? [parent] : [], branch: sim.head, isMerge: false, isNew: true });
+            sim.branches[sim.head] = id;
+            msg = `[${sim.head} ${id}] ${m}`; break;
+        }
+        case 'branch':
+            if (parts[1] === '-d' && parts[2]) {
+                if (parts[2]===sim.head) { msg=`Cannot delete current branch`; ok=false; }
+                else if (!sim.branches[parts[2]]) { msg=`Branch '${parts[2]}' not found`; ok=false; }
+                else { delete sim.branches[parts[2]]; msg=`Deleted '${parts[2]}'`; }
+            } else if (parts[1]) {
+                if (sim.branches[parts[1]]!==undefined) { msg=`Branch '${parts[1]}' already exists`; ok=false; }
+                else { sim.branches[parts[1]] = sim.branches[sim.head]; msg=`Created branch '${parts[1]}'`; }
+            } else { msg = Object.keys(sim.branches).map(b=>(b===sim.head?'* ':'  ')+b).join('\n'); }
+            break;
+        case 'switch': case 'checkout': {
+            const create = parts[1]==='-c'||parts[1]==='-b'||parts[1]==='--create';
+            const name = create ? parts[2] : parts[1];
+            if (!name) { msg='Usage: git switch <branch>'; ok=false; break; }
+            if (create) {
+                if (sim.branches[name]!==undefined) { msg=`Branch '${name}' exists`; ok=false; break; }
+                sim.branches[name] = sim.branches[sim.head];
+            }
+            if (sim.branches[name]===undefined) { msg=`Branch '${name}' not found`; ok=false; break; }
+            sim.head = name; msg=`Switched to '${name}'`; break;
+        }
+        case 'merge': {
+            const br = parts[1];
+            if (!br || sim.branches[br]===undefined) { msg='Branch not found'; ok=false; break; }
+            if (sim.branches[br] === sim.branches[sim.head]) { msg='Already up to date'; break; }
+            // Check for conflict simulation
+            const targetCommit = sim.commits.find(c=>c.id===sim.branches[br]);
+            const currentCommit = sim.commits.find(c=>c.id===sim.branches[sim.head]);
+            if (sim.conflictMode && targetCommit && currentCommit && targetCommit.branch !== currentCommit.branch) {
+                sim.conflictMode = false;
+                msg = `CONFLICT in main.go\nAutomatic merge failed; fix conflicts and then commit.\n<<<<<<< HEAD\nfmt.Println("from ${sim.head}")\n=======\nfmt.Println("from ${br}")\n>>>>>>> ${br}`;
+                gtLog(uid, msg, 'error');
+                gtLog(uid, 'Resolve: edit file, git add, git commit', 'warn');
+                // Still create merge commit for visualization
+                sim.counter++;
+                const id='C'+sim.counter;
+                sim.commits.push({ id, message:`Merge ${br} (resolved)`, parents:[sim.branches[sim.head], sim.branches[br]], branch:sim.head, isMerge:true, isConflict:true, isNew:true });
+                sim.branches[sim.head] = id;
+                gtUpdateGraph(uid); gtUpdateBranches(uid);
+                input.focus(); return;
+            }
+            sim.counter++;
+            const id='C'+sim.counter;
+            sim.commits.push({ id, message:`Merge '${br}'`, parents:[sim.branches[sim.head], sim.branches[br]], branch:sim.head, isMerge:true, isNew:true });
+            sim.branches[sim.head] = id;
+            msg=`Merge: ${id}`; break;
+        }
+        case 'reset':
+            sim.commits=[]; sim.branches={main:null}; sim.head='main'; sim.counter=0; sim.conflictMode=false;
+            msg='Repository cleared'; break;
+        case 'log':
+            msg = sim.commits.slice().reverse().map(c=>`${c.id} (${c.branch}) ${c.message}`).join('\n') || '(empty)';
+            break;
+        case 'stash':
+            msg = 'Changes stashed (simulated)'; break;
+        default: msg=`Unknown command: ${action}`; ok=false;
+    }
+
+    msg.split('\n').forEach(line => gtLog(uid, line, ok?'ok':'error'));
+    gtUpdateGraph(uid); gtUpdateBranches(uid);
+    input.focus();
+}
+
+function gtQuick(uid, cmd) {
+    const sim = window.gtSims[uid];
+    const inp = document.getElementById('input-'+uid);
+    const cmds = {
+        commit: 'git commit -m "commit"',
+        branch: sim.branches.feature===undefined ? 'git branch feature' : 'git branch hotfix',
+        switch: 'git switch ' + (sim.head==='main' && sim.branches.feature!==undefined ? 'feature' : 'main'),
+        merge: 'git merge ' + (sim.head==='main' ? 'feature' : 'main'),
+        conflict: null,
+        reset: 'git reset'
+    };
+    if (cmd === 'conflict') {
+        sim.conflictMode = true;
+        gtLog(uid, 'Conflict mode ON — next merge will have a conflict', 'warn');
+        return;
+    }
+    inp.value = cmds[cmd] || '';
+    gtRun(uid);
+}
+
+function gtUpdateBranches(uid) {
+    const sim = window.gtSims[uid];
+    const el = document.getElementById('branches-'+uid);
+    el.innerHTML = Object.keys(sim.branches).map(name => {
+        const isHead = name === sim.head;
+        const color = gtColor(name);
+        return `<span class="gt-branch-tag${isHead?' gt-branch-head':''}" style="border-color:${color};${isHead?'background:'+color+';color:#0d1117;':'color:'+color+';'}">${isHead?'HEAD → ':''}${name}</span>`;
+    }).join('');
+}
+
+function gtUpdateGraph(uid) {
+    const sim = window.gtSims[uid];
+    const graph = document.getElementById('graph-'+uid);
+    if (sim.commits.length === 0) { graph.innerHTML = '<div class="gt-empty">No commits yet</div>'; return; }
+
+    // Build graph — newest at top
+    const reversed = [...sim.commits].reverse();
+    const laneMap = {}; let laneCount = 0;
+    Object.keys(sim.branches).forEach(b => { if (laneMap[b]===undefined) laneMap[b] = laneCount++; });
+
+    let html = '<div class="gt-graph-inner">';
+
+    reversed.forEach((c, idx) => {
+        const lane = laneMap[c.branch] || 0;
+        const color = gtColor(c.branch);
+        const isNew = c.isNew;
+        if (isNew) c.isNew = false;
+
+        // Branch labels for commits that are branch tips
+        let branchLabels = '';
+        Object.entries(sim.branches).forEach(([name, cid]) => {
+            if (cid === c.id) {
+                const isHead = name === sim.head;
+                branchLabels += `<span class="gt-node-branch" style="background:${isHead?color:'#30363d'};border-color:${color};color:${isHead?'#0d1117':color};">${isHead?'HEAD → ':''}${name}</span>`;
+            }
+        });
+
+        // Connection lines to parents
+        let connClass = '';
+        if (c.isMerge) connClass = ' gt-node-merge';
+        if (c.isConflict) connClass += ' gt-node-conflict';
+
+        html += `<div class="gt-node${isNew?' gt-node-new':''}${connClass}" style="--lane:${lane};--color:${color};--lanes:${laneCount}">
+            <div class="gt-node-lanes">`;
+
+        // Draw lane lines
+        for (let l = 0; l < laneCount; l++) {
+            const lColor = gtColor(Object.keys(sim.branches).find(b => laneMap[b]===l) || 'main');
+            const isActive = l === lane;
+            const hasCommitHere = isActive;
+            html += `<div class="gt-lane${hasCommitHere?' gt-lane-active':''}" style="--lcolor:${lColor}">`;
+            if (hasCommitHere) {
+                html += `<div class="gt-dot${c.isMerge?' gt-dot-merge':''}${c.isConflict?' gt-dot-conflict':''}" style="background:${color};border-color:${color}">
+                    <span>${c.id}</span>
+                </div>`;
+            }
+            html += '</div>';
+        }
+
+        html += `</div>
+            <div class="gt-node-info">
+                ${branchLabels ? '<div class="gt-node-branches">'+branchLabels+'</div>' : ''}
+                <div class="gt-node-msg">${c.message}</div>
+                <div class="gt-node-id">${c.id}${c.isMerge?' (merge)':''}${c.isConflict?' ⚠️ conflict resolved':''}</div>
+            </div>
+        </div>`;
+
+        // Draw merge lines between lanes
+        if (c.parents && c.parents.length > 1) {
+            const p2 = sim.commits.find(cc=>cc.id===c.parents[1]);
+            if (p2 && laneMap[p2.branch] !== undefined && laneMap[p2.branch] !== lane) {
+                const fromLane = lane, toLane = laneMap[p2.branch];
+                const mergeColor = gtColor(p2.branch);
+                html += `<div class="gt-merge-line" style="--from:${fromLane};--to:${toLane};--mcolor:${mergeColor};--lanes:${laneCount}"></div>`;
+            }
+        }
+    });
+
+    html += '</div>';
+    graph.innerHTML = html;
+}
+</script>
+
+<style>
+/* Git Trainer Styles */
+.gt-widget {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 20px 0;
+    background: var(--bg-secondary);
+}
+.gt-left { padding: 14px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+.gt-right { padding: 14px; overflow-y: auto; max-height: 420px; }
+.gt-input-row { display: flex; gap: 6px; align-items: center; }
+.gt-prompt { color: var(--green); font-family: monospace; font-weight: bold; }
+.gt-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 12px; color: var(--text); font-family: 'SF Mono','Fira Code',monospace; font-size: 0.85em;
+}
+.gt-input:focus { border-color: var(--accent); outline: none; }
+.gt-run-btn {
+    background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 4px;
+    cursor: pointer; font-weight: 600; font-size: 0.85em; transition: background 0.2s;
+}
+.gt-run-btn:hover { background: var(--accent-hover); }
+.gt-log {
+    font-family: monospace; font-size: 0.78em; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 8px 10px; height: 180px; overflow-y: auto; line-height: 1.6;
+}
+.gt-log-line { margin: 2px 0; }
+.gt-log-cmd { color: var(--text); }
+.gt-log-dollar { color: var(--yellow); }
+.gt-log-ok { color: var(--green); }
+.gt-log-error { color: var(--red); }
+.gt-log-warn { color: var(--yellow); }
+.gt-log-info { color: var(--text-muted); }
+.gt-hint { color: var(--text-muted); }
+.gt-quick-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.gtq {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: monospace; font-size: 0.75em;
+    transition: all 0.2s;
+}
+.gtq:hover { border-color: var(--accent); color: var(--accent); }
+.gt-reset { border-color: var(--red); color: var(--red); }
+.gt-reset:hover { background: var(--red-bg); }
+.gt-branches { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.gt-branch-tag {
+    font-family: monospace; font-size: 0.75em; padding: 2px 8px; border-radius: 10px;
+    border: 1px solid; transition: all 0.3s;
+}
+.gt-branch-head { font-weight: bold; }
+
+/* Graph */
+.gt-graph { min-height: 100px; }
+.gt-graph-inner { display: flex; flex-direction: column; gap: 0; }
+.gt-empty { color: var(--text-muted); text-align: center; padding: 60px 20px; font-size: 0.9em; }
+
+.gt-node {
+    display: flex; gap: 12px; align-items: center; padding: 4px 0; min-height: 44px;
+    animation: none;
+}
+.gt-node-new { animation: gtSlideIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+@keyframes gtSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gt-node-lanes { display: flex; gap: 0; flex-shrink: 0; }
+.gt-lane {
+    width: 36px; height: 44px; position: relative; display: flex; align-items: center; justify-content: center;
+}
+.gt-lane::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+    background: var(--border); transform: translateX(-50%);
+}
+.gt-lane-active::before { background: var(--lcolor); width: 3px; }
+
+.gt-dot {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: monospace; font-size: 0.65em; font-weight: bold; color: #fff;
+    position: relative; z-index: 2; border: 3px solid; transition: transform 0.2s;
+    box-shadow: 0 0 8px rgba(0,0,0,0.4);
+}
+.gt-dot:hover { transform: scale(1.2); }
+.gt-dot span { pointer-events: none; }
+.gt-dot-merge { border-radius: 4px; transform: rotate(45deg); }
+.gt-dot-merge span { transform: rotate(-45deg); display: block; }
+.gt-dot-conflict { box-shadow: 0 0 12px rgba(248,81,73,0.6); }
+
+.gt-node-info { flex: 1; min-width: 0; }
+.gt-node-msg { font-size: 0.85em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gt-node-id { font-family: monospace; font-size: 0.7em; color: var(--text-muted); }
+.gt-node-branches { display: flex; gap: 4px; margin-bottom: 2px; flex-wrap: wrap; }
+.gt-node-branch {
+    font-family: monospace; font-size: 0.65em; padding: 1px 6px; border-radius: 3px;
+    border: 1px solid; white-space: nowrap;
+}
+.gt-node-conflict .gt-node-msg { color: var(--red); }
+
+.gt-merge-line {
+    height: 16px; position: relative; margin-left: calc(min(var(--from), var(--to)) * 36px + 18px);
+    width: calc((max(var(--from), var(--to)) - min(var(--from), var(--to))) * 36px);
+    border-bottom: 2px dashed var(--mcolor); border-left: 2px dashed var(--mcolor); border-right: 2px dashed var(--mcolor);
+    border-radius: 0 0 8px 8px; opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .gt-widget { grid-template-columns: 1fr; }
+    .gt-left { border-right: none; border-bottom: 1px solid var(--border); }
+}
+</style>
+
 <div class="lesson-nav">
     <div>
         {{if .PrevLesson}}

@@ -4,23 +4,28 @@ import "time"
 
 // Module represents a learning module (group of lessons).
 type Module struct {
-	ID          int       `json:"id" db:"id"`
-	Slug        string    `json:"slug" db:"slug"`
-	Title       string    `json:"title" db:"title"`
-	Description string    `json:"description" db:"description"`
-	OrderNum    int       `json:"order_num" db:"order_num"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	ID            int       `json:"id" db:"id"`
+	Slug          string    `json:"slug" db:"slug"`
+	Title         string    `json:"title" db:"title"`
+	Description   string    `json:"description" db:"description"`
+	OrderNum      int       `json:"order_num" db:"order_num"`
+	Track         string    `json:"track" db:"track"`               // backend | devops | shared
+	Difficulty    string    `json:"difficulty" db:"difficulty"`       // beginner | intermediate | advanced | expert
+	Prerequisites []string  `json:"prerequisites" db:"prerequisites"` // module slugs
+	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 }
 
 // Lesson represents a single lesson within a module.
 type Lesson struct {
-	ID        int       `json:"id" db:"id"`
-	ModuleID  int       `json:"module_id" db:"module_id"`
-	Slug      string    `json:"slug" db:"slug"`
-	Title     string    `json:"title" db:"title"`
-	Content   string    `json:"content" db:"content"`       // Markdown content
-	OrderNum  int       `json:"order_num" db:"order_num"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	ID         int       `json:"id" db:"id"`
+	ModuleID   int       `json:"module_id" db:"module_id"`
+	Slug       string    `json:"slug" db:"slug"`
+	Title      string    `json:"title" db:"title"`
+	Content    string    `json:"content" db:"content"`
+	OrderNum   int       `json:"order_num" db:"order_num"`
+	Difficulty string    `json:"difficulty" db:"difficulty"` // beginner | intermediate | advanced | expert
+	Track      string    `json:"track" db:"track"`           // backend | devops | shared
+	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 }
 
 // Quiz represents a quiz attached to a lesson.
@@ -41,15 +46,46 @@ type QuizQuestion struct {
 	OrderNum      int      `json:"order_num" db:"order_num"`
 }
 
+// GlossaryItem explains a function or concept used in a task.
+type GlossaryItem struct {
+	Term       string `json:"term"`
+	Definition string `json:"definition"`
+}
+
+// TestCase for automatic code checking.
+type TestCase struct {
+	Input          string `json:"input"`
+	ExpectedOutput string `json:"expected_output"`
+}
+
 // Task represents a coding task/assignment for a lesson.
 type Task struct {
-	ID          int    `json:"id" db:"id"`
-	LessonID    int    `json:"lesson_id" db:"lesson_id"`
-	Title       string `json:"title" db:"title"`
-	Description string `json:"description" db:"description"` // Markdown
-	Hints       string `json:"hints" db:"hints"`             // Markdown
-	Solution    string `json:"solution" db:"solution"`       // Markdown
-	OrderNum    int    `json:"order_num" db:"order_num"`
+	ID          int             `json:"id" db:"id"`
+	LessonID    int             `json:"lesson_id" db:"lesson_id"`
+	Title       string          `json:"title" db:"title"`
+	Description string          `json:"description" db:"description"`
+	Hints       string          `json:"hints" db:"hints"`
+	Solution    string          `json:"solution" db:"solution"`
+	OrderNum    int             `json:"order_num" db:"order_num"`
+	Difficulty  string          `json:"difficulty" db:"difficulty"`     // easy | medium | hard
+	Glossary    []GlossaryItem  `json:"glossary"`
+	TestCases   []TestCase      `json:"test_cases"`
+	StarterCode string          `json:"starter_code" db:"starter_code"`
+	Kind         string `json:"kind" db:"kind"`                   // go | shell
+	SandboxImage string `json:"sandbox_image" db:"sandbox_image"` // shell tasks
+	SetupScript  string `json:"setup_script" db:"setup_script"`
+	CheckScript  string `json:"check_script" db:"check_script"`
+}
+
+// Submission tracks a user's code attempt.
+type Submission struct {
+	ID        int       `json:"id" db:"id"`
+	TaskID    int       `json:"task_id" db:"task_id"`
+	Code      string    `json:"code" db:"code"`
+	Output    string    `json:"output" db:"output"`
+	Errors    string    `json:"errors" db:"errors"`
+	Passed    bool      `json:"passed" db:"passed"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 // Progress tracks user's learning progress.

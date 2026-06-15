@@ -1,0 +1,42 @@
+{{define "login"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOT — Вход</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 40px; width: 100%; max-width: 400px; }
+        h1 { font-size: 1.5em; margin-bottom: 8px; color: #58a6ff; }
+        p { color: #8b949e; margin-bottom: 24px; font-size: 0.9em; }
+        label { display: block; font-size: 0.85em; color: #8b949e; margin-bottom: 4px; }
+        input { width: 100%; padding: 10px 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; font-size: 1em; margin-bottom: 16px; }
+        input:focus { outline: none; border-color: #58a6ff; }
+        button { width: 100%; padding: 12px; background: #238636; border: none; border-radius: 6px; color: white; font-size: 1em; font-weight: 600; cursor: pointer; }
+        button:hover { background: #2ea043; }
+        .error { background: #f8514920; border: 1px solid #f85149; color: #f85149; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85em; }
+        .link { text-align: center; margin-top: 16px; font-size: 0.85em; }
+        .link a { color: #58a6ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>TOT</h1>
+    <p>Войди чтобы продолжить обучение</p>
+    {{if and .Error (ne .Error "")}}
+    <div class="error">{{.Error}}</div>
+    {{end}}
+    <form method="POST" action="/login">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required placeholder="••••••">
+        <button type="submit">Войти</button>
+    </form>
+    {{if .RegistrationOpen}}<div class="link">Нет аккаунта? <a href="/register">Зарегистрироваться</a></div>{{end}}
+</div>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: golearn-config
+  namespace: golearn
+data:
+  DATABASE_URL: "postgres://golearn:golearn@postgres:5432/golearn?sslmode=disable"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: golearn-secrets
+  namespace: golearn
+type: Opaque
+stringData:
+  db-password: "golearn"

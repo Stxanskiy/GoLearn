@@ -16,11 +16,93 @@
 <div class="task-card">
     <div class="task-header">
         <h3>Task {{add $i 1}}: {{$t.Title}}</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="task-timer" id="timer-{{$t.ID}}" data-task-id="{{$t.ID}}">
+                <span class="timer-display">00:00</span>
+                <button class="timer-btn" onclick="toggleTimer({{$t.ID}})" title="Start/Pause timer">&#9654;</button>
+                <button class="timer-btn timer-reset" onclick="resetTimer({{$t.ID}})" title="Reset">&#8635;</button>
+            </div>
+            {{if $t.Difficulty}}
+            <span class="badge {{if eq $t.Difficulty "easy"}}badge-completed{{else if eq $t.Difficulty "medium"}}badge-in-progress{{else}}badge-hard{{end}}">
+                {{if eq $t.Difficulty "easy"}}Easy{{else if eq $t.Difficulty "medium"}}Medium{{else}}Hard{{end}}
+            </span>
+            {{end}}
+        </div>
     </div>
     <div class="task-body">
+        {{if $t.Glossary}}
+        <div class="glossary-block">
+            <div class="glossary-title">Что тебе понадобится:</div>
+            {{range $t.Glossary}}
+            <div class="glossary-item">
+                <code class="glossary-term">{{.Term}}</code>
+                <span class="glossary-def">{{.Definition}}</span>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
         <div class="content-area" style="border: none; padding: 0;">
             {{safeHTML $t.Description}}
         </div>
+
+        {{if $t.StarterCode}}
+        <div class="code-editor-block" style="margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="font-size: 0.95em; color: var(--text-muted);">&#128187; Code Editor</h4>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" onclick="runCode({{$t.ID}})" style="padding: 6px 16px; font-size: 0.85em;">
+                        &#9654; Run
+                    </button>
+                    {{if $t.TestCases}}
+                    <button class="btn btn-success" onclick="runTests({{$t.ID}})" style="padding: 6px 16px; font-size: 0.85em;">
+                        &#10003; Check
+                    </button>
+                    {{end}}
+                </div>
+            </div>
+            <textarea id="code-{{$t.ID}}" class="code-textarea" spellcheck="false"
+                data-task-id="{{$t.ID}}" data-starter="{{$t.StarterCode}}"
+                style="width: 100%; min-height: 200px; padding: 16px; font-family: 'SF Mono', 'Fira Code', monospace;
+                font-size: 0.9em; background: var(--code-bg); color: var(--text); border: 1px solid var(--border);
+                border-radius: var(--radius); resize: vertical; tab-size: 4; line-height: 1.5;"
+            >{{$t.StarterCode}}</textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span id="save-status-{{$t.ID}}" style="font-size: 0.7em; color: var(--text-muted);"></span>
+                <button onclick="resetCode({{$t.ID}})" style="background: none; border: 1px solid var(--border);
+                    color: var(--text-muted); padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.7em;">
+                    Reset code
+                </button>
+            </div>
+            <div id="output-{{$t.ID}}" class="code-output" style="display: none; margin-top: 8px; padding: 12px 16px;
+                font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em;
+                background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+                white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+            </div>
+        </div>
+        {{end}}
+
+        {{if eq $t.Kind "shell"}}
+        <div class="term-wrap" style="margin-top:16px;">
+            <div class="term-bar">
+                <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+                <span class="term-title">sandbox &middot; {{if $t.SandboxImage}}{{$t.SandboxImage}}{{else}}ubuntu:24.04{{end}}</span>
+                <span class="term-status" id="term-status-{{$t.ID}}"><span class="led"></span><span>готов</span></span>
+            </div>
+            <div class="term-body" id="term-body-{{$t.ID}}"><span class="term-dim">Реальная Linux-песочница. Текущий каталог и созданные файлы сохраняются между командами. Введите команду и нажмите Enter.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;background:#05070a;border-top:1px solid var(--border);padding:8px 12px;">
+                <span class="term-prompt" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;white-space:nowrap;">root@sandbox:#</span>
+                <input id="term-input-{{$t.ID}}" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                    style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;"
+                    placeholder="например: ls -la" onkeydown="shellKey(event, {{$t.ID}})">
+            </div>
+        </div>
+        <div class="row mt-16">
+            <button class="btn btn-success" onclick="shellCheck({{$t.ID}})">&#10003; Проверить задание</button>
+            <button class="btn btn-ghost" onclick="shellReset({{$t.ID}})">&#8635; Сбросить песочницу</button>
+        </div>
+        <div class="check-result" id="check-{{$t.ID}}"></div>
+        {{end}}
 
         {{if $t.Hints}}
         <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">Show Hints</button>
@@ -44,4 +126,319 @@
 {{end}}
 
 <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}" class="btn btn-outline" style="margin-top: 16px;">Back to Lesson</a>
+
+<script>
+// ═══ TIMER ═══
+const timers = {};
+function toggleTimer(taskId) {
+    if (!timers[taskId]) timers[taskId] = { seconds: 0, running: false, interval: null };
+    const t = timers[taskId];
+    if (t.running) {
+        clearInterval(t.interval); t.running = false;
+        document.querySelector(`#timer-${taskId} .timer-btn`).textContent = '\u25B6';
+    } else {
+        t.running = true;
+        document.querySelector(`#timer-${taskId} .timer-btn`).textContent = '\u23F8';
+        t.interval = setInterval(() => {
+            t.seconds++;
+            const m = Math.floor(t.seconds / 60), s = t.seconds % 60;
+            document.querySelector(`#timer-${taskId} .timer-display`).textContent =
+                String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+            // Warning at 10 min
+            if (t.seconds === 600) {
+                document.querySelector(`#timer-${taskId} .timer-display`).style.color = 'var(--yellow)';
+            }
+            if (t.seconds === 900) {
+                document.querySelector(`#timer-${taskId} .timer-display`).style.color = 'var(--red)';
+            }
+        }, 1000);
+    }
+}
+function resetTimer(taskId) {
+    if (timers[taskId]) { clearInterval(timers[taskId].interval); }
+    timers[taskId] = { seconds: 0, running: false, interval: null };
+    const d = document.querySelector(`#timer-${taskId} .timer-display`);
+    d.textContent = '00:00'; d.style.color = '';
+    document.querySelector(`#timer-${taskId} .timer-btn`).textContent = '\u25B6';
+}
+
+// ═══ LOCAL STORAGE — auto-save code ═══
+const STORAGE_PREFIX = 'golearn_code_';
+document.querySelectorAll('.code-textarea').forEach(textarea => {
+    const taskId = textarea.dataset.taskId;
+    // Restore saved code
+    const saved = localStorage.getItem(STORAGE_PREFIX + taskId);
+    if (saved) {
+        textarea.value = saved;
+        const s = document.getElementById('save-status-' + taskId);
+        if (s) s.textContent = 'Restored from saved';
+    }
+    // Auto-save on change
+    let saveTimeout;
+    textarea.addEventListener('input', function() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            localStorage.setItem(STORAGE_PREFIX + taskId, this.value);
+            const s = document.getElementById('save-status-' + taskId);
+            if (s) { s.textContent = 'Saved'; setTimeout(() => s.textContent = '', 2000); }
+        }, 500);
+    });
+    // Tab key
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart, end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    });
+});
+
+function resetCode(taskId) {
+    const ta = document.getElementById('code-' + taskId);
+    if (ta && ta.dataset.starter) {
+        ta.value = ta.dataset.starter;
+        localStorage.removeItem(STORAGE_PREFIX + taskId);
+        const s = document.getElementById('save-status-' + taskId);
+        if (s) { s.textContent = 'Code reset'; setTimeout(() => s.textContent = '', 2000); }
+    }
+}
+
+async function runCode(taskId) {
+    const code = document.getElementById('code-' + taskId).value;
+    const outputEl = document.getElementById('output-' + taskId);
+    outputEl.style.display = 'block';
+    outputEl.textContent = 'Running...';
+    outputEl.style.borderColor = 'var(--border)';
+
+    try {
+        const resp = await fetch('/api/run', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        const data = await resp.json();
+
+        if (data.errors) {
+            outputEl.textContent = data.errors;
+            outputEl.style.borderColor = 'var(--red)';
+            outputEl.style.color = 'var(--red)';
+        } else {
+            outputEl.textContent = data.output || '(no output)';
+            outputEl.style.borderColor = 'var(--green)';
+            outputEl.style.color = 'var(--text)';
+        }
+        if (data.timed_out) {
+            outputEl.textContent = 'Timeout: program took too long (max 10s)';
+            outputEl.style.borderColor = 'var(--yellow)';
+            outputEl.style.color = 'var(--yellow)';
+        }
+    } catch (e) {
+        outputEl.textContent = 'Error: ' + e.message;
+        outputEl.style.borderColor = 'var(--red)';
+        outputEl.style.color = 'var(--red)';
+    }
+}
+
+async function runTests(taskId) {
+    const code = document.getElementById('code-' + taskId).value;
+    const outputEl = document.getElementById('output-' + taskId);
+    outputEl.style.display = 'block';
+    outputEl.textContent = 'Checking...';
+    outputEl.style.borderColor = 'var(--border)';
+
+    try {
+        const resp = await fetch('/api/run/' + taskId, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        const data = await resp.json();
+
+        if (data.errors) {
+            outputEl.innerHTML = '<span style="color: var(--red);">Compilation Error:</span>\n' + escapeHtml(data.errors);
+            outputEl.style.borderColor = 'var(--red)';
+            return;
+        }
+
+        if (data.test_results && data.test_results.length > 0) {
+            let html = '';
+            data.test_results.forEach((t, i) => {
+                const icon = t.passed ? '<span style="color: var(--green);">&#10003;</span>' : '<span style="color: var(--red);">&#10007;</span>';
+                html += icon + ' Test ' + (i+1);
+                if (t.input) html += ' (input: ' + escapeHtml(t.input) + ')';
+                html += '\n';
+                if (!t.passed) {
+                    html += '  Expected: ' + escapeHtml(t.expected) + '\n';
+                    html += '  Got:      ' + escapeHtml(t.actual) + '\n';
+                }
+            });
+            if (data.all_passed) {
+                html += '\n<span style="color: var(--green); font-weight: bold;">All tests passed!</span>';
+                outputEl.style.borderColor = 'var(--green)';
+            } else {
+                html += '\n<span style="color: var(--red);">Some tests failed.</span>';
+                outputEl.style.borderColor = 'var(--red)';
+            }
+            outputEl.innerHTML = html;
+        } else {
+            outputEl.textContent = data.output || '(no output)';
+            outputEl.style.borderColor = 'var(--green)';
+        }
+    } catch (e) {
+        outputEl.textContent = 'Error: ' + e.message;
+        outputEl.style.borderColor = 'var(--red)';
+    }
+}
+
+// ═══ SHELL SANDBOX ═══
+function shellAppend(id, text, cls) {
+    const body = document.getElementById('term-body-' + id);
+    const div = document.createElement('div');
+    if (cls) div.className = cls;
+    div.textContent = text;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+}
+function shellKey(e, id) {
+    if (e.key !== 'Enter') return;
+    const inp = document.getElementById('term-input-' + id);
+    const cmd = inp.value;
+    if (!cmd.trim()) return;
+    inp.value = '';
+    shellAppend(id, 'root@sandbox:# ' + cmd, 'term-cmd');
+    shellExec(id, cmd);
+}
+async function shellExec(id, cmd) {
+    const st = document.getElementById('term-status-' + id);
+    if (st) { st.classList.add('on'); st.querySelector('span:last-child').textContent = 'выполняю…'; }
+    try {
+        const r = await fetch('/api/shell/' + id + '/exec', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({command: cmd})
+        });
+        const d = await r.json();
+        if (d.output && d.output.length) shellAppend(id, d.output.replace(/\n+$/, ''));
+    } catch (e) { shellAppend(id, 'Ошибка соединения: ' + e.message, 'term-err'); }
+    if (st) st.querySelector('span:last-child').textContent = 'готов';
+}
+async function shellCheck(id) {
+    const box = document.getElementById('check-' + id);
+    box.className = 'check-result'; box.style.display = 'block'; box.textContent = 'Проверяю…';
+    try {
+        const r = await fetch('/api/shell/' + id + '/check', {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'
+        });
+        const d = await r.json();
+        box.className = 'check-result ' + (d.passed ? 'pass' : 'fail');
+        box.textContent = d.passed
+            ? '✓ Задание выполнено! Отлично.'
+            : '✗ Пока не выполнено. Перечитай условие и попробуй ещё раз.';
+    } catch (e) { box.className = 'check-result fail'; box.textContent = 'Ошибка проверки: ' + e.message; }
+}
+async function shellReset(id) {
+    try { await fetch('/api/shell/' + id + '/reset', {method: 'POST'}); } catch (e) {}
+    const body = document.getElementById('term-body-' + id);
+    body.innerHTML = '<span class="term-dim">Песочница сброшена — чистое окружение.</span>';
+    const box = document.getElementById('check-' + id); if (box) box.style.display = 'none';
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+</script>
+
+<style>
+.badge-hard { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+
+/* Timer */
+.task-timer {
+    display: flex; align-items: center; gap: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.timer-display {
+    font-size: 0.85em; color: var(--text-muted); min-width: 45px; text-align: center;
+    transition: color 0.3s;
+}
+.timer-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 0.7em;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.timer-btn:hover { border-color: var(--accent); color: var(--accent); }
+.timer-reset { font-size: 0.85em; }
+
+/* Glossary */
+.glossary-block {
+    margin-bottom: 16px;
+    padding: 16px 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+}
+.glossary-title {
+    color: var(--accent);
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+.glossary-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    align-items: baseline;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+.glossary-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+.glossary-term {
+    color: var(--green) !important;
+    font-family: 'SF Mono', 'Fira Code', monospace !important;
+    font-size: 0.85em;
+    background: var(--bg-secondary) !important;
+    padding: 2px 8px !important;
+    border-radius: 4px;
+    border: 1px solid var(--border) !important;
+    white-space: nowrap;
+}
+.glossary-def {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+/* Task description */
+.task-body .content-area p { margin-bottom: 12px; }
+.task-body .content-area ol,
+.task-body .content-area ul { margin-left: 20px; margin-bottom: 12px; }
+.task-body .content-area pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    overflow-x: auto;
+    margin-bottom: 12px;
+}
+.task-body .content-area code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.88em;
+    border: 1px solid var(--border);
+}
+.task-body .content-area pre code {
+    background: none;
+    border: none;
+    padding: 0;
+}
+</style>
 {{end}}

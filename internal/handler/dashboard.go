@@ -5,12 +5,16 @@ import (
 )
 
 type DashboardData struct {
-	PageTitle       string
-	Modules         []ModuleWithProgress
-	TotalLessons    int
-	CompletedCount  int
-	InProgressCount int
-	AvgQuizScore    float64
+	PageTitle        string
+	SharedModules    []ModuleWithProgress
+	BackendModules   []ModuleWithProgress
+	DevopsModules    []ModuleWithProgress
+	SecurityModules  []ModuleWithProgress
+	TotalLessons     int
+	CompletedCount   int
+	InProgressCount  int
+	AvgQuizScore     float64
+	UserName         string
 }
 
 type ModuleWithProgress struct {
@@ -18,6 +22,7 @@ type ModuleWithProgress struct {
 	Slug        string
 	Title       string
 	Description string
+	Track       string
 	Lessons     []LessonWithProgress
 	Completed   int
 	Total       int
@@ -58,7 +63,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var data DashboardData
-	data.PageTitle = "GoLearn — Dashboard"
+	data.PageTitle = "TOT — Dashboard"
 	if stats != nil {
 		data.TotalLessons = stats.TotalLessons
 		data.CompletedCount = stats.CompletedCount
@@ -78,6 +83,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 			Slug:        mod.Slug,
 			Title:       mod.Title,
 			Description: mod.Description,
+			Track:       mod.Track,
 			Total:       len(lessons),
 		}
 
@@ -97,7 +103,19 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 				Status:   status,
 			})
 		}
-		data.Modules = append(data.Modules, mwp)
+
+		switch mod.Track {
+		case "shared":
+			data.SharedModules = append(data.SharedModules, mwp)
+		case "backend":
+			data.BackendModules = append(data.BackendModules, mwp)
+		case "devops":
+			data.DevopsModules = append(data.DevopsModules, mwp)
+		case "security-offense", "security-defense":
+			data.SecurityModules = append(data.SecurityModules, mwp)
+		default:
+			data.SharedModules = append(data.SharedModules, mwp)
+		}
 	}
 
 	h.render(w, "dashboard", &data)

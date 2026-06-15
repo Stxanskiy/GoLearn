@@ -1,0 +1,92 @@
+{{define "playground"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h1>Go Playground</h1>
+    <div style="display: flex; gap: 8px;">
+        <button id="run-btn" class="btn btn-primary" onclick="runCode()">&#9654; Run</button>
+        <button class="btn btn-outline" onclick="resetCode()">Reset</button>
+        <a href="/" class="btn btn-outline">Dashboard</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; height: calc(100vh - 200px);">
+    <div style="display: flex; flex-direction: column;">
+        <label style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px;">main.go</label>
+        <textarea id="code-editor" style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 16px; resize: none; tab-size: 4;" spellcheck="false">package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, Go!")
+}
+</textarea>
+    </div>
+    <div style="display: flex; flex-direction: column;">
+        <label style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px;">Output</label>
+        <pre id="output" style="flex: 1; background: #0d1117; color: #4ec9b0; border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow: auto; font-size: 14px; margin: 0;">Press Run to execute...</pre>
+    </div>
+</div>
+
+<script>
+async function runCode() {
+    const code = document.getElementById('code-editor').value;
+    const output = document.getElementById('output');
+    const btn = document.getElementById('run-btn');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Running...';
+    output.textContent = 'Compiling...';
+
+    try {
+        const resp = await fetch('/api/run', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        const data = await resp.json();
+        if (data.errors) {
+            output.style.color = '#f85149';
+            output.textContent = data.errors;
+        } else {
+            output.style.color = '#4ec9b0';
+            output.textContent = data.output || '(no output)';
+        }
+    } catch (e) {
+        output.style.color = '#f85149';
+        output.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false;
+    btn.textContent = '▶ Run';
+}
+
+function resetCode() {
+    document.getElementById('code-editor').value = `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, Go!")
+}
+`;
+    document.getElementById('output').textContent = 'Press Run to execute...';
+    document.getElementById('output').style.color = '#4ec9b0';
+}
+
+// Tab key inserts tab in textarea
+document.getElementById('code-editor').addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        this.value = this.value.substring(0, start) + '\t' + this.value.substring(this.selectionEnd);
+        this.selectionStart = this.selectionEnd = start + 1;
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        runCode();
+    }
+});
+</script>
+{{end}}

@@ -1,0 +1,139 @@
+{{define "roadmap"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<h1 style="margin-bottom: 8px;">Learning Roadmap</h1>
+<p style="color: var(--text-muted); margin-bottom: 32px;">
+    Оба трека начинаются с общей базы Go, затем расходятся по специализациям.
+</p>
+
+<!-- ═══ SHARED FOUNDATION ═══ -->
+<div style="margin-bottom: 40px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2em; background: var(--bg-card); border: 2px solid var(--accent);">
+            &#9881;
+        </div>
+        <div>
+            <h2 style="font-size: 1.2em; margin: 0; color: var(--accent);">Общая база Go</h2>
+            <p style="color: var(--text-muted); font-size: 0.85em; margin: 0;">Фундамент для обоих треков</p>
+        </div>
+    </div>
+
+    {{range .SharedBase}}
+    <div style="margin-bottom: 20px; margin-left: 20px;">
+        <h3 style="font-size: 1em; color: var(--text-muted); margin-bottom: 12px;">{{.Name}}</h3>
+        {{if .Modules}}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;">
+            {{range .Modules}}
+            <a href="/module/{{.Slug}}" style="text-decoration: none;">
+                <div class="card" style="margin: 0; padding: 14px 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h4 style="font-size: 0.95em; color: var(--text);">{{.Title}}</h4>
+                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
+                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
+                        </span>
+                    </div>
+                    <div class="progress-bar" style="height: 4px;">
+                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.75em; margin-top: 4px;">{{.Completed}}/{{.LessonCount}} lessons</p>
+                </div>
+            </a>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+
+<div style="height: 2px; background: var(--border); margin-bottom: 40px; position: relative;">
+    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--bg);
+        padding: 0 16px; color: var(--text-muted); font-size: 0.85em;">Выбери специализацию</div>
+</div>
+
+<!-- ═══ TWO TRACKS ═══ -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+    <!-- BACKEND -->
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px;
+            background: var(--bg-card); border: 2px solid var(--accent); border-radius: var(--radius);">
+            <span style="font-size: 1.3em;">&#128187;</span>
+            <div>
+                <h2 style="font-size: 1.1em; margin: 0; color: var(--accent);">Backend Go Developer</h2>
+                <p style="color: var(--text-muted); font-size: 0.8em; margin: 0;">REST API, БД, архитектура, тесты</p>
+            </div>
+        </div>
+
+        {{range .BackendTrack}}
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">{{.Name}}</h3>
+            {{if .Modules}}
+            {{range .Modules}}
+            <a href="/module/{{.Slug}}" style="text-decoration: none;">
+                <div class="card" style="margin: 0 0 8px; padding: 12px 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="font-size: 0.9em; color: var(--text);">{{.Title}}</h4>
+                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
+                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
+                        </span>
+                    </div>
+                    <div class="progress-bar" style="height: 3px; margin-top: 6px;">
+                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
+                    </div>
+                </div>
+            </a>
+            {{end}}
+            {{else}}
+            <div style="padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius);
+                color: var(--text-muted); text-align: center; font-size: 0.85em;">Coming soon</div>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+
+    <!-- DEVOPS -->
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px;
+            background: var(--bg-card); border: 2px solid var(--purple); border-radius: var(--radius);">
+            <span style="font-size: 1.3em;">&#9881;</span>
+            <div>
+                <h2 style="font-size: 1.1em; margin: 0; color: var(--purple);">DevOps Engineer</h2>
+                <p style="color: var(--text-muted); font-size: 0.8em; margin: 0;">Docker, CI/CD, мониторинг, K8s</p>
+            </div>
+        </div>
+
+        {{range .DevopsTrack}}
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">{{.Name}}</h3>
+            {{if .Modules}}
+            {{range .Modules}}
+            <a href="/module/{{.Slug}}" style="text-decoration: none;">
+                <div class="card" style="margin: 0 0 8px; padding: 12px 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="font-size: 0.9em; color: var(--text);">{{.Title}}</h4>
+                        <span class="badge badge-{{.Status}}" style="font-size: 0.7em;">
+                            {{if eq .Status "completed"}}Done{{else if eq .Status "in_progress"}}Learning{{else}}Start{{end}}
+                        </span>
+                    </div>
+                    <div class="progress-bar" style="height: 3px; margin-top: 6px;">
+                        <div class="progress-fill" style="width: {{pct .Completed .LessonCount}}%;"></div>
+                    </div>
+                </div>
+            </a>
+            {{end}}
+            {{else}}
+            <div style="padding: 16px; border: 1px dashed var(--border); border-radius: var(--radius);
+                color: var(--text-muted); text-align: center; font-size: 0.85em;">Coming soon</div>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<div style="margin-top: 32px; text-align: center;">
+    <a href="/" class="btn btn-outline">Back to Dashboard</a>
+</div>
+{{end}}

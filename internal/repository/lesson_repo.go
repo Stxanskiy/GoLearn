@@ -18,7 +18,7 @@ func NewLessonRepo(pool *pgxpool.Pool) *LessonRepo {
 
 func (r *LessonRepo) GetByModule(ctx context.Context, moduleID int) ([]model.Lesson, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, module_id, slug, title, content, order_num, created_at
+		SELECT id, module_id, slug, title, content, order_num, difficulty, track, created_at
 		FROM lessons WHERE module_id = $1 ORDER BY order_num`, moduleID)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (r *LessonRepo) GetByModule(ctx context.Context, moduleID int) ([]model.Les
 	var lessons []model.Lesson
 	for rows.Next() {
 		var l model.Lesson
-		if err := rows.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.CreatedAt); err != nil {
+		if err := rows.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.Difficulty, &l.Track, &l.CreatedAt); err != nil {
 			return nil, err
 		}
 		lessons = append(lessons, l)
@@ -39,9 +39,9 @@ func (r *LessonRepo) GetByModule(ctx context.Context, moduleID int) ([]model.Les
 func (r *LessonRepo) GetBySlug(ctx context.Context, moduleID int, slug string) (*model.Lesson, error) {
 	var l model.Lesson
 	err := r.pool.QueryRow(ctx, `
-		SELECT id, module_id, slug, title, content, order_num, created_at
+		SELECT id, module_id, slug, title, content, order_num, difficulty, track, created_at
 		FROM lessons WHERE module_id = $1 AND slug = $2`, moduleID, slug).
-		Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.CreatedAt)
+		Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.Difficulty, &l.Track, &l.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (r *LessonRepo) GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []
 
 func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, lesson_id, title, description, hints, solution, order_num
+		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script
 		FROM tasks WHERE lesson_id = $1 ORDER BY order_num`, lessonID)
 	if err != nil {
 		return nil, err
@@ -90,10 +90,28 @@ func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, 
 	var tasks []model.Task
 	for rows.Next() {
 		var t model.Task
-		if err := rows.Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum); err != nil {
+		var glossaryJSON, testCasesJSON []byte
+		if err := rows.Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript); err != nil {
 			return nil, err
 		}
+		_ = json.Unmarshal(glossaryJSON, &t.Glossary)
+		_ = json.Unmarshal(testCasesJSON, &t.TestCases)
 		tasks = append(tasks, t)
 	}
 	return tasks, rows.Err()
+}
+
+func (r *LessonRepo) GetTaskByID(ctx context.Context, taskID int) (*model.Task, error) {
+	var t model.Task
+	var glossaryJSON, testCasesJSON []byte
+	err := r.pool.QueryRow(ctx, `
+		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script
+		FROM tasks WHERE id = $1`, taskID).
+		Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript)
+	if err != nil {
+		return nil, err
+	}
+	_ = json.Unmarshal(glossaryJSON, &t.Glossary)
+	_ = json.Unmarshal(testCasesJSON, &t.TestCases)
+	return &t, nil
 }
