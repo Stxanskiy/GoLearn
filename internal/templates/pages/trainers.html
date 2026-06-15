@@ -1,0 +1,34 @@
+{{define "trainers"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="page-head">
+    <h1>Тренажёры</h1>
+    <p class="muted">Интерактивные инструменты с настоящим рантаймом — прямо в браузере, в изолированной песочнице.</p>
+</div>
+
+<div class="courses-grid">
+    <a class="course-card" href="/git-trainer">
+        <div class="course-cover" data-cat="Git"><span class="course-icon">🌿</span></div>
+        <div class="course-body">
+            <h3 class="course-title">Git Trainer</h3>
+            <div class="course-meta muted">Настоящий git: коммиты, ветки, merge, rebase — с живым графом истории, который рисуется из реального репозитория.</div>
+        </div>
+    </a>
+    <a class="course-card" href="/playground">
+        <div class="course-cover" data-cat="Backend"><span class="course-icon">🐹</span></div>
+        <div class="course-body">
+            <h3 class="course-title">Go Playground</h3>
+            <div class="course-meta muted">Пиши и запускай Go‑код в изолированной песочнице, смотри вывод сразу.</div>
+        </div>
+    </a>
+    <a class="course-card" href="/module/linux-terminal-start">
+        <div class="course-cover" data-cat="Linux"><span class="course-icon">🐧</span></div>
+        <div class="course-body">
+            <h3 class="course-title">Linux‑лаборатории</h3>
+            <div class="course-meta muted">Реальный терминал (bash) в браузере: навигация, файлы, права, процессы — с автопроверкой заданий.</div>
+        </div>
+    </a>
+</div>
+{{end}}

@@ -47,6 +47,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Use(h.AuthMiddleware)
 		r.Get("/", h.Dashboard)
 		r.Get("/courses", h.CoursesPage)
+		r.Get("/trainers", h.TrainersPage)
 		r.Get("/roadmap", h.RoadmapPage)
 		r.Get("/module/{moduleSlug}", h.ModulePage)
 		r.Get("/module/{moduleSlug}/lesson/{lessonSlug}", h.LessonPage)

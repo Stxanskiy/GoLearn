@@ -67,11 +67,17 @@
         }
         nav .container { display: flex; align-items: center; gap: 8px; }
         nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            text-decoration: none;
+            margin-right: 18px;
+        }
+        nav .logo svg { display: block; border-radius: 8px; }
+        nav .logo-text {
             font-size: 1.25em;
             font-weight: 800;
             letter-spacing: -.02em;
-            text-decoration: none;
-            margin-right: 16px;
             background: var(--grad);
             -webkit-background-clip: text;
             background-clip: text;
@@ -323,12 +329,18 @@
 <body>
     <nav>
         <div class="container">
-            <a href="/" class="logo">TOT</a>
-            <a href="/" class="nav-link" data-path="/">Дашборд</a>
+            <a href="/" class="logo" title="TOT">
+                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <rect width="32" height="32" rx="8" fill="url(#tot-g)"/>
+                    <path d="M9 11l5 5-5 5" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16.5 21H23" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round"/>
+                    <defs><linearGradient id="tot-g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient></defs>
+                </svg>
+                <span class="logo-text">TOT</span>
+            </a>
+            <a href="/" class="nav-link" data-path="/">Прогресс</a>
             <a href="/courses" class="nav-link" data-path="/courses">Курсы</a>
-            <a href="/roadmap" class="nav-link" data-path="/roadmap">Roadmap</a>
-            <a href="/playground" class="nav-link" data-path="/playground">Go Playground</a>
-            <a href="/git-trainer" class="nav-link" data-path="/git-trainer">Git Trainer</a>
+            <a href="/trainers" class="nav-link" data-path="/trainers">Тренажёры</a>
             <a href="/logout" class="nav-link spacer">Выход</a>
         </div>
     </nav>
