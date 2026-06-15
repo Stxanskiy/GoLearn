@@ -9,7 +9,7 @@ package main
 func mod_linux() M {
 	return M{
 		Slug:          "linux-fundamentals",
-		Title:         "Основы Linux",
+		Title:         "Linux: Основные инструменты",
 		Description:   "Всё что нужно знать о Linux для backend/devops разработчика: файловая система, процессы, systemd, сети, bash-скрипты, диагностика.",
 		Order:         19,
 		Track:         "devops",

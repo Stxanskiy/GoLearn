@@ -203,16 +203,14 @@ func getAllModules() []M {
 		mod_go_internals(),       // Go Internals (memory, scheduler, GC, interfaces)
 
 		// ── Track: devops ──
-		mod_linux_terminal(),     // ★ Интерактивный: Linux в терминале (песочница)
-		mod_docker_full(),        // Docker — 5 уроков (расширенный)
-		mod16_cicd(),             // CI/CD
-		mod17_monitoring(),       // Мониторинг (базовый)
-		mod18_advanced(),         // WebSocket, Redis, K8s
-		mod_linux(),              // Linux Fundamentals (10 уроков)
-		mod_nginx(),              // Nginx deep dive
-		mod_ansible(),            // Ansible automation
-		mod_helm(),               // Helm & K8s packaging
-		mod_grafana(),            // Grafana + Prometheus
+		mod_linux_terminal(),     // Linux: Старт в терминале (интерактив, песочница)
+		mod_linux(),              // Linux: Основные инструменты
+		mod_docker_full(),        // Docker
+		mod_helm(),               // Kubernetes & Helm
+		mod_nginx(),              // Nginx
+		mod_ansible(),            // Ansible
+		mod_grafana(),            // Grafana + Prometheus (мониторинг)
+		mod18_advanced(),         // Advanced: WebSocket, Redis, K8s
 
 		// ── Track: security ──
 		mod_security_offense(),   // Кибербез: Пентест (8 уроков)
