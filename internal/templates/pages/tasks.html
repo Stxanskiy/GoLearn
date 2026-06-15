@@ -4,10 +4,10 @@
 
 {{define "content"}}
 <div class="breadcrumb">
-    <a href="/">Dashboard</a> /
+    <a href="/">Дашборд</a> /
     <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
     <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> /
-    <span>Tasks</span>
+    <span>Задания</span>
 </div>
 
 <h1 style="margin-bottom: 24px;">Задания: {{.Lesson.Title}}</h1>
@@ -18,12 +18,30 @@
 .xterm-host { height:380px; padding:8px 6px 8px 10px; background:#05070a; }
 .xterm-host .xterm { height:100%; }
 .term-launch { position:absolute; inset:36px 0 0 0; display:flex; align-items:center; justify-content:center; background:rgba(5,7,10,.88); backdrop-filter:blur(2px); }
+.lab-steps { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.lab-step-dot { width:38px; height:38px; border-radius:10px; border:1px solid var(--border-strong); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; transition:all .15s; }
+.lab-step-dot:hover { color:var(--text); border-color:var(--accent); }
+.lab-step-dot.active { background:var(--grad); color:#0a0c10; border:none; }
+.lab-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.lab-nav .btn:disabled { opacity:.4; cursor:default; transform:none; }
 </style>
 
+{{if gt (len .Tasks) 1}}
+<div class="lab-steps">
+    {{range $i, $t := .Tasks}}<button class="lab-step-dot" data-dot="{{$i}}" onclick="showStep({{$i}})">{{add $i 1}}</button>{{end}}
+</div>
+<div class="lab-nav">
+    <button class="btn btn-outline" id="lab-prev" onclick="stepBy(-1)">← Назад</button>
+    <span class="muted" id="lab-pos"></span>
+    <button class="btn btn-outline" id="lab-next" onclick="stepBy(1)">Вперёд →</button>
+</div>
+{{end}}
+
 {{range $i, $t := .Tasks}}
+<div class="lab-step" data-step="{{$i}}"{{if $i}} style="display:none"{{end}}>
 <div class="task-card">
     <div class="task-header">
-        <h3>Task {{add $i 1}}: {{$t.Title}}</h3>
+        <h3>Задание {{add $i 1}}: {{$t.Title}}</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
             <div class="task-timer" id="timer-{{$t.ID}}" data-task-id="{{$t.ID}}">
                 <span class="timer-display">00:00</span>
@@ -32,7 +50,7 @@
             </div>
             {{if $t.Difficulty}}
             <span class="badge {{if eq $t.Difficulty "easy"}}badge-completed{{else if eq $t.Difficulty "medium"}}badge-in-progress{{else}}badge-hard{{end}}">
-                {{if eq $t.Difficulty "easy"}}Easy{{else if eq $t.Difficulty "medium"}}Medium{{else}}Hard{{end}}
+                {{if eq $t.Difficulty "easy"}}Лёгкое{{else if eq $t.Difficulty "medium"}}Среднее{{else}}Сложное{{end}}
             </span>
             {{end}}
         </div>
@@ -113,7 +131,7 @@
         {{end}}
 
         {{if $t.Hints}}
-        <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">Show Hints</button>
+        <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">💡 Подсказка</button>
         <div class="hint-content" id="hint-{{$t.ID}}" style="display: none;">
             <div class="explanation">
                 {{safeHTML $t.Hints}}
@@ -122,7 +140,7 @@
         {{end}}
 
         {{if $t.Solution}}
-        <button class="solution-toggle" onclick="toggleElement('solution-{{$t.ID}}')">Show Solution</button>
+        <button class="solution-toggle" onclick="toggleElement('solution-{{$t.ID}}')">Показать решение</button>
         <div class="solution-content" id="solution-{{$t.ID}}" style="display: none;">
             <div class="content-area" style="border-color: var(--green); margin-top: 12px;">
                 {{safeHTML $t.Solution}}
@@ -131,7 +149,26 @@
         {{end}}
     </div>
 </div>
+</div>
 {{end}}
+
+<script>
+(function(){
+    window._stepCount = {{len .Tasks}};
+    window.showStep = function(i){
+        if(i<0||i>=window._stepCount) return;
+        window._step=i;
+        document.querySelectorAll('.lab-step').forEach(function(el){ el.style.display=(+el.dataset.step===i)?'block':'none'; });
+        document.querySelectorAll('.lab-step-dot').forEach(function(d){ d.classList.toggle('active', +d.dataset.dot===i); });
+        var pos=document.getElementById('lab-pos'); if(pos) pos.textContent=(i+1)+' / '+window._stepCount;
+        var prev=document.getElementById('lab-prev'), next=document.getElementById('lab-next');
+        if(prev) prev.disabled=(i===0); if(next) next.disabled=(i===window._stepCount-1);
+        window.scrollTo({top:0, behavior:'smooth'});
+    };
+    window.stepBy = function(d){ window.showStep((window._step||0)+d); };
+    if(window._stepCount>0) window.showStep(0);
+})();
+</script>
 
 <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}" class="btn btn-outline" style="margin-top: 16px;">Back to Lesson</a>
 
