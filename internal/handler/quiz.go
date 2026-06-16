@@ -63,14 +63,15 @@ func (h *Handler) QuizPage(w http.ResponseWriter, r *http.Request) {
 
 	// Compact payload for client-side one-at-a-time checking.
 	type qpayload struct {
-		Q string   `json:"q"`
-		O []string `json:"o"`
-		C int      `json:"c"`
-		E string   `json:"e"`
+		Q  string   `json:"q"`
+		O  []string `json:"o"`
+		OE []string `json:"oe"`
+		C  int      `json:"c"`
+		E  string   `json:"e"`
 	}
 	payload := make([]qpayload, len(questions))
 	for i, q := range questions {
-		payload[i] = qpayload{Q: q.Question, O: q.Options, C: q.CorrectIndex, E: q.Explanation}
+		payload[i] = qpayload{Q: q.Question, O: q.Options, OE: q.OptionExpl, C: q.CorrectIndex, E: q.Explanation}
 	}
 	qjson, _ := json.Marshal(payload) // json.Marshal escapes <,>,& -> safe inside <script>
 

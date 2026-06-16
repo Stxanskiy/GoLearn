@@ -119,7 +119,8 @@
         });
         if (ans !== null) {
             var ok = ans === q.c;
-            var expl = (q.e || '').replace(/^\s*верно[!,.\s]*/i, '');
+            var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e;
+            var expl = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, '');
             html += '<div class="quiz-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + expl + '</div>';
         }
         cardEl.innerHTML = html;

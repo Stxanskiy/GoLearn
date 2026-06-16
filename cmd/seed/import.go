@@ -241,6 +241,7 @@ func toQuiz(t pkTask) (Q, bool) {
 	correctExpl := ""
 	for i, o := range t.Options {
 		q.Options = append(q.Options, o.Text)
+		q.OptionExpl = append(q.OptionExpl, o.Explanation)
 		if o.Correct {
 			q.Correct = i
 			correctExpl = o.Explanation

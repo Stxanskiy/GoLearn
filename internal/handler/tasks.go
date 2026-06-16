@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"html/template"
 	"net/http"
 
 	"github.com/backendraz/golearn/internal/model"
@@ -8,12 +10,15 @@ import (
 )
 
 type TasksPageData struct {
-	PageTitle   string
-	Module      *model.Module
-	Lesson      *model.Lesson
-	Tasks       []model.Task
-	IsShellLab  bool
-	SessionTask int // shared sandbox session id for the whole lab (first task)
+	PageTitle     string
+	Module        *model.Module
+	Lesson        *model.Lesson
+	ContentHTML   string
+	Tasks         []model.Task
+	IsShellLab    bool
+	SessionTask   int // shared sandbox session id for the whole lab (first task)
+	HasQuiz       bool
+	QuestionsJSON template.JS
 }
 
 func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
@@ -41,14 +46,33 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := TasksPageData{
-		PageTitle: "Лаборатория: " + lesson.Title,
-		Module:    mod,
-		Lesson:    lesson,
-		Tasks:     tasks,
+		PageTitle:   "Лаборатория: " + lesson.Title,
+		Module:      mod,
+		Lesson:      lesson,
+		ContentHTML: lesson.Content,
+		Tasks:       tasks,
 	}
 	if len(tasks) > 0 && tasks[0].Kind == "shell" {
 		data.IsShellLab = true
 		data.SessionTask = tasks[0].ID
+	}
+
+	// Inline quiz (lab chapters from the import carry quiz questions too).
+	if _, questions, qerr := h.lessonRepo.GetQuiz(ctx, lesson.ID); qerr == nil && len(questions) > 0 {
+		type qp struct {
+			Q  string   `json:"q"`
+			O  []string `json:"o"`
+			OE []string `json:"oe"`
+			C  int      `json:"c"`
+			E  string   `json:"e"`
+		}
+		payload := make([]qp, len(questions))
+		for i, q := range questions {
+			payload[i] = qp{Q: q.Question, O: q.Options, OE: q.OptionExpl, C: q.CorrectIndex, E: q.Explanation}
+		}
+		qjson, _ := json.Marshal(payload)
+		data.HasQuiz = true
+		data.QuestionsJSON = template.JS(qjson)
 	}
 
 	h.render(w, "tasks", &data)

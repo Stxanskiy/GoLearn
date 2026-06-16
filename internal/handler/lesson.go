@@ -129,9 +129,13 @@ func (h *Handler) ModulePage(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		url := base + l.Slug
+		if l.Kind == "lab" {
+			url += "/tasks" // labs open the two-pane terminal workspace directly
+		}
 		data.Items = append(data.Items, CourseItem{
 			Kind: kind, KindKey: key, Title: l.Title,
-			URL: base + l.Slug, Status: status, Num: i + 1,
+			URL: url, Status: status, Num: i + 1,
 		})
 	}
 
@@ -173,6 +177,12 @@ func (h *Handler) LessonPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Labs live in the two-pane terminal workspace, not the article view.
+	if lesson.Kind == "lab" {
+		http.Redirect(w, r, "/module/"+mod.Slug+"/lesson/"+lesson.Slug+"/tasks", http.StatusSeeOther)
+		return
+	}
+
 	uid := currentUserID(ctx)
 	// Mark as in_progress if not started
 	progress, _ := h.progressRepo.Get(ctx, uid, lesson.ID)
@@ -189,14 +199,15 @@ func (h *Handler) LessonPage(w http.ResponseWriter, r *http.Request) {
 	var qjson []byte
 	if len(questions) > 0 {
 		type qp struct {
-			Q string   `json:"q"`
-			O []string `json:"o"`
-			C int      `json:"c"`
-			E string   `json:"e"`
+			Q  string   `json:"q"`
+			O  []string `json:"o"`
+			OE []string `json:"oe"`
+			C  int      `json:"c"`
+			E  string   `json:"e"`
 		}
 		payload := make([]qp, len(questions))
 		for i, q := range questions {
-			payload[i] = qp{Q: q.Question, O: q.Options, C: q.CorrectIndex, E: q.Explanation}
+			payload[i] = qp{Q: q.Question, O: q.Options, OE: q.OptionExpl, C: q.CorrectIndex, E: q.Explanation}
 		}
 		qjson, _ = json.Marshal(payload)
 	}

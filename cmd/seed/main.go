@@ -117,9 +117,10 @@ func main() {
 					lessonID, "Квиз: "+lesson.Title).Scan(&quizID)
 				for qi, q := range lesson.Quiz {
 					optJSON, _ := json.Marshal(q.Options)
+					oexplJSON, _ := json.Marshal(q.OptionExpl)
 					pool.Exec(ctx,
-						`INSERT INTO quiz_questions (quiz_id, question, options, correct_index, explanation, order_num) VALUES ($1,$2,$3,$4,$5,$6)`,
-						quizID, q.Question, optJSON, q.Correct, q.Explanation, qi+1)
+						`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1)
 				}
 				fmt.Printf("    Quiz: %d questions\n", len(lesson.Quiz))
 			}
@@ -183,6 +184,7 @@ type L struct {
 type Q struct {
 	Question, Explanation string
 	Options              []string
+	OptionExpl           []string // per-option explanation (parallel to Options)
 	Correct              int
 }
 type GlossaryItem struct {

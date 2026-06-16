@@ -61,6 +61,7 @@ type QuizQuestion struct {
 	QuizID        int      `json:"quiz_id" db:"quiz_id"`
 	Question      string   `json:"question" db:"question"`
 	Options       []string `json:"options"`         // JSON array in DB
+	OptionExpl    []string `json:"option_expl"`     // per-option explanation (JSON array in DB)
 	CorrectIndex  int      `json:"correct_index" db:"correct_index"`
 	Explanation   string   `json:"explanation" db:"explanation"`
 	OrderNum      int      `json:"order_num" db:"order_num"`

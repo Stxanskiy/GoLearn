@@ -14,6 +14,18 @@
         <a class="lab2-back" href="/module/{{.Module.Slug}}">← {{.Module.Title}}</a>
         <h2 class="lab2-title">{{.Lesson.Title}}</h2>
 
+        {{if .ContentHTML}}
+        <details class="lab2-material">
+            <summary>📖 Теория к лабораторной</summary>
+            <div class="lesson-content lab2-content">{{safeHTML .ContentHTML}}</div>
+        </details>
+        {{end}}
+
+        {{if .HasQuiz}}
+        <script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>
+        <div id="lab-quiz" class="lab2-quiz" data-action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz"></div>
+        {{end}}
+
         <div class="lab2-steps">
             {{range $i, $t := .Tasks}}<button class="lab2-pill" data-pill="{{$i}}" onclick="labStep({{$i}})">{{add $i 1}}</button>{{end}}
         </div>
@@ -155,8 +167,65 @@
 })();
 </script>
 
+{{if .HasQuiz}}
+<script>
+(function () {
+    var root = document.getElementById('lab-quiz');
+    if (!root) return;
+    var DATA = JSON.parse(document.getElementById('quiz-data').textContent);
+    var answers = new Array(DATA.length).fill(null), cur = 0, saved = false;
+    var action = root.dataset.action;
+    root.innerHTML = '<div class="lq-head"><strong>📝 Проверь себя</strong><div class="lq-pills"></div></div>' +
+        '<div class="lq-card" id="lq-card"></div>' +
+        '<div class="lq-foot"><button class="btn btn-outline btn-xs" id="lq-prev">←</button>' +
+        '<button class="btn btn-outline btn-xs" id="lq-next">→</button>' +
+        '<span class="muted" id="lq-prog" style="margin-left:auto;font-size:.8em;"></span>' +
+        '<button class="btn btn-success btn-xs" id="lq-fin" disabled>Сохранить</button></div>';
+    var pills = root.querySelector('.lq-pills'), card = root.querySelector('#lq-card'),
+        prog = root.querySelector('#lq-prog'), fin = root.querySelector('#lq-fin');
+    DATA.forEach(function (_, i) { var b = document.createElement('button'); b.className = 'lq-pill'; b.textContent = i + 1; b.onclick = function () { cur = i; render(); }; pills.appendChild(b); });
+    root.querySelector('#lq-prev').onclick = function () { cur = Math.max(0, cur - 1); render(); };
+    root.querySelector('#lq-next').onclick = function () { cur = Math.min(DATA.length - 1, cur + 1); render(); };
+    fin.onclick = function () { if (saved) return; var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&'); fetch(action, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }).then(function () { saved = true; fin.textContent = '✓'; }); };
+    function choose(i) { if (answers[cur] !== null) return; answers[cur] = i; render(); upd(); }
+    function upd() { var d = answers.filter(function (a) { return a !== null; }).length; var c = answers.filter(function (a, i) { return a === DATA[i].c; }).length; prog.textContent = d + '/' + DATA.length + ' · верно ' + c; fin.disabled = d < DATA.length || saved; }
+    function render() {
+        var q = DATA[cur], ans = answers[cur];
+        var h = '<div class="lq-q">' + q.q + '</div>';
+        q.o.forEach(function (o, i) { var cls = 'lq-opt'; if (ans !== null) { if (i === q.c) cls += ' correct'; else if (i === ans) cls += ' wrong'; } h += '<button class="' + cls + '" data-i="' + i + '"' + (ans !== null ? ' disabled' : '') + '>' + o + '</button>'; });
+        if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + e + '</div>'; }
+        card.innerHTML = h;
+        card.querySelectorAll('.lq-opt').forEach(function (b) { b.onclick = function () { choose(parseInt(b.dataset.i, 10)); }; });
+        Array.prototype.forEach.call(pills.children, function (p, i) { p.classList.remove('current', 'correct', 'wrong'); if (i === cur) p.classList.add('current'); if (answers[i] !== null) p.classList.add(answers[i] === DATA[i].c ? 'correct' : 'wrong'); });
+    }
+    render(); upd();
+})();
+</script>
+{{end}}
+
 <style>
 .lab2 { display:grid; grid-template-columns:380px minmax(0,1fr); gap:0; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:74vh; }
+.lab2-material { margin-bottom:14px; border:1px solid var(--border); border-radius:10px; padding:8px 12px; background:var(--bg-elevated); }
+.lab2-material summary { cursor:pointer; font-size:.86em; font-weight:600; color:var(--accent); }
+.lab2-content { max-height:300px; overflow-y:auto; margin-top:10px; font-size:.88em; }
+.lab2-content img { max-width:100%; height:auto; border-radius:8px; }
+.lab2-quiz { margin-bottom:16px; }
+.lq-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.lq-pills { display:flex; flex-wrap:wrap; gap:5px; }
+.lq-pill { width:26px; height:26px; border-radius:7px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.78em; cursor:pointer; }
+.lq-pill.current { outline:2px solid var(--accent); }
+.lq-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lq-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.lq-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.lq-q { font-weight:700; margin-bottom:12px; font-size:.92em; line-height:1.4; }
+.lq-q code, .lq-expl code { background:var(--code-bg); padding:1px 5px; border-radius:4px; font-size:.9em; }
+.lq-opt { display:block; width:100%; text-align:left; margin-bottom:8px; padding:10px 12px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.88em; cursor:pointer; }
+.lq-opt:hover:not(:disabled) { border-color:var(--accent); }
+.lq-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
+.lq-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.lq-expl { margin-top:10px; padding:10px 12px; border-radius:9px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.85em; line-height:1.5; }
+.lq-expl.ok { border-color:rgba(63,185,80,.4); } .lq-expl.no { border-color:rgba(248,81,73,.4); }
+.lq-foot { display:flex; align-items:center; gap:6px; margin-top:10px; }
 .lab2-side { padding:18px; border-right:1px solid var(--border); overflow-y:auto; max-height:80vh; background:var(--bg-card); }
 .lab2-back { font-size:.82em; color:var(--text-muted); text-decoration:none; }
 .lab2-back:hover { color:var(--accent); }

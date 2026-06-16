@@ -16,6 +16,7 @@ services:
       SANDBOX_SSH_USER: "sandbox"
       SANDBOX_SSH_KEY: "/sandbox/id_ed25519"
       SANDBOX_IMAGE: "ubuntu:24.04"
+      ADMIN_EMAILS: "berg@gmail.com"
     volumes:
       - ./sandbox-vm/id_ed25519:/sandbox/id_ed25519:ro
     depends_on:

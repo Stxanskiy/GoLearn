@@ -94,7 +94,7 @@ func (r *LessonRepo) GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []
 	}
 
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, quiz_id, question, options, correct_index, explanation, order_num
+		SELECT id, quiz_id, question, options, option_explanations, correct_index, explanation, order_num
 		FROM quiz_questions WHERE quiz_id = $1 ORDER BY order_num`, quiz.ID)
 	if err != nil {
 		return &quiz, nil, err
@@ -104,11 +104,12 @@ func (r *LessonRepo) GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []
 	var questions []model.QuizQuestion
 	for rows.Next() {
 		var q model.QuizQuestion
-		var optionsJSON []byte
-		if err := rows.Scan(&q.ID, &q.QuizID, &q.Question, &optionsJSON, &q.CorrectIndex, &q.Explanation, &q.OrderNum); err != nil {
+		var optionsJSON, optExplJSON []byte
+		if err := rows.Scan(&q.ID, &q.QuizID, &q.Question, &optionsJSON, &optExplJSON, &q.CorrectIndex, &q.Explanation, &q.OrderNum); err != nil {
 			return &quiz, nil, err
 		}
 		_ = json.Unmarshal(optionsJSON, &q.Options)
+		_ = json.Unmarshal(optExplJSON, &q.OptionExpl)
 		questions = append(questions, q)
 	}
 	return &quiz, questions, rows.Err()
@@ -153,20 +154,22 @@ func (r *LessonRepo) EnsureQuiz(ctx context.Context, lessonID int, title string)
 
 func (r *LessonRepo) AddQuestion(ctx context.Context, quizID int, q model.QuizQuestion) error {
 	opts, _ := json.Marshal(q.Options)
+	oexpl, _ := json.Marshal(q.OptionExpl)
 	var maxOrder int
 	_ = r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num),0) FROM quiz_questions WHERE quiz_id=$1`, quizID).Scan(&maxOrder)
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO quiz_questions (quiz_id, question, options, correct_index, explanation, order_num)
-		 VALUES ($1,$2,$3,$4,$5,$6)`,
-		quizID, q.Question, opts, q.CorrectIndex, q.Explanation, maxOrder+1)
+		`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+		quizID, q.Question, opts, oexpl, q.CorrectIndex, q.Explanation, maxOrder+1)
 	return err
 }
 
 func (r *LessonRepo) UpdateQuestion(ctx context.Context, q model.QuizQuestion) error {
 	opts, _ := json.Marshal(q.Options)
+	oexpl, _ := json.Marshal(q.OptionExpl)
 	_, err := r.pool.Exec(ctx,
-		`UPDATE quiz_questions SET question=$1, options=$2, correct_index=$3, explanation=$4 WHERE id=$5`,
-		q.Question, opts, q.CorrectIndex, q.Explanation, q.ID)
+		`UPDATE quiz_questions SET question=$1, options=$2, option_explanations=$3, correct_index=$4, explanation=$5 WHERE id=$6`,
+		q.Question, opts, oexpl, q.CorrectIndex, q.Explanation, q.ID)
 	return err
 }
 
@@ -177,14 +180,15 @@ func (r *LessonRepo) DeleteQuestion(ctx context.Context, id int) error {
 
 func (r *LessonRepo) GetQuestionByID(ctx context.Context, id int) (*model.QuizQuestion, error) {
 	var q model.QuizQuestion
-	var opts []byte
+	var opts, oexpl []byte
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, quiz_id, question, options, correct_index, explanation, order_num FROM quiz_questions WHERE id=$1`, id).
-		Scan(&q.ID, &q.QuizID, &q.Question, &opts, &q.CorrectIndex, &q.Explanation, &q.OrderNum)
+		`SELECT id, quiz_id, question, options, option_explanations, correct_index, explanation, order_num FROM quiz_questions WHERE id=$1`, id).
+		Scan(&q.ID, &q.QuizID, &q.Question, &opts, &oexpl, &q.CorrectIndex, &q.Explanation, &q.OrderNum)
 	if err != nil {
 		return nil, err
 	}
 	_ = json.Unmarshal(opts, &q.Options)
+	_ = json.Unmarshal(oexpl, &q.OptionExpl)
 	return &q, nil
 }
 
