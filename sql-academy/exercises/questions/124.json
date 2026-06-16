@@ -1,0 +1,71 @@
+{
+  "_id": "4ed2b809d7446b9a0e000124",
+  "id": 124,
+  "fields": [
+    "visit_date"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "visit_date"
+    ],
+    "rows": [
+      {
+        "visit_date": "2022-01-15"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "MTC",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200200",
+    "id": "4ed2b809d7446b9a0e200200",
+    "title": "MTC",
+    "name": "QuestionCustomDatabase_124",
+    "tables": [
+      {
+        "id": "logins",
+        "props": [
+          {
+            "id": "created_at",
+            "isKey": false,
+            "name": "created_at",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "phone_number",
+            "isKey": false,
+            "name": "phone_number",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "vendor",
+            "isKey": false,
+            "name": "vendor",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "logins",
+        "description": "Логи входов в приложение"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "logins": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "MTC"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        В компании МТС ведется статистика использования мобильного приложения \"Мой МТС\". <br />\n                        В таблице logins хранятся записи о каждом входе пользователей в приложение с указанием: <br />\n                        <ul>\n                            <li>created_at: дата и время входа</li>\n                            <li>phone_number: номер телефона пользователя</li>\n                            <li>vendor: производитель устройства (Apple, Samsung и др.)</li>\n                        </ul>\n                        <br />\n                        Вывести список дней 2022 года, в которые мобильное приложение МТС посещало более 10 уникальных владельцев устройств Apple. <br />\n                        Результат предоставить в виде: дата посещения. <br />\n                    ",
+  "title": "Дни 2022 года с более чем 10 владельцами айфонов",
+  "additional_info": []
+}

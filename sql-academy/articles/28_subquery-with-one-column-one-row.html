@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Подзапрос с одной строкой с одним столбцом</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="podzapros-s-odnoj-strokoj-s-odnim-stolbcom" class="sc-bce5c646-1 fYolVj">Подзапрос с одной строкой с одним столбцом<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>В этом уроке давайте более детально остановимся на подзапросе, возвращающем одну строку и один столбец.
+Данный тип подзапросов также известен как скалярный подзапрос.</p>
+<p>Он может использоваться в различных частях основного SQL запроса, но чаще всего он используется
+в условиях ограничений выборки с помощью операторов сравнения (<span class="sql-code sql-code-line sql-code-line--blue-color ">=</span>, <span class="sql-code sql-code-line sql-code-line--blue-color ">&lt;&gt;</span>, <span class="sql-code sql-code-line sql-code-line--blue-color ">&gt;</span>, <span class="sql-code sql-code-line sql-code-line--blue-color ">&lt;</span>).</p>
+<h2 id="primery" class="sc-bce5c646-1 fYolVj">Примеры<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Следующий простейший запрос демонстрирует вывод единственного значения (названия компании).
+В таком виде он не имеет большого смысла, однако ваши запросы могут быть намного сложнее.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> name <span class="token keyword">FROM</span> company <span class="token keyword">LIMIT</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> company_name<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">company_name</th></tr></thead><tbody><tr class="highlight-row"><td>Don_avia</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Таким же образом можно использовать скалярные подзапросы для фильтрации строк с помощью <span class="sql-code sql-code-line sql-code-line--blue-color ">WHERE</span>, используя операторы сравнения.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> FamilyMembers
+    <span class="token keyword">WHERE</span> birthday <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> <span class="token function">MAX</span><span class="token punctuation">(</span>birthday<span class="token punctuation">)</span> <span class="token keyword">FROM</span> FamilyMembers<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">member_id</th><th style="min-width:auto">status</th><th style="min-width:auto">member_name</th><th style="min-width:auto">birthday</th></tr></thead><tbody><tr class="highlight-row"><td>8</td><td>daughter</td><td>Wednesday Addams</td><td>2005-01-13T00:00:00.000Z</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>С помощью данного запроса возможно получить самого младшего члена семьи.
+Подзапрос в данном случае необходим для получения максимальной даты рождения, которая затем используется в основном запросе для фильтрации строк.</p>
+<h2 id="vazhnost-sootvetstviya-ispolzuemogo-operatora-i-rezultata-podzaprosa" class="sc-bce5c646-1 fYolVj">Важность соответствия используемого оператора и результата подзапроса<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>При использовании результата подзапроса с операторами сравнения, как в нашем примере, важно, чтобы подзапрос возвращал именно скалярное значение (1 строка и 1 колонка).</p>
+<div class="guide-mysql-only"><p>Если бы данный подзапрос вернул несколько значений, то СУБД бы вернула ошибку, сообщающую, что ожидалось, что подзапрос вернёт лишь 1 запись:
+«ER_SUBQUERY_NO_1_ROW: Subquery returns more than 1 row».</p></div>
+<div class="guide-postgresql-only"><p>Если бы данный подзапрос вернул несколько значений, то СУБД бы вернула ошибку, сообщающую, что ожидалось, что подзапрос вернёт лишь 1 запись:
+«ERROR: more than one row returned by a subquery used as an expression».</p></div>
+<p>Поэтому стоит быть осторожным при написании подзапросов и представлять, какой результат вернёт подзапрос,
+и какие операторы мы можем использовать вместе с результирующим набором.</p>

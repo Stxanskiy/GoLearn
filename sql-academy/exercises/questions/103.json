@@ -1,0 +1,126 @@
+{
+  "_id": "4ed2b809d7446b9a0e000103",
+  "id": 103,
+  "fields": [
+    "name"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "Johnathan Hall"
+      },
+      {
+        "name": "David Jenkins"
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Sberbank",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200103",
+    "id": "4ed2b809d7446b9a0e200103",
+    "title": "Sberbank",
+    "name": "QuestionCustomDatabase_103_105",
+    "tables": [
+      {
+        "id": "Department",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Department",
+        "description": "Список отделов"
+      },
+      {
+        "id": "Employee",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "department_id",
+            "isKey": false,
+            "name": "department_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "chief_id",
+            "isKey": false,
+            "name": "chief_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "salary",
+            "isKey": false,
+            "name": "salary",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Employee",
+        "description": "Список сотрудников"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Employee",
+          "field": "department_id"
+        },
+        "target": {
+          "table": "Department",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+      }
+    ],
+    "tablePosition": {
+      "Department": {
+        "x": 0,
+        "y": 250
+      },
+      "Employee": {
+        "x": 300,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "Sberbank"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Вывести список имён сотрудников, получающих большую заработную плату, чем у непосредственного руководителя.",
+  "title": "Зарплата выше руководителя",
+  "additional_info": []
+}

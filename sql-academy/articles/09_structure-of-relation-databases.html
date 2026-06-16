@@ -1,0 +1,65 @@
+<!doctype html><meta charset="utf-8"><title>Структура реляционных баз данных</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="struktura-relyacionnyh-baz-dannyh" class="sc-bce5c646-1 fYolVj">Структура реляционных баз данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Мы кратко уже знакомились с реляционными базами данных <a href="/guide/relation-databases" target="_blank"> в предыдущей статье</a>. Но нам ведь недостаточно
+поверхностного понимания? Давайте заплывём за буйки и погрузимся глубже в структуру и терминологию
+реляционных баз данных.</p>
+<h2 id="struktura-tablicy" class="sc-bce5c646-1 fYolVj">Структура таблицы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>В реляционных базах данных информация хранится в связанных друг с другом таблицах.
+Сами же таблицы состоят из:</p>
+<ul>
+<li>строк, которые называют «записями»</li>
+<li>столбцов, которые называют «полями» или же «атрибутами»</li>
+</ul>
+<p><img title="Структура таблицы" alt="Структура таблицы" loading="lazy" width="1660" height="486" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_structure_db.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_structure_db.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_structure_db.png&amp;w=3840&amp;q=50"/></p>
+<p>В каждой таблице каждый столбец имеет заранее определённый тип данных. Например, такими типами могут выступать:</p>
+<ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">VARCHAR</span> (строковый тип данных)</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">INTEGER</span> (числовой тип данных)</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">DATETIME</span> (тип данных для даты и времени) и прочие</li>
+</ul>
+<p>И каждая строка таблицы должна иметь соответствующий тип для каждого столбца. СУБД не допустит попытку добавления
+в поле с типом <span class="sql-code sql-code-line sql-code-line--blue-color ">DATETIME</span> произвольной строки.</p>
+<p>Для того чтобы узнать типы данных атрибутов, можно выполнить SQL команду и указать название таблицы:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DESCRIBE</span> FamilyMembers
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:190px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">Field</th><th style="min-width:auto">Type</th><th style="min-width:auto">Null</th><th style="min-width:auto">Key</th><th style="min-width:auto">Default</th><th style="min-width:auto">Extra</th></tr></thead><tbody><tr class="highlight-row"><td>member_id</td><td>int</td><td>NO</td><td>PRI</td><td></td><td></td></tr><tr class="highlight-row"><td>status</td><td>varchar(50)</td><td>NO</td><td></td><td></td><td></td></tr><tr class="highlight-row"><td>member_name</td><td>varchar(50)</td><td>NO</td><td></td><td></td><td></td></tr><tr class="highlight-row"><td>birthday</td><td>datetime</td><td>NO</td><td></td><td></td><td></td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> column_name<span class="token punctuation">,</span> data_type<span class="token punctuation">,</span> is_nullable
+<span class="token keyword">FROM</span> information_schema<span class="token punctuation">.</span><span class="token keyword">columns</span>
+<span class="token keyword">WHERE</span> table_name <span class="token operator">=</span> <span class="token string">&#x27;familymembers&#x27;</span>
+  <span class="token operator">AND</span> table_schema <span class="token operator">=</span> current_schema<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:190px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">column_name</th><th style="min-width:auto">data_type</th><th style="min-width:auto">is_nullable</th></tr></thead><tbody><tr class="highlight-row"><td>member_id</td><td>integer</td><td>NO</td></tr><tr class="highlight-row"><td>status</td><td>character varying</td><td>NO</td></tr><tr class="highlight-row"><td>member_name</td><td>character varying</td><td>NO</td></tr><tr class="highlight-row"><td>birthday</td><td>timestamp without time zone</td><td>NO</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<p>Или же посмотреть на ER-диаграмму схемы базы данных:</p>
+<div class="guide-erd"><div style="display:flex" class="loader"></div></div>
+<h2 id="pervichnyj-klyuch" class="sc-bce5c646-1 fYolVj">Первичный ключ<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Любая СУБД имеет встроенную систему целостности и непротиворечивости данных.
+Эта система работает на наборе правил, определённых в схеме базы данных. Первичный ключ и внешние ключи как раз
+являются одними из таких правил.</p>
+<p>Чтобы избежать неоднозначности при поиске в таблицах, существует первичный ключ или, как его ещё называют,
+«ключевое поле».</p>
+<blockquote>
+<p>Ключевое поле (первичный ключ) – это поле (или набор полей), значение которого однозначно определяет запись в таблице.</p>
+</blockquote>
+<p>Если обратиться к нашей вышеупомянутой таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span>, то в ней ключевым полем является <span class="sql-code sql-code-line sql-code-line--blue-color ">member_id</span>.
+С помощью данного правила СУБД не позволит нам создать новую запись, где поле <span class="sql-code sql-code-line sql-code-line--blue-color ">member_id</span> будет неуникальным.</p>
+<p>Стоит заметить, что наличие первичного ключа не обязательно, а целостность данных может определяться, к примеру, на уровне приложения.</p>
+<h2 id="vneshnij-klyuch" class="sc-bce5c646-1 fYolVj">Внешний ключ<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<blockquote>
+<p>Внешний ключ – это поле (или набор полей) в одной таблице, которое ссылается на первичный ключ в другой таблице.</p>
+</blockquote>
+<p>Таблица с внешним ключом называется дочерней таблицей, а таблица с первичным ключом называется ссылочной или родительской таблицей.</p>
+<p>Правило внешнего ключа гарантирует, что при создании записей в дочерней таблице, значение поля, являющегося внешним ключом, есть
+в родительской таблице.</p>
+<p><img title="Пример внешних ключей" alt="Пример внешних ключей" loading="lazy" width="1359" height="711" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_keys.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_keys.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fstructure-of-relation-databases%2Fru_keys.png&amp;w=3840&amp;q=50"/></p>
+<p>Наличие внешнего ключа – это такое же необязательное требование, как и в случае с первичным ключом.</p>
+<p>Если внешний ключ не определён, то всё также будет работать, но СУБД
+не будет проверять, что, например, при создании записи в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Purchase</span> в полях <span class="sql-code sql-code-line sql-code-line--blue-color ">buyer_id</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">good_id</span> лежат
+значения, которые определены в соответствующих таблицах в поле <span class="sql-code sql-code-line sql-code-line--blue-color ">id</span>.</p>
+<p>Какое из утверждений <strong class="sc-f6cdcda8-0 gqDbfN">неверное</strong> относительно ключей в реляционных СУБД?</p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":Rtm6hn6:В каждой таблице может быть лишь 1 первичный ключ0" name=":Rtm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rtm6hn6:В каждой таблице может быть лишь 1 первичный ключ0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>В каждой таблице может быть лишь 1 первичный ключ</label></div><input type="radio" id=":Rtm6hn6:Таблица может содержать как несколько внешних ключей, так и ни одного внешнего ключа1" name=":Rtm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rtm6hn6:Таблица может содержать как несколько внешних ключей, так и ни одного внешнего ключа1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Таблица может содержать как несколько внешних ключей, так и ни одного внешнего ключа</label></div><input type="radio" id=":Rtm6hn6:Правила первичного и внешнего ключа служат для одной цели2" name=":Rtm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rtm6hn6:Правила первичного и внешнего ключа служат для одной цели2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Правила первичного и внешнего ключа служат для одной цели</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>

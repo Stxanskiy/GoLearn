@@ -1,0 +1,89 @@
+{
+  "_id": "4ed2b809d7446b9a0e000183",
+  "id": 183,
+  "fields": [
+    "transaction_date",
+    "total_amount",
+    "average_amount"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "transaction_date",
+      "total_amount",
+      "average_amount"
+    ],
+    "rows": [
+      {
+        "transaction_date": "2024-03-07",
+        "total_amount": 860,
+        "average_amount": 122.86
+      },
+      {
+        "transaction_date": "2024-03-08",
+        "total_amount": 840,
+        "average_amount": 120
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Revolut",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200406",
+    "id": "4ed2b809d7446b9a0e200406",
+    "title": "Revolut",
+    "name": "QuestionCustomDatabase_183",
+    "tables": [
+      {
+        "id": "transactions",
+        "props": [
+          {
+            "id": "customer_id",
+            "isKey": true,
+            "name": "customer_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "transaction_date",
+            "isKey": true,
+            "name": "transaction_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "amount",
+            "isKey": false,
+            "name": "amount",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "transactions",
+        "description": "Дневные траты клиентов: amount — сумма, потраченная клиентом за день transaction_date"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "transactions": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Revolut"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>transactions</b> хранятся траты клиентов Revolut по\n            дням: каждая строка — сумма (<b>amount</b>), потраченная клиентом\n            (<b>customer_id</b>, <b>name</b>) в день <b>transaction_date</b>.\n            Гарантируется, что в каждый день есть хотя бы одна транзакция.\n            <br><br>\n            Команда роста оценивает динамику трат. Посчитайте\n            <b>7-дневное скользящее среднее</b> суммарных дневных трат — за\n            текущий день и 6 предыдущих.\n            <br><br>\n            Верните <b>transaction_date</b>, <b>total_amount</b> (сумма трат\n            за 7-дневное окно) и <b>average_amount</b> (среднее за это окно,\n            округлённое до двух знаков). Выводите только дни, для которых\n            окно полное — есть все 7 дней. Отсортируйте по\n            <b>transaction_date</b> по возрастанию.\n        ",
+  "title": "Скользящее среднее дневных трат (7 дней)",
+  "additional_info": []
+}

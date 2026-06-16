@@ -1,0 +1,131 @@
+{
+  "_id": "4ed2b809d7446b9a0e000178",
+  "id": 178,
+  "fields": [
+    "customer_name",
+    "email",
+    "total_orders",
+    "total_spent"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "customer_name",
+      "email",
+      "total_orders",
+      "total_spent"
+    ],
+    "rows": [
+      {
+        "customer_name": "Sophie Fischer",
+        "email": "sophie.fischer@email.ch",
+        "total_orders": 2,
+        "total_spent": 45600
+      },
+      {
+        "customer_name": "Tobias Zimmermann",
+        "email": "tobias.zimmermann@email.at",
+        "total_orders": 2,
+        "total_spent": 1750
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "BMW",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200407",
+    "id": "4ed2b809d7446b9a0e200407",
+    "title": "BMW",
+    "name": "QuestionCustomDatabase_178",
+    "tables": [
+      {
+        "id": "customers",
+        "props": [
+          {
+            "id": "customer_id",
+            "isKey": true,
+            "name": "customer_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "customer_name",
+            "isKey": false,
+            "name": "customer_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "email",
+            "isKey": false,
+            "name": "email",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "customers",
+        "description": "Клиенты BMW"
+      },
+      {
+        "id": "orders",
+        "props": [
+          {
+            "id": "order_id",
+            "isKey": true,
+            "name": "order_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "customer_id",
+            "isKey": false,
+            "name": "customer_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "amount",
+            "isKey": false,
+            "name": "amount",
+            "type": "DECIMAL",
+            "description": null
+          }
+        ],
+        "title": "orders",
+        "description": "Заказы клиентов (покупка автомобиля, сервис, аксессуары)"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "customers",
+          "field": "customer_id"
+        },
+        "target": {
+          "table": "orders",
+          "field": "customer_id"
+        },
+        "type": "one-to-many",
+        "id": "rel-bmw-customer-order"
+      }
+    ],
+    "tablePosition": {
+      "customers": {
+        "x": 0,
+        "y": 0
+      },
+      "orders": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "BMW"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>customers</b> хранятся клиенты BMW, а в\n            <b>orders</b> — их заказы (новый автомобиль, сервис,\n            аксессуары).\n            <br><br>\n            Напишите запрос, который вернёт <b>customer_name</b>,\n            <b>email</b>, <b>total_orders</b> (число заказов клиента) и\n            <b>total_spent</b> (суммарную сумму его заказов; вместо\n            <code>NULL</code> используйте <code>0</code>) — для клиентов,\n            сделавших <b>строго больше двух</b> заказов. Отсортируйте\n            результат по <b>total_spent</b> по убыванию.\n        ",
+  "title": "Постоянные клиенты по числу заказов и тратам",
+  "additional_info": []
+}

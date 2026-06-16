@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8"><title>Оператор LIKE</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="operator-like" class="sc-bce5c646-1 fYolVj">Оператор LIKE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">LIKE</span> используется при условных запросах, когда мы хотим узнать, соответствует ли строка определённому шаблону.</p>
+<p>Например, у нас есть таблица <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span>, в которой есть поле <span class="sql-code sql-code-line sql-code-line--blue-color ">email</span>:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> name<span class="token punctuation">,</span> email <span class="token keyword">FROM</span> Users<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:228px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">name</th><th style="min-width:auto">email</th></tr></thead><tbody><tr class="highlight-row"><td>Bruce Willis</td><td>barjam@hotmail.com</td></tr><tr class="highlight-row"><td>George Clooney</td><td>tellis@me.com</td></tr><tr class="highlight-row"><td>Kevin Costner</td><td>metzzo@hotmail.com</td></tr><tr class="highlight-row"><td>Samuel L. Jackson</td><td>moonlapse@outlook.com</td></tr><tr class="highlight-row"><td>Kurt Russell</td><td>gator@live.com</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Допустим, мы хотим найти всех пользователей, чья почта лежит в домене второго уровня «hotmail». Т.е. нужно отобрать только те записи, что
+отвечают условию:</p>
+<ul>
+<li>после символа «@» следует «hotmail»</li>
+<li>после «hotmail» следует символ «.» и далее любая последовательность символов</li>
+</ul>
+<p>Для таких нетривиальных поисков по строковым полям и нужен оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">LIKE</span>.</p>
+<h2 id="sintaksis" class="sc-bce5c646-1 fYolVj">Синтаксис<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token punctuation">[</span><span class="token operator">NOT</span><span class="token punctuation">]</span> <span class="token operator">LIKE</span> шаблон_строки
+</code></pre></div></pre>
+<p>Шаблон может включать следующие специальные символы:</p>
+<div class="sc-34473f63-0 BAKJs scrollable-container-wrapper" style="position:relative;overflow:hidden;width:100%;height:auto;min-height:100%;max-height:100%"><div style="position:relative;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0;min-height:100%;max-height:100%"><table class="sc-3d43063c-0 iTyZOI guide-basic-table"><thead><tr><th align="left">Символ</th><th align="left">Описание</th></tr></thead><tbody><tr><td align="left"><span class="sql-code sql-code-line sql-code-line--blue-color ">%</span></td><td align="left">Последовательность любых символов (число символов в последовательности может быть от 0 и более)</td></tr><tr><td align="left"><span class="sql-code sql-code-line sql-code-line--blue-color ">_</span></td><td align="left">Любой единичный символ</td></tr></tbody></table></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Так наш запрос на поиск пользователей в домене «hotmail» может выглядеть следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> name<span class="token punctuation">,</span> email <span class="token keyword">FROM</span> Users
+<span class="token keyword">WHERE</span> email <span class="token operator">LIKE</span> <span class="token string">&#x27;%@hotmail.%&#x27;</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:266px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">name</th><th style="min-width:auto">email</th></tr></thead><tbody><tr class="highlight-row"><td>Bruce Willis</td><td>barjam@hotmail.com</td></tr><tr class="highlight-row"><td>Kevin Costner</td><td>metzzo@hotmail.com</td></tr><tr class="highlight-row"><td>Jennifer Lopez</td><td>barjam@hotmail.com</td></tr><tr class="highlight-row"><td>Harrison Ford</td><td>kostas@hotmail.com</td></tr><tr class="highlight-row"><td>Michael Douglas</td><td>timtroyr@hotmail.com</td></tr><tr class="highlight-row"><td>Catherine Zeta-Jones</td><td>flakeg@hotmail.com</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<h2 id="primery" class="sc-bce5c646-1 fYolVj">Примеры<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<ul>
+<li>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token operator">LIKE</span> <span class="token string">&#x27;text%&#x27;</span>
+</code></pre></div></pre>
+<p>Сопоставляется любым строкам, начинающимся на «text»</p>
+</li>
+<li>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token operator">LIKE</span> <span class="token string">&#x27;%text&#x27;</span>
+</code></pre></div></pre>
+<p>Сопоставляется любым строкам, заканчивающимся на «text»</p>
+</li>
+<li>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token operator">LIKE</span> <span class="token string">&#x27;_ext&#x27;</span>
+</code></pre></div></pre>
+<p>Сопоставляется строкам, имеющим длину 4 символа, при этом 3 последних обязательно должны быть «ext». Например, слова «text» и «next»</p>
+</li>
+<li>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token operator">LIKE</span> <span class="token string">&#x27;begin%end&#x27;</span>
+</code></pre></div></pre>
+<p>Сопоставляется строкам, начинающихся на «begin» и заканчивающихся на «end»</p>
+</li>
+</ul>
+<div class="guide-mysql-only"><blockquote>
+<p>В MySQL по умолчанию шаблоны не чувствительны к регистру</p>
+</blockquote></div>
+<div class="guide-postgresql-only"><blockquote>
+<p>В PostgreSQL шаблоны чувствительны к регистру. Для поиска без учета регистра используйте оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">ILIKE</span></p>
+</blockquote></div>
+<h2 id="ekranirovanie-specialnyh-simvolov" class="sc-bce5c646-1 fYolVj">Экранирование специальных символов<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Иногда нужно найти строки, в которых символы <span class="sql-code sql-code-line sql-code-line--blue-color ">%</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">_</span> являются частью самого текста, а не элементами шаблона. В таких случаях эти символы нужно экранировать.</p>
+<p>В шаблонах <span class="sql-code sql-code-line sql-code-line--blue-color ">LIKE</span> для экранирования по умолчанию используется символ <span class="sql-code sql-code-line sql-code-line--blue-color ">\</span>. Например, если нужно получить идентификаторы задач, прогресс которых равен <span class="sql-code sql-code-line sql-code-line--blue-color ">3%</span>, можно написать так:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> job_id <span class="token keyword">FROM</span> Jobs
+<span class="token keyword">WHERE</span> progress <span class="token operator">LIKE</span> <span class="token string">&#x27;3\%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<h3 id="escape-simvol" class="sc-bce5c646-1 fYolVj">ESCAPE-символ<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Если вместо символа по умолчанию нужно использовать другой символ экранирования, его можно указать явно с помощью <span class="sql-code sql-code-line sql-code-line--blue-color ">ESCAPE</span>.</p>
+<h3 id="sintaksis-s-escape" class="sc-bce5c646-1 fYolVj">Синтаксис с ESCAPE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">WHERE</span> поле_таблицы <span class="token operator">LIKE</span> <span class="token string">&#x27;шаблон_строки&#x27;</span> <span class="token keyword">ESCAPE</span> <span class="token string">&#x27;символ_экранирования&#x27;</span>
+</code></pre></div></pre>
+<p>Тот же запрос можно записать с явным указанием символа экранирования:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> job_id <span class="token keyword">FROM</span> Jobs
+<span class="token keyword">WHERE</span> progress <span class="token operator">LIKE</span> <span class="token string">&#x27;3!%&#x27;</span> <span class="token keyword">ESCAPE</span> <span class="token string">&#x27;!&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Здесь символ <span class="sql-code sql-code-line sql-code-line--blue-color ">!</span> выполняет ту же роль, что и <span class="sql-code sql-code-line sql-code-line--blue-color ">\</span> в предыдущем примере.</p>
+<h2 id="interaktivnoe-uprazhnenie" class="sc-bce5c646-1 fYolVj">Интерактивное упражнение<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Теперь давайте закрепим полученные знания на практике!<br/>
+<!-- -->В упражнении ниже вам нужно распределить email адреса по шаблонам LIKE, перетаскивая их в подходящие области.</p>
+<div><div class="sc-24be0bd9-17 fgJhJv"><h4>Интерактивное упражнение недоступно</h4><p>Для использования интерактивного упражнения необходим экран шириной не менее 600 пикселей. Попробуйте открыть эту страницу на компьютере или планшете.</p></div></div>

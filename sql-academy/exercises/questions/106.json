@@ -1,0 +1,92 @@
+{
+  "_id": "4ed2b809d7446b9a0e000106",
+  "id": 106,
+  "fields": [
+    "course_id",
+    "revenue"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "course_id",
+      "revenue"
+    ],
+    "rows": [
+      {
+        "course_id": 1,
+        "revenue": 13100
+      },
+      {
+        "course_id": 2,
+        "revenue": 10100
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "SkyPro",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200106",
+    "id": "4ed2b809d7446b9a0e200106",
+    "title": "Skypro",
+    "name": "QuestionCustomDatabase_106",
+    "tables": [
+      {
+        "id": "Orders",
+        "props": [
+          {
+            "id": "order_id",
+            "isKey": true,
+            "name": "order_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "course_id",
+            "isKey": false,
+            "name": "course_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "order_date",
+            "isKey": false,
+            "name": "order_date",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Orders",
+        "description": "Список купленных курсов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Orders": {
+        "x": 0,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "SkyPro"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведите сумму выручки по каждому курсу за последний месяц. <br /> Если сейчас 11 июля 10:15, то вы должны вывести сумму выручки за промежуток 11 июня 10:15 - 11 июля 10:15.",
+  "title": "Выручка по курсам за последний месяц",
+  "additional_info": []
+}

@@ -44,7 +44,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allProgress, _ := h.progressRepo.GetAll(ctx)
+	allProgress, _ := h.progressRepo.GetAll(ctx, currentUserID(ctx))
 	progressMap := make(map[int]string)
 	for _, p := range allProgress {
 		progressMap[p.LessonID] = p.Status
@@ -122,7 +122,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := RoadmapPageData{
-		PageTitle:    "Learning Roadmap",
+		PageTitle:    "Дорожная карта — TOT",
 		SharedBase:   sharedLevels,
 		BackendTrack: backendLevels,
 		DevopsTrack:  devopsLevels,

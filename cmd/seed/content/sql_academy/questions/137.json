@@ -1,0 +1,130 @@
+{
+  "_id": "4ed2b809d7446b9a0e000137",
+  "id": 137,
+  "fields": [
+    "user_id",
+    "login"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "user_id",
+      "login"
+    ],
+    "rows": [
+      {
+        "user_id": 1,
+        "login": "ivan_petrov"
+      },
+      {
+        "user_id": 3,
+        "login": "alex_sidorov"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Yandex",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200304",
+    "id": "4ed2b809d7446b9a0e200304",
+    "title": "Yandex",
+    "name": "QuestionCustomDatabase_137",
+    "tables": [
+      {
+        "id": "users",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": true,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "login",
+            "isKey": false,
+            "name": "login",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "hash_password",
+            "isKey": false,
+            "name": "hash_password",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "users",
+        "description": "Пользователи"
+      },
+      {
+        "id": "cards",
+        "props": [
+          {
+            "id": "card_id",
+            "isKey": true,
+            "name": "card_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "surname",
+            "isKey": false,
+            "name": "surname",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "cards",
+        "description": "Карточки пользователей"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "users",
+          "field": "user_id"
+        },
+        "target": {
+          "table": "cards",
+          "field": "user_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778300"
+      }
+    ],
+    "tablePosition": {
+      "users": {
+        "x": 0,
+        "y": 0
+      },
+      "cards": {
+        "x": 350,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Yandex"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Напишите SQL-запрос, выбирающий пользователей (user_id и login), у которых заведено более одной карточки.",
+  "title": "Пользователи с несколькими карточками",
+  "additional_info": []
+}

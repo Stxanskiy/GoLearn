@@ -1,0 +1,200 @@
+{
+  "_id": "4ed2b809d7446b9a0e000115",
+  "id": 115,
+  "fields": [
+    "name"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "Emma Taylor"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "T-Bank",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200139",
+    "id": "4ed2b809d7446b9a0e200139",
+    "title": "T-Bank",
+    "name": "QuestionCustomDatabase_114_116",
+    "tables": [
+      {
+        "id": "Flights",
+        "props": [
+          {
+            "id": "flight_id",
+            "isKey": true,
+            "name": "flight_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "flight_date",
+            "isKey": false,
+            "name": "flight_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "plane_id",
+            "isKey": false,
+            "name": "plane_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "first_pilot_id",
+            "isKey": false,
+            "name": "first_pilot_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "second_pilot_id",
+            "isKey": false,
+            "name": "second_pilot_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "destination",
+            "isKey": false,
+            "name": "destination",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Flights",
+        "description": "Список перелетов"
+      },
+      {
+        "id": "Pilots",
+        "props": [
+          {
+            "id": "pilot_id",
+            "isKey": true,
+            "name": "pilot_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "age",
+            "isKey": false,
+            "name": "age",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Pilots",
+        "description": "Список пилотов"
+      },
+      {
+        "id": "Planes",
+        "props": [
+          {
+            "id": "plane_id",
+            "isKey": true,
+            "name": "plane_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "plane_name",
+            "isKey": false,
+            "name": "plane_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "capacity",
+            "isKey": false,
+            "name": "capacity",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "cargo_flag",
+            "isKey": false,
+            "name": "cargo_flag",
+            "type": "BOOLEAN",
+            "description": null
+          }
+        ],
+        "title": "Planes",
+        "description": "Список самолетов"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Flights",
+          "field": "plane_id"
+        },
+        "target": {
+          "table": "Planes",
+          "field": "plane_id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+      },
+      {
+        "source": {
+          "table": "Flights",
+          "field": "first_pilot_id"
+        },
+        "target": {
+          "table": "Pilots",
+          "field": "pilot_id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778238"
+      },
+      {
+        "source": {
+          "table": "Flights",
+          "field": "second_pilot_id"
+        },
+        "target": {
+          "table": "Pilots",
+          "field": "pilot_id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778239"
+      }
+    ],
+    "tablePosition": {
+      "Flights": {
+        "x": 300,
+        "y": 0
+      },
+      "Pilots": {
+        "x": 0,
+        "y": 0
+      },
+      "Planes": {
+        "x": 600,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "T-Bank"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведите пилотов старше 45 лет, которые совершили больше 2 полётов на грузовых самолетах",
+  "title": "Пилоты старше 45 на грузовых самолетах",
+  "additional_info": []
+}

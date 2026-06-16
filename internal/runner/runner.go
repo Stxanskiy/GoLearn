@@ -137,10 +137,11 @@ func (r *Runner) Run(ctx context.Context, code string, stdin string) (*Result, e
 		return &Result{Errors: err.Error()}, nil
 	}
 
-	if r.useDocker {
-		return r.runInDocker(ctx, code, stdin)
+	if !r.useDocker {
+		// Never execute untrusted code on the host — require the Docker sandbox.
+		return &Result{Errors: "Песочница недоступна (Docker не запущен). Запуск кода временно отключён."}, nil
 	}
-	return r.runLocal(ctx, code, stdin)
+	return r.runInDocker(ctx, code, stdin)
 }
 
 // RunWithTests executes code and checks against test cases.
@@ -189,8 +190,7 @@ func (r *Runner) runInDocker(ctx context.Context, code string, stdin string) (*R
 	r.ensureContainer()
 
 	if !r.containerUp {
-		// Fallback to local if container failed
-		return r.runLocal(ctx, code, stdin)
+		return &Result{Errors: "Песочница недоступна — не удалось запустить контейнер. Попробуй позже."}, nil
 	}
 
 	// Create a unique workspace path inside the container

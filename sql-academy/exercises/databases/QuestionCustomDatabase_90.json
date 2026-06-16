@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200090",
+  "id": "4ed2b809d7446b9a0e200090",
+  "title": "Dodo Brands",
+  "name": "QuestionCustomDatabase_90",
+  "tables": [
+    {
+      "id": "Sales",
+      "props": [
+        {
+          "id": "orderid",
+          "isKey": true,
+          "name": "orderid",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "cityname",
+          "isKey": false,
+          "name": "cityname",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "clientid",
+          "isKey": false,
+          "name": "clientid",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "date",
+          "isKey": false,
+          "name": "date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "sales",
+          "isKey": false,
+          "name": "sales",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Sales",
+      "description": "Таблица с чековыми данными по городам"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Orders": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Dodo Brands"
+}

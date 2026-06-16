@@ -1,0 +1,77 @@
+{
+  "_id": "4ed2b809d7446b9a0e200312",
+  "id": "4ed2b809d7446b9a0e200312",
+  "title": "Точка Банк — счета",
+  "name": "QuestionCustomDatabase_150_151",
+  "tables": [
+    {
+      "id": "accounts",
+      "props": [
+        {
+          "id": "id",
+          "isKey": true,
+          "name": "id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "client_id",
+          "isKey": false,
+          "name": "client_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "open_date",
+          "isKey": false,
+          "name": "open_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "close_date",
+          "isKey": false,
+          "name": "close_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "val",
+          "isKey": false,
+          "name": "val",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "accounts",
+      "description": "Счета клиентов: дата открытия, дата закрытия (NULL для действующих) и код валюты"
+    },
+    {
+      "id": "calendar",
+      "props": [
+        {
+          "id": "calendar_date",
+          "isKey": true,
+          "name": "calendar_date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "calendar",
+      "description": "Календарь — список всех дат"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "accounts": {
+      "x": 0,
+      "y": 0
+    },
+    "calendar": {
+      "x": 300,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Точка Банк — счета"
+}

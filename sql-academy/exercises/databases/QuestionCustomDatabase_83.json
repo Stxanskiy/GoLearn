@@ -1,0 +1,97 @@
+{
+  "_id": "4ed2b809d7446b9a0e200083",
+  "id": "4ed2b809d7446b9a0e200083",
+  "title": "Alfa-Bank",
+  "name": "QuestionCustomDatabase_83",
+  "tables": [
+    {
+      "id": "Clients",
+      "props": [
+        {
+          "id": "client_id",
+          "isKey": true,
+          "name": "client_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "client_name",
+          "isKey": false,
+          "name": "client_name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "region",
+          "isKey": false,
+          "name": "region",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "account_num",
+          "isKey": true,
+          "name": "account_num",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Clients",
+      "description": "Список клиентов банка"
+    },
+    {
+      "id": "Accounts",
+      "props": [
+        {
+          "id": "date",
+          "isKey": true,
+          "name": "date",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "account_num",
+          "isKey": true,
+          "name": "account_num",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "amount_USD",
+          "isKey": false,
+          "name": "amount_USD",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Accounts",
+      "description": "Список счетов в банке"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "Clients",
+        "field": "account_num"
+      },
+      "target": {
+        "table": "Accounts",
+        "field": "account_num"
+      },
+      "type": "one-to-many",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+    }
+  ],
+  "tablePosition": {
+    "Clients": {
+      "x": 0,
+      "y": 243
+    },
+    "Accounts": {
+      "x": 300,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Alfa-Bank"
+}

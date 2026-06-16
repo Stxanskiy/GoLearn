@@ -1,0 +1,87 @@
+{
+  "_id": "4ed2b809d7446b9a0e000135",
+  "id": 135,
+  "fields": [
+    "date",
+    "views",
+    "audience"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "date",
+      "views",
+      "audience"
+    ],
+    "rows": [
+      {
+        "date": "2025-12-28",
+        "views": 4,
+        "audience": 4
+      },
+      {
+        "date": "2025-12-29",
+        "views": 5,
+        "audience": 5
+      },
+      {
+        "date": "2025-12-30",
+        "views": 6,
+        "audience": 6
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Lenta",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200305",
+    "id": "4ed2b809d7446b9a0e200305",
+    "title": "Lenta",
+    "name": "QuestionCustomDatabase_135_136",
+    "tables": [
+      {
+        "id": "watched_content",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "video_id",
+            "isKey": false,
+            "name": "video_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "watched_content",
+        "description": "Просмотры видео"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "watched_content": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Lenta"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана таблица watched_content с информацией о просмотрах видео пользователями.\n                        Каждая строка в таблице соответствует одному просмотру.\n                        <br><br>\n                        Посчитайте в одном запросе:\n                        <ul>\n                            <li>количество просмотров (views) видео по дням</li>\n                            <li>размер аудитории (audience) — уникальное количество пользователей по дням</li>\n                        </ul>\n                        Полученную таблицу отсортируйте по дате по возрастанию.\n                    ",
+  "title": "Статистика просмотров видео по дням",
+  "additional_info": []
+}

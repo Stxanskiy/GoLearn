@@ -1,0 +1,111 @@
+{
+  "_id": "4ed2b809d7446b9a0e000152",
+  "id": 152,
+  "fields": [
+    "client_id",
+    "pay_date",
+    "pay_sum",
+    "comiss"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "client_id",
+      "pay_date",
+      "pay_sum",
+      "comiss"
+    ],
+    "rows": [
+      {
+        "client_id": 20091,
+        "pay_date": "2025-01-10T09:00:00.000Z",
+        "pay_sum": 300000,
+        "comiss": 0
+      },
+      {
+        "client_id": 20091,
+        "pay_date": "2025-01-12T14:30:00.000Z",
+        "pay_sum": 150000,
+        "comiss": 2000
+      },
+      {
+        "client_id": 20091,
+        "pay_date": "2025-01-15T11:00:00.000Z",
+        "pay_sum": 50000,
+        "comiss": 0
+      },
+      {
+        "client_id": 20091,
+        "pay_date": "2025-01-20T16:45:00.000Z",
+        "pay_sum": 5000,
+        "comiss": 2000
+      },
+      {
+        "client_id": 20091,
+        "pay_date": "2025-02-03T10:00:00.000Z",
+        "pay_sum": 100000,
+        "comiss": 0
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Tochka",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200313",
+    "id": "4ed2b809d7446b9a0e200313",
+    "title": "Точка Банк — платежи",
+    "name": "QuestionCustomDatabase_152",
+    "tables": [
+      {
+        "id": "payments",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "client_id",
+            "isKey": false,
+            "name": "client_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "pay_date",
+            "isKey": false,
+            "name": "pay_date",
+            "type": "TIMESTAMP",
+            "description": null
+          },
+          {
+            "id": "pay_sum",
+            "isKey": false,
+            "name": "pay_sum",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "payments",
+        "description": "Исходящие платежи клиентов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "payments": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Точка Банк — платежи"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>payments</b> хранятся исходящие платежи клиентов:\n            <b>client_id</b>, <b>pay_date</b> (момент платежа) и <b>pay_sum</b> (сумма в рублях).\n            <br><br>\n            Комиссия рассчитывается по правилам:\n            <ul>\n                <li>до <b>400 000</b> ₽ за календарный месяц — без комиссии;</li>\n                <li>при превышении лимита (даже на 1 ₽) клиент покупает пакет, который даёт\n                    право перевести ещё <b>100 000</b> ₽. Стоимость одного пакета — <b>2000</b> ₽;</li>\n                <li>учёт идёт в рамках календарного месяца, в начале нового месяца счётчик\n                    обнуляется.</li>\n            </ul>\n            Для каждого платежа верните саму запись и колонку <b>comiss</b> — сумму комиссии,\n            которую клиент должен заплатить именно по этому платежу. Если этот платёж заставил\n            клиента докупить ещё один пакет — комиссия равна <b>2000</b>. Если двух — <b>4000</b>,\n            и так далее. Если пакет докупать не нужно, комиссия равна <b>0</b>.\n            <br><br>\n            Результат должен содержать колонки:\n            <ul>\n                <li>client_id</li>\n                <li>pay_date</li>\n                <li>pay_sum</li>\n                <li>comiss — комиссия по этому платежу</li>\n            </ul>\n            Отсортируйте по <b>client_id</b>, затем по <b>pay_date</b>.\n        ",
+  "title": "Комиссии за исходящие платежи",
+  "additional_info": []
+}

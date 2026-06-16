@@ -1,0 +1,216 @@
+{
+  "_id": "4ed2b809d7446b9a0e000030",
+  "id": 30,
+  "fields": [
+    "trip",
+    "count"
+  ],
+  "author": null,
+  "difficulty": "medium",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e100001",
+    "name": "Airo",
+    "title": "Авиаперелёты",
+    "description": "Схема авиаперелётов, связующая пассажиров с проданными билетами",
+    "tables": [
+      {
+        "id": "company",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": "Название компании-перевозчика"
+          }
+        ],
+        "title": "Company",
+        "description": "Компании, осуществляющие авиаперелёты"
+      },
+      {
+        "id": "passenger",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": "Имя и фамилия пассажира"
+          }
+        ],
+        "title": "Passenger",
+        "description": "Пассажиры, купившие билет"
+      },
+      {
+        "id": "pass_in_trip",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "trip",
+            "isKey": false,
+            "name": "trip",
+            "type": "INT",
+            "description": "Идентификатор билета"
+          },
+          {
+            "id": "passenger",
+            "isKey": false,
+            "name": "passenger",
+            "type": "INT",
+            "description": "Идентификатор пассажира"
+          },
+          {
+            "id": "place",
+            "isKey": false,
+            "name": "place",
+            "type": "VARCHAR",
+            "description": "Место пассажира в самолёте"
+          }
+        ],
+        "title": "Pass_in_trip",
+        "description": "Список купленных билетов"
+      },
+      {
+        "id": "trip",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "company",
+            "isKey": false,
+            "name": "company",
+            "type": "INT",
+            "description": "Идентификатор компании-перевозчика"
+          },
+          {
+            "id": "plane",
+            "isKey": false,
+            "name": "plane",
+            "type": "VARCHAR",
+            "description": "Модель самолёта"
+          },
+          {
+            "id": "town_from",
+            "isKey": false,
+            "name": "town_from",
+            "type": "VARCHAR",
+            "description": "Город вылета"
+          },
+          {
+            "id": "town_to",
+            "isKey": false,
+            "name": "town_to",
+            "type": "VARCHAR",
+            "description": "Город прилёта"
+          },
+          {
+            "id": "time_out",
+            "isKey": false,
+            "name": "time_out",
+            "type": "DATETIME",
+            "description": "Время вылета"
+          },
+          {
+            "id": "time_in",
+            "isKey": false,
+            "name": "time_in",
+            "type": "DATETIME",
+            "description": "Время прилёта"
+          }
+        ],
+        "title": "Trip",
+        "description": "Расписание рейсов"
+      }
+    ],
+    "active": true,
+    "relations": [
+      {
+        "source": {
+          "table": "company",
+          "field": "id"
+        },
+        "target": {
+          "table": "trip",
+          "field": "company"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+      },
+      {
+        "source": {
+          "table": "trip",
+          "field": "id"
+        },
+        "target": {
+          "table": "pass_in_trip",
+          "field": "trip"
+        },
+        "type": "one-to-many",
+        "id": "186646a1-837d-11ed-86a4-eb63bd778277"
+      },
+      {
+        "source": {
+          "table": "passenger",
+          "field": "id"
+        },
+        "target": {
+          "table": "pass_in_trip",
+          "field": "passenger"
+        },
+        "type": "one-to-many",
+        "id": "186646a2-837d-11ed-86a4-eb63bd778277"
+      }
+    ],
+    "tablePosition": {
+      "trip": {
+        "x": 0,
+        "y": 181
+      },
+      "pass_in_trip": {
+        "x": 380,
+        "y": 150
+      },
+      "passenger": {
+        "x": 387,
+        "y": 391
+      },
+      "company": {
+        "x": 3,
+        "y": 490
+      }
+    }
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Вывести количество занятых мест по каждому рейсу из таблицы Pass_in_trip, отсортировав результат по убыванию количества занятых мест.",
+  "title": "Нагруженность рейсов",
+  "additional_info": [
+    "Используйте конструкцию \"as count\" для агрегатной функции подсчета числа пассажиров на рейсе. Это необходимо для корректной проверки."
+  ]
+}

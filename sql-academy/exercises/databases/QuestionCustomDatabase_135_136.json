@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200305",
+  "id": "4ed2b809d7446b9a0e200305",
+  "title": "Lenta",
+  "name": "QuestionCustomDatabase_135_136",
+  "tables": [
+    {
+      "id": "watched_content",
+      "props": [
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "video_id",
+          "isKey": false,
+          "name": "video_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "date",
+          "isKey": false,
+          "name": "date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "watched_content",
+      "description": "Просмотры видео"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "watched_content": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Lenta"
+}

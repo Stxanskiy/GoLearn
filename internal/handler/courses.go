@@ -69,13 +69,6 @@ type Specialization struct {
 	Cards []CourseCard
 }
 
-var specMeta = []Specialization{
-	{Track: "devops", Name: "DevOps", Icon: "♾️", Desc: "Linux, Docker, Kubernetes, Git, CI/CD и мониторинг"},
-	{Track: "golang", Name: "Golang", Icon: "🐹", Desc: "Go с нуля до backend-разработчика"},
-	{Track: "security", Name: "Кибербезопасность", Icon: "🛡️", Desc: "Наступательная и защитная безопасность"},
-	{Track: "database", Name: "Базы данных", Icon: "🗄️", Desc: "SQL и проектирование баз данных"},
-}
-
 func specForTrack(track string) string {
 	switch track {
 	case "devops":
@@ -132,8 +125,11 @@ func humanDuration(minutes int) string {
 	if minutes < 60 {
 		return fmt.Sprintf("~%d мин", minutes)
 	}
-	h := minutes / 60
-	return fmt.Sprintf("~%d ч", h)
+	h, m := minutes/60, minutes%60
+	if m == 0 {
+		return fmt.Sprintf("~%d ч", h)
+	}
+	return fmt.Sprintf("~%d ч %d мин", h, m)
 }
 
 // buildCard turns a module into a catalog card using the progress map.
@@ -182,7 +178,7 @@ func (h *Handler) CoursesPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal error", 500)
 		return
 	}
-	prog, _ := h.progressRepo.GetAll(ctx)
+	prog, _ := h.progressRepo.GetAll(ctx, currentUserID(ctx))
 	pmap := make(map[int]string)
 	for _, p := range prog {
 		pmap[p.LessonID] = p.Status
@@ -251,7 +247,7 @@ func (h *Handler) SectionPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal error", 500)
 		return
 	}
-	prog, _ := h.progressRepo.GetAll(ctx)
+	prog, _ := h.progressRepo.GetAll(ctx, currentUserID(ctx))
 	pmap := make(map[int]string)
 	for _, p := range prog {
 		pmap[p.LessonID] = p.Status

@@ -11,7 +11,7 @@ type TrainersData struct {
 func (h *Handler) TrainersPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	modules, _ := h.moduleRepo.GetAll(ctx)
-	prog, _ := h.progressRepo.GetAll(ctx)
+	prog, _ := h.progressRepo.GetAll(ctx, currentUserID(ctx))
 	pmap := make(map[int]string)
 	for _, p := range prog {
 		pmap[p.LessonID] = p.Status

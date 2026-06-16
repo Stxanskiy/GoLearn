@@ -1,0 +1,78 @@
+{
+  "_id": "4ed2b809d7446b9a0e000099",
+  "id": 99,
+  "fields": [
+    "income_from_female"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "income_from_female"
+    ],
+    "rows": [
+      {
+        "income_from_female": 41000
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "VK",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200099",
+    "id": "4ed2b809d7446b9a0e200099",
+    "title": "VK",
+    "name": "QuestionCustomDatabase_99_100",
+    "tables": [
+      {
+        "id": "Purchases",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": true,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_gender",
+            "isKey": false,
+            "name": "user_gender",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "items",
+            "isKey": false,
+            "name": "items",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Purchases",
+        "description": "Список покупок"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Purchases": {
+        "x": 0,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "VK"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Посчитай доход с женской аудитории (доход = сумма(price * items)). Обратите внимание, что в таблице женская аудитория имеет поле user_gender «female» или «f».",
+  "title": "Доход с женской аудитории",
+  "additional_info": []
+}

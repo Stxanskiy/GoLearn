@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Коррелированные подзапросы</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="korrelirovannye-podzaprosy" class="sc-bce5c646-1 fYolVj">Коррелированные подзапросы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Все предыдущие рассматриваемые подзапросы были некоррелированные (независимые).
+Они могли выполняться автономно от основного запроса и мы могли посмотреть, что они возвращают перед тем, как их результат будет использоваться в основном запросе.
+Коррелированные же подзапросы ссылаются на один или несколько столбцов основного запроса.</p>
+<h2 id="primer-korrelirovannogo-podzaprosa" class="sc-bce5c646-1 fYolVj">Пример коррелированного подзапроса<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Например, следующий коррелируемый подзапрос находит, кто и сколько потратил:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> FamilyMembers<span class="token punctuation">.</span>member_name<span class="token punctuation">,</span> <span class="token punctuation">(</span>
+    <span class="token keyword">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>Payments<span class="token punctuation">.</span>unit_price <span class="token operator">*</span> Payments<span class="token punctuation">.</span>amount<span class="token punctuation">)</span>
+    <span class="token keyword">FROM</span> Payments
+    <span class="token keyword">WHERE</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+<span class="token punctuation">)</span> <span class="token keyword">AS</span> total_spent
+<span class="token keyword">FROM</span> FamilyMembers<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:228px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">member_name</th><th style="min-width:auto">total_spent</th></tr></thead><tbody><tr class="highlight-row"><td>Headley Quincey</td><td>2504</td></tr><tr class="highlight-row"><td>Flavia Quincey</td><td>74194</td></tr><tr class="highlight-row"><td>Andie Quincey</td><td>3600</td></tr><tr class="highlight-row"><td>Lela Quincey</td><td>650</td></tr><tr class="highlight-row"><td>Annie Quincey</td><td>1060</td></tr><tr class="highlight-row"><td>Ernest Forrest</td><td>&lt;NULL&gt;</td></tr><tr class="highlight-row"><td>Constance Forrest</td><td>&lt;NULL&gt;</td></tr><tr class="highlight-row"><td>Wednesday Addams</td><td>&lt;NULL&gt;</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>В данном случае, коррелированный подзапрос ссылается к столбцу <span class="sql-code sql-code-line sql-code-line--blue-color ">member_id</span> из основного запроса.</p>
+<p>Коррелированный подзапрос отличается от некоррелированного подзапроса тем,
+что он выполняется не один раз перед выполнением запроса, в который он вложен, а для каждой строки, которая может быть включена в окончательный результат.</p>
+<p>Так в нашем случае основной запрос к таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span> возвращает 8 записей и для каждой из них выполняется коррелированный подзапрос.</p>
+<h2 id="vliyanie-na-proizvoditelnost" class="sc-bce5c646-1 fYolVj">Влияние на производительность<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Следует обратить внимание на то, что использование коррелированных подзапросов может вызвать проблемы с производительностью,
+особенно если содержащий запрос возвращает много строк, так как коррелированный подзапрос будет выполняться для каждой строки содержащего запроса отдельно.</p>

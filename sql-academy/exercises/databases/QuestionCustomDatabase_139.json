@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200308",
+  "id": "4ed2b809d7446b9a0e200308",
+  "title": "Amazon",
+  "name": "QuestionCustomDatabase_139",
+  "tables": [
+    {
+      "id": "World",
+      "props": [
+        {
+          "id": "name",
+          "isKey": true,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "continent",
+          "isKey": false,
+          "name": "continent",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "area",
+          "isKey": false,
+          "name": "area",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "population",
+          "isKey": false,
+          "name": "population",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "gdp",
+          "isKey": false,
+          "name": "gdp",
+          "type": "BIGINT",
+          "description": null
+        }
+      ],
+      "title": "World",
+      "description": "Страны мира"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "World": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Amazon"
+}

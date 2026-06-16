@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200108",
+  "id": "4ed2b809d7446b9a0e200108",
+  "title": "Skypro",
+  "name": "QuestionCustomDatabase_108",
+  "tables": [
+    {
+      "id": "Events",
+      "props": [
+        {
+          "id": "event_id",
+          "isKey": true,
+          "name": "event_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "event_type",
+          "isKey": false,
+          "name": "event_type",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "event_date",
+          "isKey": false,
+          "name": "event_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "Events",
+      "description": "Список действий покупателей курсов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Events": {
+      "x": 0,
+      "y": 250
+    }
+  },
+  "isHidden": true,
+  "description": "SkyPro"
+}

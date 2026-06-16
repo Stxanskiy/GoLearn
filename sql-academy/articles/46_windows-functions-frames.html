@@ -1,0 +1,106 @@
+<!doctype html><meta charset="utf-8"><title>Рамки окон</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="ramki-okon" class="sc-bce5c646-1 fYolVj">Рамки окон<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>В контексте оконных функций SQL, «окно» определяет подмножество строк,
+которые рассматриваются SQL-функцией при выполнении вычислений.</p>
+<p>Другими словами, окно — это динамический набор строк, который &quot;скользит&quot; по вашему результату запроса,
+образуя различные наборы данных для каждой строки, в зависимости от заданного вами определения окна.</p>
+<h2 id="okno-vs-particii" class="sc-bce5c646-1 fYolVj">Окно vs Партиции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Хотя термины &quot;окно&quot; и &quot;партиция&quot; могут показаться схожими, они представляют разные концепции:</p>
+<ul>
+<li>
+<p>Партиция (<span class="sql-code sql-code-line sql-code-line--blue-color ">PARTITION BY</span>). Это деление всего набора результатов на непересекающиеся подмножества,
+где каждое подмножество содержит строки с одинаковыми значениями в одном или нескольких столбцах.
+Оконные функции применяются отдельно к каждой партиции, как если бы каждая из них была отдельным набором данных.</p>
+<p><img title="Схема разбиения на партиции" alt="Схема разбиения на партиции" loading="lazy" width="1513" height="657" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fpartitions_visualisation.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fpartitions_visualisation.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fpartitions_visualisation.png&amp;w=3840&amp;q=50"/></p>
+</li>
+<li>
+<p>Окно. Определяет, какие конкретные строки в каждой партиции будут использоваться
+для вычисления оконной функции для каждой строки.
+Окно может изменяться от строки к строке.</p>
+<p>Например, если используется правило <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS BETWEEN 1 PRECEDING AND CURRENT ROW</span>, то
+для каждой строки окно будет состоять из неё самой и одной предшествующей строки.
+Это как &quot;подпартиция&quot; внутри уже существующей партиции.</p>
+<p><img title="Схема разбиения на партиции" alt="Схема разбиения на партиции" loading="lazy" width="1413" height="700" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindows_visualisation.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindows_visualisation.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindows_visualisation.png&amp;w=3840&amp;q=50"/></p>
+<p>То есть:</p>
+<ul>
+<li>Первое окно у нас состоит только из 1-ой записи, потому что предыдущей записи нет. Одна единственная запись подаётся
+в агрегатную функцию <span class="sql-code sql-code-line sql-code-line--blue-color ">AVG(price)</span> и результат добавляется в поле <span class="sql-code sql-code-line sql-code-line--blue-color ">avg_price</span>.</li>
+<li>Второе окно у нас уже содержит 1 и 2 запись, которые и отправляются в <span class="sql-code sql-code-line sql-code-line--blue-color ">AVG(price)</span> и возвращают <span class="sql-code sql-code-line sql-code-line--blue-color ">(170 + 220) / 2 = 195</span>.</li>
+<li>Третье окно у нас содержит 2 и 3 запись, результат <span class="sql-code sql-code-line sql-code-line--blue-color ">(220 + 150) / 2 = 185</span>.</li>
+<li>и т.д.</li>
+</ul>
+</li>
+</ul>
+<h3 id="primechanie-ob-okne-bez-rowsrange" class="sc-bce5c646-1 fYolVj">Примечание об окне без ROWS/RANGE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Если в определении оконной функции отсутствует <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS/RANGE</span>,
+тогда окно по умолчанию совпадает с партицией.
+В этом случае, оконная функция будет обрабатывать все строки внутри партиции, не ограничиваясь подмножеством.
+Это значит, что результат функции будет одинаков для всех строк внутри той же партиции.</p>
+<h2 id="opredelenie-granic-okon" class="sc-bce5c646-1 fYolVj">Определение границ окон<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Используя синтаксис <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> или <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span>, мы можем определить какое именно окно с данными будет передаваться в оконную функцию
+для вычисления значения для текущей строки.</p>
+<p>Синтаксис определения границ окна выглядит как указание диапазона относительно текущей строки.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">&lt;</span>оконная_функция<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>поле_таблицы<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token keyword">OVER</span> <span class="token punctuation">(</span>
+      <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+      <span class="token keyword">ROWS</span><span class="token operator">|</span>RANGE <span class="token operator">BETWEEN</span> <span class="token operator">&lt;</span>начало границы окна<span class="token operator">&gt;</span> <span class="token operator">AND</span> <span class="token operator">&lt;</span>конец границы окна<span class="token operator">&gt;</span>
+<span class="token punctuation">)</span>
+</code></pre></div></pre>
+<p>Например, если мы хотим, чтобы в оконную функцию при вычислениях попадали только две предыдущие записи и текущая строка, то
+синтаксис будет выглядеть следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">ROWS</span><span class="token operator">|</span>RANGE <span class="token operator">BETWEEN</span> <span class="token number">2</span> <span class="token keyword">PRECEDING</span> <span class="token operator">AND</span> <span class="token keyword">CURRENT</span> <span class="token keyword">ROW</span>
+</code></pre></div></pre>
+<p>Если мы хотим, чтобы в оконную функцию передавались текущая строка и все последующие, то синтаксис будет выглядеть
+так:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token keyword">ROWS</span><span class="token operator">|</span>RANGE <span class="token operator">BETWEEN</span> <span class="token keyword">CURRENT</span> <span class="token keyword">ROW</span> <span class="token operator">AND</span> <span class="token keyword">UNBOUNDED</span> <span class="token keyword">FOLLOWING</span>
+</code></pre></div></pre>
+<h3 id="vozmozhnye-opredeleniya-granic-okna" class="sc-bce5c646-1 fYolVj">Возможные определения границ окна<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">UNBOUNDED PRECEDING</span>, все строки, предшествующие текущей</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">N PRECEDING</span>, N строк до текущей строки</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">CURRENT ROW</span>, текущая строка</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">N FOLLOWING</span>, N строк после текущей строки</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">UNBOUNDED FOLLOWING</span>, все последующие строки</li>
+</ul>
+<h3 id="shema-opredeleniya-granic-okna" class="sc-bce5c646-1 fYolVj">Схема определения границ окна<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p><img title="Определение границ окна" alt="Определение границ окна" loading="lazy" width="1307" height="529" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindow-definition.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindow-definition.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Fwindow-definition.png&amp;w=3840&amp;q=50"/></p>
+<h2 id="otlichie-rows-ot-range" class="sc-bce5c646-1 fYolVj">Отличие ROWS от RANGE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Для определения границ окна используются ключевые слова <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span>. Работают они по-разному:</p>
+<h3 id="rows" class="sc-bce5c646-1 fYolVj">ROWS<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<ul>
+<li>
+<p>Основан на физических строках:</p>
+<p>При использовании <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> определение окна основывается на физическом положении строк относительно текущей строки.
+Например, <span class="sql-code sql-code-line sql-code-line--blue-color ">1 PRECEDING</span> означает одну строку до текущей.</p>
+</li>
+<li>
+<p>Точная граница:</p>
+<p>Определение окна с помощью <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> чётко ограничивает количество строк, которые включаются в окно,
+делая его предсказуемым и конкретным.</p>
+</li>
+</ul>
+<p><img title="Определение границ окна c rows" alt="Определение границ окна c rows" loading="lazy" width="1568" height="520" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frows_example.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frows_example.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frows_example.png&amp;w=3840&amp;q=50"/></p>
+<h3 id="range" class="sc-bce5c646-1 fYolVj">RANGE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<ul>
+<li>
+<p>Основан на значениях:</p>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span>, в отличие от <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span>, определяет границы окна на основе значений столбцов,
+упорядоченных в соответствии с <span class="sql-code sql-code-line sql-code-line--blue-color ">ORDER BY</span> в оконной функции.</p>
+</li>
+<li>
+<p>Динамичность границ:</p>
+<p>Границы, определённые с помощью <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span>, могут варьироваться
+в зависимости от данных, что делает окно гибким, но потенциально менее предсказуемым.</p>
+</li>
+</ul>
+<p><img title="Определение границ окна c range" alt="Определение границ окна c range" loading="lazy" width="1383" height="528" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frange_example.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frange_example.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fwindows-functions-frames%2Frange_example.png&amp;w=3840&amp;q=50"/></p>
+<p>Давайте проверим, правильно ли вы поняли разницу между <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span>:</p>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Какое из следующих утверждений наилучшим образом описывает разницу между использованием <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE</span> в контексте оконных функций SQL?</strong></p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":Rum6hn6:ROWS и RANGE являются взаимозаменяемыми, поскольку оба определяют физические строки в окне0" name=":Rum6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rum6hn6:ROWS и RANGE являются взаимозаменяемыми, поскольку оба определяют физические строки в окне0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>ROWS и RANGE являются взаимозаменяемыми, поскольку оба определяют физические строки в окне</label></div><input type="radio" id=":Rum6hn6:ROWS определяет границы окна на основе физического положения строк, а RANGE — на основе значений столбцов.1" name=":Rum6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rum6hn6:ROWS определяет границы окна на основе физического положения строк, а RANGE — на основе значений столбцов.1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>ROWS определяет границы окна на основе физического положения строк, а RANGE — на основе значений столбцов.</label></div><input type="radio" id=":Rum6hn6:RANGE использует физическое расположение строк, а ROWS — значения столбцов.2" name=":Rum6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rum6hn6:RANGE использует физическое расположение строк, а ROWS — значения столбцов.2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>RANGE использует физическое расположение строк, а ROWS — значения столбцов.</label></div><input type="radio" id=":Rum6hn6:И ROWS, и RANGE определяют границы окна исключительно на основе значений столбцов.3" name=":Rum6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rum6hn6:И ROWS, и RANGE определяют границы окна исключительно на основе значений столбцов.3" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>И ROWS, и RANGE определяют границы окна исключительно на основе значений столбцов.</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>

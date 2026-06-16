@@ -1,0 +1,130 @@
+{
+  "_id": "4ed2b809d7446b9a0e000098",
+  "id": 98,
+  "fields": [
+    "DepartmentName",
+    "HighestSalary"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "DepartmentName",
+      "HighestSalary"
+    ],
+    "rows": [
+      {
+        "DepartmentName": "Finance",
+        "HighestSalary": 4000
+      },
+      {
+        "DepartmentName": "Operations",
+        "HighestSalary": 3200
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "VK",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200098",
+    "id": "4ed2b809d7446b9a0e200098",
+    "title": "VK",
+    "name": "QuestionCustomDatabase_98",
+    "tables": [
+      {
+        "id": "Departments",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Departments",
+        "description": "Список департаментов"
+      },
+      {
+        "id": "Employees",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "Dep_id",
+            "isKey": false,
+            "name": "Dep_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "Manager_id",
+            "isKey": false,
+            "name": "Manager_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "Salary",
+            "isKey": false,
+            "name": "Salary",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Employees",
+        "description": "Список сотрудников"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Employees",
+          "field": "Dep_id"
+        },
+        "target": {
+          "table": "Departments",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+      }
+    ],
+    "tablePosition": {
+      "Departments": {
+        "x": 0,
+        "y": 250
+      },
+      "Employees": {
+        "x": 350,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "VK"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Найти наибольшую зарплату по департаментам и отсортировать департаменты по убыванию максимальной зарплаты.",
+  "title": "Наибольшая зарплата по департаментам",
+  "additional_info": []
+}

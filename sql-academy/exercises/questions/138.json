@@ -1,0 +1,85 @@
+{
+  "_id": "4ed2b809d7446b9a0e000138",
+  "id": 138,
+  "fields": [
+    "avg_score"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "avg_score"
+    ],
+    "rows": [
+      {
+        "avg_score": 3.375
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Yandex",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200307",
+    "id": "4ed2b809d7446b9a0e200307",
+    "title": "Yandex",
+    "name": "QuestionCustomDatabase_138",
+    "tables": [
+      {
+        "id": "quality_score",
+        "props": [
+          {
+            "id": "call_id",
+            "isKey": false,
+            "name": "call_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "call_dt",
+            "isKey": false,
+            "name": "call_dt",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "operator",
+            "isKey": false,
+            "name": "operator",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "score_dt",
+            "isKey": false,
+            "name": "score_dt",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "score",
+            "isKey": false,
+            "name": "score",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "quality_score",
+        "description": "Оценки качества звонков"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "quality_score": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Yandex"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        У вас есть таблица <b>quality_score</b> с результатами внутренней проверки качества звонков операторов.\n                        <br><br>\n                        В случае несогласия с оценкой, оператор может обжаловать её, тогда новая оценка по звонку запишется в эту же таблицу новой строкой.\n                        Таким образом, по одному звонку может быть сохранено несколько записей об оценке.\n                        <br><br>\n                        Поля таблицы:\n                        <ul>\n                            <li>call_id – id звонка</li>\n                            <li>call_dt – дата совершения звонка</li>\n                            <li>operator – имя оператора</li>\n                            <li>score_dt – дата оценки</li>\n                            <li>score – оценка</li>\n                        </ul>\n                        Рассчитайте итоговую среднюю оценку (avg_score) по всем звонкам, которые были совершены в августе 2021.\n                        <br><br>\n                        Если записей с оценками по звонку несколько, то берём самую свежую оценку.\n                    ",
+  "title": "Средняя оценка качества звонков",
+  "additional_info": []
+}

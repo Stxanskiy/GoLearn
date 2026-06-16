@@ -1,0 +1,81 @@
+{
+  "_id": "4ed2b809d7446b9a0e000184",
+  "id": 184,
+  "fields": [
+    "user_id",
+    "transactions_count"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "user_id",
+      "transactions_count"
+    ],
+    "rows": [
+      {
+        "user_id": 99,
+        "transactions_count": 12
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Kaspi",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200409",
+    "id": "4ed2b809d7446b9a0e200409",
+    "title": "Kaspi — транзакции",
+    "name": "QuestionCustomDatabase_184",
+    "tables": [
+      {
+        "id": "transactions",
+        "props": [
+          {
+            "id": "transaction_id",
+            "isKey": true,
+            "name": "transaction_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "transaction_date",
+            "isKey": false,
+            "name": "transaction_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "amount",
+            "isKey": false,
+            "name": "amount",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "transactions",
+        "description": "Транзакции пользователей: сумма amount в день transaction_date"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "transactions": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Kaspi — транзакции"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>transactions</b> хранятся транзакции пользователей Kaspi:\n            <b>user_id</b> — пользователь, <b>transaction_date</b> — дата,\n            <b>amount</b> — сумма.\n            <br><br>\n            Аналитики выделяют <b>VIP-пользователей</b> — тех, кто за <b>январь 2024</b>\n            совершил <b>более 5</b> транзакций.\n            <br><br>\n            Выведите <b>user_id</b> и <b>transactions_count</b> (число транзакций за\n            январь 2024) таких пользователей. Отсортируйте по <b>user_id</b> по\n            возрастанию.\n        ",
+  "title": "VIP-пользователи по числу транзакций",
+  "additional_info": []
+}

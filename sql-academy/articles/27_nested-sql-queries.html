@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Подзапросы</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><div class="sc-19c49508-0 llJRCi"><img src="/static/guidePage/nested-sql-queries/banner.jpg"/></div>
+<h1 id="podzaprosy" class="sc-bce5c646-1 fYolVj">Подзапросы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Подзапросы являются одним из самых мощных инструментов 💪 в SQL, который можно использовать в любых видах запросов.
+В ближайших уроках мы познакомимся с основными типами подзапросов и рассмотрим примеры, как их можно использовать.</p>
+<blockquote>
+<p>Подзапрос — это запрос, использующийся в другом SQL запросе.
+Подзапрос всегда заключён в круглые скобки и обычно выполняется перед
+основным запросом.</p>
+</blockquote>
+<p>Как и любой другой SQL запрос, подзапрос возвращает результирующий набор, который может быть одним из следующих:</p>
+<ul>
+<li>одна строка и один столбец;</li>
+<li>нескольких строк с одним столбцом;</li>
+<li>нескольких строк с несколькими столбцами.</li>
+</ul>
+<p>В зависимости от типа результирующего набора подзапроса определяются операторы, которые могут использоваться в основном запросе.</p>
+<h2 id="primer" class="sc-bce5c646-1 fYolVj">Пример<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Получим список всех бронирований самого дорогого на данный момент жилого помещения:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Reservations
+    <span class="token keyword">WHERE</span> Reservations<span class="token punctuation">.</span>room_id <span class="token operator">=</span> <span class="token punctuation">(</span>
+        <span class="token keyword">SELECT</span> id <span class="token keyword">FROM</span> Rooms <span class="token keyword">ORDER</span> <span class="token keyword">BY</span> price <span class="token keyword">DESC</span> <span class="token keyword">LIMIT</span> <span class="token number">1</span>
+    <span class="token punctuation">)</span>
+</code></pre></div></pre>
+<p>В данном случае запрос на получение самого дорогого жилого помещения выполняется в качестве подзапроса,
+а затем результат результирующего набора применяется в основном запросе.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> id <span class="token keyword">FROM</span> Rooms <span class="token keyword">ORDER</span> <span class="token keyword">BY</span> price <span class="token keyword">DESC</span> <span class="token keyword">LIMIT</span> <span class="token number">1</span>
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">id</th></tr></thead><tbody><tr class="highlight-row"><td>21</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Более детально с каждым видом подзапросов мы познакомимся в следующих уроках.</p>

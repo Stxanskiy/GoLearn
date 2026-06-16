@@ -1,0 +1,172 @@
+{
+  "_id": "4ed2b809d7446b9a0e000179",
+  "id": 179,
+  "fields": [
+    "city",
+    "total_revenue"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "city",
+      "total_revenue"
+    ],
+    "rows": [
+      {
+        "city": "Paris",
+        "total_revenue": 2480
+      },
+      {
+        "city": "Amsterdam",
+        "total_revenue": 1650
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Booking.com",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200408",
+    "id": "4ed2b809d7446b9a0e200408",
+    "title": "Booking.com",
+    "name": "QuestionCustomDatabase_179_182",
+    "tables": [
+      {
+        "id": "properties",
+        "props": [
+          {
+            "id": "property_id",
+            "isKey": true,
+            "name": "property_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "city",
+            "isKey": false,
+            "name": "city",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "country",
+            "isKey": false,
+            "name": "country",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "property_type",
+            "isKey": false,
+            "name": "property_type",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "stars",
+            "isKey": false,
+            "name": "stars",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "properties",
+        "description": "Объекты размещения. property_type: Hotel / Apartment / Hostel / Resort / Guesthouse"
+      },
+      {
+        "id": "bookings",
+        "props": [
+          {
+            "id": "booking_id",
+            "isKey": true,
+            "name": "booking_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "property_id",
+            "isKey": false,
+            "name": "property_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "check_in",
+            "isKey": false,
+            "name": "check_in",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "check_out",
+            "isKey": false,
+            "name": "check_out",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "total_price",
+            "isKey": false,
+            "name": "total_price",
+            "type": "DECIMAL",
+            "description": null
+          },
+          {
+            "id": "status",
+            "isKey": false,
+            "name": "status",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "bookings",
+        "description": "Бронирования. status: confirmed / completed / cancelled"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "properties",
+          "field": "property_id"
+        },
+        "target": {
+          "table": "bookings",
+          "field": "property_id"
+        },
+        "type": "one-to-many",
+        "id": "rel-booking-property-booking"
+      }
+    ],
+    "tablePosition": {
+      "properties": {
+        "x": 0,
+        "y": 0
+      },
+      "bookings": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Booking.com"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>bookings</b> хранятся бронирования объектов из\n            <b>properties</b>. Учитывайте только <b>завершённые</b>\n            бронирования (<b>status</b> = 'completed').\n            <br><br>\n            Напишите запрос, который вернёт <b>city</b> и <b>total_revenue</b>\n            (суммарную стоимость завершённых бронирований в этом городе).\n            Отсортируйте по <b>total_revenue</b> по убыванию.\n        ",
+  "title": "Выручка по городам",
+  "additional_info": []
+}

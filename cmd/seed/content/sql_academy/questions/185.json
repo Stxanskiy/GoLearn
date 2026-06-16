@@ -1,0 +1,120 @@
+{
+  "_id": "4ed2b809d7446b9a0e000185",
+  "id": 185,
+  "fields": [
+    "product_id",
+    "ctr"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "product_id",
+      "ctr"
+    ],
+    "rows": [
+      {
+        "product_id": 999,
+        "ctr": 42.86
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Kaspi",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200410",
+    "id": "4ed2b809d7446b9a0e200410",
+    "title": "Kaspi — просмотры и корзина",
+    "name": "QuestionCustomDatabase_185",
+    "tables": [
+      {
+        "id": "product_views",
+        "props": [
+          {
+            "id": "view_id",
+            "isKey": true,
+            "name": "view_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "product_id",
+            "isKey": false,
+            "name": "product_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "view_date",
+            "isKey": false,
+            "name": "view_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "product_views",
+        "description": "Просмотры товаров пользователями"
+      },
+      {
+        "id": "product_add_to_cart",
+        "props": [
+          {
+            "id": "add_id",
+            "isKey": true,
+            "name": "add_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "product_id",
+            "isKey": false,
+            "name": "product_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "add_date",
+            "isKey": false,
+            "name": "add_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "product_add_to_cart",
+        "description": "Добавления товаров в корзину"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "product_views": {
+        "x": 0,
+        "y": 0
+      },
+      "product_add_to_cart": {
+        "x": 320,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Kaspi — просмотры и корзина"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>product_views</b> хранятся просмотры товаров (<b>user_id</b>,\n            <b>product_id</b>), а в таблице <b>product_add_to_cart</b> — добавления\n            товаров в корзину (<b>user_id</b>, <b>product_id</b>). Один пользователь\n            может просмотреть товар несколько раз.\n            <br><br>\n            Для каждого товара посчитайте <b>CTR</b> — долю пользователей, которые\n            добавили товар в корзину после его просмотра, среди всех, кто этот товар\n            просматривал. Добавление учитывается, только если тот же пользователь\n            ранее просматривал этот же товар.\n            <br><br>\n            Выведите <b>product_id</b> и <b>ctr</b> (доля в процентах, округлённая до\n            двух знаков). Отсортируйте по <b>product_id</b> по возрастанию.\n        ",
+  "title": "CTR добавления товара в корзину",
+  "additional_info": []
+}

@@ -36,7 +36,7 @@ func (h *Handler) UpdateProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.progressRepo.Upsert(r.Context(), lessonID, req.Status); err != nil {
+	if err := h.progressRepo.Upsert(r.Context(), currentUserID(r.Context()), lessonID, req.Status); err != nil {
 		h.log.Error("update progress", "error", err)
 		http.Error(w, "Internal error", 500)
 		return
@@ -59,7 +59,7 @@ func (h *Handler) SaveNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.progressRepo.SaveNotes(r.Context(), lessonID, req.Notes); err != nil {
+	if err := h.progressRepo.SaveNotes(r.Context(), currentUserID(r.Context()), lessonID, req.Notes); err != nil {
 		h.log.Error("save notes", "error", err)
 		http.Error(w, "Internal error", 500)
 		return

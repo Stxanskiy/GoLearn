@@ -1,0 +1,182 @@
+<!doctype html><meta charset="utf-8"><title>Индексы в SQL</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><div class="sc-19c49508-0 llJRCi"><img src="/static/guidePage/indexes/banner.jpg"/></div>
+<!-- -->
+<h1 id="indeksy-v-sql" class="sc-bce5c646-1 fYolVj">Индексы в SQL<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Когда вы добавляете в таблицу новую строку, СУБД размещает эти данные не оптимально. Например, если
+вы добавляете строку в таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span>, СУБД не размещает строки в
+числовом порядке значений столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">id</span> или в алфавитном порядке значений столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">last_name</span>.
+Вместо этого он просто помещает данные в следующее доступное место в файле (СУБД поддерживает список свободных мест для каждой таблицы).</p>
+<p>Это приводит к тому, что для выполнения запроса типа:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> email <span class="token keyword">FROM</span> Users <span class="token keyword">WHERE</span> email <span class="token operator">LIKE</span> <span class="token string">&#x27;l%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Серверу базы данных приходится проверять каждую строку таблицы, чтобы найти соответствия.
+Это подходит для маленьких таблиц, но становится чрезмерно времязатратным по мере роста объёма данных.</p>
+<p>Для сравнения как запрос на поиск по <span class="sql-code sql-code-line sql-code-line--blue-color ">email</span> отработает в зависимости от наличия индекса на поле.</p>
+<p><img title="Сравнение скорости поиска в таблице с индексом" alt="Сравнение скорости поиска в таблице с индексом" loading="lazy" width="1155" height="319" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Findexes%2Fstatistic_ru.png&amp;w=1200&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Findexes%2Fstatistic_ru.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Findexes%2Fstatistic_ru.png&amp;w=3840&amp;q=50"/></p>
+<p>Индексы функционируют как предметные указатели в книге 📖, позволяя быстро находить информацию
+без прочтения всего текста. Они представляют собой специальные
+таблицы, строки которых, в отличие от обычных таблиц данных, расположены в строго определённом порядке.
+Но вместо того, чтобы содержать все данные о некоторой
+записи, индекс содержит только столбец (или столбцы), используемый, чтобы
+найти строки в таблице данных, вместе с информацией, описывающей, где
+физически расположена эта строка. Таким образом, роль индексов состоит
+в том, чтобы облегчить поиск подмножества строк и столбцов таблицы без
+необходимости сканировать каждую строку в таблице.</p>
+<h2 id="sozdanie-indeksa" class="sc-bce5c646-1 fYolVj">Создание индекса ✨<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Возвращаясь к таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span>, вы можете добавить
+индекс к столбцу <span class="sql-code sql-code-line sql-code-line--blue-color ">email</span>, чтобы ускорить любые запросы, которые работают
+со значением этого столбца.</p>
+<div class="guide-mysql-only"><p>Вот как можно добавить такой индекс в СУБД MySQL:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">INDEX</span> idx_email
+    <span class="token keyword">ON</span> Users <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Эта инструкция создаёт индекс c именем <span class="sql-code sql-code-line sql-code-line--blue-color ">idx_email</span> для столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">Users.email</span>. При наличии индекса оптимизатор запросов может выбрать использование индекса, если
+сочтёт это полезным. Если в таблице имеется более одного индекса, оптимизатор должен решить, применение какого именно индекса наиболее выгодно
+для конкретной инструкции SQL.</p><p>Все системы управления базами данных предоставляют возможность просмотра существующих индексов.
+Для пользователей MySQL существует команда <span class="sql-code sql-code-line sql-code-line--blue-color ">SHOW</span>, которая позволяет отобразить все индексы
+для конкретной таблицы, как показано в примере ниже:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SHOW</span> <span class="token keyword">INDEX</span> <span class="token keyword">FROM</span> Users<span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:114px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">Table</th><th style="min-width:auto">Non_unique</th><th style="min-width:auto">Key_name</th><th style="min-width:auto">Seq_in_index</th><th style="min-width:auto">Column_name</th></tr></thead><tbody><tr class="highlight-row"><td>users</td><td>0</td><td>PRIMARY</td><td>1</td><td>id</td></tr><tr class="highlight-row"><td>users</td><td>1</td><td>idx_email</td><td>1</td><td>email</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><p>Вывод демонстрирует, что в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> есть 2 индекса: один — для столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">id</span> с именем <span class="sql-code sql-code-line sql-code-line--blue-color ">PRIMARY</span>
+и ещё один для столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">email</span>, который мы только что определили.</p><p>Когда таблица была создана, MySQL автоматически сгенерировала
+индекс для столбца первичного ключа, которым в данном случае является
+<span class="sql-code sql-code-line sql-code-line--blue-color ">id</span>, и присвоил индексу имя <span class="sql-code sql-code-line sql-code-line--blue-color ">PRIMARY</span>.
+Это особый тип индекса, используемый с ограничением первичного ключа, которое гарантирует,
+что каждое значение в столбце или группе столбцов, назначенных в качестве первичного ключа таблицы,
+уникально и не может быть <span class="sql-code sql-code-line sql-code-line--blue-color ">NULL</span>.</p></div>
+<div class="guide-postgresql-only"><p>Вот как можно добавить такой индекс в СУБД PostgreSQL:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">INDEX</span> idx_email
+    <span class="token keyword">ON</span> Users <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Эта инструкция создаёт индекс c именем <span class="sql-code sql-code-line sql-code-line--blue-color ">idx_email</span> для столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">Users.email</span>. При наличии индекса оптимизатор запросов может выбрать использование индекса, если
+сочтёт это полезным. Если в таблице имеется более одного индекса, оптимизатор должен решить, применение какого именно индекса наиболее выгодно
+для конкретной инструкции SQL.</p><p>Все системы управления базами данных предоставляют возможность просмотра существующих индексов.
+Для пользователей PostgreSQL можно использовать запрос к системным таблицам для отображения всех индексов
+для конкретной таблицы:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> indexname<span class="token punctuation">,</span> indexdef
+<span class="token keyword">FROM</span> pg_indexes
+<span class="token keyword">WHERE</span> tablename <span class="token operator">=</span> <span class="token string">&#x27;users&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:114px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">indexname</th><th style="min-width:auto">indexdef</th></tr></thead><tbody><tr class="highlight-row"><td>users_pkey</td><td>CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)</td></tr><tr class="highlight-row"><td>idx_email</td><td>CREATE INDEX idx_email ON public.users USING btree (email)</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><p>PostgreSQL автоматически создаёт индекс для столбца первичного ключа, которым в данном случае является
+<span class="sql-code sql-code-line sql-code-line--blue-color ">id</span>. Это особый тип индекса, используемый с ограничением первичного ключа, которое гарантирует,
+что каждое значение в столбце или группе столбцов, назначенных в качестве первичного ключа таблицы,
+уникально и не может быть <span class="sql-code sql-code-line sql-code-line--blue-color ">NULL</span>.</p><p>PostgreSQL поддерживает различные типы индексов:</p><ul>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">B-tree</strong> (по умолчанию) — для операций сравнения и сортировки</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Hash</strong> — для операций равенства</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">GIN</strong> — для составных значений (массивы, JSON)</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">GiST</strong> — для геометрических данных и полнотекстового поиска</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">BRIN</strong> — для очень больших таблиц с естественной сортировкой</li>
+</ul></div>
+<h2 id="udalenie-indeksa" class="sc-bce5c646-1 fYolVj">Удаление индекса<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Если после создания индекса вы решите, что он больше не нужен, можете
+удалить его следующим образом:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">INDEX</span> idx_email <span class="token keyword">ON</span> Users<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Если после создания индекса вы решите, что он больше не нужен, можете
+удалить его следующим образом:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">INDEX</span> idx_email<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="unikalnye-(unique)-indeksy" class="sc-bce5c646-1 fYolVj">Уникальные (UNIQUE) индексы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>При проектировании баз данных важно определить, для каких столбцов допускаются повторения значений,
+а для каких — нет.</p>
+<p>Например, в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> может быть несколько пользователей с одинаковыми именами,
+но идентификаторы и адреса электронных почт они должны иметь разные, чтобы
+была возможность их различать.</p>
+<p>Добиться гарантируемой уникальности значений можно, создав уникальный индекс на столбец <span class="sql-code sql-code-line sql-code-line--blue-color ">Users.email</span>.
+Уникальный индекс выполняет две функции:</p>
+<ul>
+<li>он обеспечивает все преимущества стандартного индекса</li>
+<li>он предотвращает дублирование значений в индексируемом столбце</li>
+</ul>
+<p>Система управления базой данных будет проверять уникальный индекс при попытке добавления или
+изменения данных в индексированном столбце, чтобы убедиться, что введённое значение не дублирует
+уже существующее в таблице.</p>
+<p>Создание уникального индекса для столбца <span class="sql-code sql-code-line sql-code-line--blue-color ">Users.email</span> выполняется следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">UNIQUE</span> <span class="token keyword">INDEX</span> idx_email
+    <span class="token keyword">ON</span> Users <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<div class="guide-mysql-only"><p>При наличии индекса вы получите сообщение об ошибке, если попытаетесь добавить нового клиента с уже существующим адресом электронной
+почты:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">Error<span class="token punctuation">(</span><span class="token number">1062</span><span class="token punctuation">)</span> <span class="token number">23000</span>: <span class="token string">&quot;Duplicate entry &#x27;duplicate@gmail.com&#x27; for key &#x27;users.idx_email&#x27;&quot;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>При наличии индекса вы получите сообщение об ошибке, если попытаетесь добавить нового клиента с уже существующим адресом электронной
+почты:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">ERROR: <span class="token keyword">duplicate</span> <span class="token keyword">key</span> <span class="token keyword">value</span> violates <span class="token keyword">unique</span> <span class="token keyword">constraint</span> <span class="token string">&quot;idx_email&quot;</span>
+DETAIL: <span class="token keyword">Key</span> <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token keyword">duplicate</span><span class="token variable">@gmail.com</span><span class="token punctuation">)</span> already <span class="token keyword">exists</span><span class="token punctuation">.</span>
+</code></pre></div></pre></div>
+<p>Создание уникальных индексов для столбца или столбцов, определённых как первичный ключ, излишне,
+так как система управления базой данных автоматически обеспечивает уникальность значений первичного ключа.
+Впрочем, размещение нескольких уникальных индексов в одной таблице допустимо и может быть целесообразно,
+если вы видите в этом необходимость.</p>
+<h2 id="mnogostolbcovye-indeksy" class="sc-bce5c646-1 fYolVj">Многостолбцовые индексы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Помимо одностолбцовых индексов, существует возможность создавать индексы,
+включающие в себя несколько столбцов.
+К примеру, для поиска студентов по имени и фамилии можно создать совместный индекс
+по этим двум полям:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">INDEX</span> idx_full_name
+    <span class="token keyword">ON</span> Student <span class="token punctuation">(</span>last_name<span class="token punctuation">,</span> first_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Такой индекс окажется полезным для запросов, где необходимы и имя, и фамилия, или только фамилия.
+Однако, для запросов, задающих только имя, он не принесёт пользы.
+Это аналогично поиску номера телефона по телефонному справочнику: если известны и имя, и фамилия,
+поиск упрощается благодаря упорядоченности справочника по фамилии, а затем по имени.
+Если же известно только имя, придётся перебирать все записи в поисках нужного человека.</p>
+<p>При создании индексов, включающих несколько столбцов, важно продумать порядок столбцов в индексе,
+чтобы он был максимально эффективным.
+Однако для достижения нужной производительности запросов всегда
+можно создать несколько индексов с теми же столбцами, но разным порядком их следования.</p>
+<h2 id="kak-ispolzuyutsya-indeksy" class="sc-bce5c646-1 fYolVj">Как используются индексы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Индексы часто применяются СУБД для эффективного поиска нужных строк в таблице,
+а затем для получения дополнительных данных из связанных таблиц по запросу пользователя.
+Возьмём для примера запрос:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> id<span class="token punctuation">,</span> first_name<span class="token punctuation">,</span> last_name
+  <span class="token keyword">FROM</span> Student
+  <span class="token keyword">WHERE</span> first_name <span class="token operator">LIKE</span> <span class="token string">&#x27;A%&#x27;</span> <span class="token operator">AND</span> last_name <span class="token operator">LIKE</span> <span class="token string">&#x27;L%&#x27;</span>
+</code></pre></div></pre>
+<p>В ответ на такой запрос СУБД может выбрать один из нескольких подходов:</p>
+<ul>
+<li>Произвести полное сканирование всех строк таблицы.</li>
+<li>Воспользоваться индексом по столбцу <span class="sql-code sql-code-line sql-code-line--blue-color ">last_name</span> для поиска студентов с фамилией на «L», а затем проверить каждую из этих строк на соответствие имени, начинающегося на «A».</li>
+<li>Использовать составной индекс по <span class="sql-code sql-code-line sql-code-line--blue-color ">last_name</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">first_name</span> для непосредственного нахождения студентов, удовлетворяющих обоим критериям.</li>
+</ul>
+<p>Последний метод представляется наиболее эффективным, так как позволяет найти все необходимые строки
+за один проход, избегая повторного обращения к таблице.</p>
+<div class="guide-mysql-only"><p>Но как определить, какой из методов выберет оптимизатор запросов MySQL?
+Для этого можно использовать команду <span class="sql-code sql-code-line sql-code-line--blue-color ">EXPLAIN</span>, которая показывает, как СУБД планирует
+выполнить запрос, не запуская его фактически:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">EXPLAIN</span>
+  <span class="token keyword">SELECT</span> id<span class="token punctuation">,</span> first_name<span class="token punctuation">,</span> last_name
+  <span class="token keyword">FROM</span> Student
+  <span class="token keyword">WHERE</span> first_name <span class="token operator">LIKE</span> <span class="token string">&#x27;A%&#x27;</span>
+  <span class="token operator">AND</span> last_name <span class="token operator">LIKE</span> <span class="token string">&#x27;L%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">id</th><th style="min-width:auto">select_type</th><th style="min-width:auto">table</th><th style="min-width:auto">partitions</th><th style="min-width:auto">possible_keys</th><th style="min-width:auto">key</th></tr></thead><tbody><tr class="highlight-row"><td>1</td><td>SIMPLE</td><td>Student</td><td>&lt;NULL&gt;</td><td>idx_full_name,idx_last_name</td><td>idx_full_name</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><p>Анализируя результаты, можно увидеть, что в столбце <span class="sql-code sql-code-line sql-code-line--blue-color ">possible_keys</span> указаны потенциально
+применимые индексы <span class="sql-code sql-code-line sql-code-line--blue-color ">idx_last_name</span> или <span class="sql-code sql-code-line sql-code-line--blue-color ">idx_full_name</span>, а в столбце <span class="sql-code sql-code-line sql-code-line--blue-color ">key</span> указано,
+что выбран индекс <span class="sql-code sql-code-line sql-code-line--blue-color ">idx_full_name</span>.</p></div>
+<div class="guide-postgresql-only"><p>Но как определить, какой из методов выберет оптимизатор запросов PostgreSQL?
+Для этого можно использовать команду <span class="sql-code sql-code-line sql-code-line--blue-color ">EXPLAIN</span>, которая показывает, как СУБД планирует
+выполнить запрос:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">EXPLAIN</span>
+  <span class="token keyword">SELECT</span> id<span class="token punctuation">,</span> first_name<span class="token punctuation">,</span> last_name
+  <span class="token keyword">FROM</span> Student
+  <span class="token keyword">WHERE</span> first_name <span class="token operator">LIKE</span> <span class="token string">&#x27;A%&#x27;</span>
+  <span class="token operator">AND</span> last_name <span class="token operator">LIKE</span> <span class="token string">&#x27;L%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:152px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">QUERY PLAN</th></tr></thead><tbody><tr class="highlight-row"><td>Index Scan using idx_full_name on student  (cost=0.42..8.44 rows=1 width=68)</td></tr><tr class="highlight-row"><td>  Index Cond: ((last_name &gt;= &#x27;L&#x27;::text) AND (last_name &lt; &#x27;M&#x27;::text))</td></tr><tr class="highlight-row"><td>  Filter: ((first_name ~~ &#x27;A%&#x27;::text) AND (last_name ~~ &#x27;L%&#x27;::text))</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><p>Также можно использовать <span class="sql-code sql-code-line sql-code-line--blue-color ">EXPLAIN ANALYZE</span> для получения реальной статистики выполнения:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">EXPLAIN</span> <span class="token keyword">ANALYZE</span>
+  <span class="token keyword">SELECT</span> id<span class="token punctuation">,</span> first_name<span class="token punctuation">,</span> last_name
+  <span class="token keyword">FROM</span> Student
+  <span class="token keyword">WHERE</span> first_name <span class="token operator">LIKE</span> <span class="token string">&#x27;A%&#x27;</span>
+  <span class="token operator">AND</span> last_name <span class="token operator">LIKE</span> <span class="token string">&#x27;L%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:228px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">QUERY PLAN</th></tr></thead><tbody><tr class="highlight-row"><td>Index Scan using idx_full_name on student  (cost=0.42..8.44 rows=1 width=68) (actual time=0.025..0.027 rows=1 loops=1)</td></tr><tr class="highlight-row"><td>  Index Cond: ((last_name &gt;= &#x27;L&#x27;::text) AND (last_name &lt; &#x27;M&#x27;::text))</td></tr><tr class="highlight-row"><td>  Filter: ((first_name ~~ &#x27;A%&#x27;::text) AND (last_name ~~ &#x27;L%&#x27;::text))</td></tr><tr class="highlight-row"><td>Planning Time: 0.156 ms</td></tr><tr class="highlight-row"><td>Execution Time: 0.048 ms</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><p>Анализируя результаты <span class="sql-code sql-code-line sql-code-line--blue-color ">EXPLAIN</span>, можно увидеть, какой метод доступа выбрал оптимизатор —
+полное сканирование таблицы (Seq Scan) или сканирование индекса (Index Scan).</p></div>
+<h2 id="obratnaya-storona-indeksov" class="sc-bce5c646-1 fYolVj">Обратная сторона индексов<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Если индексы столь эффективны, возникает вопрос: почему бы просто не индексировать всё подряд? 🧐</p>
+<p>Ответ кроется в том, что каждый индекс представляет собой таблицу (пусть и особый тип
+таблицы, но все же это таблица). Следовательно, каждый раз, когда строка
+добавляется в таблицу или удаляется из неё, должны быть изменены все индексы в этой таблице. При обновлении строки любые индексы для столбца
+(или столбцов), которые были затронуты, также должны быть изменены.
+Следовательно, чем больше у вас индексов, тем больше должна работать СУБД, чтобы поддерживать все объекты схемы в актуальном состоянии — что
+приводит к замедлению работы.</p>
+<p>Более того, индексы занимают дополнительное место на диске и требуют внимательного управления
+со стороны администраторов баз данных. Поэтому оптимальным решением является создание индексов
+только тогда, когда это действительно необходимо. Если индекс нужен временно, например, для
+выполнения месячного отчёта, его можно добавить перед началом процедуры и удалить после её
+завершения.</p>
+<p>В итоге, идеальный подход заключается в нахождении баланса: необходимо иметь достаточно индексов
+для эффективной работы, но не столько, чтобы это сказывалось на производительности.
+Если вы не уверены в нужном количестве индексов, начните с минимального их числа и добавляйте
+по мере необходимости.</p>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Давайте проверим, как вы усвоили тему:</strong></p>
+<p>Какое утверждение наилучшим образом объясняет причину, по которой <strong class="sc-f6cdcda8-0 gqDbfN">не следует</strong> индексировать каждый столбец в таблице базы данных?</p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":R1gm6hn6:Индексы увеличивают скорость всех операций в базе данных, включая вставку, обновление и удаление данных.0" name=":R1gm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1gm6hn6:Индексы увеличивают скорость всех операций в базе данных, включая вставку, обновление и удаление данных.0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Индексы увеличивают скорость всех операций в базе данных, включая вставку, обновление и удаление данных.</label></div><input type="radio" id=":R1gm6hn6:Индексы не требуют дополнительного места на диске и поэтому могут быть созданы без каких-либо недостатков.1" name=":R1gm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1gm6hn6:Индексы не требуют дополнительного места на диске и поэтому могут быть созданы без каких-либо недостатков.1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Индексы не требуют дополнительного места на диске и поэтому могут быть созданы без каких-либо недостатков.</label></div><input type="radio" id=":R1gm6hn6:Индексы уменьшают необходимость в оптимизации запросов, так как автоматически оптимизируют все запросы.2" name=":R1gm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1gm6hn6:Индексы уменьшают необходимость в оптимизации запросов, так как автоматически оптимизируют все запросы.2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Индексы уменьшают необходимость в оптимизации запросов, так как автоматически оптимизируют все запросы.</label></div><input type="radio" id=":R1gm6hn6:Индексы ускоряют операции чтения, но могут замедлить операции записи, так как каждый индекс нужно обновить при изменении данных.3" name=":R1gm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1gm6hn6:Индексы ускоряют операции чтения, но могут замедлить операции записи, так как каждый индекс нужно обновить при изменении данных.3" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Индексы ускоряют операции чтения, но могут замедлить операции записи, так как каждый индекс нужно обновить при изменении данных.</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>

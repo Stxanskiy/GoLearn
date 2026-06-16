@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200106",
+  "id": "4ed2b809d7446b9a0e200106",
+  "title": "Skypro",
+  "name": "QuestionCustomDatabase_106",
+  "tables": [
+    {
+      "id": "Orders",
+      "props": [
+        {
+          "id": "order_id",
+          "isKey": true,
+          "name": "order_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "course_id",
+          "isKey": false,
+          "name": "course_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "order_date",
+          "isKey": false,
+          "name": "order_date",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "price",
+          "isKey": false,
+          "name": "price",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Orders",
+      "description": "Список купленных курсов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Orders": {
+      "x": 0,
+      "y": 250
+    }
+  },
+  "isHidden": true,
+  "description": "SkyPro"
+}

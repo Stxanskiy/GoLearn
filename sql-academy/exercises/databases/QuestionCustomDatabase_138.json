@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200307",
+  "id": "4ed2b809d7446b9a0e200307",
+  "title": "Yandex",
+  "name": "QuestionCustomDatabase_138",
+  "tables": [
+    {
+      "id": "quality_score",
+      "props": [
+        {
+          "id": "call_id",
+          "isKey": false,
+          "name": "call_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "call_dt",
+          "isKey": false,
+          "name": "call_dt",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "operator",
+          "isKey": false,
+          "name": "operator",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "score_dt",
+          "isKey": false,
+          "name": "score_dt",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "score",
+          "isKey": false,
+          "name": "score",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "quality_score",
+      "description": "Оценки качества звонков"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "quality_score": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Yandex"
+}

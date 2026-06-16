@@ -1,0 +1,369 @@
+{
+  "_id": "4ed2b809d7446b9a0e000048",
+  "id": 48,
+  "fields": [
+    "name",
+    "count"
+  ],
+  "author": null,
+  "difficulty": "medium",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e100003",
+    "name": "Schedule",
+    "title": "Расписание",
+    "description": null,
+    "tables": [
+      {
+        "id": "class",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": "Номер класса"
+          }
+        ],
+        "title": "Class",
+        "description": "Список классов в школе"
+      },
+      {
+        "id": "schedule",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": "Дата занятия"
+          },
+          {
+            "id": "class",
+            "isKey": false,
+            "name": "class",
+            "type": "INT",
+            "description": "Идентфикатор класса"
+          },
+          {
+            "id": "number_pair",
+            "isKey": false,
+            "name": "number_pair",
+            "type": "INT",
+            "description": "Порядковый номер занятия"
+          },
+          {
+            "id": "teacher",
+            "isKey": false,
+            "name": "teacher",
+            "type": "INT",
+            "description": "Идентификатор учителя"
+          },
+          {
+            "id": "subject",
+            "isKey": false,
+            "name": "subject",
+            "type": "INT",
+            "description": "Идентификатор предмета"
+          },
+          {
+            "id": "classroom",
+            "isKey": false,
+            "name": "classroom",
+            "type": "INT",
+            "description": "Идентификатор кабинета"
+          }
+        ],
+        "title": "Schedule",
+        "description": "Расписание занятий"
+      },
+      {
+        "id": "student",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "first_name",
+            "isKey": false,
+            "name": "first_name",
+            "type": "VARCHAR",
+            "description": "Имя учащегося"
+          },
+          {
+            "id": "middle_name",
+            "isKey": false,
+            "name": "middle_name",
+            "type": "VARCHAR",
+            "description": "Отчество учащегося"
+          },
+          {
+            "id": "last_name",
+            "isKey": false,
+            "name": "last_name",
+            "type": "VARCHAR",
+            "description": "Фамилия учащегося"
+          },
+          {
+            "id": "birthday",
+            "isKey": false,
+            "name": "birthday",
+            "type": "DATE",
+            "description": "Дата рождения учащегося"
+          },
+          {
+            "id": "address",
+            "isKey": false,
+            "name": "address",
+            "type": "VARCHAR",
+            "description": "Место жительства учащегося"
+          }
+        ],
+        "title": "Student",
+        "description": "Учащиеся"
+      },
+      {
+        "id": "student_in_class",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "class",
+            "isKey": false,
+            "name": "class",
+            "type": "INT",
+            "description": "Идентификатор класса"
+          },
+          {
+            "id": "student",
+            "isKey": false,
+            "name": "student",
+            "type": "INT",
+            "description": "Идентификатор учащегося"
+          }
+        ],
+        "title": "Student_in_class",
+        "description": "Информация о классе учащегося"
+      },
+      {
+        "id": "subject",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": "Название предмета"
+          }
+        ],
+        "title": "Subject",
+        "description": "Школьные предметы"
+      },
+      {
+        "id": "teacher",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "first_name",
+            "isKey": false,
+            "name": "first_name",
+            "type": "VARCHAR",
+            "description": "Имя учителя"
+          },
+          {
+            "id": "middle_name",
+            "isKey": false,
+            "name": "middle_name",
+            "type": "VARCHAR",
+            "description": "Отчество учителя"
+          },
+          {
+            "id": "last_name",
+            "isKey": false,
+            "name": "last_name",
+            "type": "VARCHAR",
+            "description": "Фамилия учителя"
+          }
+        ],
+        "title": "Teacher",
+        "description": "Преподаватели"
+      },
+      {
+        "id": "timepair",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "start_pair",
+            "isKey": false,
+            "name": "start_pair",
+            "type": "TIME",
+            "description": "Время начала занятия"
+          },
+          {
+            "id": "end_pair",
+            "isKey": false,
+            "name": "end_pair",
+            "type": "TIME",
+            "description": "Время окончания занятия"
+          }
+        ],
+        "title": "Timepair",
+        "description": "Расписание звонков"
+      }
+    ],
+    "active": true,
+    "relations": [
+      {
+        "source": {
+          "table": "schedule",
+          "field": "class"
+        },
+        "target": {
+          "table": "class",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e030-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "schedule",
+          "field": "number_pair"
+        },
+        "target": {
+          "table": "timepair",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e031-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "schedule",
+          "field": "teacher"
+        },
+        "target": {
+          "table": "teacher",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e032-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "schedule",
+          "field": "subject"
+        },
+        "target": {
+          "table": "subject",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e033-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "student_in_class",
+          "field": "class"
+        },
+        "target": {
+          "table": "class",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e034-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "student_in_class",
+          "field": "student"
+        },
+        "target": {
+          "table": "student",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c3e035-83ef-11ed-90e7-0d4a113da5ab"
+      }
+    ],
+    "tablePosition": {
+      "timepair": {
+        "x": 0,
+        "y": 243
+      },
+      "subject": {
+        "x": 0,
+        "y": 650
+      },
+      "schedule": {
+        "x": 379,
+        "y": 314
+      },
+      "class": {
+        "x": 379,
+        "y": 150
+      },
+      "student_in_class": {
+        "x": 689,
+        "y": 174
+      },
+      "student": {
+        "x": 691,
+        "y": 356
+      },
+      "teacher": {
+        "x": 0,
+        "y": 425
+      }
+    }
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведите заполненность классов в порядке убывания. Не выводите классы, в которых нет ни одного учащегося.",
+  "title": "Заполненность классов",
+  "additional_info": [
+    "Используйте конструкцию \"as count\" для агрегатной функции подсчета числа учащихся в классах. Это необходимо для корректной проверки."
+  ]
+}

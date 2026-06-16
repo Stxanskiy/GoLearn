@@ -1,0 +1,160 @@
+{
+  "_id": "4ed2b809d7446b9a0e000133",
+  "id": 133,
+  "fields": [
+    "name"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "Legacy Migration"
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Rostelecom",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200302",
+    "id": "4ed2b809d7446b9a0e200302",
+    "title": "Rostelecom",
+    "name": "QuestionCustomDatabase_132_134",
+    "tables": [
+      {
+        "id": "Developers",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Developers",
+        "description": "Разработчики"
+      },
+      {
+        "id": "Projects",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Projects",
+        "description": "Проекты"
+      },
+      {
+        "id": "ProjectHistory",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "project_id",
+            "isKey": false,
+            "name": "project_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "developer_id",
+            "isKey": false,
+            "name": "developer_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "start_date",
+            "isKey": false,
+            "name": "start_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "end_date",
+            "isKey": false,
+            "name": "end_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "ProjectHistory",
+        "description": "История работы над проектами"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Developers",
+          "field": "id"
+        },
+        "target": {
+          "table": "ProjectHistory",
+          "field": "developer_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778243"
+      },
+      {
+        "source": {
+          "table": "Projects",
+          "field": "id"
+        },
+        "target": {
+          "table": "ProjectHistory",
+          "field": "project_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778244"
+      }
+    ],
+    "tablePosition": {
+      "Developers": {
+        "x": 0,
+        "y": 0
+      },
+      "Projects": {
+        "x": 400,
+        "y": 0
+      },
+      "ProjectHistory": {
+        "x": 200,
+        "y": -300
+      }
+    },
+    "isHidden": true,
+    "description": "Rostelecom"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана база данных с информацией о разработчиках и проектах.\n                        В таблице Developers хранится информация о разработчиках,\n                        в таблице Projects - информация о проектах,\n                        в таблице ProjectHistory - история работы разработчиков над проектами.\n                        <br><br>\n                        Вывести все проекты (name), которые никогда не брались в работу разработчиками.\n                    ",
+  "title": "Проекты, которые никогда не брались в работу",
+  "additional_info": []
+}

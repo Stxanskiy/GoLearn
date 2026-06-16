@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200145",
+  "id": "4ed2b809d7446b9a0e200145",
+  "title": "Beeline",
+  "name": "QuestionCustomDatabase_118",
+  "tables": [
+    {
+      "id": "Calls",
+      "props": [
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "region",
+          "isKey": false,
+          "name": "region",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "duration",
+          "isKey": false,
+          "name": "duration",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Calls",
+      "description": "Данные звонков"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Calls": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Beeline"
+}

@@ -1,0 +1,90 @@
+{
+  "_id": "4ed2b809d7446b9a0e211139",
+  "id": "4ed2b809d7446b9a0e211139",
+  "title": "Microsoft",
+  "name": "QuestionCustomDatabase_113",
+  "tables": [
+    {
+      "id": "Products",
+      "props": [
+        {
+          "id": "product_id",
+          "isKey": true,
+          "name": "product_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "product_category",
+          "isKey": false,
+          "name": "product_category",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "product_name",
+          "isKey": false,
+          "name": "product_name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Products",
+      "description": "Список продуктов"
+    },
+    {
+      "id": "CustomerContracts",
+      "props": [
+        {
+          "id": "customer_id",
+          "isKey": false,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "product_id",
+          "isKey": false,
+          "name": "product_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "amount",
+          "isKey": false,
+          "name": "amount",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "CustomerContracts",
+      "description": "Список контрактов пользователей"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "CustomerContracts",
+        "field": "product_id"
+      },
+      "target": {
+        "table": "Products",
+        "field": "product_id"
+      },
+      "type": "many-to-one",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+    }
+  ],
+  "tablePosition": {
+    "CustomerContracts": {
+      "x": 0,
+      "y": 0
+    },
+    "Products": {
+      "x": 300,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Microsoft"
+}

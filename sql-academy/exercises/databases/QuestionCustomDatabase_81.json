@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200081",
+  "id": "4ed2b809d7446b9a0e200081",
+  "title": "Tweets",
+  "name": "QuestionCustomDatabase_81",
+  "tables": [
+    {
+      "id": "tweets",
+      "props": [
+        {
+          "id": "tweet_id",
+          "isKey": true,
+          "name": "tweet_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "msg",
+          "isKey": false,
+          "name": "msg",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "tweet_date",
+          "isKey": false,
+          "name": "tweet_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "Tweets",
+      "description": "Список твитов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "tweets": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Tweets"
+}

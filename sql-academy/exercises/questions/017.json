@@ -1,0 +1,217 @@
+{
+  "_id": "4ed2b809d7446b9a0e000017",
+  "id": 17,
+  "fields": [
+    "member_name",
+    "status",
+    "costs"
+  ],
+  "author": null,
+  "difficulty": "medium",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e100002",
+    "name": "Family",
+    "title": "Семья",
+    "description": "Информация о семейных покупках",
+    "tables": [
+      {
+        "id": "family_members",
+        "props": [
+          {
+            "id": "member_id",
+            "isKey": true,
+            "name": "member_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "status",
+            "isKey": false,
+            "name": "status",
+            "type": "VARCHAR",
+            "description": "Статус в семье (мать, отец и т.д.)"
+          },
+          {
+            "id": "member_name",
+            "isKey": false,
+            "name": "member_name",
+            "type": "VARCHAR",
+            "description": "Полное имя.<br />Формат: \"﻿<имя> <фамилия>﻿\""
+          },
+          {
+            "id": "birthday",
+            "isKey": false,
+            "name": "birthday",
+            "type": "DATETIME",
+            "description": "Дата рождения"
+          }
+        ],
+        "title": "FamilyMembers",
+        "description": "Члены семьи"
+      },
+      {
+        "id": "goods",
+        "props": [
+          {
+            "id": "good_id",
+            "isKey": true,
+            "name": "good_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "good_name",
+            "isKey": false,
+            "name": "good_name",
+            "type": "VARCHAR",
+            "description": "Название товара"
+          },
+          {
+            "id": "type",
+            "isKey": false,
+            "name": "type",
+            "type": "INT",
+            "description": "Категория товара"
+          }
+        ],
+        "title": "Goods",
+        "description": "Список существующих товаров"
+      },
+      {
+        "id": "good_types",
+        "props": [
+          {
+            "id": "good_type_id",
+            "isKey": true,
+            "name": "good_type_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "good_type_name",
+            "isKey": false,
+            "name": "good_type_name",
+            "type": "VARCHAR",
+            "description": "Название категории товара"
+          }
+        ],
+        "title": "GoodTypes",
+        "description": "Категории товаров"
+      },
+      {
+        "id": "payments",
+        "props": [
+          {
+            "id": "payment_id",
+            "isKey": true,
+            "name": "payment_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "family_member",
+            "isKey": false,
+            "name": "family_member",
+            "type": "INT",
+            "description": "Идентификатор члена семьи, совершившего покупку"
+          },
+          {
+            "id": "good",
+            "isKey": false,
+            "name": "good",
+            "type": "INT",
+            "description": "Идентификатор купленного продукта"
+          },
+          {
+            "id": "amount",
+            "isKey": false,
+            "name": "amount",
+            "type": "INT",
+            "description": "Количество купленного товара"
+          },
+          {
+            "id": "unit_price",
+            "isKey": false,
+            "name": "unit_price",
+            "type": "INT",
+            "description": "Цена за одну единицу товара"
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATETIME",
+            "description": "Дата и время покупки"
+          }
+        ],
+        "title": "Payments",
+        "description": "Платежи по покупкам (в каждом платеже только один товар)"
+      }
+    ],
+    "active": true,
+    "relations": [
+      {
+        "source": {
+          "table": "family_members",
+          "field": "member_id"
+        },
+        "target": {
+          "table": "payments",
+          "field": "family_member"
+        },
+        "type": "one-to-many",
+        "id": "50c343f0-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "goods",
+          "field": "good_id"
+        },
+        "target": {
+          "table": "payments",
+          "field": "good"
+        },
+        "type": "one-to-many",
+        "id": "50c343f1-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "good_types",
+          "field": "good_type_id"
+        },
+        "target": {
+          "table": "goods",
+          "field": "type"
+        },
+        "type": "one-to-many",
+        "id": "50c343f2-83ef-11ed-90e7-0d4a113da5ab"
+      }
+    ],
+    "tablePosition": {
+      "family_members": {
+        "x": 0,
+        "y": 161
+      },
+      "payments": {
+        "x": 376,
+        "y": 150
+      },
+      "goods": {
+        "x": 376,
+        "y": 472
+      },
+      "good_types": {
+        "x": 0,
+        "y": 486
+      }
+    }
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Определить, сколько потратил в 2005 году каждый из членов семьи. В результирующей выборке не выводите тех членов семьи, которые ничего не потратили.",
+  "title": "Траты членов семьи в 2005 году",
+  "additional_info": [
+    "Используйте конструкцию \"as costs\" для отображения затраченной суммы членом семьи. Это необходимо для корректной проверки."
+  ]
+}

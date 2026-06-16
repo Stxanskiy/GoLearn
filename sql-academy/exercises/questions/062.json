@@ -1,0 +1,312 @@
+{
+  "_id": "4ed2b809d7446b9a0e000062",
+  "id": 62,
+  "fields": [
+    "domain",
+    "count"
+  ],
+  "author": null,
+  "difficulty": "medium",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e100004",
+    "name": "Airbnb",
+    "title": "Airbnb",
+    "description": "Упрощенная схема сервиса для сдачи жилья в аренду",
+    "tables": [
+      {
+        "id": "users",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": "Имя и фамилия пользователя"
+          },
+          {
+            "id": "email",
+            "isKey": false,
+            "name": "email",
+            "type": "VARCHAR",
+            "description": "Электронная почта пользователя"
+          },
+          {
+            "id": "email_verified_at",
+            "isKey": false,
+            "name": "email_verified_at",
+            "type": "DATETIME",
+            "description": "Дата подтверждения почты"
+          },
+          {
+            "id": "password",
+            "isKey": false,
+            "name": "password",
+            "type": "VARCHAR",
+            "description": "Пароль от аккаунта"
+          },
+          {
+            "id": "phone_number",
+            "isKey": false,
+            "name": "phone_number",
+            "type": "VARCHAR",
+            "description": "Номер телефона пользователя"
+          }
+        ],
+        "title": "Users",
+        "description": "Пользователи сервиса бронирования"
+      },
+      {
+        "id": "reservations",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": "Идентификатор пользователя"
+          },
+          {
+            "id": "room_id",
+            "isKey": false,
+            "name": "room_id",
+            "type": "INT",
+            "description": "Идентификатор жилья"
+          },
+          {
+            "id": "start_date",
+            "isKey": false,
+            "name": "start_date",
+            "type": "DATETIME",
+            "description": "Дата начала бронирования"
+          },
+          {
+            "id": "end_date",
+            "isKey": false,
+            "name": "end_date",
+            "type": "DATETIME",
+            "description": "Дата окончания бронирования"
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": "Цена за сутки"
+          },
+          {
+            "id": "total",
+            "isKey": false,
+            "name": "total",
+            "type": "INT",
+            "description": "Общая стоимость бронирования"
+          }
+        ],
+        "title": "Reservations",
+        "description": "История бронирования жилья"
+      },
+      {
+        "id": "rooms",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "home_type",
+            "isKey": false,
+            "name": "home_type",
+            "type": "VARCHAR",
+            "description": "Тип жилья"
+          },
+          {
+            "id": "address",
+            "isKey": false,
+            "name": "address",
+            "type": "VARCHAR",
+            "description": "Адрес жилья"
+          },
+          {
+            "id": "has_tv",
+            "isKey": false,
+            "name": "has_tv",
+            "type": "BOOLEAN",
+            "description": "Показывает наличие телевизора"
+          },
+          {
+            "id": "has_internet",
+            "isKey": false,
+            "name": "has_internet",
+            "type": "BOOLEAN",
+            "description": "Показывает наличие интернета"
+          },
+          {
+            "id": "has_kitchen",
+            "isKey": false,
+            "name": "has_kitchen",
+            "type": "BOOLEAN",
+            "description": "Показывает наличие кухни"
+          },
+          {
+            "id": "has_air_con",
+            "isKey": false,
+            "name": "has_air_con",
+            "type": "BOOLEAN",
+            "description": "Показывает наличие кондиционера"
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": "Цена за сутки"
+          },
+          {
+            "id": "owner_id",
+            "isKey": false,
+            "name": "owner_id",
+            "type": "INT",
+            "description": "Идентификатор владельца (из таблицы Users)"
+          },
+          {
+            "id": "latitude",
+            "isKey": false,
+            "name": "latitude",
+            "type": "FLOAT",
+            "description": "Географическая широта"
+          },
+          {
+            "id": "longitude",
+            "isKey": false,
+            "name": "longitude",
+            "type": "FLOAT",
+            "description": "Географическая долгота"
+          }
+        ],
+        "title": "Rooms",
+        "description": "Доступные варианты жилья"
+      },
+      {
+        "id": "reviews",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "reservation_id",
+            "isKey": false,
+            "name": "reservation_id",
+            "type": "INT",
+            "description": "Идентификатор брони"
+          },
+          {
+            "id": "rating",
+            "isKey": false,
+            "name": "rating",
+            "type": "INT",
+            "description": "Рейтинг (от 1 до 5)"
+          }
+        ],
+        "title": "Reviews",
+        "description": "Отзывы на арендуемое жилье"
+      }
+    ],
+    "active": true,
+    "relations": [
+      {
+        "source": {
+          "table": "reviews",
+          "field": "reservation_id"
+        },
+        "target": {
+          "table": "reservations",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c280a0-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "reservations",
+          "field": "user_id"
+        },
+        "target": {
+          "table": "users",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c280a1-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "reservations",
+          "field": "room_id"
+        },
+        "target": {
+          "table": "rooms",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c280a2-83ef-11ed-90e7-0d4a113da5ab"
+      },
+      {
+        "source": {
+          "table": "rooms",
+          "field": "owner_id"
+        },
+        "target": {
+          "table": "users",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "50c280a3-83ef-11ed-90e7-0d4a113da5ab"
+      }
+    ],
+    "tablePosition": {
+      "users": {
+        "x": 335,
+        "y": 316
+      },
+      "reservations": {
+        "x": 335,
+        "y": 10
+      },
+      "rooms": {
+        "x": 669,
+        "y": 178
+      },
+      "reviews": {
+        "x": -120,
+        "y": 184
+      }
+    }
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Вывести в порядке убывания популярности доменные имена 2-го уровня, используемые пользователями для электронной почты. Полученный результат необходимо дополнительно отсортировать по возрастанию названий доменных имён.",
+  "title": "Рейтинг доменов 2-го уровня",
+  "additional_info": [
+    "Для эл. почты index@gmail.com доменным именем 2-го уровня будет gmail.com."
+  ]
+}

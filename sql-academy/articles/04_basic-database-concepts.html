@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>Базы данных и СУБД</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="bazy-dannyh-i-subd" class="sc-bce5c646-1 fYolVj">Базы данных и СУБД<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Перед тем как начать изучение SQL, давайте познакомимся с основными понятиями баз данных. Это поможет нам понять области применения SQL и его среду
+выполнения.</p>
+<blockquote>
+<p>База данных — это набор данных, хранящихся в структурированном виде</p>
+</blockquote>
+<p>По сути это просто хранилище неких сведений, не более того. Сами по себе базы данных не представляли бы интереса, если бы не было систем управления базами данных.</p>
+<blockquote>
+<p>Система управления базами данных — это совокупность языковых и программных средств, которая осуществляет
+доступ к данным, позволяет их создавать, менять и удалять, обеспечивает
+безопасность данных и т.д.</p>
+</blockquote>
+<p>Если говорить более простыми словами, то СУБД — это система, позволяющая
+создавать базы данных и манипулировать сведениями из них.</p>
+<p>Простейшая схема работы с базой данных:</p>
+<p><img title="title" alt="Схема работы базы данных" loading="lazy" width="1304" height="787" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fbasic-database-concepts%2Fru_schema_of_db_work.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fbasic-database-concepts%2Fru_schema_of_db_work.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fbasic-database-concepts%2Fru_schema_of_db_work.png&amp;w=3840&amp;q=50"/></p>
+<h2 id="rejting-subd" class="sc-bce5c646-1 fYolVj">Рейтинг СУБД<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>На данный момент рейтинг систем управления базами данных на основании <a href="https://db-engines.com/en/ranking" target="_blank"> db-engines</a> имеет следующий вид:</p>
+<ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">Oracle</span> - реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">MySQL</span> - реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">Microsoft SQL Server</span> - реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">PostgreSQL</span> - реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">MongoDB</span> - документоориентированная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">Redis</span> - хранилище по типу «ключ-значение»</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">Snowflake</span> - облачная реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">Elasticsearch</span> - поисковой движок</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">IBM Db2</span> - реляционная СУБД</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">SQLite</span> - реляционная СУБД</li>
+</ul>
+<p>Можно обратить внимание, что 7 из 10 самых популярных СУБД — реляционные. Вы сделали правильный выбор изучать именно их 😉.</p>
+<p>Давайте проверим, как вы усвоили тему. Выберите правильное утверждение:</p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":Rdm6hn6:СУБД никак не взаимодействует с БД0" name=":Rdm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rdm6hn6:СУБД никак не взаимодействует с БД0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>СУБД никак не взаимодействует с БД</label></div><input type="radio" id=":Rdm6hn6:СУБД управляет данными, хранящимися в БД1" name=":Rdm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rdm6hn6:СУБД управляет данными, хранящимися в БД1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>СУБД управляет данными, хранящимися в БД</label></div><input type="radio" id=":Rdm6hn6:Для взаимодействия со всеми СУБД можно использовать язык SQL2" name=":Rdm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":Rdm6hn6:Для взаимодействия со всеми СУБД можно использовать язык SQL2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Для взаимодействия со всеми СУБД можно использовать язык SQL</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>

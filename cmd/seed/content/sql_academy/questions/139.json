@@ -1,0 +1,101 @@
+{
+  "_id": "4ed2b809d7446b9a0e000139",
+  "id": 139,
+  "fields": [
+    "name",
+    "population",
+    "area"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "name",
+      "population",
+      "area"
+    ],
+    "rows": [
+      {
+        "name": "Russia",
+        "population": 146000000,
+        "area": 17098242
+      },
+      {
+        "name": "Canada",
+        "population": 38000000,
+        "area": 9984670
+      },
+      {
+        "name": "United States",
+        "population": 331000000,
+        "area": 9833517
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Amazon",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200308",
+    "id": "4ed2b809d7446b9a0e200308",
+    "title": "Amazon",
+    "name": "QuestionCustomDatabase_139",
+    "tables": [
+      {
+        "id": "World",
+        "props": [
+          {
+            "id": "name",
+            "isKey": true,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "continent",
+            "isKey": false,
+            "name": "continent",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "area",
+            "isKey": false,
+            "name": "area",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "population",
+            "isKey": false,
+            "name": "population",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "gdp",
+            "isKey": false,
+            "name": "gdp",
+            "type": "BIGINT",
+            "description": null
+          }
+        ],
+        "title": "World",
+        "description": "Страны мира"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "World": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Amazon"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Страна считается большой, если:\n                        <ul>\n                            <li>её площадь составляет не менее 3 миллионов км² (3000000), или</li>\n                            <li>её население составляет не менее 25 миллионов человек (25000000).</li>\n                        </ul>\n                        Напишите запрос для поиска названия (name), населения (population) и площади (area) больших стран.\n                    ",
+  "title": "Большие страны",
+  "additional_info": []
+}

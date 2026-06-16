@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200143",
+  "id": "4ed2b809d7446b9a0e200143",
+  "title": "Yandex",
+  "name": "QuestionCustomDatabase_120",
+  "tables": [
+    {
+      "id": "TransactionLog",
+      "props": [
+        {
+          "id": "account_id",
+          "isKey": true,
+          "name": "account_id",
+          "type": "BIGINT",
+          "description": null
+        },
+        {
+          "id": "dt",
+          "isKey": true,
+          "name": "dt",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "transaction_amt",
+          "isKey": false,
+          "name": "transaction_amt",
+          "type": "DOUBLE",
+          "description": null
+        }
+      ],
+      "title": "TransactionLog",
+      "description": "Лог транзакций"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "TransactionLog": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Yandex"
+}

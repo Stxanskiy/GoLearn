@@ -1,0 +1,89 @@
+{
+  "_id": "4ed2b809d7446b9a0e200192",
+  "id": "4ed2b809d7446b9a0e200192",
+  "title": "Finstar Financial Group",
+  "name": "QuestionCustomDatabase_123",
+  "tables": [
+    {
+      "id": "Employee",
+      "props": [
+        {
+          "id": "id",
+          "isKey": true,
+          "name": "id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "emp_name",
+          "isKey": false,
+          "name": "emp_name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "rating",
+          "isKey": false,
+          "name": "rating",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Employee",
+      "description": "Список сотрудников"
+    },
+    {
+      "id": "Tasks",
+      "props": [
+        {
+          "id": "id",
+          "isKey": true,
+          "name": "id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "assignee_id",
+          "isKey": false,
+          "name": "assignee_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "rating",
+          "isKey": false,
+          "name": "rating",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Tasks",
+      "description": "Список задач"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "Employee",
+        "field": "id"
+      },
+      "target": {
+        "table": "Tasks",
+        "field": "assignee_id"
+      },
+      "type": "one-to-many"
+    }
+  ],
+  "tablePosition": {
+    "Employee": {
+      "x": 0,
+      "y": 0
+    },
+    "Tasks": {
+      "x": 300,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Finstar Financial Group"
+}

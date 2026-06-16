@@ -1,0 +1,118 @@
+{
+  "_id": "4ed2b809d7446b9a0e000143",
+  "id": 143,
+  "fields": [
+    "language",
+    "min_error_reduction"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "language",
+      "min_error_reduction"
+    ],
+    "rows": [
+      {
+        "language": "C++",
+        "min_error_reduction": 35
+      },
+      {
+        "language": "Go",
+        "min_error_reduction": 22
+      },
+      {
+        "language": "Java",
+        "min_error_reduction": 20
+      },
+      {
+        "language": "JavaScript",
+        "min_error_reduction": 15
+      },
+      {
+        "language": "Python",
+        "min_error_reduction": 10
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "OpenAI",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200319",
+    "id": "4ed2b809d7446b9a0e200319",
+    "title": "OpenAI Tasks",
+    "name": "QuestionCustomDatabase_142_143",
+    "tables": [
+      {
+        "id": "CodeSuggestionsStats",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": "Идентификатор автодополнения"
+          },
+          {
+            "id": "dev_id",
+            "isKey": false,
+            "name": "dev_id",
+            "type": "INT",
+            "description": "Идентификатор разработчика"
+          },
+          {
+            "id": "language",
+            "isKey": false,
+            "name": "language",
+            "type": "VARCHAR",
+            "description": "Язык программирования"
+          },
+          {
+            "id": "complexity",
+            "isKey": false,
+            "name": "complexity",
+            "type": "VARCHAR",
+            "description": "Уровень сложности"
+          },
+          {
+            "id": "speed_improvement",
+            "isKey": false,
+            "name": "speed_improvement",
+            "type": "INT",
+            "description": "Улучшение скорости кодирования (%)"
+          },
+          {
+            "id": "error_reduction",
+            "isKey": false,
+            "name": "error_reduction",
+            "type": "INT",
+            "description": "Снижение ошибок (%)"
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": "Дата предложения"
+          }
+        ],
+        "title": "CodeSuggestionsStats",
+        "description": "Статистика автодополнения кода"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "CodeSuggestionsStats": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "OpenAI"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана таблица CodeSuggestionsStats со статистикой автодополнения кода.\n                        <br><br>\n                        Для каждого языка программирования (language) в апреле 2024 года напишите запрос для поиска минимального процента снижения ошибок (error_reduction), наблюдаемого среди всех автодополнений кода от ИИ.\n                    ",
+  "title": "Минимальное снижение ошибок",
+  "additional_info": []
+}

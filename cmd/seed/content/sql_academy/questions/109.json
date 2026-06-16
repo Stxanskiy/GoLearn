@@ -1,0 +1,255 @@
+{
+  "_id": "4ed2b809d7446b9a0e000109",
+  "id": 109,
+  "fields": [
+    "country_name"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "country_name"
+    ],
+    "rows": [
+      {
+        "country_name": "Germany"
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "DomClick",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200109",
+    "id": "4ed2b809d7446b9a0e200109",
+    "title": "DomClick",
+    "name": "QuestionCustomDatabase_109_112",
+    "tables": [
+      {
+        "id": "Countries",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Countries",
+        "description": "Список стран"
+      },
+      {
+        "id": "Regions",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "countryid",
+            "isKey": false,
+            "name": "countryid",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Regions",
+        "description": "Список регионов стран"
+      },
+      {
+        "id": "Cities",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "regionid",
+            "isKey": false,
+            "name": "regionid",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "population",
+            "isKey": false,
+            "name": "population",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Cities",
+        "description": "Список городов"
+      },
+      {
+        "id": "EventType",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "EventType",
+        "description": "Список типов событий в городе"
+      },
+      {
+        "id": "Events",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "cityid",
+            "isKey": false,
+            "name": "cityid",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "typeid",
+            "isKey": false,
+            "name": "typeid",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "costs",
+            "isKey": false,
+            "name": "costs",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Events",
+        "description": "Список событий в городе"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Regions",
+          "field": "countryid"
+        },
+        "target": {
+          "table": "Countries",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+      },
+      {
+        "source": {
+          "table": "Cities",
+          "field": "regionid"
+        },
+        "target": {
+          "table": "Regions",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778238"
+      },
+      {
+        "source": {
+          "table": "Events",
+          "field": "typeid"
+        },
+        "target": {
+          "table": "EventType",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778239"
+      },
+      {
+        "source": {
+          "table": "Events",
+          "field": "cityid"
+        },
+        "target": {
+          "table": "Cities",
+          "field": "id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778233"
+      }
+    ],
+    "tablePosition": {
+      "Countries": {
+        "x": 0,
+        "y": 180
+      },
+      "Regions": {
+        "x": 0,
+        "y": 0
+      },
+      "Cities": {
+        "x": 300,
+        "y": 0
+      },
+      "EventType": {
+        "x": 600,
+        "y": 250
+      },
+      "Events": {
+        "x": 600,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "DomClick"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведите название страны, где находится город «Salzburg»",
+  "title": "Страна города Зальцбург",
+  "additional_info": []
+}

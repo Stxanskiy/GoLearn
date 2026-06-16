@@ -1,0 +1,103 @@
+{
+  "_id": "4ed2b809d7446b9a0e200141",
+  "id": "4ed2b809d7446b9a0e200141",
+  "title": "Beeline",
+  "name": "QuestionCustomDatabase_122",
+  "tables": [
+    {
+      "id": "Devices",
+      "props": [
+        {
+          "id": "device_id",
+          "isKey": true,
+          "name": "device_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "vendor_name",
+          "isKey": false,
+          "name": "vendor_name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "price",
+          "isKey": false,
+          "name": "price",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Devices",
+      "description": "Данные устройств"
+    },
+    {
+      "id": "HistoryLog",
+      "props": [
+        {
+          "id": "log_id",
+          "isKey": true,
+          "name": "log_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "device_id",
+          "isKey": false,
+          "name": "device_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "start_date",
+          "isKey": false,
+          "name": "start_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "end_date",
+          "isKey": false,
+          "name": "end_date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "HistoryLog",
+      "description": "История смены телефонов"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "HistoryLog",
+        "field": "device_id"
+      },
+      "target": {
+        "table": "Devices",
+        "field": "device_id"
+      },
+      "type": "one-to-many"
+    }
+  ],
+  "tablePosition": {
+    "Devices": {
+      "x": 0,
+      "y": 0
+    },
+    "HistoryLog": {
+      "x": 300,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Beeline"
+}

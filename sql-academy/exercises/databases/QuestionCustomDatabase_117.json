@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200140",
+  "id": "4ed2b809d7446b9a0e200140",
+  "title": "Ozon",
+  "name": "QuestionCustomDatabase_117",
+  "tables": [
+    {
+      "id": "OrderStatus",
+      "props": [
+        {
+          "id": "status_datetime",
+          "isKey": false,
+          "name": "status_datetime",
+          "type": "TIMESTAMP",
+          "description": null
+        },
+        {
+          "id": "order_id",
+          "isKey": true,
+          "name": "order_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "status",
+          "isKey": true,
+          "name": "status",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "OrderStatus",
+      "description": "Изменение статусов заказов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "OrderStatus": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Ozon"
+}

@@ -1,0 +1,162 @@
+{
+  "_id": "4ed2b809d7446b9a0e000149",
+  "id": 149,
+  "fields": [
+    "content_id",
+    "viewers"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "content_id",
+      "viewers"
+    ],
+    "rows": [
+      {
+        "content_id": 1000,
+        "viewers": 15
+      },
+      {
+        "content_id": 1001,
+        "viewers": 12
+      },
+      {
+        "content_id": 1002,
+        "viewers": 10
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "IVI",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200310",
+    "id": "4ed2b809d7446b9a0e200310",
+    "title": "IVI",
+    "name": "QuestionCustomDatabase_148_149",
+    "tables": [
+      {
+        "id": "content_watch",
+        "props": [
+          {
+            "id": "watch_id",
+            "isKey": true,
+            "name": "watch_id",
+            "type": "BIGINT",
+            "description": null
+          },
+          {
+            "id": "show_date",
+            "isKey": false,
+            "name": "show_date",
+            "type": "TIMESTAMP",
+            "description": null
+          },
+          {
+            "id": "show_duration",
+            "isKey": false,
+            "name": "show_duration",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "platform",
+            "isKey": false,
+            "name": "platform",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "utm_medium",
+            "isKey": false,
+            "name": "utm_medium",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "content_id",
+            "isKey": false,
+            "name": "content_id",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "content_watch",
+        "description": "Таблица просмотров контента. Один просмотр контента - одна запись"
+      },
+      {
+        "id": "content",
+        "props": [
+          {
+            "id": "content_id",
+            "isKey": true,
+            "name": "content_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "compilation_id",
+            "isKey": false,
+            "name": "compilation_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "episode",
+            "isKey": false,
+            "name": "episode",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "paid_type",
+            "isKey": false,
+            "name": "paid_type",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "content",
+        "description": "Таблица контента"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "content",
+          "field": "content_id"
+        },
+        "target": {
+          "table": "content_watch",
+          "field": "content_id"
+        },
+        "type": "one-to-many",
+        "id": "286646a0-837d-11ed-86a4-eb63bd778400"
+      }
+    ],
+    "tablePosition": {
+      "content_watch": {
+        "x": 0,
+        "y": 0
+      },
+      "content": {
+        "x": 500,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "IVI"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Выведите топ 5 сериалов по количеству уникальных смотрящих людей (зрителей).\n                        <br><br>\n                        Контент является сериалом, если поле <b>episode</b> у контента равно <b>NULL</b>.\n                        <br><br>\n                        Результат должен содержать колонки:\n                        <ul>\n                            <li>content_id — идентификатор контента</li>\n                            <li>viewers — количество уникальных зрителей</li>\n                        </ul>\n                        Отсортируйте по количеству зрителей по убыванию, затем по content_id по возрастанию.\n                    ",
+  "title": "Топ 5 сериалов по количеству зрителей",
+  "additional_info": []
+}

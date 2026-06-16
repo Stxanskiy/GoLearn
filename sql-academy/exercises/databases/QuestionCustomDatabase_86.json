@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200086",
+  "id": "4ed2b809d7446b9a0e200086",
+  "title": "Tesla",
+  "name": "QuestionCustomDatabase_86",
+  "tables": [
+    {
+      "id": "parts_assembly",
+      "props": [
+        {
+          "id": "part",
+          "isKey": false,
+          "name": "part",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "finish_date",
+          "isKey": false,
+          "name": "finish_date",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "assembly_step",
+          "isKey": false,
+          "name": "assembly_step",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "parts_assembly",
+      "description": "Таблица содержит детали, находящиеся в настоящее время в производстве, каждая из которых находится на разных стадиях процесса сборки."
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "parts_assembly": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Tesla"
+}

@@ -1,0 +1,116 @@
+{
+  "_id": "4ed2b809d7446b9a0e000084",
+  "id": 84,
+  "fields": [
+    "activation_rate"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "activation_rate"
+    ],
+    "rows": [
+      {
+        "activation_rate": 0.775
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "TikTok",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200084",
+    "id": "4ed2b809d7446b9a0e200084",
+    "title": "TikTok",
+    "name": "QuestionCustomDatabase_84",
+    "tables": [
+      {
+        "id": "emails",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": true,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "email_id",
+            "isKey": false,
+            "name": "email_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "signup_date",
+            "isKey": false,
+            "name": "signup_date",
+            "type": "DATETIME",
+            "description": null
+          }
+        ],
+        "title": "emails",
+        "description": "Содержит информацию о деталях регистрации пользователя"
+      },
+      {
+        "id": "texts",
+        "props": [
+          {
+            "id": "text_id",
+            "isKey": true,
+            "name": "text_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "email_id",
+            "isKey": false,
+            "name": "email_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "signup_action",
+            "isKey": false,
+            "name": "signup_action",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "texts",
+        "description": "Содержит информацию об активации пользователей"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "emails",
+          "field": "email_id"
+        },
+        "target": {
+          "table": "texts",
+          "field": "email_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+      }
+    ],
+    "tablePosition": {
+      "emails": {
+        "x": 0,
+        "y": 243
+      },
+      "texts": {
+        "x": 300,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "TikTok"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Новые пользователи TikTok регистрируются, используя свои адреса электронной почты. Они подтверждают свою регистрацию, переходя по ссылке в текстовом email сообщении об активации своих учетных записей. Пользователи могут получать несколько email сообщений для подтверждения учетной записи, пока они не подтвердят свою новую учетную запись. <br /> <br />\n                    Старшему аналитику интересно узнать процент подтверждения регистрации для конкретного списка пользователей из таблицы «emails». Напишите запрос, чтобы узнать процент подтверждения. Округлите процент до 3 знаков после запятой. \n                    <br /><br />\n                    Допущения:\n                        <ul>\n                            <li>Аналитика интересует процент подтверждений конкретных пользователей из таблицы «emails», которая может включать не всех пользователей, которых потенциально можно найти в таблице «texts».</li>\n                            <li>Например, user_id=1 из таблицы «emails» может отсутствовать в таблице «texts» и наоборот.</li>\n                        </ul>\n                    <br/>\n                    «Confirmed» в «signup_action» означает, что пользователь подтвердил свою учетную запись и успешно завершил процесс регистрации.\n                    ",
+  "title": "Процент подтверждения регистрации",
+  "additional_info": []
+}

@@ -1,0 +1,121 @@
+{
+  "_id": "4ed2b809d7446b9a0e000123",
+  "id": 123,
+  "fields": [
+    "emp_name",
+    "task_count"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "emp_name",
+      "task_count"
+    ],
+    "rows": [
+      {
+        "emp_name": "John Smith",
+        "task_count": 1
+      },
+      {
+        "emp_name": "Jane Doe",
+        "task_count": 2
+      }
+    ]
+  },
+  "companyName": "Finstar Financial Group",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200192",
+    "id": "4ed2b809d7446b9a0e200192",
+    "title": "Finstar Financial Group",
+    "name": "QuestionCustomDatabase_123",
+    "tables": [
+      {
+        "id": "Employee",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "emp_name",
+            "isKey": false,
+            "name": "emp_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "rating",
+            "isKey": false,
+            "name": "rating",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Employee",
+        "description": "Список сотрудников"
+      },
+      {
+        "id": "Tasks",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "assignee_id",
+            "isKey": false,
+            "name": "assignee_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "rating",
+            "isKey": false,
+            "name": "rating",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Tasks",
+        "description": "Список задач"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Employee",
+          "field": "id"
+        },
+        "target": {
+          "table": "Tasks",
+          "field": "assignee_id"
+        },
+        "type": "one-to-many"
+      }
+    ],
+    "tablePosition": {
+      "Employee": {
+        "x": 0,
+        "y": 0
+      },
+      "Tasks": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Finstar Financial Group"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Необходимо написать SQL-запрос, который покажет всех сотрудников, у кого в работе менее трех задач.\n                  Результат предоставить в виде: имя сотрудника, количество задач в работе.\n              ",
+  "title": "Количество задач у сотрудника",
+  "additional_info": []
+}

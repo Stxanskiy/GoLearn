@@ -1,0 +1,90 @@
+{
+  "_id": "4ed2b809d7446b9a0e200107",
+  "id": "4ed2b809d7446b9a0e200107",
+  "title": "Skypro",
+  "name": "QuestionCustomDatabase_107",
+  "tables": [
+    {
+      "id": "Courses",
+      "props": [
+        {
+          "id": "course_id",
+          "isKey": true,
+          "name": "course_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "course_name",
+          "isKey": false,
+          "name": "course_name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Courses",
+      "description": "Список курсов"
+    },
+    {
+      "id": "Ratings",
+      "props": [
+        {
+          "id": "rating_id",
+          "isKey": true,
+          "name": "rating_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "course_id",
+          "isKey": false,
+          "name": "course_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "rating",
+          "isKey": false,
+          "name": "rating",
+          "type": "TINYINT",
+          "description": null
+        }
+      ],
+      "title": "Ratings",
+      "description": "Список оставленных отзывов об курсах"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "Ratings",
+        "field": "course_id"
+      },
+      "target": {
+        "table": "Courses",
+        "field": "course_id"
+      },
+      "type": "many-to-one",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+    }
+  ],
+  "tablePosition": {
+    "Courses": {
+      "x": 0,
+      "y": 250
+    },
+    "Ratings": {
+      "x": 350,
+      "y": 250
+    }
+  },
+  "isHidden": true,
+  "description": "SkyPro"
+}

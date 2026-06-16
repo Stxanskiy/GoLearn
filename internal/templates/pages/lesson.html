@@ -54,6 +54,67 @@
 </div>
 {{end}}
 
+{{if eq .Kind "sql"}}
+<div class="sql-runner">
+    <div class="sql-bar">
+        <span style="font-weight:700;">🗄️ SQL-редактор</span>
+        <span class="muted" style="font-size:.82em;">SQLite в браузере · проверка по колонкам результата</span>
+    </div>
+    <textarea id="sql-input" class="sql-input" spellcheck="false" placeholder="SELECT ...">SELECT </textarea>
+    <div class="row" style="margin-top:8px;">
+        <button class="btn btn-primary" onclick="sqlRun()">▶ Выполнить</button>
+        <span id="sql-verdict" class="sql-verdict"></span>
+    </div>
+    <div id="sql-output" class="sql-output"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+(function () {
+    var metaEl = document.getElementById('sql-meta');
+    if (!metaEl) return;
+    var meta = JSON.parse(metaEl.textContent);
+    var dbReady = null;
+    function ensureDB() {
+        if (dbReady) return dbReady;
+        dbReady = initSqlJs({ locateFile: function (f) { return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f; } })
+            .then(function (SQL) { var db = new SQL.Database(); db.run(meta.ddl); return db; });
+        return dbReady;
+    }
+    function norm(a) { return a.map(function (x) { return String(x).toLowerCase(); }).sort(); }
+    function eqCols(got, want) {
+        var g = norm(got), w = norm(want);
+        return g.length === w.length && g.every(function (x, i) { return x === w[i]; });
+    }
+    window.sqlRun = function () {
+        var q = document.getElementById('sql-input').value.trim();
+        var out = document.getElementById('sql-output');
+        var verdict = document.getElementById('sql-verdict');
+        verdict.textContent = ''; verdict.className = 'sql-verdict';
+        if (!q) return;
+        ensureDB().then(function (db) {
+            var res;
+            try { res = db.exec(q); } catch (e) {
+                out.innerHTML = '<div class="sql-err">Ошибка: ' + escapeHtml(e.message) + '</div>'; return;
+            }
+            if (!res.length) { out.innerHTML = '<div class="muted">Запрос выполнен, строк нет.</div>'; var okEmpty = false; }
+            var cols = res.length ? res[0].columns : [];
+            var html = '<table class="sql-table"><thead><tr>' + cols.map(function (c) { return '<th>' + escapeHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+            var rows = res.length ? res[0].values : [];
+            rows.slice(0, 50).forEach(function (r) { html += '<tr>' + r.map(function (v) { return '<td>' + escapeHtml(v === null ? 'NULL' : String(v)) + '</td>'; }).join('') + '</tr>'; });
+            html += '</tbody></table>';
+            if (!rows.length) html += '<div class="muted" style="margin-top:6px;">(таблицы без данных — проверяются только колонки результата)</div>';
+            out.innerHTML = html;
+            if (meta.fields && meta.fields.length) {
+                if (eqCols(cols, meta.fields)) { verdict.textContent = '✓ Колонки совпадают с ожидаемыми'; verdict.classList.add('ok'); }
+                else { verdict.textContent = '✗ Ожидались колонки: ' + meta.fields.join(', '); verdict.classList.add('no'); }
+            }
+        });
+    };
+    function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+})();
+</script>
+{{end}}
+
 {{if .HasQuiz}}
 <script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>
 <div id="lesson-quiz" class="lesson-quiz" data-action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz"></div>
@@ -541,6 +602,25 @@ function gtUpdateGraph(uid) {
 
 /* Lab CTA */
 .lab-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; flex-wrap:wrap; }
+
+/* SQL schema (in content) + runner */
+.sql-schema-table { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:10px 0; }
+.sql-schema-name { font-family:'SF Mono',monospace; font-weight:700; color:var(--accent); margin-bottom:6px; }
+.sql-schema-table ul { list-style:none; margin:0; padding:0; }
+.sql-schema-table li { font-size:.86em; padding:2px 0; }
+.sql-type { color:var(--text-muted); font-size:.82em; }
+.sql-key { background:var(--yellow-bg); color:var(--yellow); font-size:.72em; padding:1px 6px; border-radius:4px; font-weight:700; }
+.sql-runner { margin-top:22px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; }
+.sql-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.sql-input { width:100%; min-height:120px; padding:14px; background:var(--code-bg); color:var(--text); border:1px solid var(--border); border-radius:10px; font-family:'SF Mono','Fira Code',monospace; font-size:.92em; resize:vertical; }
+.sql-input:focus { border-color:var(--accent); outline:none; }
+.sql-verdict { font-size:.86em; font-weight:700; }
+.sql-verdict.ok { color:var(--green); } .sql-verdict.no { color:var(--red); }
+.sql-output { margin-top:12px; overflow-x:auto; }
+.sql-table { border-collapse:collapse; font-size:.86em; width:100%; }
+.sql-table th, .sql-table td { border:1px solid var(--border); padding:5px 10px; text-align:left; }
+.sql-table th { background:var(--bg-elevated); }
+.sql-err { color:var(--red); font-family:'SF Mono',monospace; font-size:.86em; padding:10px; background:var(--red-bg); border-radius:8px; }
 
 /* Inline quiz */
 .lesson-quiz { margin-top:24px; }

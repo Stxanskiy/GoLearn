@@ -1,0 +1,134 @@
+{
+  "_id": "4ed2b809d7446b9a0e200085",
+  "id": "4ed2b809d7446b9a0e200085",
+  "title": "Spotify",
+  "name": "QuestionCustomDatabase_85",
+  "tables": [
+    {
+      "id": "artists",
+      "props": [
+        {
+          "id": "artist_id",
+          "isKey": true,
+          "name": "artist_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "artist_name",
+          "isKey": false,
+          "name": "artist_name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "label_owner",
+          "isKey": false,
+          "name": "label_owner",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "artists",
+      "description": "Содержать информацию об авторах песен"
+    },
+    {
+      "id": "songs",
+      "props": [
+        {
+          "id": "song_id",
+          "isKey": true,
+          "name": "song_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "artist_id",
+          "isKey": false,
+          "name": "artist_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "name",
+          "isKey": false,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "songs",
+      "description": "Содержит список песен"
+    },
+    {
+      "id": "global_song_rank",
+      "props": [
+        {
+          "id": "day",
+          "isKey": true,
+          "name": "day",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "song_id",
+          "isKey": true,
+          "name": "song_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "song_rank",
+          "isKey": false,
+          "name": "song_rank",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "global_song_rank",
+      "description": "Рейтинг песен в конкретный день"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "global_song_rank",
+        "field": "song_id"
+      },
+      "target": {
+        "table": "songs",
+        "field": "song_id"
+      },
+      "type": "many-to-one",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+    },
+    {
+      "source": {
+        "table": "songs",
+        "field": "artist_id"
+      },
+      "target": {
+        "table": "artists",
+        "field": "artist_id"
+      },
+      "type": "many-to-one",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778278"
+    }
+  ],
+  "tablePosition": {
+    "artists": {
+      "y": 0,
+      "x": 380
+    },
+    "songs": {
+      "y": 200,
+      "x": 243
+    },
+    "global_song_rank": {
+      "y": 400,
+      "x": 100
+    }
+  },
+  "isHidden": true,
+  "description": "Spotify"
+}

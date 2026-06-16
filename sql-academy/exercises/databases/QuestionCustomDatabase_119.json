@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200142",
+  "id": "4ed2b809d7446b9a0e200142",
+  "title": "Yandex",
+  "name": "QuestionCustomDatabase_119",
+  "tables": [
+    {
+      "id": "Orders",
+      "props": [
+        {
+          "id": "driver_id",
+          "isKey": false,
+          "name": "driver_id",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "city",
+          "isKey": false,
+          "name": "city",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "order_id",
+          "isKey": false,
+          "name": "order_id",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Orders",
+      "description": "Данные заказов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Orders": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Yandex"
+}

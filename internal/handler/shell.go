@@ -77,11 +77,11 @@ func (h *Handler) ShellCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if passed {
-		_ = h.submissionRepo.Save(r.Context(), taskID, "[shell]", out, "", true)
-		if allDone, e := h.submissionRepo.AllLessonTasksPassed(r.Context(), task.LessonID); e == nil && allDone {
-			_ = h.progressRepo.Upsert(r.Context(), task.LessonID, "completed")
+		_ = h.submissionRepo.Save(r.Context(), user.ID, taskID, "[shell]", out, "", true)
+		if allDone, e := h.submissionRepo.AllLessonTasksPassed(r.Context(), user.ID, task.LessonID); e == nil && allDone {
+			_ = h.progressRepo.Upsert(r.Context(), user.ID, task.LessonID, "completed")
 		} else {
-			_ = h.progressRepo.Upsert(r.Context(), task.LessonID, "in_progress")
+			_ = h.progressRepo.Upsert(r.Context(), user.ID, task.LessonID, "in_progress")
 		}
 	}
 	writeJSON(w, map[string]any{"passed": passed, "output": out})

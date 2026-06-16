@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/gorilla/websocket"
@@ -11,9 +12,25 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
-	// Same-origin app behind nginx basic-auth; the page is already authenticated.
-	CheckOrigin: func(r *http.Request) bool { return true },
+	// Reject cross-site WebSocket connections (the session cookie is sent cross-site).
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true // non-browser client (no Origin header)
+		}
+		u, err := url.Parse(origin)
+		return err == nil && u.Host == r.Host
+	},
 }
+
+// bergBanner is shown when a sandbox terminal opens (ANSI green, CRLF endings).
+const bergBanner = "\x1b[1;36m" +
+	"\r\n ██████   ███████  ██████    ██████ " +
+	"\r\n ██   ██  ██       ██   ██  ██      " +
+	"\r\n ██████   █████    ██████   ██   ███" +
+	"\r\n ██   ██  ██       ██   ██  ██    ██" +
+	"\r\n ██████   ███████  ██   ██   ██████ " +
+	"\x1b[0m\r\n\x1b[90m Welcome to your BERG lab environment!\x1b[0m\r\n\r\n"
 
 // TermWS upgrades to a WebSocket and attaches a real interactive PTY shell to
 // the user's sandbox container. Query: ?kind=git  OR  ?task=<id>.
@@ -58,6 +75,8 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	_ = conn.WriteMessage(websocket.TextMessage, []byte(bergBanner))
 
 	pty, err := h.shell.OpenPTY(container, 100, 28)
 	if err != nil {

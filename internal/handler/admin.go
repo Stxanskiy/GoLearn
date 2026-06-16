@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/base64"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -50,16 +51,16 @@ func (h *Handler) coverFromForm(r *http.Request) string {
 		return ""
 	}
 	defer file.Close()
-	buf := make([]byte, 4*1024*1024) // 4MB cap
-	n, _ := file.Read(buf)
-	if n == 0 {
+	const maxCover = 4 << 20 // 4MB
+	data, err := io.ReadAll(io.LimitReader(file, maxCover+1))
+	if err != nil || len(data) == 0 || len(data) > maxCover {
 		return ""
 	}
 	ct := hdr.Header.Get("Content-Type")
-	if ct == "" {
+	if !strings.HasPrefix(ct, "image/") {
 		ct = "image/png"
 	}
-	return "data:" + ct + ";base64," + base64.StdEncoding.EncodeToString(buf[:n])
+	return "data:" + ct + ";base64," + base64.StdEncoding.EncodeToString(data)
 }
 
 // ── Dashboard ──

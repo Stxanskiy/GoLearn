@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200088",
+  "id": "4ed2b809d7446b9a0e200088",
+  "title": "Uber",
+  "name": "QuestionCustomDatabase_88",
+  "tables": [
+    {
+      "id": "transactions",
+      "props": [
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "spend",
+          "isKey": false,
+          "name": "spend",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "transaction_date",
+          "isKey": false,
+          "name": "transaction_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "transactions",
+      "description": "Транзакции"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "transactions": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Uber"
+}

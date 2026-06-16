@@ -1,0 +1,97 @@
+{
+  "_id": "4ed2b809d7446b9a0e200091",
+  "id": "4ed2b809d7446b9a0e200091",
+  "title": "Uchi.ru",
+  "name": "QuestionCustomDatabase_91",
+  "tables": [
+    {
+      "id": "sessions",
+      "props": [
+        {
+          "id": "task_id",
+          "isKey": false,
+          "name": "task_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "session_time",
+          "isKey": false,
+          "name": "session_time",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "teacher_id",
+          "isKey": false,
+          "name": "teacher_id",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "sessions",
+      "description": "Время выполнения заданий"
+    },
+    {
+      "id": "lessons",
+      "props": [
+        {
+          "id": "teacher_id",
+          "isKey": false,
+          "name": "teacher_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "lesson_start",
+          "isKey": false,
+          "name": "lesson_start",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "lesson_end",
+          "isKey": false,
+          "name": "lesson_end",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "lessons",
+      "description": "Сессии уроков"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "lessons",
+        "field": "teacher_id"
+      },
+      "target": {
+        "table": "sessions",
+        "field": "teacher_id"
+      },
+      "type": "one-to-many",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+    }
+  ],
+  "tablePosition": {
+    "sessions": {
+      "x": 0,
+      "y": 243
+    },
+    "lessons": {
+      "x": 300,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Uchi.ru"
+}

@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200092",
+  "id": "4ed2b809d7446b9a0e200092",
+  "title": "Bank Otkritie",
+  "name": "QuestionCustomDatabase_92",
+  "tables": [
+    {
+      "id": "otp",
+      "props": [
+        {
+          "id": "client_id",
+          "isKey": false,
+          "name": "client_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "sessionId",
+          "isKey": false,
+          "name": "sessionId",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "datetime",
+          "isKey": false,
+          "name": "datetime",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "status",
+          "isKey": false,
+          "name": "status",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "category",
+          "isKey": false,
+          "name": "category",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "otp",
+      "description": "Таблица по вводу ОТП кодов клиентами"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "otp": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Bank Otkritie"
+}

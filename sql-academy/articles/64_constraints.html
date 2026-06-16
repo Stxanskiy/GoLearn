@@ -1,0 +1,296 @@
+<!doctype html><meta charset="utf-8"><title>Ограничения столбцов (Constraints) в SQL</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="ogranicheniya-stolbcov-(constraints)-v-sql" class="sc-bce5c646-1 fYolVj">Ограничения столбцов (Constraints) в SQL<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Ограничения (Constraints) — это правила, применяемые к данным в таблице для поддержания их точности и надёжности. Они играют важную роль в обеспечении целостности данных и соответствия бизнес-правилам. 🔒</p>
+<p>Когда вы создаёте таблицу или изменяете её структуру, вы можете определить различные ограничения, которые предотвращают добавление, изменение или удаление данных, нарушающих установленные правила.
+Это помогает избежать нежелательных ситуаций, таких как:</p>
+<ul>
+<li>Наличие нескольких пользователей с одинаковыми идентификаторами</li>
+<li>Ссылки на несуществующие записи в других таблицах</li>
+<li>Отсутствие обязательных данных</li>
+<li>Ввод некорректных значений (например, отрицательного возраста или будущей даты рождения)</li>
+</ul>
+<h2 id="osnovnye-tipy-ogranichenij-v-sql" class="sc-bce5c646-1 fYolVj">Основные типы ограничений в SQL ✨<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>В SQL существуют следующие основные типы ограничений:</p>
+<ol>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">PRIMARY KEY</strong> — уникальный идентификатор записи в таблице</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">FOREIGN KEY</strong> — обеспечивает ссылочную целостность между таблицами</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">UNIQUE</strong> — гарантирует уникальность значений в столбце или группе столбцов</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">NOT NULL</strong> — запрещает NULL-значения в столбце</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">CHECK</strong> — проверяет соответствие данных заданному условию</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">DEFAULT</strong> — устанавливает значение по умолчанию для столбца</li>
+</ol>
+<p>Давайте рассмотрим каждый тип подробнее.</p>
+<h2 id="primary-key-(pervichnyj-klyuch)" class="sc-bce5c646-1 fYolVj">PRIMARY KEY (Первичный ключ)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Первичный ключ — это столбец или комбинация столбцов, которые однозначно идентифицируют каждую строку в таблице.</p>
+<p>Он не может содержать NULL-значения и должен быть уникальным. Таблица может иметь только один первичный ключ.</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INT</span> <span class="token keyword">AUTO_INCREMENT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Альтернативный синтаксис с использованием отдельного ограничения:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INT</span> <span class="token keyword">AUTO_INCREMENT</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">CONSTRAINT</span> pk_users <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>При попытке добавить запись с уже существующим первичным ключом или с NULL-значением вместо ключа СУБД выдаст ошибку:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">Error<span class="token punctuation">(</span><span class="token number">1062</span><span class="token punctuation">)</span> <span class="token number">23000</span>: <span class="token string">&quot;Duplicate entry &#x27;1&#x27; for key &#x27;users.PRIMARY&#x27;&quot;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Альтернативный синтаксис с использованием отдельного ограничения:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">CONSTRAINT</span> pk_users <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>При попытке добавить запись с уже существующим первичным ключом или с NULL-значением вместо ключа, СУБД выдаст ошибку:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">ERROR: <span class="token keyword">duplicate</span> <span class="token keyword">key</span> <span class="token keyword">value</span> violates <span class="token keyword">unique</span> <span class="token keyword">constraint</span> <span class="token string">&quot;users_pkey&quot;</span>
+DETAIL: <span class="token keyword">Key</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> already <span class="token keyword">exists</span><span class="token punctuation">.</span>
+</code></pre></div></pre></div>
+<h2 id="foreign-key-(vneshnij-klyuch)" class="sc-bce5c646-1 fYolVj">FOREIGN KEY (Внешний ключ)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Внешний ключ — это столбец или группа столбцов в одной таблице, которые ссылаются на первичный ключ другой таблицы.</p>
+<p>Он обеспечивает ссылочную целостность данных, гарантируя, что значения в столбце внешнего ключа соответствуют значениям из столбца первичного ключа связанной таблицы.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Orders <span class="token punctuation">(</span>
+    order_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    user_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    order_date <span class="token keyword">DATE</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Благодаря ограничению FOREIGN KEY:</p>
+<ul>
+<li>Нельзя добавить заказ для несуществующего пользователя</li>
+<li>Нельзя удалить пользователя, у которого есть заказы (если не указаны специальные опции CASCADE)</li>
+</ul>
+<p>Можно также указать действия, которые должны быть выполнены при удалении или обновлении связанных данных:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Orders <span class="token punctuation">(</span>
+    order_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    user_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    order_date <span class="token keyword">DATE</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+        <span class="token keyword">ON</span> <span class="token keyword">DELETE</span> <span class="token keyword">CASCADE</span>
+        <span class="token keyword">ON</span> <span class="token keyword">UPDATE</span> <span class="token keyword">CASCADE</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Возможные опции для <span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">ON UPDATE</span>:</p>
+<ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">CASCADE</span> — автоматически удаляет или обновляет связанные записи</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">SET NULL</span> — устанавливает NULL для внешнего ключа</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">SET DEFAULT</span> — устанавливает значение по умолчанию</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">RESTRICT</span> — запрещает удаление или обновление (используется по умолчанию)</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">NO ACTION</span> — аналогично RESTRICT в большинстве СУБД</li>
+</ul>
+<h2 id="unique-(unikalnost)" class="sc-bce5c646-1 fYolVj">UNIQUE (Уникальность)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Ограничение UNIQUE гарантирует, что все значения в столбце или группе столбцов уникальны. В отличие от PRIMARY KEY, оно допускает NULL-значения (обычно только одно NULL-значение, так как NULL != NULL).</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token keyword">UNIQUE</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span> <span class="token keyword">UNIQUE</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Это предотвратит создание нескольких пользователей с одинаковым именем пользователя или адресом электронной почты.</p>
+<h2 id="not-null-(zapret-pustyh-znachenij)" class="sc-bce5c646-1 fYolVj">NOT NULL (Запрет пустых значений)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Ограничение NOT NULL гарантирует, что столбец не может содержать NULL-значения. Это полезно для обязательных полей, без которых запись не имеет смысла.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    bio <span class="token keyword">TEXT</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>В этом примере поля <span class="sql-code sql-code-line sql-code-line--blue-color ">username</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">email</span> обязательны, а <span class="sql-code sql-code-line sql-code-line--blue-color ">bio</span> может быть пустым.</p>
+<h2 id="check-(proverka-usloviya)" class="sc-bce5c646-1 fYolVj">CHECK (Проверка условия)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Ограничение CHECK позволяет определить условие, которому должны соответствовать значения в столбце. Это помогает обеспечить бизнес-правила и предотвратить ввод некорректных данных.</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Примечание:</strong> CHECK ограничения полностью поддерживаются в MySQL, начиная с версии 8.0.16. В более ранних версиях они принимались синтаксически, но не проверялись.</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Products <span class="token punctuation">(</span>
+    product_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    product_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    price <span class="token keyword">DECIMAL</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    quantity <span class="token keyword">INT</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>quantity <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Более сложный пример с именованным ограничением:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Employees <span class="token punctuation">(</span>
+    employee_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    first_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    last_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    birth_date <span class="token keyword">DATE</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    hire_date <span class="token keyword">DATE</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token keyword">CONSTRAINT</span> chk_dates <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>hire_date <span class="token operator">&gt;</span> birth_date<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Ограничение CHECK позволяет определить условие, которому должны соответствовать значения в столбце. Это помогает обеспечить бизнес-правила и предотвратить ввод некорректных данных.</p><p>PostgreSQL полностью поддерживает CHECK ограничения и активно их проверяет.</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Products <span class="token punctuation">(</span>
+    product_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    product_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    price <span class="token keyword">DECIMAL</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    quantity <span class="token keyword">INT</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>quantity <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Более сложный пример с именованным ограничением:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Employees <span class="token punctuation">(</span>
+    employee_id <span class="token keyword">INT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    first_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    last_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    birth_date <span class="token keyword">DATE</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    hire_date <span class="token keyword">DATE</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token keyword">CONSTRAINT</span> chk_dates <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>hire_date <span class="token operator">&gt;</span> birth_date<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>PostgreSQL также поддерживает сложные CHECK ограничения с подзапросами и функциями:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    email <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>email <span class="token operator">~</span><span class="token operator">*</span> <span class="token string">&#x27;^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INT</span> <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>age <span class="token operator">&gt;=</span> <span class="token number">0</span> <span class="token operator">AND</span> age <span class="token operator">&lt;=</span> <span class="token number">150</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="default-(znachenie-po-umolchaniyu)" class="sc-bce5c646-1 fYolVj">DEFAULT (Значение по умолчанию)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Ограничение DEFAULT устанавливает значение, которое будет использовано, если при добавлении новой записи не указано значение для этого столбца.</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Orders <span class="token punctuation">(</span>
+    order_id <span class="token keyword">INT</span> <span class="token keyword">AUTO_INCREMENT</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    user_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    order_date <span class="token keyword">DATE</span> <span class="token keyword">DEFAULT</span> <span class="token punctuation">(</span><span class="token keyword">CURRENT_DATE</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">status</span> <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token keyword">DEFAULT</span> <span class="token string">&#x27;Pending&#x27;</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>В этом примере, если не указана дата заказа, будет использована текущая дата, а статус по умолчанию будет установлен как &quot;Pending&quot;.</p></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Orders <span class="token punctuation">(</span>
+    order_id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    user_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    order_date <span class="token keyword">DATE</span> <span class="token keyword">DEFAULT</span> <span class="token keyword">CURRENT_DATE</span><span class="token punctuation">,</span>
+    <span class="token keyword">status</span> <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token keyword">DEFAULT</span> <span class="token string">&#x27;Pending&#x27;</span><span class="token punctuation">,</span>
+    created_at <span class="token keyword">TIMESTAMP</span> <span class="token keyword">DEFAULT</span> <span class="token keyword">CURRENT_TIMESTAMP</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>В этом примере, если не указана дата заказа, будет использована текущая дата, а статус по умолчанию будет установлен как &quot;Pending&quot;.</p><p>PostgreSQL также поддерживает более сложные DEFAULT значения, включая вызовы функций:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    created_at <span class="token keyword">TIMESTAMP</span> <span class="token keyword">DEFAULT</span> <span class="token function">NOW</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    uuid_field UUID <span class="token keyword">DEFAULT</span> gen_random_uuid<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="dobavlenie-i-udalenie-ogranichenij" class="sc-bce5c646-1 fYolVj">Добавление и удаление ограничений<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Ограничения можно добавлять не только при создании таблицы, но и при её изменении:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Добавление ограничения PRIMARY KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ADD</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения FOREIGN KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> fk_user <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения UNIQUE</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> uq_email <span class="token keyword">UNIQUE</span> <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения CHECK</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Products
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> chk_price <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения NOT NULL</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">MODIFY</span> username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление значения по умолчанию</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> <span class="token keyword">status</span> <span class="token keyword">SET</span> <span class="token keyword">DEFAULT</span> <span class="token string">&#x27;Pending&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Удаление ограничений также выполняется с помощью команды ALTER TABLE:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Удаление ограничения PRIMARY KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">DROP</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения FOREIGN KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">DROP</span> <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> fk_user<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения UNIQUE</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">DROP</span> <span class="token keyword">INDEX</span> uq_email<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения CHECK</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Products
+<span class="token keyword">DROP</span> <span class="token keyword">CHECK</span> chk_price<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения NOT NULL</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">MODIFY</span> username <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span> <span class="token boolean">NULL</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление значения по умолчанию</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> <span class="token keyword">status</span> <span class="token keyword">DROP</span> <span class="token keyword">DEFAULT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Ограничения можно добавлять не только при создании таблицы, но и при её изменении:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Добавление ограничения PRIMARY KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ADD</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения FOREIGN KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> fk_user <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>user_id<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Users<span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения UNIQUE</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> uq_email <span class="token keyword">UNIQUE</span> <span class="token punctuation">(</span>email<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения CHECK</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Products
+<span class="token keyword">ADD</span> <span class="token keyword">CONSTRAINT</span> chk_price <span class="token keyword">CHECK</span> <span class="token punctuation">(</span>price <span class="token operator">&gt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление ограничения NOT NULL</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> username <span class="token keyword">SET</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Добавление значения по умолчанию</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> <span class="token keyword">status</span> <span class="token keyword">SET</span> <span class="token keyword">DEFAULT</span> <span class="token string">&#x27;Pending&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Удаление ограничений также выполняется с помощью команды ALTER TABLE:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Удаление ограничения PRIMARY KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">DROP</span> <span class="token keyword">CONSTRAINT</span> users_pkey<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения FOREIGN KEY</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">DROP</span> <span class="token keyword">CONSTRAINT</span> fk_user<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения UNIQUE</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">DROP</span> <span class="token keyword">CONSTRAINT</span> uq_email<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения CHECK</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Products
+<span class="token keyword">DROP</span> <span class="token keyword">CONSTRAINT</span> chk_price<span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление ограничения NOT NULL</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Users
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> username <span class="token keyword">DROP</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Удаление значения по умолчанию</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">TABLE</span> Orders
+<span class="token keyword">ALTER</span> <span class="token keyword">COLUMN</span> <span class="token keyword">status</span> <span class="token keyword">DROP</span> <span class="token keyword">DEFAULT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="luchshie-praktiki-ispolzovaniya-ogranichenij" class="sc-bce5c646-1 fYolVj">Лучшие практики использования ограничений 🚀<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>При проектировании базы данных следует придерживаться следующих рекомендаций:</p>
+<ol>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Всегда определяйте первичный ключ</strong> для каждой таблицы, чтобы однозначно идентифицировать каждую запись.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Используйте внешние ключи</strong> для обеспечения ссылочной целостности между связанными таблицами.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Применяйте ограничение NOT NULL</strong> для столбцов, которые должны содержать значения.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Используйте ограничение UNIQUE</strong> для столбцов, которые должны содержать уникальные значения (например, email, номер телефона).</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Добавляйте ограничения CHECK</strong> для столбцов, значения которых должны соответствовать определенным бизнес-правилам.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Устанавливайте значения по умолчанию</strong> для столбцов, которые часто принимают одно и то же значение.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Указывайте имена для ограничений</strong> (например, <span class="sql-code sql-code-line sql-code-line--blue-color ">CONSTRAINT pk_users PRIMARY KEY (id)</span>), чтобы облегчить их идентификацию и управление.</p>
+</li>
+</ol>
+<h2 id="proverka-znanij-ob-ogranicheniyah-v-sql:" class="sc-bce5c646-1 fYolVj">Проверка знаний об ограничениях в SQL:<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Какое из следующих ограничений в SQL НЕ может содержать NULL-значения?</p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":R1fm6hn6:UNIQUE0" name=":R1fm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1fm6hn6:UNIQUE0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>UNIQUE</label></div><input type="radio" id=":R1fm6hn6:CHECK1" name=":R1fm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1fm6hn6:CHECK1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>CHECK</label></div><input type="radio" id=":R1fm6hn6:PRIMARY KEY2" name=":R1fm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1fm6hn6:PRIMARY KEY2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>PRIMARY KEY</label></div><input type="radio" id=":R1fm6hn6:FOREIGN KEY3" name=":R1fm6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R1fm6hn6:FOREIGN KEY3" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>FOREIGN KEY</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>

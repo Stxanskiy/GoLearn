@@ -1,0 +1,78 @@
+{
+  "_id": "4ed2b809d7446b9a0e000117",
+  "id": 117,
+  "fields": [
+    "order_id",
+    "delivery_time_hours"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "order_id",
+      "delivery_time_hours"
+    ],
+    "rows": [
+      {
+        "order_id": 1,
+        "delivery_time_hours": 30
+      },
+      {
+        "order_id": 7,
+        "delivery_time_hours": 51
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Ozon",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200140",
+    "id": "4ed2b809d7446b9a0e200140",
+    "title": "Ozon",
+    "name": "QuestionCustomDatabase_117",
+    "tables": [
+      {
+        "id": "OrderStatus",
+        "props": [
+          {
+            "id": "status_datetime",
+            "isKey": false,
+            "name": "status_datetime",
+            "type": "TIMESTAMP",
+            "description": null
+          },
+          {
+            "id": "order_id",
+            "isKey": true,
+            "name": "order_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "status",
+            "isKey": true,
+            "name": "status",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "OrderStatus",
+        "description": "Изменение статусов заказов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "OrderStatus": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Ozon"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Напишите SQL-запрос, который вычисляет время доставки (в целых часах) для заказов, соответствующих следующим условиям:\n                        <ol>\n                            <li>Заказ был принят (Accepted) 1 января 2024 года (2024-01-01)</li>\n                            <li>Заказ не был отменен (Canceled) или возвращен (Returned)</li>\n                            <li>Время доставки рассчитывается как разница между временем первого статуса Accepted и временем статуса Delivered для каждого подходящего заказа.</li>\n                            <li>Результат должен содержать только целое количество часов, без учета минут. Например, если время доставки составляет 47 часов и 59 минут, результатом будет 47 часов.</li>\n                        </ol>\n                     ",
+  "title": "Время доставки заказов",
+  "additional_info": []
+}

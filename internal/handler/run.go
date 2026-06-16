@@ -130,20 +130,21 @@ func (h *Handler) RunTaskCode(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	uid := currentUserID(r.Context())
 	// Save submission
-	if err := h.submissionRepo.Save(r.Context(), taskID, req.Code, runResult.Result.Output, runResult.Result.Errors, runResult.AllPassed); err != nil {
+	if err := h.submissionRepo.Save(r.Context(), uid, taskID, req.Code, runResult.Result.Output, runResult.Result.Errors, runResult.AllPassed); err != nil {
 		h.log.Error("save submission", "error", err)
 	}
 
 	// Auto-progress: update lesson status when tests pass
 	if runResult.AllPassed {
-		allDone, err := h.submissionRepo.AllLessonTasksPassed(r.Context(), task.LessonID)
+		allDone, err := h.submissionRepo.AllLessonTasksPassed(r.Context(), uid, task.LessonID)
 		if err != nil {
 			h.log.Error("check lesson progress", "error", err)
 		} else if allDone {
-			_ = h.progressRepo.Upsert(r.Context(), task.LessonID, "completed")
+			_ = h.progressRepo.Upsert(r.Context(), uid, task.LessonID, "completed")
 		} else {
-			_ = h.progressRepo.Upsert(r.Context(), task.LessonID, "in_progress")
+			_ = h.progressRepo.Upsert(r.Context(), uid, task.LessonID, "in_progress")
 		}
 	}
 

@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200089",
+  "id": "4ed2b809d7446b9a0e200089",
+  "title": "MTC",
+  "name": "QuestionCustomDatabase_89",
+  "tables": [
+    {
+      "id": "transact",
+      "props": [
+        {
+          "id": "id_tran",
+          "isKey": true,
+          "name": "id_tran",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "id_client",
+          "isKey": false,
+          "name": "id_client",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "tran_time",
+          "isKey": false,
+          "name": "tran_time",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "sum_tran",
+          "isKey": false,
+          "name": "sum_tran",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "transact",
+      "description": "Транзакции"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "transact": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "MTC"
+}

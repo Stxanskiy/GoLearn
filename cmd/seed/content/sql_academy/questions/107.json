@@ -1,0 +1,123 @@
+{
+  "_id": "4ed2b809d7446b9a0e000107",
+  "id": 107,
+  "fields": [
+    "course_name",
+    "average_rating"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "course_name",
+      "average_rating"
+    ],
+    "rows": [
+      {
+        "course_name": "AI for Beginners",
+        "average_rating": 3
+      },
+      {
+        "course_name": "Network Administration",
+        "average_rating": 4.6
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "SkyPro",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200107",
+    "id": "4ed2b809d7446b9a0e200107",
+    "title": "Skypro",
+    "name": "QuestionCustomDatabase_107",
+    "tables": [
+      {
+        "id": "Courses",
+        "props": [
+          {
+            "id": "course_id",
+            "isKey": true,
+            "name": "course_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "course_name",
+            "isKey": false,
+            "name": "course_name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Courses",
+        "description": "Список курсов"
+      },
+      {
+        "id": "Ratings",
+        "props": [
+          {
+            "id": "rating_id",
+            "isKey": true,
+            "name": "rating_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "course_id",
+            "isKey": false,
+            "name": "course_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "rating",
+            "isKey": false,
+            "name": "rating",
+            "type": "TINYINT",
+            "description": null
+          }
+        ],
+        "title": "Ratings",
+        "description": "Список оставленных отзывов об курсах"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Ratings",
+          "field": "course_id"
+        },
+        "target": {
+          "table": "Courses",
+          "field": "course_id"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778237"
+      }
+    ],
+    "tablePosition": {
+      "Courses": {
+        "x": 0,
+        "y": 250
+      },
+      "Ratings": {
+        "x": 350,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "SkyPro"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведите название курса и среднюю оценку для каждого курса с количеством оценок больше 10.",
+  "title": "Средняя оценка по курсам",
+  "additional_info": []
+}

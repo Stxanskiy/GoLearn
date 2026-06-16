@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8"><title>Подзапросы с несколькими строками и одним столбцом</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="podzaprosy-s-neskolkimi-strokami-i-odnim-stolbcom" class="sc-bce5c646-1 fYolVj">Подзапросы с несколькими строками и одним столбцом<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Если подзапрос возвращает более одной строки, его нельзя просто использовать с операторами сравнения, как это можно было делать <a href="/guide/subquery-with-one-column-one-row" target="_blank"> со скалярными подзапросами</a>.</p>
+<p>Однако c подзапросами, возвращающими несколько строк и один столбец, можно использовать 3 дополнительных оператора.</p>
+<h2 id="podzapros-i-operator-all" class="sc-bce5c646-1 fYolVj">Подзапрос и оператор ALL<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>С помощью оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">ALL</span> мы можем сравнивать отдельное значение с каждым значением в наборе, полученным подзапросом.
+При этом данное условие вернёт <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUE</span>, только если все сравнения отдельного значения со значениями в наборе вернут <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUE</span>.</p>
+<p>Например, нижеприведённый синтетический запрос проверяет, для всех ли жилых помещений выполняется условие, что оно дешевле чем 200.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token number">200</span> <span class="token operator">&gt;</span> <span class="token keyword">ALL</span><span class="token punctuation">(</span><span class="token keyword">SELECT</span> price <span class="token keyword">FROM</span> Rooms<span class="token punctuation">)</span>
+</code></pre></div></pre>
+<p>Или же, более практический пример: нам необходимо найти имена всех владельцев жилья, которые сами при этом никогда не снимали жилье.
+Чтобы получить данный список, мы можем действовать следующим образом:</p>
+<div class="guide-erd"><div style="display:flex" class="loader"></div></div>
+<ul>
+<li>
+<p>Получить список имён всех владельцев жилья</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> name <span class="token keyword">FROM</span> Users <span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> Rooms
+<span class="token keyword">ON</span> Users<span class="token punctuation">.</span>id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>owner_id
+</code></pre></div></pre>
+</li>
+<li>
+<p>Получить список идентификаторов всех пользователей, снимавших жилье</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> user_id <span class="token keyword">FROM</span> Reservations
+</code></pre></div></pre>
+</li>
+<li>
+<p>Отфильтровать первый список всех владельцев по условию, что идентификатор владельца жилья не равен ни одному из идентификаторов пользователей, когда-либо снимавших жилье</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> name <span class="token keyword">FROM</span> Users <span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> Rooms
+    <span class="token keyword">ON</span> Users<span class="token punctuation">.</span>id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>owner_id
+    <span class="token keyword">WHERE</span> Users<span class="token punctuation">.</span>id <span class="token operator">&lt;&gt;</span> <span class="token keyword">ALL</span> <span class="token punctuation">(</span>
+        <span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> user_id <span class="token keyword">FROM</span> Reservations
+    <span class="token punctuation">)</span>
+</code></pre></div></pre>
+</li>
+</ul>
+<h2 id="podzapros-i-operator-in" class="sc-bce5c646-1 fYolVj">Подзапрос и оператор IN<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">IN</span> проверяет, входит ли конкретное значение в набор значений. В качестве такого набора как раз может использоваться подзапрос, возвращающий
+несколько строк с одним столбцом.</p>
+<p>Например, если нам необходимо получить всю информацию о владельцах жилья стоимостью больше 150 условных единиц, то это можно сделать следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Users <span class="token keyword">WHERE</span> id <span class="token operator">IN</span> <span class="token punctuation">(</span>
+    <span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> owner_id <span class="token keyword">FROM</span> Rooms <span class="token keyword">WHERE</span> price <span class="token operator">&gt;=</span> <span class="token number">150</span>
+<span class="token punctuation">)</span>
+</code></pre></div></pre>
+<h2 id="podzapros-i-operator-any" class="sc-bce5c646-1 fYolVj">Подзапрос и оператор ANY<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Условное выражение с <span class="sql-code sql-code-line sql-code-line--blue-color ">ANY</span> имеет схожее поведение, но оно возвращает <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUE</span>, если хотя бы одно сравнение отдельного значения со значением в наборе вернёт <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUE</span>.</p>
+<p>Давайте с его помощью напишем такой же запрос, что мы делали с оператором <span class="sql-code sql-code-line sql-code-line--blue-color ">IN</span>: найдём пользователей, которые владеют хотя бы 1 жилым помещением стоимостью более 150.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Users <span class="token keyword">WHERE</span> id <span class="token operator">=</span> <span class="token keyword">ANY</span> <span class="token punctuation">(</span>
+    <span class="token keyword">SELECT</span> <span class="token keyword">DISTINCT</span> owner_id <span class="token keyword">FROM</span> Rooms <span class="token keyword">WHERE</span> price <span class="token operator">&gt;=</span> <span class="token number">150</span>
+<span class="token punctuation">)</span>
+</code></pre></div></pre>

@@ -1,0 +1,97 @@
+{
+  "_id": "4ed2b809d7446b9a0e200322",
+  "id": "4ed2b809d7446b9a0e200322",
+  "title": "SAP",
+  "name": "QuestionCustomDatabase_155",
+  "tables": [
+    {
+      "id": "Customers",
+      "props": [
+        {
+          "id": "customer_id",
+          "isKey": true,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "name",
+          "isKey": false,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Customers",
+      "description": "Клиенты SAP"
+    },
+    {
+      "id": "Subscriptions",
+      "props": [
+        {
+          "id": "subscription_id",
+          "isKey": true,
+          "name": "subscription_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "customer_id",
+          "isKey": false,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "product",
+          "isKey": false,
+          "name": "product",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "seats_purchased",
+          "isKey": false,
+          "name": "seats_purchased",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "seats_used",
+          "isKey": false,
+          "name": "seats_used",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Subscriptions",
+      "description": "Лицензии клиентов: количество купленных и фактически используемых мест по каждому продукту"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "Customers",
+        "field": "customer_id"
+      },
+      "target": {
+        "table": "Subscriptions",
+        "field": "customer_id"
+      },
+      "type": "one-to-many",
+      "id": "rel-sap-customer-subscription"
+    }
+  ],
+  "tablePosition": {
+    "Customers": {
+      "x": 0,
+      "y": 0
+    },
+    "Subscriptions": {
+      "x": 350,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "SAP"
+}

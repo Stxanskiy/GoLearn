@@ -158,7 +158,7 @@ func (h *Handler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	total := len(questions)
-	_ = h.progressRepo.SaveQuizResult(ctx, lesson.ID, score, total)
+	_ = h.progressRepo.SaveQuizResult(ctx, currentUserID(ctx), lesson.ID, score, total)
 
 	percent := 0
 	if total > 0 {
@@ -166,7 +166,7 @@ func (h *Handler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := QuizResultData{
-		PageTitle: "Quiz Results: " + lesson.Title,
+		PageTitle: "Результаты: " + lesson.Title,
 		Module:    mod,
 		Lesson:    lesson,
 		Score:     score,

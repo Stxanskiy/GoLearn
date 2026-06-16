@@ -1,0 +1,74 @@
+{
+  "_id": "4ed2b809d7446b9a0e000136",
+  "id": 136,
+  "fields": [
+    "user_id"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "user_id"
+    ],
+    "rows": [
+      {
+        "user_id": 1
+      },
+      {
+        "user_id": 2
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Lenta",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200305",
+    "id": "4ed2b809d7446b9a0e200305",
+    "title": "Lenta",
+    "name": "QuestionCustomDatabase_135_136",
+    "tables": [
+      {
+        "id": "watched_content",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "video_id",
+            "isKey": false,
+            "name": "video_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "watched_content",
+        "description": "Просмотры видео"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "watched_content": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Lenta"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана таблица watched_content с информацией о просмотрах видео пользователями.\n                        <br><br>\n                        Выведите список пользователей (user_id), смотревших видео каждый день в январе 2026 года.\n                        <br><br>\n                        <i>Подсказка: в январе 31 день.</i>\n                    ",
+  "title": "Пользователи, смотревшие видео каждый день в январе",
+  "additional_info": []
+}

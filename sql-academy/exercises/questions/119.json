@@ -1,0 +1,82 @@
+{
+  "_id": "4ed2b809d7446b9a0e000119",
+  "id": 119,
+  "fields": [
+    "city",
+    "driver_id",
+    "order_count"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "city",
+      "driver_id",
+      "order_count"
+    ],
+    "rows": [
+      {
+        "city": "Moscow",
+        "driver_id": "D001",
+        "order_count": 5
+      },
+      {
+        "city": "Moscow",
+        "driver_id": "D002",
+        "order_count": 4
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Yandex",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200142",
+    "id": "4ed2b809d7446b9a0e200142",
+    "title": "Yandex",
+    "name": "QuestionCustomDatabase_119",
+    "tables": [
+      {
+        "id": "Orders",
+        "props": [
+          {
+            "id": "driver_id",
+            "isKey": false,
+            "name": "driver_id",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "city",
+            "isKey": false,
+            "name": "city",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "order_id",
+            "isKey": false,
+            "name": "order_id",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Orders",
+        "description": "Данные заказов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Orders": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Yandex"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Необходимо написать SQL-запроc для получения топ-5 водителей по количеству заказов в каждом городе.\n                  В результирующем наборе для каждого водителя нужно вывести:\n                  <ul>\n                    <li>название города (city),</li>\n                    <li>идентификатор водителя (driver_id),</li>\n                    <li>количество заказов (order_count).</li>\n                  </ul>\n              ",
+  "title": "Топ-5 водителей по заказам",
+  "additional_info": []
+}

@@ -59,6 +59,8 @@ func lessonKindLabel(kind string) (label, key string) {
 		return "Лаб. работа", "lab"
 	case "sim":
 		return "Симулятор", "sim"
+	case "sql":
+		return "SQL", "sql"
 	default:
 		return "Урок", "lesson"
 	}
@@ -81,12 +83,13 @@ func (h *Handler) ModulePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allProgress, _ := h.progressRepo.GetAll(ctx)
+	uid := currentUserID(ctx)
+	allProgress, _ := h.progressRepo.GetAll(ctx, uid)
 	progMap := make(map[int]model.Progress)
 	for _, p := range allProgress {
 		progMap[p.LessonID] = p
 	}
-	labStatus, _ := h.submissionRepo.LessonLabStatus(ctx)
+	labStatus, _ := h.submissionRepo.LessonLabStatus(ctx, uid)
 
 	cat := mod.Category
 	if cat == "" {
@@ -170,11 +173,12 @@ func (h *Handler) LessonPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	uid := currentUserID(ctx)
 	// Mark as in_progress if not started
-	progress, _ := h.progressRepo.Get(ctx, lesson.ID)
+	progress, _ := h.progressRepo.Get(ctx, uid, lesson.ID)
 	if progress == nil {
-		_ = h.progressRepo.Upsert(ctx, lesson.ID, "in_progress")
-		progress, _ = h.progressRepo.Get(ctx, lesson.ID)
+		_ = h.progressRepo.Upsert(ctx, uid, lesson.ID, "in_progress")
+		progress, _ = h.progressRepo.Get(ctx, uid, lesson.ID)
 	}
 
 	// Check if quiz/tasks exist
@@ -199,19 +203,32 @@ func (h *Handler) LessonPage(w http.ResponseWriter, r *http.Request) {
 
 	// Find prev/next lessons + build sidebar TOC with progress
 	allLessons, _ := h.lessonRepo.GetByModule(ctx, mod.ID)
-	allProgress, _ := h.progressRepo.GetAll(ctx)
-	pmap := make(map[int]string)
+	allProgress, _ := h.progressRepo.GetAll(ctx, uid)
+	labStatusMap, _ := h.submissionRepo.LessonLabStatus(ctx, uid)
+	pmap := make(map[int]model.Progress)
 	for _, p := range allProgress {
-		pmap[p.LessonID] = p.Status
+		pmap[p.LessonID] = p
 	}
 
 	var prev, next *model.Lesson
 	var chapters []LessonWithProgress
 	curIndex, completed := 0, 0
 	for i, l := range allLessons {
-		status := "not_started"
-		if s, ok := pmap[l.ID]; ok {
-			status = s
+		p := pmap[l.ID]
+		status := p.Status
+		if status == "" {
+			status = "not_started"
+		}
+		// quiz/lab lessons complete via score / passed tasks, not the raw status
+		switch l.Kind {
+		case "quiz":
+			if p.QuizScore != nil {
+				status = "completed"
+			}
+		case "lab":
+			if labStatusMap[l.ID] {
+				status = "completed"
+			}
 		}
 		if status == "completed" {
 			completed++

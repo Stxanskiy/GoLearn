@@ -1,0 +1,134 @@
+<!doctype html><meta charset="utf-8"><title>Создание транзакций</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="sozdanie-tranzakcij" class="sc-bce5c646-1 fYolVj">Создание транзакций<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Если вы попытаетесь перевести 1000 долларов с вашего сберегательного счёта на текущий и вдруг обнаружите,
+что деньги были списаны, но не зачислены на текущий счёт, вы, скорее всего, расстроитесь. 😿</p>
+<p>Для защиты от такого рода ошибок программа, обрабатывающая ваш запрос на перевод денег, сначала начинает транзакцию,
+затем запускает SQL-запросы, необходимые для перевода денег с одного счёта на другой, и, если
+все проходит успешно, завершает транзакцию, выполнив команду <span class="sql-code sql-code-line sql-code-line--blue-color ">COMMIT</span> — фиксации изменений.</p>
+<p>Однако, если возникнут какие-либо проблемы, будет выполнена команда <span class="sql-code sql-code-line sql-code-line--blue-color ">ROLLBACK</span>,
+которая указывает серверу отменить все действия, совершённые с начала транзакции.</p>
+<div class="guide-mysql-only"><p>Процесс может выглядеть следующим образом:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Начало транзакции</span>
+<span class="token keyword">START</span> <span class="token keyword">TRANSACTION</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверка наличия достаточного баланса у отправителя</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@balance</span> :<span class="token operator">=</span> user_balance <span class="token keyword">FROM</span> accounts <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Если средств недостаточно, отмена транзакции</span>
+<span class="token keyword">IF</span> <span class="token variable">@balance</span> <span class="token operator">&lt;</span> <span class="token number">1000</span> <span class="token keyword">THEN</span>
+<span class="token keyword">ROLLBACK</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверка на существование получателя</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@exists</span> :<span class="token operator">=</span> <span class="token function">COUNT</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">)</span> <span class="token keyword">FROM</span> accounts <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+<span class="token keyword">IF</span> <span class="token variable">@exists</span> <span class="token operator">=</span> <span class="token number">0</span> <span class="token keyword">THEN</span>
+<span class="token keyword">ROLLBACK</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Обновление баланса счетов, если все проверки пройдены</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> user_balance <span class="token operator">=</span> user_balance <span class="token operator">-</span> <span class="token number">1000</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> user_balance <span class="token operator">=</span> user_balance <span class="token operator">+</span> <span class="token number">1000</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Применение изменений</span>
+<span class="token keyword">COMMIT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Процесс может выглядеть следующим образом:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Начало транзакции</span>
+<span class="token keyword">BEGIN</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверка баланса с использованием условия в WHERE</span>
+<span class="token comment">-- Списываем деньги, только если баланс достаточный</span>
+<span class="token keyword">UPDATE</span> accounts
+<span class="token keyword">SET</span> user_balance <span class="token operator">=</span> user_balance <span class="token operator">-</span> <span class="token number">1000</span>
+<span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">1</span>
+  <span class="token operator">AND</span> user_balance <span class="token operator">&gt;=</span> <span class="token number">1000</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверяем, что операция прошла успешно</span>
+<span class="token comment">-- В реальном приложении проверяется количество обновленных строк</span>
+<span class="token comment">-- Если 0 строк обновлено - недостаточно средств, нужен ROLLBACK</span>
+
+<span class="token comment">-- Зачисляем деньги получателю (если он существует)</span>
+<span class="token keyword">UPDATE</span> accounts
+<span class="token keyword">SET</span> user_balance <span class="token operator">=</span> user_balance <span class="token operator">+</span> <span class="token number">1000</span>
+<span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Применение изменений (или ROLLBACK при ошибке в коде приложения)</span>
+<span class="token keyword">COMMIT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>С помощью транзакции программа обеспечивает сохранность ваших 1000 долларов,
+гарантируя, что они либо останутся на исходном счёте, либо будут переведены на другой счёт, исключая риск их утраты.</p>
+<h2 id="zapusk-i-zavershenie-tranzakcij" class="sc-bce5c646-1 fYolVj">Запуск и завершение транзакций<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Каждая явная транзакция в MySQL начинается с использования оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">START TRANSACTION</span> или <span class="sql-code sql-code-line sql-code-line--blue-color ">BEGIN</span>.</p></div>
+<div class="guide-postgresql-only"><p>Каждая явная транзакция в PostgreSQL начинается с использования оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">BEGIN</span> или <span class="sql-code sql-code-line sql-code-line--blue-color ">START TRANSACTION</span>.</p></div>
+<p>Завершение же транзакции возможно:</p>
+<ul>
+<li>с помощью команды <span class="sql-code sql-code-line sql-code-line--blue-color ">COMMIT</span>, которая даёт указание серверу пометить изменения как постоянные и освободить все ресурсы (т.е. блокировки строк), использовавшиеся во время транзакции</li>
+<li>с помощью команды <span class="sql-code sql-code-line sql-code-line--blue-color ">ROLLBACK</span>, которая требует от сервера вернуть данные в состояние до начала транзакции.
+После завершения отката также любые ресурсы, используемые транзакцией, освобождаются.</li>
+</ul>
+<p>Помимо использования команд <span class="sql-code sql-code-line sql-code-line--blue-color ">COMMIT</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">ROLLBACK</span>, транзакция также может завершиться в результате внешних факторов.
+Например, если сервер выключается, в этом случае ваша транзакция будет автоматически отменена при перезапуске сервера.</p>
+<h2 id="tochki-sohraneniya-tranzakcii" class="sc-bce5c646-1 fYolVj">Точки сохранения транзакции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>В определённых ситуациях вам может потребоваться выполнить откат в транзакции, не отменяя всю проделанную работу.
+Для этого вы можете установить одну или несколько точек сохранения в рамках транзакции.
+Это позволяет вам откатиться к конкретной точке в транзакции, а не к её началу.</p>
+<p>Каждой точке сохранения в рамках одной транзакции необходимо присвоить уникальное имя,
+что позволит использовать множество разных точек сохранения.
+Для создания точки сохранения под названием <span class="sql-code sql-code-line sql-code-line--blue-color ">my_savepoint</span> используйте следующую команду:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SAVEPOINT</span> my_savepoint<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Для отката к определённой точке сохранения просто вводится команда
+<span class="sql-code sql-code-line sql-code-line--blue-color ">ROLLBACK</span>, за которой следуют ключевые слова <span class="sql-code sql-code-line sql-code-line--blue-color ">TO SAVEPOINT</span> и имя точки
+сохранения, например:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">START</span> <span class="token keyword">TRANSACTION</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Создаем точку сохранения перед изменением баланса первого пользователя</span>
+<span class="token keyword">SAVEPOINT</span> before_updating_user_1<span class="token punctuation">;</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> balance <span class="token operator">=</span> balance <span class="token operator">+</span> <span class="token number">100</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверка условия для первого пользователя</span>
+<span class="token comment">-- например, проверяем логику бизнес-правил</span>
+
+<span class="token comment">-- Здесь мы предполагаем, что условие не выполнилось, и нам нужно отменить изменение баланса</span>
+<span class="token keyword">ROLLBACK</span> <span class="token keyword">TO</span> <span class="token keyword">SAVEPOINT</span> before_updating_user_1<span class="token punctuation">;</span>
+
+<span class="token comment">-- Обновляем баланс для второго пользователя</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> balance <span class="token operator">=</span> balance <span class="token operator">+</span> <span class="token number">200</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Завершаем транзакцию</span>
+<span class="token keyword">COMMIT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">BEGIN</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Создаем точку сохранения перед изменением баланса первого пользователя</span>
+<span class="token keyword">SAVEPOINT</span> before_updating_user_1<span class="token punctuation">;</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> balance <span class="token operator">=</span> balance <span class="token operator">+</span> <span class="token number">100</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверка условия для первого пользователя</span>
+<span class="token comment">-- например, проверяем логику бизнес-правил</span>
+
+<span class="token comment">-- Здесь мы предполагаем, что условие не выполнилось, и нам нужно отменить изменение баланса</span>
+<span class="token keyword">ROLLBACK</span> <span class="token keyword">TO</span> <span class="token keyword">SAVEPOINT</span> before_updating_user_1<span class="token punctuation">;</span>
+
+<span class="token comment">-- Обновляем баланс для второго пользователя</span>
+<span class="token keyword">UPDATE</span> accounts <span class="token keyword">SET</span> balance <span class="token operator">=</span> balance <span class="token operator">+</span> <span class="token number">200</span> <span class="token keyword">WHERE</span> user_id <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Завершаем транзакцию</span>
+<span class="token keyword">COMMIT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>В результате этой транзакции баланс первого пользователя останется без изменений из-за отката к точке сохранения,
+а баланс второго пользователя увеличится на 200.
+Это показывает, как можно управлять изменениями в базе данных с высоким уровнем контроля при помощи транзакций и точек сохранения.</p>
+<p>Когда вы используете точки сохранения, помните следующие моменты:</p>
+<ul>
+<li>Несмотря на название, при создании точки сохранения ничего не сохраняется.
+Чтобы ваши изменения в рамках транзакции стали постоянными, необходимо выполнить команду <span class="sql-code sql-code-line sql-code-line--blue-color ">COMMIT</span>.</li>
+<li>При выполнении отката транзакции без указания конкретной точки сохранения
+все ранее установленные точки сохранения будут проигнорированы, и будет произведён откат всей транзакции.</li>
+</ul>

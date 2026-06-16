@@ -1,0 +1,83 @@
+{
+  "_id": "4ed2b809d7446b9a0e200082",
+  "id": "4ed2b809d7446b9a0e200082",
+  "title": "Facebook",
+  "name": "QuestionCustomDatabase_82",
+  "tables": [
+    {
+      "id": "pages",
+      "props": [
+        {
+          "id": "page_id",
+          "isKey": true,
+          "name": "page_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "page_name",
+          "isKey": false,
+          "name": "page_name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "pages",
+      "description": "Список постов в Facebook"
+    },
+    {
+      "id": "page_likes",
+      "props": [
+        {
+          "id": "user_id",
+          "isKey": true,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "page_id",
+          "isKey": true,
+          "name": "page_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "liked_date",
+          "isKey": false,
+          "name": "liked_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "page_likes",
+      "description": "Список лайков для постов"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "pages",
+        "field": "page_id"
+      },
+      "target": {
+        "table": "page_likes",
+        "field": "page_id"
+      },
+      "type": "many-to-one",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+    }
+  ],
+  "tablePosition": {
+    "pages": {
+      "x": 0,
+      "y": 243
+    },
+    "page_likes": {
+      "x": 300,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Facebook"
+}

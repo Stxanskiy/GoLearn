@@ -1,0 +1,144 @@
+{
+  "_id": "4ed2b809d7446b9a0e000122",
+  "id": 122,
+  "fields": [
+    "user_id",
+    "vendor_name",
+    "start_date",
+    "end_date"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "user_id",
+      "vendor_name",
+      "start_date",
+      "end_date"
+    ],
+    "rows": [
+      {
+        "user_id": 1,
+        "vendor_name": "Samsung",
+        "start_date": "2020-01-01",
+        "end_date": "2020-01-01"
+      },
+      {
+        "user_id": 2,
+        "vendor_name": "Apple",
+        "start_date": "2020-01-01",
+        "end_date": "2020-01-01"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Beeline",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200141",
+    "id": "4ed2b809d7446b9a0e200141",
+    "title": "Beeline",
+    "name": "QuestionCustomDatabase_122",
+    "tables": [
+      {
+        "id": "Devices",
+        "props": [
+          {
+            "id": "device_id",
+            "isKey": true,
+            "name": "device_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "vendor_name",
+            "isKey": false,
+            "name": "vendor_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Devices",
+        "description": "Данные устройств"
+      },
+      {
+        "id": "HistoryLog",
+        "props": [
+          {
+            "id": "log_id",
+            "isKey": true,
+            "name": "log_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "device_id",
+            "isKey": false,
+            "name": "device_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "start_date",
+            "isKey": false,
+            "name": "start_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "end_date",
+            "isKey": false,
+            "name": "end_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "HistoryLog",
+        "description": "История смены телефонов"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "HistoryLog",
+          "field": "device_id"
+        },
+        "target": {
+          "table": "Devices",
+          "field": "device_id"
+        },
+        "type": "one-to-many"
+      }
+    ],
+    "tablePosition": {
+      "Devices": {
+        "x": 0,
+        "y": 0
+      },
+      "HistoryLog": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Beeline"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Необходимо написать SQL-запрос, который выведет модель последнего устройства у клиента.\n                  В результирующем наборе для каждого абонента нужно вывести:\n                  <ul>\n                    <li>идентификатор пользователя (user_id),</li>\n                    <li>название производителя устройства (vendor_name),</li>\n                    <li>дата начала использования устройства (start_date),</li>\n                    <li>дата окончания использования устройства (end_date).</li>\n                  </ul>\n                  Гарантируется, что промежутки использования устройств (start_date, end_date) для одного и того же пользователя не пересекаются.\n              ",
+  "title": "Модель последнего устройства клиента",
+  "additional_info": []
+}

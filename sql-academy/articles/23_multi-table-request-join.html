@@ -1,0 +1,115 @@
+<!doctype html><meta charset="utf-8"><title>Многотабличные запросы, JOIN</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="mnogotablichnye-zaprosy-join" class="sc-bce5c646-1 fYolVj">Многотабличные запросы, JOIN<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<h2 id="mnogotablichnye-zaprosy" class="sc-bce5c646-1 fYolVj">Многотабличные запросы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>В предыдущих статьях описывалась работа только с одной таблицей базы данных.
+В реальности же очень часто приходится делать выборку из нескольких таблиц, каким-то образом объединяя их.
+В данной статье вы узнаете основные способы соединения таблиц.</p>
+<p>Например, если мы хотим получить информацию о тратах на покупки, мы можем её получить следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> family_member<span class="token punctuation">,</span> amount <span class="token operator">*</span> unit_price <span class="token keyword">AS</span> price <span class="token keyword">FROM</span> Payments
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:228px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">family_member</th><th style="min-width:auto">price</th></tr></thead><tbody><tr class="highlight-row"><td>1</td><td>2000</td></tr><tr class="highlight-row"><td>2</td><td>2100</td></tr><tr class="highlight-row"><td>3</td><td>100</td></tr><tr class="highlight-row"><td>4</td><td>350</td></tr><tr class="highlight-row"><td>4</td><td>300</td></tr><tr class="highlight-row"><td>5</td><td>100</td></tr><tr class="highlight-row"><td>2</td><td>120</td></tr><tr class="highlight-row"><td>2</td><td>5500</td></tr><tr class="highlight-row"><td>5</td><td>230</td></tr><tr class="highlight-row"><td>3</td><td>2200</td></tr><tr class="highlight-row"><td>2</td><td>66000</td></tr><tr class="highlight-row"><td>1</td><td>40</td></tr><tr class="highlight-row"><td>3</td><td>100</td></tr><tr class="highlight-row"><td>3</td><td>1200</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>В поле <span class="sql-code sql-code-line sql-code-line--blue-color ">family_member</span> полученной выборки отображаются идентификаторы записей из таблицы <span class="sql-code sql-code-line sql-code-line--blue-color ">Payments</span>, но для нас они мало что значат.</p>
+<p>Вместо этих идентификаторов было бы гораздо нагляднее выводить имена тех, кто покупал (поле <span class="sql-code sql-code-line sql-code-line--blue-color ">member_name</span> из таблицы <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMember</span>).
+Ровно для этого и существует объединение таблиц и оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">JOIN</span>.</p>
+<div class="guide-erd"><div style="display:flex" class="loader"></div></div>
+<h2 id="obshaya-struktura-mnogotablichnogo-zaprosa" class="sc-bce5c646-1 fYolVj">Общая структура многотабличного запроса<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> поля_таблиц
+<span class="token keyword">FROM</span> таблица_1
+<span class="token punctuation">[</span><span class="token keyword">INNER</span><span class="token punctuation">]</span> <span class="token operator">|</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token keyword">LEFT</span> <span class="token operator">|</span> <span class="token keyword">RIGHT</span> <span class="token operator">|</span> <span class="token keyword">FULL</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token keyword">OUTER</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token keyword">JOIN</span> таблица_2
+    <span class="token keyword">ON</span> условие_соединения
+<span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token keyword">INNER</span><span class="token punctuation">]</span> <span class="token operator">|</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token keyword">LEFT</span> <span class="token operator">|</span> <span class="token keyword">RIGHT</span> <span class="token operator">|</span> <span class="token keyword">FULL</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token keyword">OUTER</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token keyword">JOIN</span> таблица_n
+    <span class="token keyword">ON</span> условие_соединения<span class="token punctuation">]</span>
+</code></pre></div></pre>
+<p>Как можно увидеть по структуре, соединение бывает:</p>
+<ul>
+<li>внутренним <span class="sql-code sql-code-line sql-code-line--blue-color ">INNER</span> (по умолчанию)</li>
+<li>внешним <span class="sql-code sql-code-line sql-code-line--blue-color ">OUTER</span>, при этом внешнее соединение делится на левое <span class="sql-code sql-code-line sql-code-line--blue-color ">LEFT</span>, правое <span class="sql-code sql-code-line sql-code-line--blue-color ">RIGHT</span> и полное <span class="sql-code sql-code-line sql-code-line--blue-color ">FULL</span></li>
+</ul>
+<p>С более подробными деталями, чем отличается внутреннее соединение от внешнего и как они работают, мы познакомимся в следующих статьях.</p>
+<p>Пока нам достаточно лишь знать, что для вышеописанного примера с запросом на покупки нам понадобится именно запрос с внутренним соединением,
+который будет выглядеть следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> family_member<span class="token punctuation">,</span> member_name<span class="token punctuation">,</span> amount <span class="token operator">*</span> unit_price <span class="token keyword">AS</span> price <span class="token keyword">FROM</span> Payments
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> FamilyMembers
+    <span class="token keyword">ON</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+</code></pre></div></pre>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:228px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">family_member</th><th style="min-width:auto">member_name</th><th style="min-width:auto">price</th></tr></thead><tbody><tr class="highlight-row"><td>1</td><td>Headley Quincey</td><td>2000</td></tr><tr class="highlight-row"><td>2</td><td>Flavia Quincey</td><td>2100</td></tr><tr class="highlight-row"><td>3</td><td>Andie Quincey</td><td>100</td></tr><tr class="highlight-row"><td>4</td><td>Lela Quincey</td><td>350</td></tr><tr class="highlight-row"><td>4</td><td>Lela Quincey</td><td>300</td></tr><tr class="highlight-row"><td>5</td><td>Annie Quincey</td><td>100</td></tr><tr class="highlight-row"><td>2</td><td>Flavia Quincey</td><td>120</td></tr><tr class="highlight-row"><td>2</td><td>Flavia Quincey</td><td>5500</td></tr><tr class="highlight-row"><td>5</td><td>Annie Quincey</td><td>230</td></tr><tr class="highlight-row"><td>3</td><td>Andie Quincey</td><td>2200</td></tr><tr class="highlight-row"><td>2</td><td>Flavia Quincey</td><td>66000</td></tr><tr class="highlight-row"><td>1</td><td>Headley Quincey</td><td>40</td></tr><tr class="highlight-row"><td>3</td><td>Andie Quincey</td><td>100</td></tr><tr class="highlight-row"><td>3</td><td>Andie Quincey</td><td>1200</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>В данном запросе мы сопоставляем записи из таблицы <span class="sql-code sql-code-line sql-code-line--blue-color ">Payments</span> и записи из таблицы <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span>.</p>
+<p>Чтобы сопоставление работало, мы указываем как именно
+записи из двух разных таблиц должны находить друг друга. Это условие указывается после <span class="sql-code sql-code-line sql-code-line--blue-color ">ON</span>:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">ON</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+</code></pre></div></pre>
+<p>В нашем случае поле <span class="sql-code sql-code-line sql-code-line--blue-color ">family_member</span> указывает на идентификатор в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span> и таким образом помогает однозначному сопоставлению.</p>
+<blockquote>
+<p>В большинстве случаев условием соединения является равенство столбцов таблиц (таблица_1.поле = таблица_2.поле),
+однако точно так же можно использовать и другие операторы сравнения.</p>
+</blockquote>
+<h2 id="vyvod-vseh-stolbcov-iz-tablicy-v-mnogotablichnom-zaprose" class="sc-bce5c646-1 fYolVj">Вывод всех столбцов из таблицы в многотабличном запросе<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Ранее, когда все запросы выполнялись на одной таблице, было достаточно указать символ <span class="sql-code sql-code-line sql-code-line--blue-color ">*</span>, чтобы вывести все поля из этой таблицы. Теперь же, когда таблиц может быть несколько, <span class="sql-code sql-code-line sql-code-line--blue-color ">*</span> будет означать &quot;вывести все столбцы из таблиц, перечисленных в выражении <span class="sql-code sql-code-line sql-code-line--blue-color ">FROM</span>&quot;.</p>
+<p>В некоторых случаях нам может понадобиться вывести столбцы, принадлежащие только какой-то конкретной таблице. Например, дано соединение таблиц <span class="sql-code sql-code-line sql-code-line--blue-color ">Payments</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span>, и в итоговую выборку необходимо вывести только поля из таблицы <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span>. Как это сделать? Всё очень просто! Необходимо перед символом <span class="sql-code sql-code-line sql-code-line--blue-color ">*</span> добавить название таблицы:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> FamilyMembers<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">FROM</span> Payments
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> FamilyMembers
+    <span class="token keyword">ON</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+</code></pre></div></pre>
+<blockquote>
+<p>Запомните эту возможность, она вам понадобится в последующих заданиях 😉</p>
+</blockquote>
+<p>Таким же образом можно вывести <strong class="sc-f6cdcda8-0 gqDbfN">все столбцы из нескольких таблиц</strong>:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> Payments<span class="token punctuation">.</span><span class="token operator">*</span><span class="token punctuation">,</span> FamilyMembers<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">FROM</span> Payments
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> FamilyMembers
+    <span class="token keyword">ON</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+</code></pre></div></pre>
+<blockquote>
+<p>В данном случае вместо <span class="sql-code sql-code-line sql-code-line--blue-color ">Payments.*, FamilyMembers.*</span> можно использовать <span class="sql-code sql-code-line sql-code-line--blue-color ">*</span>, т.к. в <span class="sql-code sql-code-line sql-code-line--blue-color ">FROM</span> перечислены только эти две таблицы. Вывод будет одинаков в обоих случаях.</p>
+</blockquote>
+<p>А что, если нужно вывести <strong class="sc-f6cdcda8-0 gqDbfN">несколько столбцов из одной таблицы и все из другой</strong>? Это тоже возможно! Выведем поля <span class="sql-code sql-code-line sql-code-line--blue-color ">payment_id</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">family_member</span> из <span class="sql-code sql-code-line sql-code-line--blue-color ">Payments</span>, а также все поля из <span class="sql-code sql-code-line sql-code-line--blue-color ">FamilyMembers</span>:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> payment_id<span class="token punctuation">,</span> family_member<span class="token punctuation">,</span> FamilyMembers<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">FROM</span> Payments
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> FamilyMembers
+    <span class="token keyword">ON</span> Payments<span class="token punctuation">.</span>family_member <span class="token operator">=</span> FamilyMembers<span class="token punctuation">.</span>member_id
+</code></pre></div></pre>
+<h2 id="psevdonimy-dlya-tablic" class="sc-bce5c646-1 fYolVj">Псевдонимы для таблиц<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>При работе с большими многотабличными запросами рекомендуется использовать псевдонимы (алиасы) для таблиц. Это не только улучшает читаемость кода, но и помогает избежать ошибок в сложных запросах.</p>
+<p>Псевдонимы задаются после имени таблицы с помощью ключевого слова <span class="sql-code sql-code-line sql-code-line--blue-color ">AS</span>:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> id<span class="token punctuation">,</span> name
+<span class="token keyword">FROM</span> Passenger <span class="token keyword">AS</span> pass
+</code></pre></div></pre>
+<p>Теперь обращаться к столбцам таблицы можно через псевдоним:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> pass<span class="token punctuation">.</span>id<span class="token punctuation">,</span> pass<span class="token punctuation">.</span>name
+<span class="token keyword">FROM</span> Passenger <span class="token keyword">AS</span> pass
+</code></pre></div></pre>
+<blockquote>
+<p>Ключевое слово <span class="sql-code sql-code-line sql-code-line--blue-color ">AS</span> является опциональным, как и у псевдонимов столбцов.</p>
+</blockquote>
+<blockquote>
+<p>После того, как вы назначили таблице псевдоним, столбцы этой таблицы больше не будут доступны по её оригинальному названию. Вместо конструкции <span class="sql-code sql-code-line sql-code-line--blue-color ">&lt;таблица&gt;.&lt;поле&gt;</span> необходимо использовать <span class="sql-code sql-code-line sql-code-line--blue-color ">&lt;псевдоним_таблицы&gt;.&lt;поле&gt;</span>.</p>
+</blockquote>
+<p>Рассмотрим пример запроса с несколькими таблицами. Допустим, нам нужно вывести идентификаторы и имена пассажиров, которые хотя бы раз совершали перелёт:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>
+    pass<span class="token punctuation">.</span>id<span class="token punctuation">,</span>
+    pass<span class="token punctuation">.</span>name
+<span class="token keyword">FROM</span> Passenger <span class="token keyword">AS</span> pass
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> Pass_in_trip <span class="token keyword">AS</span> pit
+    <span class="token keyword">ON</span> pit<span class="token punctuation">.</span>passenger <span class="token operator">=</span> pass<span class="token punctuation">.</span>id
+</code></pre></div></pre>
+<p>В этом примере таблицам Passenger и Pass_in_trip присваиваются псевдонимы <span class="sql-code sql-code-line sql-code-line--blue-color ">pass</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">pit</span>, соответственно, а дальше используются для вывода столбцов из этих таблиц. Обратите внимание, что в обеих таблицах есть поле с одинаковым названием – <span class="sql-code sql-code-line sql-code-line--blue-color ">id</span>. Если вы не укажете из какой таблицы его нужно брать, то СУБД сделает это за вас и отдаст значение из <strong class="sc-f6cdcda8-0 gqDbfN">последней таблицы</strong> в цепочке JOIN. В данном случае это <span class="sql-code sql-code-line sql-code-line--blue-color ">Pass_in_trip</span>.</p>
+<p>Сравните с вариантом без псевдонимов. Разница очевидна, не правда ли? 🔥</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span>
+    Passenger<span class="token punctuation">.</span>id<span class="token punctuation">,</span>
+    Passenger<span class="token punctuation">.</span>name
+<span class="token keyword">FROM</span> Passenger
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> Pass_in_trip
+    <span class="token keyword">ON</span> Pass_in_trip<span class="token punctuation">.</span>passenger <span class="token operator">=</span> Passenger<span class="token punctuation">.</span>id
+</code></pre></div></pre>
+<p>При использовании псевдонимов всегда руководствуйтесь следующими простыми правилами, и тогда ваши запросы будут лаконичными и понятными:</p>
+<ul>
+<li>Используйте логичные сокращения (например, первые буквы названия таблицы)</li>
+<li>Избегайте слишком коротких (однобуквенных) или неочевидных псевдонимов</li>
+</ul>

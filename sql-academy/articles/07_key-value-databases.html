@@ -1,0 +1,36 @@
+<!doctype html><meta charset="utf-8"><title>Key-value базы данных</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="key-value-bazy-dannyh" class="sc-bce5c646-1 fYolVj">Key-value базы данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<blockquote>
+<p>Key-value базы данных – это тип баз данных, которые хранят данные как совокупность пар «ключ-значение»,
+в которых ключ служит уникальным идентификатором.</p>
+</blockquote>
+<p>То есть создаётся однозначное соответствие значения по ключу. Как ключи, так и значения могут представлять собой что угодно: от простых до сложных составных объектов.</p>
+<h2 id="primer-key-value-bazy-dannyh" class="sc-bce5c646-1 fYolVj">Пример key-value базы данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Пример key-value базы данных" alt="Пример key-value базы данных" loading="lazy" width="1103" height="333" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fkey_value_dbms.png&amp;w=1200&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fkey_value_dbms.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fkey_value_dbms.png&amp;w=3840&amp;q=50"/></p>
+<h2 id="preimushestva" class="sc-bce5c646-1 fYolVj">Преимущества<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<ul>
+<li>Скорость работы</li>
+<li>Простота модели хранения данных</li>
+<li>Гибкость: значения могут быть любыми, включая JSON</li>
+</ul>
+<h2 id="nedostatki" class="sc-bce5c646-1 fYolVj">Недостатки<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<ul>
+<li>Плохо масштабируются по мере усложнения моделей данных</li>
+<li>Неэффективность при работе с группой записей</li>
+</ul>
+<p>Стандартная реализация не даёт никакого представления о том, что содержит фактическое значение — когда вы получаете значение с помощью ключа,
+у вас нет гарантии того, что вы получаете. Это означает, что вам придётся фильтровать или обрабатывать данные, которые вам не нужны, в коде вашего приложения.
+Как правило, это будет менее эффективно с точки зрения производительности по сравнению с выполнением большей части этой работы в базе данных.</p>
+<ul>
+<li>Отсутствие языка запросов</li>
+</ul>
+<p>Что в свою очередь означает, что логика, которая обычно хранится в базе данных, теперь находится в коде вашего приложения, что может привести к сложности и усложнить поддержку кода.</p>
+<h2 id="rejting-key-value-subd-po-populyarnosti" class="sc-bce5c646-1 fYolVj">Рейтинг key-value СУБД по популярности<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Рейтинг key-value СУБД" alt="Рейтинг key-value СУБД" loading="lazy" width="1357" height="391" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fpopular_key_value_dbms.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fpopular_key_value_dbms.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fkey-value-databases%2Fpopular_key_value_dbms.png&amp;w=3840&amp;q=50"/></p>

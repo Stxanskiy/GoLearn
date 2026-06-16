@@ -1,0 +1,74 @@
+{
+  "_id": "4ed2b809d7446b9a0e000096",
+  "id": 96,
+  "fields": [
+    "product"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "product"
+    ],
+    "rows": [
+      {
+        "product": "Молоко Самокат пастеризованное, 2,5%, 1000 г"
+      },
+      {
+        "product": "Йогурт питьевой Самокат с бананом, 1%, 300 г"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Samokat",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200096",
+    "id": "4ed2b809d7446b9a0e200096",
+    "title": "Samokat",
+    "name": "QuestionCustomDatabase_96",
+    "tables": [
+      {
+        "id": "Products",
+        "props": [
+          {
+            "id": "product_id",
+            "isKey": true,
+            "name": "product_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "product",
+            "isKey": false,
+            "name": "product",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "shelf_life",
+            "isKey": false,
+            "name": "shelf_life",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Products",
+        "description": "Список товаров"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Products": {
+        "x": 0,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "Samokat"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Вывести все товары, в наименовании которых содержится «самокат» (без учета регистра), и срок годности которых не превышает 7 суток.",
+  "title": "Товары \"самокат\" со сроком годности меньше 7 дней",
+  "additional_info": []
+}

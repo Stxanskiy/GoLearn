@@ -250,6 +250,7 @@ func getAllModules() []M {
 	var mods []M
 	mods = append(mods, golang...)
 	mods = append(mods, importedModules()...)
+	mods = append(mods, sqlAcademyModules()...)
 	mods = append(mods, security...)
 
 	for i := range mods {

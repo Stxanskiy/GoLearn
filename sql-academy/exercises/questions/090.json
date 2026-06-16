@@ -1,0 +1,116 @@
+{
+  "_id": "4ed2b809d7446b9a0e000090",
+  "id": 90,
+  "fields": [
+    "cityname",
+    "date",
+    "active_base"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "cityname",
+      "date",
+      "active_base"
+    ],
+    "rows": [
+      {
+        "cityname": "city1",
+        "date": "2022-01-01",
+        "active_base": 3
+      },
+      {
+        "cityname": "...",
+        "date": "...",
+        "active_base": "..."
+      },
+      {
+        "cityname": "city1",
+        "date": "2022-06-30",
+        "active_base": 39
+      },
+      {
+        "cityname": "city2",
+        "date": "2022-01-01",
+        "active_base": 1
+      },
+      {
+        "cityname": "...",
+        "date": "...",
+        "active_base": "..."
+      },
+      {
+        "cityname": "city2",
+        "date": "2022-06-30",
+        "active_base": 50
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Dodo Brands",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200090",
+    "id": "4ed2b809d7446b9a0e200090",
+    "title": "Dodo Brands",
+    "name": "QuestionCustomDatabase_90",
+    "tables": [
+      {
+        "id": "Sales",
+        "props": [
+          {
+            "id": "orderid",
+            "isKey": true,
+            "name": "orderid",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "cityname",
+            "isKey": false,
+            "name": "cityname",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "clientid",
+            "isKey": false,
+            "name": "clientid",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "sales",
+            "isKey": false,
+            "name": "sales",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Sales",
+        "description": "Таблица с чековыми данными по городам"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Orders": {
+        "x": 0,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "Dodo Brands"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "В нашей компании замеряется такой показатель, как “30-дневная активная база”. Для любого дня — это число клиентов за предыдущие 30 дней. (Например, для 2022-01-01 — это число уникальных клиентов, совершивших визит за 30 дней до 2022-01-01, включая 2022-01-01. Для 2022-01-02 - это число уникальных клиентов, совершивших визит за 30 дней до 2022-01-02, включая 2022-01-02 и т.д.). <br /> <br /> \n                    Допустим у вас есть таблица с чековыми данными по двум городам со следующими полями: cityname - наименование города, date - дата чека, orderid - id чека, clientid - id клиента, sales - сумма чека в рублях. <br /> <br />\n                    Данные в таблице с 2022-01-01 по 2022-06-30. <br /> <br />\n                    Посчитайте подневную динамику 30-дневной активной базы по каждому городу, отсортируйте по городу и дате по возрастанию. <br /> <br />\n                    В результирующий таблице должны присутствовать данные для каждого дня с 2022-01-01 по 2022-06-30 для каждого города.\n                    ",
+  "title": "30-дневная активная база",
+  "additional_info": []
+}

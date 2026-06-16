@@ -1,0 +1,85 @@
+{
+  "_id": "4ed2b809d7446b9a0e000081",
+  "id": 81,
+  "fields": [
+    "tweet_bucket",
+    "users_num"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "tweet_bucket",
+      "users_num"
+    ],
+    "rows": [
+      {
+        "tweet_bucket": 1,
+        "users_num": 2
+      },
+      {
+        "tweet_bucket": 2,
+        "users_num": 3
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Twitter",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200081",
+    "id": "4ed2b809d7446b9a0e200081",
+    "title": "Tweets",
+    "name": "QuestionCustomDatabase_81",
+    "tables": [
+      {
+        "id": "tweets",
+        "props": [
+          {
+            "id": "tweet_id",
+            "isKey": true,
+            "name": "tweet_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "msg",
+            "isKey": false,
+            "name": "msg",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "tweet_date",
+            "isKey": false,
+            "name": "tweet_date",
+            "type": "DATETIME",
+            "description": null
+          }
+        ],
+        "title": "Tweets",
+        "description": "Список твитов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "tweets": {
+        "x": 0,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "Tweets"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Предположим, вам дана таблица данных твитов Twitter. Напишите запрос, чтобы получить гистограмму твитов, опубликованных каждым пользователем в 2022 году. Выведите количество твитов на пользователя как группу и количество пользователей Twitter, которые попадают в эту группу. <br /> <br />\n                    Другими словами, сгруппируйте пользователей по количеству твитов (tweet_bucket), которые они опубликовали в 2022 году, и подсчитайте количество пользователей в каждой группе (users_num).",
+  "title": "Гистограмма твитов за 2022 год",
+  "additional_info": []
+}

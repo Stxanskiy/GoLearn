@@ -1,0 +1,163 @@
+{
+  "_id": "4ed2b809d7446b9a0e000131",
+  "id": 131,
+  "fields": [
+    "customer_id",
+    "total_orders"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "customer_id",
+      "total_orders"
+    ],
+    "rows": [
+      {
+        "customer_id": 1,
+        "total_orders": 3
+      },
+      {
+        "customer_id": 2,
+        "total_orders": 2
+      },
+      {
+        "customer_id": 3,
+        "total_orders": 1
+      },
+      {
+        "customer_id": 4,
+        "total_orders": 0
+      },
+      {
+        "customer_id": 5,
+        "total_orders": 2
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Facebook",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200303",
+    "id": "4ed2b809d7446b9a0e200303",
+    "title": "Facebook",
+    "name": "QuestionCustomDatabase_131",
+    "tables": [
+      {
+        "id": "purchases",
+        "props": [
+          {
+            "id": "purchase_id",
+            "isKey": true,
+            "name": "purchase_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "amount",
+            "isKey": false,
+            "name": "amount",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "product_id",
+            "isKey": false,
+            "name": "product_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "customer_id",
+            "isKey": false,
+            "name": "customer_id",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "purchases",
+        "description": "Покупки"
+      },
+      {
+        "id": "registered_customers",
+        "props": [
+          {
+            "id": "customer_id",
+            "isKey": true,
+            "name": "customer_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "customer_name",
+            "isKey": false,
+            "name": "customer_name",
+            "type": "VARCHAR(50)",
+            "description": null
+          },
+          {
+            "id": "join_date",
+            "isKey": false,
+            "name": "join_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "state",
+            "isKey": false,
+            "name": "state",
+            "type": "VARCHAR(50)",
+            "description": null
+          },
+          {
+            "id": "country",
+            "isKey": false,
+            "name": "country",
+            "type": "VARCHAR(50)",
+            "description": null
+          }
+        ],
+        "title": "registered_customers",
+        "description": "Зарегистрированные клиенты"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "registered_customers",
+          "field": "customer_id"
+        },
+        "target": {
+          "table": "purchases",
+          "field": "customer_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778243"
+      }
+    ],
+    "tablePosition": {
+      "registered_customers": {
+        "x": 0,
+        "y": 0
+      },
+      "purchases": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Facebook"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана база данных с информацией о покупках и зарегистрированных клиентах.\n                        В таблице purchases хранится информация о покупках,\n                        в таблице registered_customers - информация о зарегистрированных клиентах.\n                        <br><br>\n                        Напишите запрос для определения количества заказов, размещенных каждым зарегистрированным клиентом.\n                        Выведите customer_id и общее количество заказов, размещенных каждым клиентом.\n                    ",
+  "title": "Количество заказов каждого зарегистрированного клиента",
+  "additional_info": []
+}

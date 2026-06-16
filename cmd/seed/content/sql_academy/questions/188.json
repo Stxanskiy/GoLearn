@@ -1,0 +1,81 @@
+{
+  "_id": "4ed2b809d7446b9a0e000188",
+  "id": 188,
+  "fields": [
+    "project_id",
+    "avg_days"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "project_id",
+      "avg_days"
+    ],
+    "rows": [
+      {
+        "project_id": 99,
+        "avg_days": 28.5
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "EPAM",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200413",
+    "id": "4ed2b809d7446b9a0e200413",
+    "title": "EPAM — баги",
+    "name": "QuestionCustomDatabase_188",
+    "tables": [
+      {
+        "id": "bugs",
+        "props": [
+          {
+            "id": "bug_id",
+            "isKey": true,
+            "name": "bug_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "project_id",
+            "isKey": false,
+            "name": "project_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "creation_date",
+            "isKey": false,
+            "name": "creation_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "resolution_date",
+            "isKey": false,
+            "name": "resolution_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "bugs",
+        "description": "Баги: resolution_date — дата закрытия (NULL, если ещё не закрыт)"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "bugs": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "EPAM — баги"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>bugs</b> хранятся баги: <b>project_id</b>, <b>creation_date</b>\n            (дата создания) и <b>resolution_date</b> (дата закрытия; <b>NULL</b>, если\n            баг ещё не закрыт).\n            <br><br>\n            Для каждого проекта посчитайте среднее время закрытия бага в днях — среднюю\n            разницу между <b>resolution_date</b> и <b>creation_date</b> по закрытым багам.\n            Незакрытые баги (<b>resolution_date IS NULL</b>) не учитывайте.\n            <br><br>\n            Выведите <b>project_id</b> и <b>avg_days</b> (среднее время в днях,\n            округлённое до двух знаков). Отсортируйте по <b>project_id</b> по возрастанию.\n        ",
+  "title": "Среднее время закрытия бага по проектам",
+  "additional_info": []
+}

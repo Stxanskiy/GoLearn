@@ -1,0 +1,92 @@
+{
+  "_id": "4ed2b809d7446b9a0e000118",
+  "id": 118,
+  "fields": [
+    "region",
+    "user_id",
+    "total_duration"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "region",
+      "user_id",
+      "total_duration"
+    ],
+    "rows": [
+      {
+        "region": "MSK",
+        "user_id": 20,
+        "total_duration": 100
+      },
+      {
+        "region": "NSK",
+        "user_id": 5,
+        "total_duration": 240
+      },
+      {
+        "region": "NSK",
+        "user_id": 12,
+        "total_duration": 200
+      },
+      {
+        "region": "SPB",
+        "user_id": 1,
+        "total_duration": 200
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Beeline",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200145",
+    "id": "4ed2b809d7446b9a0e200145",
+    "title": "Beeline",
+    "name": "QuestionCustomDatabase_118",
+    "tables": [
+      {
+        "id": "Calls",
+        "props": [
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "region",
+            "isKey": false,
+            "name": "region",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "duration",
+            "isKey": false,
+            "name": "duration",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Calls",
+        "description": "Данные звонков"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Calls": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Beeline"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Необходимо написать SQL-запрос, который вернёт по 5 самых «разговорчивых» абонентов \n                  (с наибольшей суммарной длительностью звонков) в каждом филиале. \n                  В результирующем наборе для каждого абонента нужно вывести:\n                  <ul>\n                    <li>название филиала (region),</li>\n                    <li>идентификатор пользователя (user_id),</li>\n                    <li>суммарную продолжительность его звонков (total_duration).</li>\n                  </ul>\n              ",
+  "title": "Топ-5 \"разговорчивых\" абонентов",
+  "additional_info": []
+}

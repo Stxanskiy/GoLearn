@@ -1,0 +1,172 @@
+{
+  "_id": "4ed2b809d7446b9a0e000180",
+  "id": 180,
+  "fields": [
+    "property_type",
+    "avg_nights"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "property_type",
+      "avg_nights"
+    ],
+    "rows": [
+      {
+        "property_type": "Resort",
+        "avg_nights": 7
+      },
+      {
+        "property_type": "Apartment",
+        "avg_nights": 5.75
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Booking.com",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200408",
+    "id": "4ed2b809d7446b9a0e200408",
+    "title": "Booking.com",
+    "name": "QuestionCustomDatabase_179_182",
+    "tables": [
+      {
+        "id": "properties",
+        "props": [
+          {
+            "id": "property_id",
+            "isKey": true,
+            "name": "property_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "city",
+            "isKey": false,
+            "name": "city",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "country",
+            "isKey": false,
+            "name": "country",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "property_type",
+            "isKey": false,
+            "name": "property_type",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "stars",
+            "isKey": false,
+            "name": "stars",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "properties",
+        "description": "Объекты размещения. property_type: Hotel / Apartment / Hostel / Resort / Guesthouse"
+      },
+      {
+        "id": "bookings",
+        "props": [
+          {
+            "id": "booking_id",
+            "isKey": true,
+            "name": "booking_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "property_id",
+            "isKey": false,
+            "name": "property_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "check_in",
+            "isKey": false,
+            "name": "check_in",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "check_out",
+            "isKey": false,
+            "name": "check_out",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "total_price",
+            "isKey": false,
+            "name": "total_price",
+            "type": "DECIMAL",
+            "description": null
+          },
+          {
+            "id": "status",
+            "isKey": false,
+            "name": "status",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "bookings",
+        "description": "Бронирования. status: confirmed / completed / cancelled"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "properties",
+          "field": "property_id"
+        },
+        "target": {
+          "table": "bookings",
+          "field": "property_id"
+        },
+        "type": "one-to-many",
+        "id": "rel-booking-property-booking"
+      }
+    ],
+    "tablePosition": {
+      "properties": {
+        "x": 0,
+        "y": 0
+      },
+      "bookings": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Booking.com"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            Длительность проживания одного бронирования в ночах — это разница\n            между <b>check_out</b> и <b>check_in</b>. Учитывайте только\n            <b>завершённые</b> бронирования (<b>status</b> = 'completed').\n            <br><br>\n            Напишите запрос, который вернёт <b>property_type</b> и\n            <b>avg_nights</b> (среднюю длительность проживания в ночах,\n            округлённую до двух знаков). Отсортируйте по <b>avg_nights</b>\n            по убыванию.\n        ",
+  "title": "Средняя длительность проживания по типу объекта",
+  "additional_info": []
+}

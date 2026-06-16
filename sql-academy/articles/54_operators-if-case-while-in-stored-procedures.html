@@ -1,0 +1,230 @@
+<!doctype html><meta charset="utf-8"><title>Операторы IF, CASE, WHILE в хранимых процедурах</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<div class="guide-mysql-only"><h1 id="operatory-if-case-while-v-hranimyh-procedurah" class="sc-bce5c646-1 fYolVj">Операторы IF, CASE, WHILE в хранимых процедурах<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1></div>
+<div class="guide-postgresql-only"><h1 id="operatory-if-case-while-v-hranimyh-funkciyah" class="sc-bce5c646-1 fYolVj">Операторы IF, CASE, WHILE в хранимых функциях<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1></div>
+<p>Хранимые процедуры и функции — это не просто удобные контейнеры для группы запросов. Они позволяют реализовать достаточно сложную логику, используя операторы ветвления и циклы.</p>
+<p>В этой статье мы рассмотрим основные операторы управления потоком выполнения: условные операторы <span class="sql-code sql-code-line sql-code-line--blue-color ">IF</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">CASE</span>, а также циклы <span class="sql-code sql-code-line sql-code-line--blue-color ">WHILE</span>.</p>
+<h2 id="uslovnyj-operator-if" class="sc-bce5c646-1 fYolVj">Условный оператор IF<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">IF</span> позволяет выполнять код в зависимости от выполнения условия.</p>
+<h3 id="sintaksis-if" class="sc-bce5c646-1 fYolVj">Синтаксис IF<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">IF</span> условие <span class="token keyword">THEN</span>
+    <span class="token comment">-- код, выполняемый при истинном условии</span>
+<span class="token keyword">ELSEIF</span> другое_условие <span class="token keyword">THEN</span>
+    <span class="token comment">-- код для альтернативного условия</span>
+<span class="token keyword">ELSE</span>
+    <span class="token comment">-- код по умолчанию</span>
+<span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">IF</span> условие <span class="token keyword">THEN</span>
+    <span class="token comment">-- код, выполняемый при истинном условии</span>
+ELSIF другое_условие <span class="token keyword">THEN</span>
+    <span class="token comment">-- код для альтернативного условия</span>
+<span class="token keyword">ELSE</span>
+    <span class="token comment">-- код по умолчанию</span>
+<span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h3 id="primer-ispolzovaniya-if" class="sc-bce5c646-1 fYolVj">Пример использования IF<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<div class="guide-mysql-only"><p>Создадим процедуру, которая определяет категорию студента по возрасту:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> categorize_student_by_age<span class="token punctuation">(</span>
+    <span class="token operator">IN</span> student_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    <span class="token keyword">OUT</span> category <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">DECLARE</span> student_age <span class="token keyword">INT</span><span class="token punctuation">;</span>
+
+    <span class="token comment">-- Получаем возраст студента</span>
+    <span class="token keyword">SELECT</span> TIMESTAMPDIFF<span class="token punctuation">(</span><span class="token keyword">YEAR</span><span class="token punctuation">,</span> birthday<span class="token punctuation">,</span> CURDATE<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">INTO</span> student_age
+    <span class="token keyword">FROM</span> Student
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+
+    <span class="token comment">-- Определяем категорию по возрасту</span>
+    <span class="token keyword">IF</span> student_age <span class="token operator">&lt;</span> <span class="token number">18</span> <span class="token keyword">THEN</span>
+        <span class="token keyword">SET</span> category <span class="token operator">=</span> <span class="token string">&#x27;Несовершеннолетний&#x27;</span><span class="token punctuation">;</span>
+    <span class="token keyword">ELSEIF</span> student_age <span class="token operator">BETWEEN</span> <span class="token number">18</span> <span class="token operator">AND</span> <span class="token number">25</span> <span class="token keyword">THEN</span>
+        <span class="token keyword">SET</span> category <span class="token operator">=</span> <span class="token string">&#x27;Молодой&#x27;</span><span class="token punctuation">;</span>
+    <span class="token keyword">ELSE</span>
+        <span class="token keyword">SET</span> category <span class="token operator">=</span> <span class="token string">&#x27;Взрослый&#x27;</span><span class="token punctuation">;</span>
+    <span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Использование процедуры</span>
+<span class="token keyword">CALL</span> categorize_student_by_age<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token variable">@category</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@category</span> <span class="token keyword">AS</span> age_category<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Создадим функцию, которая определяет категорию студента по возрасту:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">FUNCTION</span> categorize_student_by_age<span class="token punctuation">(</span>student_id <span class="token keyword">INT</span><span class="token punctuation">)</span>
+<span class="token keyword">RETURNS</span> <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token keyword">LANGUAGE</span> plpgsql
+<span class="token keyword">AS</span> $$
+<span class="token keyword">DECLARE</span>
+    student_age <span class="token keyword">INT</span><span class="token punctuation">;</span>
+    category <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token comment">-- Получаем возраст студента</span>
+    <span class="token keyword">SELECT</span> EXTRACT<span class="token punctuation">(</span><span class="token keyword">YEAR</span> <span class="token keyword">FROM</span> AGE<span class="token punctuation">(</span><span class="token keyword">CURRENT_DATE</span><span class="token punctuation">,</span> birthday<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">INTO</span> student_age
+    <span class="token keyword">FROM</span> Student
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+
+    <span class="token comment">-- Определяем категорию по возрасту</span>
+    <span class="token keyword">IF</span> student_age <span class="token operator">&lt;</span> <span class="token number">18</span> <span class="token keyword">THEN</span>
+        category :<span class="token operator">=</span> <span class="token string">&#x27;Несовершеннолетний&#x27;</span><span class="token punctuation">;</span>
+    ELSIF student_age <span class="token operator">BETWEEN</span> <span class="token number">18</span> <span class="token operator">AND</span> <span class="token number">25</span> <span class="token keyword">THEN</span>
+        category :<span class="token operator">=</span> <span class="token string">&#x27;Молодой&#x27;</span><span class="token punctuation">;</span>
+    <span class="token keyword">ELSE</span>
+        category :<span class="token operator">=</span> <span class="token string">&#x27;Взрослый&#x27;</span><span class="token punctuation">;</span>
+    <span class="token keyword">END</span> <span class="token keyword">IF</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">RETURN</span> category<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+$$<span class="token punctuation">;</span>
+
+<span class="token comment">-- Использование функции</span>
+<span class="token keyword">SELECT</span> categorize_student_by_age<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> age_category<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<!-- -->
+<div class="guide-mysql-only"><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">age_category</th></tr></thead><tbody><tr class="highlight-row"><td>Молодой</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<h2 id="operator-vybora-case" class="sc-bce5c646-1 fYolVj">Оператор выбора CASE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">CASE</span> предоставляет более элегантный способ обработки множественных условий.</p>
+<h3 id="sintaksis-case" class="sc-bce5c646-1 fYolVj">Синтаксис CASE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CASE</span>
+    <span class="token keyword">WHEN</span> условие<span class="token number">1</span> <span class="token keyword">THEN</span> результат<span class="token number">1</span>
+    <span class="token keyword">WHEN</span> условие<span class="token number">2</span> <span class="token keyword">THEN</span> результат<span class="token number">2</span>
+    <span class="token keyword">ELSE</span> результат_по_умолчанию
+<span class="token keyword">END</span> <span class="token keyword">CASE</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CASE</span>
+    <span class="token keyword">WHEN</span> условие<span class="token number">1</span> <span class="token keyword">THEN</span> результат<span class="token number">1</span>
+    <span class="token keyword">WHEN</span> условие<span class="token number">2</span> <span class="token keyword">THEN</span> результат<span class="token number">2</span>
+    <span class="token keyword">ELSE</span> результат_по_умолчанию
+<span class="token keyword">END</span> <span class="token keyword">CASE</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h3 id="primer-ispolzovaniya-case" class="sc-bce5c646-1 fYolVj">Пример использования CASE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<div class="guide-mysql-only"><p>Создадим ту же процедуру категоризации студентов, но используя оператор CASE:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> categorize_student_with_case<span class="token punctuation">(</span>
+    <span class="token operator">IN</span> student_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    <span class="token keyword">OUT</span> category <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">DECLARE</span> student_age <span class="token keyword">INT</span><span class="token punctuation">;</span>
+
+    <span class="token comment">-- Получаем возраст студента</span>
+    <span class="token keyword">SELECT</span> TIMESTAMPDIFF<span class="token punctuation">(</span><span class="token keyword">YEAR</span><span class="token punctuation">,</span> birthday<span class="token punctuation">,</span> CURDATE<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">INTO</span> student_age
+    <span class="token keyword">FROM</span> Student
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+
+    <span class="token comment">-- Определяем категорию с помощью CASE</span>
+    <span class="token keyword">SET</span> category <span class="token operator">=</span> <span class="token keyword">CASE</span>
+        <span class="token keyword">WHEN</span> student_age <span class="token operator">&lt;</span> <span class="token number">18</span> <span class="token keyword">THEN</span> <span class="token string">&#x27;Несовершеннолетний&#x27;</span>
+        <span class="token keyword">WHEN</span> student_age <span class="token operator">BETWEEN</span> <span class="token number">18</span> <span class="token operator">AND</span> <span class="token number">25</span> <span class="token keyword">THEN</span> <span class="token string">&#x27;Молодой&#x27;</span>
+        <span class="token keyword">ELSE</span> <span class="token string">&#x27;Взрослый&#x27;</span>
+    <span class="token keyword">END</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Использование процедуры</span>
+<span class="token keyword">CALL</span> categorize_student_with_case<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token variable">@category</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@category</span> <span class="token keyword">AS</span> age_category<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Создадим ту же функцию категоризации студентов, но используя оператор CASE:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">FUNCTION</span> categorize_student_with_case<span class="token punctuation">(</span>student_id <span class="token keyword">INT</span><span class="token punctuation">)</span>
+<span class="token keyword">RETURNS</span> <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
+<span class="token keyword">LANGUAGE</span> plpgsql
+<span class="token keyword">AS</span> $$
+<span class="token keyword">DECLARE</span>
+    student_age <span class="token keyword">INT</span><span class="token punctuation">;</span>
+    category <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token comment">-- Получаем возраст студента</span>
+    <span class="token keyword">SELECT</span> EXTRACT<span class="token punctuation">(</span><span class="token keyword">YEAR</span> <span class="token keyword">FROM</span> AGE<span class="token punctuation">(</span><span class="token keyword">CURRENT_DATE</span><span class="token punctuation">,</span> birthday<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">INTO</span> student_age
+    <span class="token keyword">FROM</span> Student
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+
+    <span class="token comment">-- Определяем категорию с помощью CASE</span>
+    category :<span class="token operator">=</span> <span class="token keyword">CASE</span>
+        <span class="token keyword">WHEN</span> student_age <span class="token operator">&lt;</span> <span class="token number">18</span> <span class="token keyword">THEN</span> <span class="token string">&#x27;Несовершеннолетний&#x27;</span>
+        <span class="token keyword">WHEN</span> student_age <span class="token operator">BETWEEN</span> <span class="token number">18</span> <span class="token operator">AND</span> <span class="token number">25</span> <span class="token keyword">THEN</span> <span class="token string">&#x27;Молодой&#x27;</span>
+        <span class="token keyword">ELSE</span> <span class="token string">&#x27;Взрослый&#x27;</span>
+    <span class="token keyword">END</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">RETURN</span> category<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+$$<span class="token punctuation">;</span>
+
+<span class="token comment">-- Использование функции</span>
+<span class="token keyword">SELECT</span> categorize_student_with_case<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> age_category<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<!-- -->
+<div class="guide-mysql-only"><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">age_category</th></tr></thead><tbody><tr class="highlight-row"><td>Молодой</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<h2 id="cikl-while" class="sc-bce5c646-1 fYolVj">Цикл WHILE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Цикл <span class="sql-code sql-code-line sql-code-line--blue-color ">WHILE</span> позволяет выполнять код повторно, пока выполняется определённое условие.</p>
+<h3 id="sintaksis-while" class="sc-bce5c646-1 fYolVj">Синтаксис WHILE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">WHILE</span> условие <span class="token keyword">DO</span>
+    <span class="token comment">-- код, выполняемый в цикле</span>
+<span class="token keyword">END</span> <span class="token keyword">WHILE</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">WHILE</span> условие <span class="token keyword">LOOP</span>
+    <span class="token comment">-- код, выполняемый в цикле</span>
+<span class="token keyword">END</span> <span class="token keyword">LOOP</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h3 id="primer-ispolzovaniya-while" class="sc-bce5c646-1 fYolVj">Пример использования WHILE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Рассмотрим пример хранимой процедуры для создания нескольких тестовых предметов:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> create_test_subjects<span class="token punctuation">(</span><span class="token operator">IN</span> count_subjects <span class="token keyword">INT</span><span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">DECLARE</span> i <span class="token keyword">INT</span> <span class="token keyword">DEFAULT</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">DECLARE</span> subject_id <span class="token keyword">INT</span> <span class="token keyword">DEFAULT</span> <span class="token number">20</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">WHILE</span> i <span class="token operator">&lt;=</span> count_subjects <span class="token keyword">DO</span>
+        <span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> Subject <span class="token punctuation">(</span>id<span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+        <span class="token keyword">VALUES</span>
+        <span class="token punctuation">(</span>
+            subject_id <span class="token operator">+</span> i<span class="token punctuation">,</span>
+            CONCAT<span class="token punctuation">(</span><span class="token string">&#x27;Test Subject &#x27;</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">SET</span> i <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">END</span> <span class="token keyword">WHILE</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Создаём 3 тестовых предмета</span>
+<span class="token keyword">CALL</span> create_test_subjects<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверяем результат</span>
+<span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Subject <span class="token keyword">WHERE</span> name <span class="token operator">LIKE</span> <span class="token string">&#x27;Test Subject%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">PROCEDURE</span> create_test_subjects<span class="token punctuation">(</span>count_subjects <span class="token keyword">INT</span><span class="token punctuation">)</span>
+<span class="token keyword">LANGUAGE</span> plpgsql
+<span class="token keyword">AS</span> $$
+<span class="token keyword">DECLARE</span>
+    i <span class="token keyword">INT</span> :<span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    subject_id <span class="token keyword">INT</span> :<span class="token operator">=</span> <span class="token number">20</span><span class="token punctuation">;</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">WHILE</span> i <span class="token operator">&lt;=</span> count_subjects <span class="token keyword">LOOP</span>
+        <span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> Subject <span class="token punctuation">(</span>id<span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+        <span class="token keyword">VALUES</span>
+        <span class="token punctuation">(</span>
+            subject_id <span class="token operator">+</span> i<span class="token punctuation">,</span>
+            <span class="token string">&#x27;Test Subject &#x27;</span> <span class="token operator">||</span> i
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        i :<span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">END</span> <span class="token keyword">LOOP</span><span class="token punctuation">;</span>
+
+    RAISE NOTICE <span class="token string">&#x27;Создано % тестовых предметов&#x27;</span><span class="token punctuation">,</span> count_subjects<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+$$<span class="token punctuation">;</span>
+
+<span class="token comment">-- Создаём 3 тестовых предмета</span>
+<span class="token keyword">CALL</span> create_test_subjects<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверяем результат</span>
+<span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Subject <span class="token keyword">WHERE</span> name <span class="token operator">LIKE</span> <span class="token string">&#x27;Test Subject%&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:152px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">id</th><th style="min-width:auto">name</th></tr></thead><tbody><tr class="highlight-row"><td>21</td><td>Test Subject 1</td></tr><tr class="highlight-row"><td>22</td><td>Test Subject 2</td></tr><tr class="highlight-row"><td>23</td><td>Test Subject 3</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Операторы управления потоком делают хранимые процедуры и функции мощным инструментом для реализации сложной бизнес-логики прямо в базе данных! 🚀</p>

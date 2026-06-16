@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Документоориентированные БД</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="dokumentoorientirovannye-bd" class="sc-bce5c646-1 fYolVj">Документоориентированные БД<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<blockquote>
+<p>Документоориентированные базы данных – это тип баз данных, направленный на хранение и запрос данных в виде документов, подобным JSON.</p>
+</blockquote>
+<p>В отличие от других баз данных, документоориентированные оперируют «документами», сгруппированными по коллекциям.
+Документ представляет собой набор атрибутов (ключ и соответствующее ему значение).
+Значения могут быть как простыми типами данных (строки, числа или даты), так и более сложными, такими как
+вложенные объекты, массивы и ссылки на другие документы.</p>
+<h2 id="primer-hraneniya-dannyh" class="sc-bce5c646-1 fYolVj">Пример хранения данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Пример хранения данных" alt="Пример хранения данных" loading="lazy" width="1239" height="730" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_1.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_1.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_1.png&amp;w=3840&amp;q=50"/>
+<img title="Пример хранения данных" alt="Пример хранения данных" loading="lazy" width="1275" height="731" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_2.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_2.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_2.png&amp;w=3840&amp;q=50"/></p>
+<h2 id="osobennosti-dokumentoorientirovannyh-bd" class="sc-bce5c646-1 fYolVj">Особенности документоориентированных БД<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>В реляционных базах данных структура записей строго определена и каждая запись содержит одни и те же поля.
+Даже если поле не используется, оно присутствует, хоть и пустое.</p>
+<p>В документоориентированных же БД используется другой подход: в них отсутствует схема данных,
+что позволяет добавлять новую информацию в некоторые записи, не требуя при этом, чтобы все остальные записи в базе данных имели одинаковую структуру.</p>
+<p>Документы в базе данных адресуются с помощью уникального ключа, обычно это строка, которая генерируется автоматически.
+По нему можно, например, извлекать запись или ссылаться на другие документы.</p>
+<p>Другой значимой особенностью документоориентированных баз данных является то, что, помимо простого поиска документов по ключу, как в key-value базах данных,
+они предоставляют свой язык запросов, функционал, синтаксис и производительность которого отличается от одной реализации к другой.</p>
+<p>Для примера, вот так может выглядеть запрос в наиболее популярном представителе данного типа баз данных - в MongoDB:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu"></div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token operator">&gt;</span> db<span class="token punctuation">.</span>users<span class="token punctuation">.</span>find<span class="token punctuation">(</span>{<span class="token string">&quot;name&quot;</span>: <span class="token string">&quot;Daniel&quot;</span>}<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token operator">&gt;</span> <span class="token number">1</span>
+</code></pre></div></pre>
+<h2 id="rejting-subd-po-populyarnosti" class="sc-bce5c646-1 fYolVj">Рейтинг СУБД по популярности<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Рейтинг документоориентированных СУБД по популярности" alt="Рейтинг документоориентированных СУБД по популярности" loading="lazy" width="1357" height="391" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_rating.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_rating.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fdocument-oriented-databases%2Fru_document_oriented_databases_rating.png&amp;w=3840&amp;q=50"/></p>

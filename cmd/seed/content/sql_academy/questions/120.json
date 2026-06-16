@@ -1,0 +1,82 @@
+{
+  "_id": "4ed2b809d7446b9a0e000120",
+  "id": 120,
+  "fields": [
+    "account_id",
+    "dt",
+    "running_total"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "account_id",
+      "dt",
+      "running_total"
+    ],
+    "rows": [
+      {
+        "account_id": 1,
+        "dt": "2023-01-01T00:00:00.000Z",
+        "running_total": 100
+      },
+      {
+        "account_id": 1,
+        "dt": "2023-01-02T00:00:00.000Z",
+        "running_total": 250
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Yandex",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200143",
+    "id": "4ed2b809d7446b9a0e200143",
+    "title": "Yandex",
+    "name": "QuestionCustomDatabase_120",
+    "tables": [
+      {
+        "id": "TransactionLog",
+        "props": [
+          {
+            "id": "account_id",
+            "isKey": true,
+            "name": "account_id",
+            "type": "BIGINT",
+            "description": null
+          },
+          {
+            "id": "dt",
+            "isKey": true,
+            "name": "dt",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "transaction_amt",
+            "isKey": false,
+            "name": "transaction_amt",
+            "type": "DOUBLE",
+            "description": null
+          }
+        ],
+        "title": "TransactionLog",
+        "description": "Лог транзакций"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "TransactionLog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Yandex"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Есть таблица лога транзакций. Считаем, что для каждого счёта может быть только одна транзакция в каждую дату.\n                  \n                  Нужно посчитать нарастающий итог — для каждого account_id на каждую дату вывести сумму транзакций по данному счёту до данной даты включительно.\n                  <br />\n                  \n                  Результат должен содержать:\n                  <ul>\n                    <li>идентификатор счета (account_id),</li>\n                    <li>дату транзакции (dt),</li>\n                    <li>нарастающий итог транзакций (running_total).</li>\n                  </ul>\n                  \n                  Результат должен быть отсортирован сначала по идентификатору счета (account_id), а затем по дате (dt) — оба по возрастанию.\n              ",
+  "title": "Нарастающий итог транзакций",
+  "additional_info": []
+}

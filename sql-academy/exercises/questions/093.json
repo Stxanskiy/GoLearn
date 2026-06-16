@@ -1,0 +1,218 @@
+{
+  "_id": "4ed2b809d7446b9a0e000093",
+  "id": 93,
+  "fields": [
+    "average_age"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "average_age"
+    ],
+    "rows": [
+      {
+        "average_age": 16.5
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Alfa-Bank",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200093",
+    "id": "4ed2b809d7446b9a0e200093",
+    "title": "Alfa-Bank",
+    "name": "QuestionCustomDatabase_93_95",
+    "tables": [
+      {
+        "id": "Customer",
+        "props": [
+          {
+            "id": "customer_key",
+            "isKey": true,
+            "name": "customer_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "age",
+            "isKey": false,
+            "name": "age",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Customer",
+        "description": "Список покупателей"
+      },
+      {
+        "id": "Product",
+        "props": [
+          {
+            "id": "product_key",
+            "isKey": true,
+            "name": "product_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "category_key",
+            "isKey": false,
+            "name": "category_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Product",
+        "description": "Список товаров"
+      },
+      {
+        "id": "Purchase",
+        "props": [
+          {
+            "id": "purchase_key",
+            "isKey": true,
+            "name": "purchase_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "customer_key",
+            "isKey": false,
+            "name": "customer_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "product_key",
+            "isKey": false,
+            "name": "product_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "quantity",
+            "isKey": false,
+            "name": "quantity",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date",
+            "isKey": false,
+            "name": "date",
+            "type": "DATETIME",
+            "description": null
+          }
+        ],
+        "title": "Purchase",
+        "description": "Список покупок"
+      },
+      {
+        "id": "ProductCategory",
+        "props": [
+          {
+            "id": "category_key",
+            "isKey": true,
+            "name": "category_key",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "category",
+            "isKey": false,
+            "name": "category",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "ProductCategory",
+        "description": "Категории товаров"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Purchase",
+          "field": "customer_key"
+        },
+        "target": {
+          "table": "Customer",
+          "field": "customer_key"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+      },
+      {
+        "source": {
+          "table": "Purchase",
+          "field": "product_key"
+        },
+        "target": {
+          "table": "Product",
+          "field": "product_key"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778272"
+      },
+      {
+        "source": {
+          "table": "Product",
+          "field": "category_key"
+        },
+        "target": {
+          "table": "ProductCategory",
+          "field": "category_key"
+        },
+        "type": "many-to-one",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778273"
+      }
+    ],
+    "tablePosition": {
+      "Purchase": {
+        "x": 300,
+        "y": 250
+      },
+      "Product": {
+        "x": 0,
+        "y": 250
+      },
+      "ProductCategory": {
+        "x": 0,
+        "y": 500
+      },
+      "Customer": {
+        "x": 600,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "Alfa-Bank"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Какой средний возраст клиентов, купивших Smartwatch (использовать наименование товара product.name) в 2024 году?",
+  "title": "Средний возраст покупателей Smartwatch",
+  "additional_info": []
+}

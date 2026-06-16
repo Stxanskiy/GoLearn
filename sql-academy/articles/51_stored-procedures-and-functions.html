@@ -1,0 +1,80 @@
+<!doctype html><meta charset="utf-8"><title>Хранимые процедуры и функции</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><div class="sc-19c49508-0 llJRCi"><img src="/static/guidePage/stored-procedures-and-functions/banner.jpg"/></div>
+<!-- -->
+<h1 id="hranimye-procedury-i-funkcii" class="sc-bce5c646-1 fYolVj">Хранимые процедуры и функции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>В SQL помимо обычных запросов существуют более мощные инструменты — <strong class="sc-f6cdcda8-0 gqDbfN">хранимые процедуры</strong> и <strong class="sc-f6cdcda8-0 gqDbfN">хранимые функции</strong>.
+Эти объекты позволяют создавать готовые блоки кода, которые можно многократно использовать 🔄.</p>
+<blockquote>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Хранимые процедуры и функции</strong> — это заранее написанные и сохранённые в базе данных SQL-скрипты, которые можно вызывать по имени.</p>
+</blockquote>
+<p>Представьте, что у вас есть сложный запрос для расчёта статистики продаж, который вы используете каждый день.
+Вместо того, чтобы каждый раз переписывать его, можно создать процедуру или функцию и просто вызывать её!</p>
+<h2 id="zachem-oni-nuzhny" class="sc-bce5c646-1 fYolVj">Зачем они нужны?<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Хранимые процедуры и функции решают несколько важных задач:</p>
+<ul>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">🚀 Повторное использование кода</strong> — написали один раз, используете везде. Никаких копий одного и того же кода в разных местах.</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">⚡ Производительность</strong> — код выполняется прямо на сервере базы данных, что часто быстрее обычных запросов.</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">🔒 Безопасность</strong> — можно предоставить доступ к процедуре, не давая прямого доступа к таблицам.</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">🛡️ Централизованная логика</strong> — вся бизнес-логика находится в одном месте, в базе данных.</li>
+</ul>
+<h2 id="osnovnye-razlichiya" class="sc-bce5c646-1 fYolVj">Основные различия<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Хотя процедуры и функции похожи, между ними есть важные различия:</p>
+<div class="guide-mysql-only"><div class="sc-34473f63-0 BAKJs scrollable-container-wrapper" style="position:relative;overflow:hidden;width:100%;height:auto;min-height:100%;max-height:100%"><div style="position:relative;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0;min-height:100%;max-height:100%"><table class="sc-3d43063c-0 iTyZOI guide-basic-table"><thead><tr><th>Характеристика</th><th>Хранимые процедуры</th><th>Хранимые функции</th></tr></thead><tbody><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Возвращаемое значение</strong></td><td>Может не возвращать или возвращать несколько значений</td><td>Всегда возвращает одно значение</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Использование в запросах</strong></td><td>Вызывается отдельно</td><td>Можно использовать в SELECT, WHERE и других частях запроса</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Изменение данных</strong></td><td>Может изменять данные в таблицах</td><td>Предназначены только для чтения данных</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Вызов</strong></td><td><span class="sql-code sql-code-line sql-code-line--blue-color ">CALL procedure_name()</span></td><td><span class="sql-code sql-code-line sql-code-line--blue-color ">SELECT function_name()</span></td></tr></tbody></table></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<div class="guide-postgresql-only"><div class="sc-34473f63-0 BAKJs scrollable-container-wrapper" style="position:relative;overflow:hidden;width:100%;height:auto;min-height:100%;max-height:100%"><div style="position:relative;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0;min-height:100%;max-height:100%"><table class="sc-3d43063c-0 iTyZOI guide-basic-table"><thead><tr><th>Характеристика</th><th>Хранимые процедуры</th><th>Хранимые функции</th></tr></thead><tbody><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Возвращаемое значение</strong></td><td>Не могут возвращать значения</td><td>Всегда возвращает одно значение</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Использование в запросах</strong></td><td>Вызывается отдельно</td><td>Можно использовать в SELECT, WHERE и других частях запроса</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Изменение данных</strong></td><td>Может изменять данные в таблицах</td><td>Может изменять данные в таблицах</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">Вызов</strong></td><td><span class="sql-code sql-code-line sql-code-line--blue-color ">CALL procedure_name()</span></td><td><span class="sql-code sql-code-line sql-code-line--blue-color ">SELECT function_name()</span></td></tr></tbody></table></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<h2 id="kogda-ispolzovat-procedury" class="sc-bce5c646-1 fYolVj">Когда использовать процедуры?<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Хранимые процедуры</strong> лучше всего подходят, когда нужно:</p>
+<ul>
+<li>Выполнить последовательность операций (например, создать заказ, списать товар со склада, отправить уведомление)</li>
+<li>Изменить данные в нескольких таблицах одновременно</li>
+<li>Реализовать сложную бизнес-логику</li>
+<li>Вернуть несколько результирующих наборов</li>
+</ul>
+<h3 id="primer-ispolzovaniya-procedury" class="sc-bce5c646-1 fYolVj">Пример использования процедуры<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Допустим, нам нужно создать процедуру для оформления заказа:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Пример вызова процедуры (концептуальный)</span>
+<span class="token keyword">CALL</span> create_order<span class="token punctuation">(</span>customer_id <span class="token operator">=</span> <span class="token number">123</span><span class="token punctuation">,</span> product_id <span class="token operator">=</span> <span class="token number">456</span><span class="token punctuation">,</span> quantity <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Такая процедура может:</p>
+<ol>
+<li>Проверить наличие товара на складе</li>
+<li>Создать запись в таблице заказов</li>
+<li>Обновить остатки товара</li>
+<li>Добавить запись в историю операций</li>
+</ol>
+<h2 id="kogda-ispolzovat-funkcii" class="sc-bce5c646-1 fYolVj">Когда использовать функции?<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Хранимые функции</strong> идеальны, когда нужно:</p>
+<ul>
+<li>Выполнить вычисления и вернуть результат</li>
+<li>Создать переиспользуемую формулу</li>
+<li>Преобразовать данные определённым образом</li>
+<li>Использовать результат в других SQL-запросах</li>
+</ul>
+<h3 id="primer-ispolzovaniya-funkcii" class="sc-bce5c646-1 fYolVj">Пример использования функции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Создадим функцию для расчёта скидки:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Пример использования функции в запросе</span>
+<span class="token keyword">SELECT</span>
+    product_name<span class="token punctuation">,</span>
+    price<span class="token punctuation">,</span>
+    calculate_discount<span class="token punctuation">(</span>price<span class="token punctuation">,</span> customer_type<span class="token punctuation">)</span> <span class="token keyword">AS</span> discount_amount
+<span class="token keyword">FROM</span> Products<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Такая функция принимает цену и тип клиента, а возвращает размер скидки, которую можно использовать в любых запросах.</p>
+<h2 id="prostoe-pravilo-vybora" class="sc-bce5c646-1 fYolVj">Простое правило выбора<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Если сомневаетесь, что выбрать, используйте это простое правило:</p>
+<ul>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Нужно получить одно значение для использования в запросе?</strong> → Функция</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Нужно выполнить набор действий или изменить данные?</strong> → Процедура</li>
+</ul>
+<h2 id="zakrepim-znaniya" class="sc-bce5c646-1 fYolVj">Закрепим знания<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Теперь, когда вы знаете основные различия между процедурами и функциями, попробуйте классифицировать задачи в интерактивной игре:</p>
+<div><div class="sc-879e2a43-17 fWGxWy"><h4>Экран слишком узкий</h4><p>Для игры требуется минимальная ширина экрана 700px. Пожалуйста, увеличьте окно браузера или поверните устройство.</p></div></div>
+<h2 id="chto-dalshe" class="sc-bce5c646-1 fYolVj">Что дальше?<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Это была вводная статья, чтобы понять общую концепцию. В следующих материалах мы детально разберём,
+как создавать и работать с хранимыми процедурами и функциями.</p>

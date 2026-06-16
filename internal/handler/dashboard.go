@@ -116,7 +116,8 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		data.IsAdmin = u.IsAdmin()
 	}
 
-	overview, err := h.progressRepo.Overview(ctx)
+	uid := currentUserID(ctx)
+	overview, err := h.progressRepo.Overview(ctx, uid)
 	if err != nil {
 		h.log.Error("overview", "error", err)
 		overview = &model.ProgressOverview{Activity: map[string]int{}, SimulatorsTot: 4, TrainersTot: 3}
@@ -132,7 +133,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allProgress, _ := h.progressRepo.GetAll(ctx)
+	allProgress, _ := h.progressRepo.GetAll(ctx, uid)
 	progressMap := make(map[int]string)
 	for _, p := range allProgress {
 		progressMap[p.LessonID] = p.Status

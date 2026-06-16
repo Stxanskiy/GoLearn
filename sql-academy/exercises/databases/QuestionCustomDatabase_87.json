@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200087",
+  "id": "4ed2b809d7446b9a0e200087",
+  "title": "Microsoft",
+  "name": "QuestionCustomDatabase_87",
+  "tables": [
+    {
+      "id": "messages",
+      "props": [
+        {
+          "id": "message_id",
+          "isKey": true,
+          "name": "message_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "sender_id",
+          "isKey": false,
+          "name": "sender_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "receiver_id",
+          "isKey": false,
+          "name": "receiver_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "content",
+          "isKey": false,
+          "name": "content",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "sent_date",
+          "isKey": false,
+          "name": "sent_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "messages",
+      "description": "Таблица со списком сообщений"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "messages": {
+      "x": 0,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "Microsoft"
+}

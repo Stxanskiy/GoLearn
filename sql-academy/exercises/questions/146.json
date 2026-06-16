@@ -1,0 +1,102 @@
+{
+  "_id": "4ed2b809d7446b9a0e000146",
+  "id": 146,
+  "difficulty": "medium",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200311",
+    "id": "4ed2b809d7446b9a0e200311",
+    "title": "Расписание",
+    "name": "QuestionDB_10075_145_146",
+    "tables": [
+      {
+        "id": "Lessons",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INTEGER",
+            "description": "Идентификатор занятия"
+          },
+          {
+            "id": "subject",
+            "isKey": false,
+            "name": "subject",
+            "type": "VARCHAR",
+            "description": "Название предмета"
+          },
+          {
+            "id": "teacher_name",
+            "isKey": false,
+            "name": "teacher_name",
+            "type": "VARCHAR",
+            "description": "Имя преподавателя"
+          },
+          {
+            "id": "lesson_date",
+            "isKey": false,
+            "name": "lesson_date",
+            "type": "DATE",
+            "description": "Дата занятия"
+          },
+          {
+            "id": "classroom",
+            "isKey": false,
+            "name": "classroom",
+            "type": "VARCHAR",
+            "description": "Номер аудитории"
+          }
+        ],
+        "title": "Lessons",
+        "description": "Список занятий"
+      },
+      {
+        "id": "Timepair",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INTEGER",
+            "description": "Идентификатор временного интервала"
+          },
+          {
+            "id": "start_time",
+            "isKey": false,
+            "name": "start_time",
+            "type": "TIME",
+            "description": "Время начала"
+          },
+          {
+            "id": "end_time",
+            "isKey": false,
+            "name": "end_time",
+            "type": "TIME",
+            "description": "Время окончания"
+          }
+        ],
+        "title": "Timepair",
+        "description": "Временные интервалы"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Lessons": {
+        "x": 0,
+        "y": 0
+      },
+      "Timepair": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Простая база для заданий по CREATE TABLE"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Создайте индекс <span class=\"guide-task-code\">idx_lower_subject</span> для таблицы <span class=\"guide-task-code\">Lessons</span>, используя функцию <span class=\"guide-task-code\">LOWER(subject)</span>.",
+  "title": "Функциональный индекс на subject",
+  "additional_info": []
+}

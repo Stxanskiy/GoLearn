@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Транзакции</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><div class="sc-19c49508-0 llJRCi"><img src="/static/guidePage/transactions/banner.jpg"/></div>
+<h1 id="tranzakcii" class="sc-bce5c646-1 fYolVj">Транзакции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Если бы серверы баз данных безотказно работали все 100% времени,
+если бы пользователи всегда позволяли программам завершать выполнение и если бы приложения всегда завершались без фатальных ошибок,
+останавливающих выполнение, не было бы ничего, что следовало было бы обсуждать об одновременном доступе к базе данных.</p>
+<p>Однако такая идеальная ситуация нереалистична, и поэтому мы должны рассмотреть механизмы,
+позволяющие множеству пользователей работать с одними и теми же данными.
+Одним из ключевых элементов в решении этой задачи является транзакция.</p>
+<blockquote>
+<p>Транзакция — это последовательность операций с базой данных, которые выполняются как единое целое.</p>
+</blockquote>
+<p>В данном блоке мы обсудим транзакции, которые позволяют объединять несколько SQL-инструкций в одну группу,
+гарантируя, что либо все инструкции выполнятся успешно, либо ни одна из них не будет выполнена.</p>

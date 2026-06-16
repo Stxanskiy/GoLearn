@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200309",
+  "id": "4ed2b809d7446b9a0e200309",
+  "title": "Amazon",
+  "name": "QuestionCustomDatabase_140_141",
+  "tables": [
+    {
+      "id": "Activity",
+      "props": [
+        {
+          "id": "player_id",
+          "isKey": false,
+          "name": "player_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "device_id",
+          "isKey": false,
+          "name": "device_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "event_date",
+          "isKey": false,
+          "name": "event_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "games_played",
+          "isKey": false,
+          "name": "games_played",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "Activity",
+      "description": "Активность игроков"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "Activity": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Amazon"
+}

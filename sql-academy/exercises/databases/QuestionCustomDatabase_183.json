@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200406",
+  "id": "4ed2b809d7446b9a0e200406",
+  "title": "Revolut",
+  "name": "QuestionCustomDatabase_183",
+  "tables": [
+    {
+      "id": "transactions",
+      "props": [
+        {
+          "id": "customer_id",
+          "isKey": true,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "name",
+          "isKey": false,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "transaction_date",
+          "isKey": true,
+          "name": "transaction_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "amount",
+          "isKey": false,
+          "name": "amount",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "transactions",
+      "description": "Дневные траты клиентов: amount — сумма, потраченная клиентом за день transaction_date"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "transactions": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Revolut"
+}

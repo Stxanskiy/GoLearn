@@ -1,0 +1,178 @@
+<!doctype html><meta charset="utf-8"><title>Запланированные события (Events)</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="zaplanirovannye-sobytiya-(events)" class="sc-bce5c646-1 fYolVj">Запланированные события (Events)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>В реальных приложениях часто возникает необходимость выполнять определённые действия автоматически и по расписанию: очищать старые записи, обновлять статистику, формировать отчёты. Для таких задач SQL предоставляет механизм <strong class="sc-f6cdcda8-0 gqDbfN">запланированных событий</strong>.</p>
+<blockquote>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Событие</strong> — это задача, которую база данных запускает сама по расписанию. Вы настраиваете — оно работает автоматически.</p>
+</blockquote>
+<div class="guide-mysql-only"><p>События в MySQL похожи на планировщик задач в операционной системе: вы создаёте задачу один раз, а база данных выполняет её автоматически по расписанию.</p></div>
+<div class="guide-postgresql-only"><p>В PostgreSQL для автоматического выполнения задач используется расширение <strong class="sc-f6cdcda8-0 gqDbfN">pg_cron</strong>. Это расширение позволяет планировать SQL-команды с использованием синтаксиса cron (как в Unix-системах).</p></div>
+<h2 id="kogda-on-prigoditsya" class="sc-bce5c646-1 fYolVj">Когда он пригодится<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Запланированные события помогают автоматизировать следующие задачи:</p>
+<ul>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Очистка данных</strong>: удаление устаревших записей логов или временных данных</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Обновление статистики</strong>: пересчёт агрегированных данных для аналитики</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Генерация отчётов</strong>: автоматическое формирование периодических отчётов</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">Резервное копирование</strong>: создание копий важных данных</li>
+</ul>
+<h2 id="kak-vklyuchit-planirovshik" class="sc-bce5c646-1 fYolVj">Как включить планировщик<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Прежде чем создавать события, необходимо убедиться, что планировщик событий включён:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SHOW</span> VARIABLES <span class="token operator">LIKE</span> <span class="token string">&#x27;event_scheduler&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Если планировщик выключен, включите его:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SET</span> <span class="token keyword">GLOBAL</span> event_scheduler <span class="token operator">=</span> <span class="token keyword">ON</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Для использования запланированных задач в PostgreSQL нужно установить расширение pg_cron:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> EXTENSION <span class="token keyword">IF</span> <span class="token operator">NOT</span> <span class="token keyword">EXISTS</span> pg_cron<span class="token punctuation">;</span>
+</code></pre></div></pre><blockquote>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Важно:</strong> Расширение pg_cron может требовать прав суперпользователя и дополнительной настройки PostgreSQL. В облачных сервисах (AWS RDS, Azure) оно может быть уже предустановлено.</p>
+</blockquote></div>
+<h2 id="sozdanie-odnorazovogo-sobytiya" class="sc-bce5c646-1 fYolVj">Создание одноразового события<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Начнём с самого простого — события, которое выполнится один раз в определённое время:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> EVENT cleanup_old_logs
+<span class="token keyword">ON</span> SCHEDULE AT <span class="token keyword">CURRENT_TIMESTAMP</span> <span class="token operator">+</span> <span class="token keyword">INTERVAL</span> <span class="token number">1</span> <span class="token keyword">DAY</span>
+<span class="token keyword">DO</span>
+    <span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> logs <span class="token keyword">WHERE</span> created_at <span class="token operator">&lt;</span> <span class="token function">NOW</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token keyword">INTERVAL</span> <span class="token number">30</span> <span class="token keyword">DAY</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это событие удалит записи логов старше 30 дней через 24 часа после создания события.</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Разберём синтаксис:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">CREATE EVENT cleanup_old_logs</span> — создаём событие с именем <span class="sql-code sql-code-line sql-code-line--blue-color ">cleanup_old_logs</span></li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">ON SCHEDULE AT</span> — указываем, когда событие должно выполниться</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">CURRENT_TIMESTAMP + INTERVAL 1 DAY</span> — время выполнения (через 1 день)</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">DO</span> — код, который нужно выполнить (любой SQL-оператор)</li>
+</ul></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>schedule<span class="token punctuation">(</span>
+    <span class="token string">&#x27;cleanup_old_logs&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;0 3 * * *&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;DELETE FROM logs WHERE created_at &lt; NOW() - INTERVAL &#x27;&#x27;30 days&#x27;&#x27;&#x27;</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это событие будет выполняться каждый день в 3:00 утра и удалять записи логов старше 30 дней.</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Разберём синтаксис:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">cron.schedule()</span> — функция для создания запланированной задачи</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;cleanup_old_logs&#x27;</span> — имя задачи</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;0 3 * * *&#x27;</span> — расписание в формате cron (минута час день месяц день_недели)</li>
+<li>Последний параметр — SQL-команда для выполнения</li>
+</ul><p><strong class="sc-f6cdcda8-0 gqDbfN">Формат cron расписания:</strong></p><p><img title="Формат cron расписания" alt="Формат cron расписания" loading="lazy" width="875" height="317" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fscheduled-events%2Fcron_schedule_ru.png&amp;w=1080&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fscheduled-events%2Fcron_schedule_ru.png&amp;w=1920&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fscheduled-events%2Fcron_schedule_ru.png&amp;w=1920&amp;q=50"/></p></div>
+<h2 id="sozdanie-povtoryayushegosya-sobytiya" class="sc-bce5c646-1 fYolVj">Создание повторяющегося события<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Чаще всего события нужно запускать периодически — каждый день, час или минуту:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> EVENT update_statistics
+<span class="token keyword">ON</span> SCHEDULE EVERY <span class="token number">1</span> <span class="token keyword">HOUR</span>
+<span class="token keyword">DO</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">UPDATE</span> product_stats <span class="token keyword">SET</span>
+        total_sales <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>amount<span class="token punctuation">)</span> <span class="token keyword">FROM</span> orders <span class="token keyword">WHERE</span> product_id <span class="token operator">=</span> product_stats<span class="token punctuation">.</span>product_id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+        last_updated <span class="token operator">=</span> <span class="token function">NOW</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это событие будет обновлять статистику продаж каждый час.</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Разберём синтаксис:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">ON SCHEDULE EVERY 1 HOUR</span> — выполнять каждый час</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">BEGIN ... END</span> — блок из нескольких SQL-операторов</li>
+</ul><p><strong class="sc-f6cdcda8-0 gqDbfN">Варианты интервалов:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 1 MINUTE</span> — каждую минуту</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 1 HOUR</span> — каждый час</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 1 DAY</span> — каждый день</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 1 WEEK</span> — каждую неделю</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 1 MONTH</span> — каждый месяц</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">EVERY 30 SECOND</span> — каждые 30 секунд</li>
+</ul></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>schedule<span class="token punctuation">(</span>
+    <span class="token string">&#x27;update_statistics_hourly&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;0 * * * *&#x27;</span><span class="token punctuation">,</span>
+    $$
+    <span class="token keyword">UPDATE</span> product_stats <span class="token keyword">SET</span>
+        total_sales <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> <span class="token function">SUM</span><span class="token punctuation">(</span>amount<span class="token punctuation">)</span> <span class="token keyword">FROM</span> orders <span class="token keyword">WHERE</span> product_id <span class="token operator">=</span> product_stats<span class="token punctuation">.</span>product_id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+        last_updated <span class="token operator">=</span> <span class="token function">NOW</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    $$
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это событие будет обновлять статистику продаж каждый час (в начале каждого часа).</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Примеры расписаний:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;*/5 * * * *&#x27;</span> — каждые 5 минут</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;0 * * * *&#x27;</span> — каждый час (в начале часа)</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;0 0 * * *&#x27;</span> — каждый день в полночь</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;0 0 * * 0&#x27;</span> — каждое воскресенье в полночь</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">&#x27;0 9 1 * *&#x27;</span> — первого числа каждого месяца в 9:00</li>
+</ul></div>
+<h2 id="sobytie-s-ogranichennym-srokom-dejstviya" class="sc-bce5c646-1 fYolVj">Событие с ограниченным сроком действия<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Иногда нужно, чтобы событие работало только в определённый период:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> EVENT seasonal_discount
+<span class="token keyword">ON</span> SCHEDULE EVERY <span class="token number">1</span> <span class="token keyword">DAY</span>
+STARTS <span class="token string">&#x27;2025-12-01 00:00:00&#x27;</span>
+ENDS <span class="token string">&#x27;2025-12-31 23:59:59&#x27;</span>
+<span class="token keyword">DO</span>
+    <span class="token keyword">UPDATE</span> products <span class="token keyword">SET</span> price <span class="token operator">=</span> price <span class="token operator">*</span> <span class="token number">0.9</span> <span class="token keyword">WHERE</span> category <span class="token operator">=</span> <span class="token string">&#x27;seasonal&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это событие будет применять скидку 10% на сезонные товары каждый день в течение декабря 2025 года.</p><p><strong class="sc-f6cdcda8-0 gqDbfN">Новые элементы:</strong></p><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">STARTS</span> — начало периода действия события</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">ENDS</span> — конец периода действия события</li>
+</ul><p>После указанной даты событие автоматически прекратит выполняться.</p></div>
+<div class="guide-postgresql-only"><p>В pg_cron нет встроенной поддержки автоматического завершения задач, но можно включить проверку даты в саму команду:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>schedule<span class="token punctuation">(</span>
+    <span class="token string">&#x27;seasonal_discount&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;0 0 * * *&#x27;</span><span class="token punctuation">,</span>
+    $$
+    <span class="token keyword">UPDATE</span> products
+    <span class="token keyword">SET</span> price <span class="token operator">=</span> price <span class="token operator">*</span> <span class="token number">0.9</span>
+    <span class="token keyword">WHERE</span> category <span class="token operator">=</span> <span class="token string">&#x27;seasonal&#x27;</span>
+      <span class="token operator">AND</span> <span class="token keyword">CURRENT_DATE</span> <span class="token operator">BETWEEN</span> <span class="token string">&#x27;2025-12-01&#x27;</span> <span class="token operator">AND</span> <span class="token string">&#x27;2025-12-31&#x27;</span>
+    $$
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Альтернативно, можно создать задачу на удаление события в конце периода:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>schedule<span class="token punctuation">(</span>
+    <span class="token string">&#x27;remove_seasonal_discount&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;0 0 1 1 *&#x27;</span><span class="token punctuation">,</span>  <span class="token comment">-- 1 января в полночь</span>
+    $$<span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>unschedule<span class="token punctuation">(</span><span class="token string">&#x27;seasonal_discount&#x27;</span><span class="token punctuation">)</span>$$
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="prosmotr-sushestvuyushih-sobytij" class="sc-bce5c646-1 fYolVj">Просмотр существующих событий<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Чтобы увидеть все созданные события:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SHOW</span> EVENTS<span class="token punctuation">;</span>
+</code></pre></div></pre><p>Для просмотра событий в конкретной базе данных:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SHOW</span> EVENTS <span class="token keyword">FROM</span> your_database_name<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Чтобы увидеть все запланированные задачи:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> cron<span class="token punctuation">.</span>job<span class="token punctuation">;</span>
+</code></pre></div></pre><p>Это вернёт таблицу со всеми задачами, включая их расписание и команды.</p><p>Для просмотра истории выполнения задач:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> cron<span class="token punctuation">.</span>job_run_details
+<span class="token keyword">ORDER</span> <span class="token keyword">BY</span> start_time <span class="token keyword">DESC</span>
+<span class="token keyword">LIMIT</span> <span class="token number">10</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="upravlenie-sobytiyami" class="sc-bce5c646-1 fYolVj">Управление событиями<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p><strong class="sc-f6cdcda8-0 gqDbfN">Временное отключение события:</strong></p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">ALTER</span> EVENT cleanup_old_logs <span class="token keyword">DISABLE</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p><strong class="sc-f6cdcda8-0 gqDbfN">Включение события:</strong></p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">ALTER</span> EVENT cleanup_old_logs <span class="token keyword">ENABLE</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p><strong class="sc-f6cdcda8-0 gqDbfN">Изменение расписания события:</strong></p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">ALTER</span> EVENT cleanup_old_logs
+<span class="token keyword">ON</span> SCHEDULE EVERY <span class="token number">2</span> <span class="token keyword">HOUR</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p><strong class="sc-f6cdcda8-0 gqDbfN">Удаление события:</strong></p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> EVENT <span class="token keyword">IF</span> <span class="token keyword">EXISTS</span> cleanup_old_logs<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p><strong class="sc-f6cdcda8-0 gqDbfN">Удаление запланированной задачи:</strong></p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>unschedule<span class="token punctuation">(</span><span class="token string">&#x27;cleanup_old_logs&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><p>Или по ID задачи:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>unschedule<span class="token punctuation">(</span><span class="token number">42</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">-- где 42 - это jobid из таблицы cron.job</span>
+</code></pre></div></pre><p><strong class="sc-f6cdcda8-0 gqDbfN">Изменение задачи:</strong></p><p>В pg_cron нельзя изменить существующую задачу напрямую. Нужно удалить старую и создать новую:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Удаляем старую</span>
+<span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>unschedule<span class="token punctuation">(</span><span class="token string">&#x27;cleanup_old_logs&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Создаём новую с обновлённым расписанием</span>
+<span class="token keyword">SELECT</span> cron<span class="token punctuation">.</span>schedule<span class="token punctuation">(</span>
+    <span class="token string">&#x27;cleanup_old_logs&#x27;</span><span class="token punctuation">,</span>
+    <span class="token string">&#x27;0 */2 * * *&#x27;</span><span class="token punctuation">,</span>  <span class="token comment">-- Каждые 2 часа</span>
+    <span class="token string">&#x27;DELETE FROM logs WHERE created_at &lt; NOW() - INTERVAL &#x27;&#x27;30 days&#x27;&#x27;&#x27;</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="vazhnye-momenty-pri-rabote-s-sobytiyami" class="sc-bce5c646-1 fYolVj">Важные моменты при работе с событиями<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><ol>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Права доступа</strong>: Для создания событий нужна привилегия <span class="sql-code sql-code-line sql-code-line--blue-color ">EVENT</span>.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Временная зона</strong>: События выполняются по временной зоне сервера базы данных.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Производительность</strong>: Избегайте создания событий со слишком коротким интервалом (каждую минуту), это может повлиять на производительность.</p>
+</li>
+</ol></div>
+<div class="guide-postgresql-only"><ol>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Права доступа</strong>: Для использования pg_cron обычно требуются права суперпользователя или специальная настройка.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Временная зона</strong>: Задачи pg_cron выполняются по временной зоне PostgreSQL (можно проверить через <span class="sql-code sql-code-line sql-code-line--blue-color ">SHOW timezone;</span>).</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Производительность</strong>: Pg_cron проверяет расписание каждую секунду, поэтому минимальная точность — 1 минута.</p>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Логирование</strong>: Все выполнения задач сохраняются в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">cron.job_run_details</span>, что полезно для отладки.</p>
+</li>
+</ol></div>
+<h2 id="samoproverka" class="sc-bce5c646-1 fYolVj">Самопроверка<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Какой минимальный интервал можно использовать для повторяющихся событий?</p>
+<div class="sc-a58b0f7b-0 cnGFOw guide-quiz"><form class="sc-a58b0f7b-4 haQEOd"><input type="radio" id=":R13m6hn6:События можно запускать каждую секунду0" name=":R13m6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R13m6hn6:События можно запускать каждую секунду0" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>События можно запускать каждую секунду</label></div><input type="radio" id=":R13m6hn6:Минимальный интервал — 1 минута, но лучше использовать интервалы от часа и больше1" name=":R13m6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R13m6hn6:Минимальный интервал — 1 минута, но лучше использовать интервалы от часа и больше1" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Минимальный интервал — 1 минута, но лучше использовать интервалы от часа и больше</label></div><input type="radio" id=":R13m6hn6:Минимальный интервал — 1 час2" name=":R13m6hn6:" class="sc-a58b0f7b-5 blThrf"/><div><label for=":R13m6hn6:Минимальный интервал — 1 час2" class="sc-a58b0f7b-6 PqPVa"><div style="background-color:transparent;border-color:var(--quiz-active-checkbox-color)" class="sc-a58b0f7b-1 cfpFNZ"></div>Минимальный интервал — 1 час</label></div><div class="sc-a58b0f7b-7 gnkQlN"></div></form></div>
+<p>Запланированные события — это мощный инструмент для автоматизации рутинных задач в базе данных. Они помогают поддерживать чистоту данных, обновлять статистику и выполнять регламентные операции без участия разработчиков! 🚀</p>

@@ -1,0 +1,146 @@
+{
+  "_id": "4ed2b809d7446b9a0e000130",
+  "id": 130,
+  "fields": [
+    "company_name",
+    "contract_count"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "company_name",
+      "contract_count"
+    ],
+    "rows": [
+      {
+        "company_name": "SBERBANK LLC",
+        "contract_count": 3
+      },
+      {
+        "company_name": "VTB Corporation",
+        "contract_count": 2
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "GlowByte",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200301",
+    "id": "4ed2b809d7446b9a0e200301",
+    "title": "GlowByte",
+    "name": "QuestionCustomDatabase_129_130",
+    "tables": [
+      {
+        "id": "Company",
+        "props": [
+          {
+            "id": "company_id",
+            "isKey": true,
+            "name": "company_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "company_name",
+            "isKey": false,
+            "name": "company_name",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Company",
+        "description": "Компании"
+      },
+      {
+        "id": "Contract",
+        "props": [
+          {
+            "id": "contract_id",
+            "isKey": true,
+            "name": "contract_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "contract_number",
+            "isKey": false,
+            "name": "contract_number",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Contract",
+        "description": "Счета"
+      },
+      {
+        "id": "Company_contract",
+        "props": [
+          {
+            "id": "company_id",
+            "isKey": false,
+            "name": "company_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "contract_id",
+            "isKey": false,
+            "name": "contract_id",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Company_contract",
+        "description": "Связь компаний и счетов"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Company",
+          "field": "company_id"
+        },
+        "target": {
+          "table": "Company_contract",
+          "field": "company_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778241"
+      },
+      {
+        "source": {
+          "table": "Contract",
+          "field": "contract_id"
+        },
+        "target": {
+          "table": "Company_contract",
+          "field": "contract_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778242"
+      }
+    ],
+    "tablePosition": {
+      "Company": {
+        "x": 0,
+        "y": 0
+      },
+      "Contract": {
+        "x": 300,
+        "y": 0
+      },
+      "Company_contract": {
+        "x": 150,
+        "y": -160
+      }
+    },
+    "isHidden": true,
+    "description": "GlowByte"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана база данных с информацией о компаниях и их счетах.\n                        В таблице Company хранится информация о компаниях,\n                        в таблице Contract - информация о счетах,\n                        в таблице Company_contract - связи между компаниями и их счетами.\n                        <br><br>\n                        Вывести количество счетов по каждой компании. \n                        Результат должен содержать название компании (company_name) и количество счетов (contract_count).\n                    ",
+  "title": "Количество счетов по каждой компании",
+  "additional_info": []
+}

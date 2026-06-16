@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200413",
+  "id": "4ed2b809d7446b9a0e200413",
+  "title": "EPAM — баги",
+  "name": "QuestionCustomDatabase_188",
+  "tables": [
+    {
+      "id": "bugs",
+      "props": [
+        {
+          "id": "bug_id",
+          "isKey": true,
+          "name": "bug_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "project_id",
+          "isKey": false,
+          "name": "project_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "creation_date",
+          "isKey": false,
+          "name": "creation_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "resolution_date",
+          "isKey": false,
+          "name": "resolution_date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "bugs",
+      "description": "Баги: resolution_date — дата закрытия (NULL, если ещё не закрыт)"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "bugs": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "EPAM — баги"
+}

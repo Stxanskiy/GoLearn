@@ -19,6 +19,21 @@ func registrationOpen() bool {
 	return os.Getenv("REGISTRATION_OPEN") == "true"
 }
 
+// setSessionCookie writes the session cookie with secure defaults. Secure is
+// enabled when the request arrived over HTTPS (directly or via a TLS proxy).
+func setSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
+	secure := r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   30 * 24 * 3600,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
 // adminEmails returns the set of emails granted admin via ADMIN_EMAILS env.
 func adminEmails() map[string]bool {
 	set := make(map[string]bool)
@@ -70,6 +85,14 @@ func GetUser(ctx context.Context) *repository.User {
 	return user
 }
 
+// currentUserID returns the authenticated user's id (0 if absent).
+func currentUserID(ctx context.Context) int {
+	if u := GetUser(ctx); u != nil {
+		return u.ID
+	}
+	return 0
+}
+
 func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	// Already logged in?
 	cookie, err := r.Cookie("session")
@@ -98,13 +121,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session",
-		Value:    token,
-		Path:     "/",
-		MaxAge:   30 * 24 * 3600, // 30 days
-		HttpOnly: true,
-	})
+	setSessionCookie(w, r, token)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -141,13 +158,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, _ := h.userRepo.CreateSession(r.Context(), user.ID)
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session",
-		Value:    token,
-		Path:     "/",
-		MaxAge:   30 * 24 * 3600,
-		HttpOnly: true,
-	})
+	setSessionCookie(w, r, token)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

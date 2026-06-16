@@ -1,0 +1,94 @@
+{
+  "_id": "4ed2b809d7446b9a0e000187",
+  "id": 187,
+  "fields": [
+    "month",
+    "project_id",
+    "client_name",
+    "price"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "month",
+      "project_id",
+      "client_name",
+      "price"
+    ],
+    "rows": [
+      {
+        "month": 9,
+        "project_id": 999,
+        "client_name": "ExampleClient",
+        "price": 12000
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "EPAM",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200412",
+    "id": "4ed2b809d7446b9a0e200412",
+    "title": "EPAM — проекты",
+    "name": "QuestionCustomDatabase_187",
+    "tables": [
+      {
+        "id": "projects",
+        "props": [
+          {
+            "id": "project_id",
+            "isKey": true,
+            "name": "project_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "client_name",
+            "isKey": false,
+            "name": "client_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "start_date",
+            "isKey": false,
+            "name": "start_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "finish_date",
+            "isKey": false,
+            "name": "finish_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "price",
+            "isKey": false,
+            "name": "price",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "projects",
+        "description": "Проекты: price — стоимость проекта"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "projects": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "EPAM — проекты"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>projects</b> хранятся проекты: <b>project_id</b>,\n            <b>client_name</b>, <b>start_date</b> (дата старта), <b>finish_date</b> и\n            <b>price</b> (стоимость).\n            <br><br>\n            Среди проектов, стартовавших в <b>2022 году</b>, для каждого месяца найдите\n            проект с наибольшей стоимостью. Если в месяце несколько проектов с одинаковой\n            максимальной стоимостью, возьмите проект с наименьшим <b>project_id</b>.\n            <br><br>\n            Выведите <b>month</b> (номер месяца), <b>project_id</b>, <b>client_name</b> и\n            <b>price</b> (стоимость проекта). Отсортируйте по <b>month</b> по возрастанию.\n        ",
+  "title": "Самый дорогой проект за каждый месяц 2022 года",
+  "additional_info": []
+}

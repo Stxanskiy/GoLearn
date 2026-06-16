@@ -1,0 +1,114 @@
+{
+  "_id": "4ed2b809d7446b9a0e000150",
+  "id": 150,
+  "fields": [
+    "month_date",
+    "currency_clients"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "month_date",
+      "currency_clients"
+    ],
+    "rows": [
+      {
+        "month_date": "2025-10-01",
+        "currency_clients": 3
+      },
+      {
+        "month_date": "2025-11-01",
+        "currency_clients": 4
+      },
+      {
+        "month_date": "2025-12-01",
+        "currency_clients": 5
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Tochka",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200312",
+    "id": "4ed2b809d7446b9a0e200312",
+    "title": "Точка Банк — счета",
+    "name": "QuestionCustomDatabase_150_151",
+    "tables": [
+      {
+        "id": "accounts",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "client_id",
+            "isKey": false,
+            "name": "client_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "open_date",
+            "isKey": false,
+            "name": "open_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "close_date",
+            "isKey": false,
+            "name": "close_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "val",
+            "isKey": false,
+            "name": "val",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "accounts",
+        "description": "Счета клиентов: дата открытия, дата закрытия (NULL для действующих) и код валюты"
+      },
+      {
+        "id": "calendar",
+        "props": [
+          {
+            "id": "calendar_date",
+            "isKey": true,
+            "name": "calendar_date",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "calendar",
+        "description": "Календарь — список всех дат"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "accounts": {
+        "x": 0,
+        "y": 0
+      },
+      "calendar": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Точка Банк — счета"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n            В таблице <b>accounts</b> хранятся счета клиентов: <b>open_date</b> — дата открытия,\n            <b>close_date</b> — дата закрытия (<b>NULL</b>, если счёт ещё действует),\n            <b>val</b> — код валюты (у рублёвых счетов значение <b>'RUB'</b>).\n            <br><br>\n            В таблице <b>calendar</b> лежит полный список дат — поле <b>calendar_date</b>.\n            <br><br>\n            Для каждого первого числа месяца посчитайте количество клиентов, у которых\n            на этот день был хотя бы один действующий валютный счёт (валюта отличается от <b>'RUB'</b>).\n            <br><br>\n            Счёт считается действующим на дату <b>D</b>, если <b>open_date &lt;= D</b>\n            и (<b>close_date IS NULL</b> или <b>close_date &gt; D</b>).\n            <br><br>\n            Результат должен содержать колонки:\n            <ul>\n                <li>month_date — первое число месяца</li>\n                <li>currency_clients — количество клиентов с валютным счётом на эту дату</li>\n            </ul>\n            Отсортируйте результат по <b>month_date</b>.\n        ",
+  "title": "Клиенты с валютными счетами по месяцам",
+  "additional_info": []
+}

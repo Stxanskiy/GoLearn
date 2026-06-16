@@ -1,0 +1,157 @@
+<!doctype html><meta charset="utf-8"><title>Хранимые процедуры в SQL</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="hranimye-procedury-v-sql" class="sc-bce5c646-1 fYolVj">Хранимые процедуры в SQL<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Хранимые процедуры — это программные блоки, которые выполняют определённую последовательность действий в базе данных.</p>
+<div class="guide-mysql-only"><p>В отличие от функций, процедуры могут изменять данные, выполнять сложную бизнес-логику и не обязательно возвращают значение.</p></div>
+<div class="guide-postgresql-only"><p>В отличие от функций, процедуры могут изменять данные, выполнять сложную бизнес-логику, но не могут возвращать значения.</p></div>
+<h2 id="obshaya-struktura-hranimoj-procedury" class="sc-bce5c646-1 fYolVj">Общая структура хранимой процедуры<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> имя_процедуры<span class="token punctuation">(</span>параметр<span class="token number">1</span> ТИП<span class="token punctuation">,</span> параметр<span class="token number">2</span> ТИП<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token comment">-- логика процедуры</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">PROCEDURE</span> имя_процедуры<span class="token punctuation">(</span>параметр<span class="token number">1</span> ТИП<span class="token punctuation">,</span> параметр<span class="token number">2</span> ТИП<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
+<span class="token keyword">LANGUAGE</span> plpgsql
+<span class="token keyword">AS</span> $$
+<span class="token keyword">BEGIN</span>
+    <span class="token comment">-- логика процедуры</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+$$<span class="token punctuation">;</span>
+</code></pre></div></pre><p><span class="sql-code sql-code-line sql-code-line--blue-color ">LANGUAGE plpgsql</span> — указывает, что процедура написана на языке <strong class="sc-f6cdcda8-0 gqDbfN">PL/pgSQL</strong> (процедурном языке PostgreSQL).</p><p><span class="sql-code sql-code-line sql-code-line--blue-color ">AS $$ ... $$</span> — <strong class="sc-f6cdcda8-0 gqDbfN">долларовое квотирование</strong>, специальный способ обрамления тела процедуры. Позволяет избежать экранирования символов внутри процедуры.</p></div>
+<h2 id="prostoj-primer-procedury" class="sc-bce5c646-1 fYolVj">Простой пример процедуры<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Создадим процедуру для обновления информации о студенте:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Создаём процедуру</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> update_student_info<span class="token punctuation">(</span>
+    <span class="token operator">IN</span> student_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    <span class="token operator">IN</span> new_first_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token operator">IN</span> new_last_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">UPDATE</span> Student
+    <span class="token keyword">SET</span> first_name <span class="token operator">=</span> new_first_name<span class="token punctuation">,</span>
+        last_name <span class="token operator">=</span> new_last_name
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Вызываем процедуру</span>
+<span class="token keyword">CALL</span> update_student_info<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">&#x27;Alexander&#x27;</span><span class="token punctuation">,</span> <span class="token string">&#x27;Smirnov&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверяем результат</span>
+<span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Student <span class="token keyword">WHERE</span> id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token comment">-- Создаём процедуру</span>
+<span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">PROCEDURE</span> update_student_info<span class="token punctuation">(</span>
+    student_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    new_first_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    new_last_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">LANGUAGE</span> plpgsql
+<span class="token keyword">AS</span> $$
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">UPDATE</span> Student
+    <span class="token keyword">SET</span> first_name <span class="token operator">=</span> new_first_name<span class="token punctuation">,</span>
+        last_name <span class="token operator">=</span> new_last_name
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+$$<span class="token punctuation">;</span>
+
+<span class="token comment">-- Вызываем процедуру</span>
+<span class="token keyword">CALL</span> update_student_info<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">&#x27;Alexander&#x27;</span><span class="token punctuation">,</span> <span class="token string">&#x27;Smirnov&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Проверяем результат</span>
+<span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> Student <span class="token keyword">WHERE</span> id <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<!-- -->
+<div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">id</th><th style="min-width:auto">first_name</th><th style="min-width:auto">middle_name</th><th style="min-width:auto">last_name</th><th style="min-width:auto">birthday</th><th style="min-width:auto">address</th></tr></thead><tbody><tr class="highlight-row"><td>1</td><td>Alexander</td><td>Fedorovich</td><td>Smirnov</td><td>2000-10-01T00:00:00.000Z</td><td>ul. Pushkina, d. 36, kv. 5</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div>
+<p>Эта процедура принимает ID студента и новые данные, затем обновляет соответствующую запись в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Student</span>.</p>
+<div class="guide-mysql-only"><h2 id="tipy-parametrov-procedur" class="sc-bce5c646-1 fYolVj">Типы параметров процедур<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2><p>В MySQL процедуры поддерживают три типа параметров, которые можно передавать в хранимую процедуру:</p><ul>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">IN</strong> — входные параметры (по умолчанию)</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">OUT</strong> — выходные параметры для возврата значений</li>
+<li><strong class="sc-f6cdcda8-0 gqDbfN">INOUT</strong> — параметры, которые могут быть как входными, так и выходными</li>
+</ul><h3 id="vhodnye-parametry-(in)" class="sc-bce5c646-1 fYolVj">Входные параметры (IN)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3><p>Входные параметры передают данные в процедуру. Это самый распространённый тип параметров:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> add_subject<span class="token punctuation">(</span>
+    <span class="token operator">IN</span> subject_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    <span class="token operator">IN</span> subject_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> Subject <span class="token punctuation">(</span>id<span class="token punctuation">,</span> name<span class="token punctuation">)</span>
+    <span class="token keyword">VALUES</span> <span class="token punctuation">(</span>subject_id<span class="token punctuation">,</span> subject_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Вызов с входными параметрами</span>
+<span class="token keyword">CALL</span> add_subject<span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">,</span> <span class="token string">&#x27;Mathematics&#x27;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre><h3 id="vyhodnye-parametry-(out)" class="sc-bce5c646-1 fYolVj">Выходные параметры (OUT)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3><p>Выходные параметры позволяют процедуре возвращать значения:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> get_student_info<span class="token punctuation">(</span>
+    <span class="token operator">IN</span> student_id <span class="token keyword">INT</span><span class="token punctuation">,</span>
+    <span class="token keyword">OUT</span> student_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">OUT</span> student_age <span class="token keyword">INT</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">SELECT</span>
+        CONCAT<span class="token punctuation">(</span>first_name<span class="token punctuation">,</span> <span class="token string">&#x27; &#x27;</span><span class="token punctuation">,</span> last_name<span class="token punctuation">)</span><span class="token punctuation">,</span>
+        TIMESTAMPDIFF<span class="token punctuation">(</span><span class="token keyword">YEAR</span><span class="token punctuation">,</span> birthday<span class="token punctuation">,</span> CURDATE<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">INTO</span> student_name<span class="token punctuation">,</span> student_age
+    <span class="token keyword">FROM</span> Student
+    <span class="token keyword">WHERE</span> id <span class="token operator">=</span> student_id<span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Вызов процедуры с выходными параметрами</span>
+<span class="token keyword">CALL</span> get_student_info<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token variable">@name</span><span class="token punctuation">,</span> <span class="token variable">@age</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@name</span> <span class="token keyword">AS</span> student_name<span class="token punctuation">,</span> <span class="token variable">@age</span> <span class="token keyword">AS</span> student_age<span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">student_name</th><th style="min-width:auto">student_age</th></tr></thead><tbody><tr class="highlight-row"><td>Nikolaj Sokolov</td><td>24</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><h3 id="vhodnye-i-vyhodnye-parametry-(inout)" class="sc-bce5c646-1 fYolVj">Входные и выходные параметры (INOUT)<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3><p>INOUT параметры могут принимать значение и возвращать изменённое значение:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> calculate_discount<span class="token punctuation">(</span>
+    <span class="token keyword">INOUT</span> price <span class="token keyword">DECIMAL</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token operator">IN</span> discount_percent <span class="token keyword">INT</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">BEGIN</span>
+    <span class="token keyword">SET</span> price <span class="token operator">=</span> price <span class="token operator">-</span> <span class="token punctuation">(</span>price <span class="token operator">*</span> discount_percent <span class="token operator">/</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">END</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- Использование INOUT параметра</span>
+<span class="token keyword">SET</span> <span class="token variable">@original_price</span> <span class="token operator">=</span> <span class="token number">1000.00</span><span class="token punctuation">;</span>
+<span class="token keyword">CALL</span> calculate_discount<span class="token punctuation">(</span><span class="token variable">@original_price</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">SELECT</span> <span class="token variable">@original_price</span> <span class="token keyword">AS</span> discounted_price<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<!-- -->
+<!-- -->
+<div class="guide-mysql-only"><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:76px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">discounted_price</th></tr></thead><tbody><tr class="highlight-row"><td>850</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><h3 id="primer-raboty-tryoh-tipov-parametrov" class="sc-bce5c646-1 fYolVj">Пример работы трёх типов параметров<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3><p><img title="Примеры работы параметров в хранимой процедуре" alt="Примеры работы параметров в хранимой процедуре" loading="lazy" width="1732" height="542" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fstored-procedures%2Fparams-description.jpg&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fstored-procedures%2Fparams-description.jpg&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fstored-procedures%2Fparams-description.jpg&amp;w=3840&amp;q=50"/></p><h3 id="klyuchevye-razlichiya-tipov-parametrov" class="sc-bce5c646-1 fYolVj">Ключевые различия типов параметров<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3><div class="sc-34473f63-0 BAKJs scrollable-container-wrapper" style="position:relative;overflow:hidden;width:100%;height:auto;min-height:100%;max-height:100%"><div style="position:relative;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0;min-height:100%;max-height:100%"><table class="sc-3d43063c-0 iTyZOI guide-basic-table"><thead><tr><th>Тип параметра</th><th>Направление</th><th>Использование</th></tr></thead><tbody><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">IN</strong></td><td>Входящий</td><td>Передача данных в процедуру</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">OUT</strong></td><td>Исходящий</td><td>Возврат результата из процедуры</td></tr><tr><td><strong class="sc-f6cdcda8-0 gqDbfN">INOUT</strong></td><td>Двунаправленный</td><td>Изменение переданного значения</td></tr></tbody></table></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div><blockquote>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Важно:</strong> OUT и INOUT параметры в MySQL требуют использования переменных сессии (например, <span class="sql-code sql-code-line sql-code-line--blue-color ">@variable_name</span>) при вызове процедуры.</p>
+</blockquote></div>
+<h2 id="upravlenie-hranimymi-procedurami" class="sc-bce5c646-1 fYolVj">Управление хранимыми процедурами<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<ul>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Просмотр существующих процедур</strong></p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SHOW</span> <span class="token keyword">PROCEDURE</span> <span class="token keyword">STATUS</span> <span class="token keyword">WHERE</span> Db <span class="token operator">=</span> <span class="token string">&#x27;your_database_name&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> routine_name<span class="token punctuation">,</span> routine_type
+<span class="token keyword">FROM</span> information_schema<span class="token punctuation">.</span>routines
+<span class="token keyword">WHERE</span> routine_type <span class="token operator">=</span> <span class="token string">&#x27;PROCEDURE&#x27;</span> <span class="token operator">AND</span> routine_schema <span class="token operator">=</span> <span class="token string">&#x27;public&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Удаление процедуры</strong></p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">PROCEDURE</span> <span class="token keyword">IF</span> <span class="token keyword">EXISTS</span> add_student<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">PROCEDURE</span> <span class="token keyword">IF</span> <span class="token keyword">EXISTS</span> add_student<span class="token punctuation">(</span><span class="token keyword">VARCHAR</span><span class="token punctuation">,</span> <span class="token keyword">VARCHAR</span><span class="token punctuation">,</span> <span class="token keyword">DATE</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+</li>
+<li>
+<p><strong class="sc-f6cdcda8-0 gqDbfN">Изменение процедуры</strong></p>
+<div class="guide-mysql-only"><p>Для изменения процедуры в MySQL нужно сначала удалить старую версию, а затем создать новую:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">PROCEDURE</span> <span class="token keyword">IF</span> <span class="token keyword">EXISTS</span> add_student<span class="token punctuation">;</span>
+<span class="token comment">-- Создать новую версию процедуры</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">PROCEDURE</span> add_student<span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>В PostgreSQL можно использовать <span class="sql-code sql-code-line sql-code-line--blue-color ">CREATE OR REPLACE PROCEDURE</span>:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token operator">OR</span> <span class="token keyword">REPLACE</span> <span class="token keyword">PROCEDURE</span> add_student<span class="token punctuation">(</span>
+    student_first_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    student_last_name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    student_birthday <span class="token keyword">DATE</span>
+<span class="token punctuation">)</span>
+<span class="token comment">-- новая реализация</span>
+</code></pre></div></pre></div>
+</li>
+</ul>
+<p>Хранимые процедуры — это мощный инструмент для реализации сложной бизнес-логики прямо в базе данных. Они обеспечивают централизацию логики, повышают производительность и гарантируют целостность данных! 🚀</p>

@@ -1,0 +1,45 @@
+{
+  "_id": "4ed2b809d7446b9a0e200200",
+  "id": "4ed2b809d7446b9a0e200200",
+  "title": "MTC",
+  "name": "QuestionCustomDatabase_124",
+  "tables": [
+    {
+      "id": "logins",
+      "props": [
+        {
+          "id": "created_at",
+          "isKey": false,
+          "name": "created_at",
+          "type": "DATETIME",
+          "description": null
+        },
+        {
+          "id": "phone_number",
+          "isKey": false,
+          "name": "phone_number",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "vendor",
+          "isKey": false,
+          "name": "vendor",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "logins",
+      "description": "Логи входов в приложение"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "logins": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "MTC"
+}

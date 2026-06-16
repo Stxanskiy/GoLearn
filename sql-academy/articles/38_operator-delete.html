@@ -1,0 +1,76 @@
+<!doctype html><meta charset="utf-8"><title>Удаление данных, оператор DELETE</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="udalenie-dannyh-operator-delete" class="sc-bce5c646-1 fYolVj">Удаление данных, оператор DELETE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>Время от времени возникает задача удаления записей из таблицы. Для этого в SQL предусмотрены операторы <span class="sql-code sql-code-line sql-code-line--blue-color ">DELETE</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUNCATE</span>,
+из которых наиболее универсальным и безопасным является первый вариант.</p>
+<h2 id="obshaya-struktura-zaprosa-s-operatorom-delete" class="sc-bce5c646-1 fYolVj">Общая структура запроса с оператором DELETE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> имя_таблицы
+<span class="token punctuation">[</span><span class="token keyword">WHERE</span> условие_отбора_записей<span class="token punctuation">]</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Если условие отбора записей <span class="sql-code sql-code-line sql-code-line--blue-color ">WHERE</span> отсутствует, то будут удалены все записи указанной таблицы.</p>
+<p>Эту же операцию (удаления всех записей) можно сделать также с помощью оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUNCATE</span>.
+Он выполнит удаление таблицы и пересоздаст её заново - этот вариант работает гораздо быстрее, чем удаление всех записей одна за другой (как в случае с <span class="sql-code sql-code-line sql-code-line--blue-color ">DELETE</span>), особенно для больших таблиц.</p>
+<h2 id="obshaya-struktura-zaprosa-s-operatorom-truncate" class="sc-bce5c646-1 fYolVj">Общая структура запроса с оператором TRUNCATE<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">TRUNCATE</span> <span class="token keyword">TABLE</span> имя_таблицы<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<div class="guide-mysql-only"><blockquote>
+<p>Оптимизатор запросов СУБД MySQL автоматически использует оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUNCATE</span>, если оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">DELETE</span> не содержит условия <span class="sql-code sql-code-line sql-code-line--blue-color ">WHERE</span> или конструкции <span class="sql-code sql-code-line sql-code-line--blue-color ">LIMIT</span>.</p>
+</blockquote></div>
+<p>Однако у оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">TRUNCATE</span> есть ряд отличий:</p>
+<div class="guide-mysql-only"><ul>
+<li>Не срабатывают триггеры, в частности, триггер удаления</li>
+<li>Удаляет все строки в таблице, не записывая при этом удаление отдельных строк данных в журнал транзакций</li>
+<li>Сбрасывает счётчик идентификаторов до начального значения</li>
+<li>Чтобы использовать, необходимы права на изменение таблицы</li>
+</ul></div>
+<div class="guide-postgresql-only"><ul>
+<li>Не срабатывают триггеры, в частности, триггер удаления</li>
+<li>Удаляет все строки в таблице, не записывая при этом удаление отдельных строк данных в журнал транзакций</li>
+<li>Может сбрасывать счётчик идентификаторов при использовании опции <span class="sql-code sql-code-line sql-code-line--blue-color ">RESTART IDENTITY</span> (по умолчанию используется <span class="sql-code sql-code-line sql-code-line--blue-color ">CONTINUE IDENTITY</span>, и счётчик не сбрасывается)</li>
+<li>Чтобы использовать, необходимы права на изменение таблицы</li>
+</ul></div>
+<h2 id="udalenie-zapisej-pri-mnogotablichnyh-zaprosah" class="sc-bce5c646-1 fYolVj">Удаление записей при многотабличных запросах<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Если в <span class="sql-code sql-code-line sql-code-line--blue-color ">DELETE</span> запросе используется <span class="sql-code sql-code-line sql-code-line--blue-color ">JOIN</span>, то необходимо указать, из каких именно таблиц требуется удалять записи.</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> имя_таблицы_1 <span class="token keyword">FROM</span>
+имя_таблицы_1 <span class="token keyword">JOIN</span> имя_таблицы_2
+<span class="token keyword">ON</span> имя_таблицы_1<span class="token punctuation">.</span>поле <span class="token operator">=</span> имя_таблицы_2<span class="token punctuation">.</span>поле
+<span class="token punctuation">[</span><span class="token keyword">WHERE</span> условие_отбора_записей<span class="token punctuation">]</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>Если в <span class="sql-code sql-code-line sql-code-line--blue-color ">DELETE</span> запросе используется <span class="sql-code sql-code-line sql-code-line--blue-color ">USING</span>, то после него необходимо указать дополнительные таблицы, по которым выбираются удаляемые записи.</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> имя_таблицы_1
+<span class="token keyword">USING</span> имя_таблицы_2
+<span class="token keyword">WHERE</span> имя_таблицы_1<span class="token punctuation">.</span>поле <span class="token operator">=</span> имя_таблицы_2<span class="token punctuation">.</span>поле
+<span class="token punctuation">[</span><span class="token operator">AND</span> условие_отбора_записей<span class="token punctuation">]</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>Например, нам необходимо удалить все бронирования жилья, в котором отсутствует кухня. Тогда запрос будет выглядеть следующим образом:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> Reservations <span class="token keyword">FROM</span>
+Reservations <span class="token keyword">JOIN</span> Rooms <span class="token keyword">ON</span>
+Reservations<span class="token punctuation">.</span>room_id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>id
+<span class="token keyword">WHERE</span> Rooms<span class="token punctuation">.</span>has_kitchen <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> Reservations
+<span class="token keyword">USING</span> Rooms
+<span class="token keyword">WHERE</span> Reservations<span class="token punctuation">.</span>room_id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>id
+<span class="token operator">AND</span> Rooms<span class="token punctuation">.</span>has_kitchen <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>Если бы, помимо удаления бронирования, нам нужно было также удалить и жилье, то запрос приобрёл бы следующий вид:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> Reservations<span class="token punctuation">,</span> Rooms <span class="token keyword">FROM</span>
+Reservations <span class="token keyword">JOIN</span> Rooms <span class="token keyword">ON</span>
+Reservations<span class="token punctuation">.</span>room_id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>id
+<span class="token keyword">WHERE</span> Rooms<span class="token punctuation">.</span>has_kitchen <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><p>В PostgreSQL для удаления из нескольких таблиц одновременно используются отдельные DELETE запросы или транзакции:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">BEGIN</span><span class="token punctuation">;</span>
+<span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> Reservations
+<span class="token keyword">USING</span> Rooms
+<span class="token keyword">WHERE</span> Reservations<span class="token punctuation">.</span>room_id <span class="token operator">=</span> Rooms<span class="token punctuation">.</span>id
+<span class="token operator">AND</span> Rooms<span class="token punctuation">.</span>has_kitchen <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+<span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> Rooms
+<span class="token keyword">WHERE</span> Rooms<span class="token punctuation">.</span>has_kitchen <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+<span class="token keyword">COMMIT</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>

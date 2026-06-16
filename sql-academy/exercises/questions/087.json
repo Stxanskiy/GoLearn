@@ -1,0 +1,92 @@
+{
+  "_id": "4ed2b809d7446b9a0e000087",
+  "id": 87,
+  "fields": [
+    "sender_id",
+    "message_count"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "sender_id",
+      "message_count"
+    ],
+    "rows": [
+      {
+        "sender_id": 3601,
+        "message_count": 3
+      },
+      {
+        "sender_id": 4500,
+        "message_count": 2
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Microsoft",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200087",
+    "id": "4ed2b809d7446b9a0e200087",
+    "title": "Microsoft",
+    "name": "QuestionCustomDatabase_87",
+    "tables": [
+      {
+        "id": "messages",
+        "props": [
+          {
+            "id": "message_id",
+            "isKey": true,
+            "name": "message_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "sender_id",
+            "isKey": false,
+            "name": "sender_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "receiver_id",
+            "isKey": false,
+            "name": "receiver_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "content",
+            "isKey": false,
+            "name": "content",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "sent_date",
+            "isKey": false,
+            "name": "sent_date",
+            "type": "DATETIME",
+            "description": null
+          }
+        ],
+        "title": "messages",
+        "description": "Таблица со списком сообщений"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "messages": {
+        "x": 0,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "Microsoft"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Напишите запрос для определения двух наиболее активных пользователей, которые отправили наибольшее количество сообщений в Microsoft Teams в августе 2022 года. Отобразите идентификаторы этих двух пользователей вместе с общим количеством отправленных ими сообщений. Выведите результаты в порядке убывания на основе количества сообщений. <br /> <br /> \n                    Уточнения:\n                        <ul>\n                            <li>В августе 2022 года ни один пользователь не отправил одинаковое количество сообщений.</li>\n                        </ul>\n                    ",
+  "title": "Топ-2 активных пользователя",
+  "additional_info": []
+}

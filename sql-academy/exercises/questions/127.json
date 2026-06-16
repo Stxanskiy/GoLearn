@@ -1,0 +1,249 @@
+{
+  "_id": "4ed2b809d7446b9a0e000127",
+  "id": 127,
+  "fields": [
+    "user_id",
+    "book_title",
+    "total_times_taken"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "user_id",
+      "book_title",
+      "total_times_taken"
+    ],
+    "rows": [
+      {
+        "user_id": 1,
+        "book_title": "War and Peace",
+        "total_times_taken": 6
+      },
+      {
+        "user_id": 1,
+        "book_title": "Crime and Punishment",
+        "total_times_taken": 3
+      },
+      {
+        "user_id": 1,
+        "book_title": "The Brothers Karamazov",
+        "total_times_taken": 2
+      },
+      {
+        "user_id": 2,
+        "book_title": "The Brothers Karamazov",
+        "total_times_taken": 2
+      },
+      {
+        "user_id": 2,
+        "book_title": "The Idiot",
+        "total_times_taken": 1
+      },
+      {
+        "user_id": 2,
+        "book_title": "The Brothers Karamazov",
+        "total_times_taken": 2
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Cian",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200300",
+    "id": "4ed2b809d7446b9a0e200300",
+    "title": "Cian",
+    "name": "QuestionCustomDatabase_125_127",
+    "tables": [
+      {
+        "id": "Books",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "title",
+            "isKey": false,
+            "name": "title",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Books",
+        "description": "Справочник произведений"
+      },
+      {
+        "id": "BookEditions",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "book_id",
+            "isKey": false,
+            "name": "book_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "publish_year",
+            "isKey": false,
+            "name": "publish_year",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "pages",
+            "isKey": false,
+            "name": "pages",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "BookEditions",
+        "description": "Издания произведений"
+      },
+      {
+        "id": "BookCopies",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "edition_id",
+            "isKey": false,
+            "name": "edition_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "inventory_number",
+            "isKey": false,
+            "name": "inventory_number",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "BookCopies",
+        "description": "Экземпляры изданий"
+      },
+      {
+        "id": "OperationLogs",
+        "props": [
+          {
+            "id": "id",
+            "isKey": true,
+            "name": "id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "copy_id",
+            "isKey": false,
+            "name": "copy_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "date_taken",
+            "isKey": false,
+            "name": "date_taken",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "date_returned",
+            "isKey": false,
+            "name": "date_returned",
+            "type": "DATETIME",
+            "description": null
+          }
+        ],
+        "title": "OperationLogs",
+        "description": "Выдачи и возвраты"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Books",
+          "field": "id"
+        },
+        "target": {
+          "table": "BookEditions",
+          "field": "book_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778238"
+      },
+      {
+        "source": {
+          "table": "BookEditions",
+          "field": "id"
+        },
+        "target": {
+          "table": "BookCopies",
+          "field": "edition_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778239"
+      },
+      {
+        "source": {
+          "table": "BookCopies",
+          "field": "id"
+        },
+        "target": {
+          "table": "OperationLogs",
+          "field": "copy_id"
+        },
+        "type": "one-to-many",
+        "id": "186646a0-837d-11ed-86a4-eb63bd778240"
+      }
+    ],
+    "tablePosition": {
+      "Books": {
+        "x": 0,
+        "y": 220
+      },
+      "BookEditions": {
+        "x": 0,
+        "y": 0
+      },
+      "BookCopies": {
+        "x": 0,
+        "y": -160
+      },
+      "OperationLogs": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Cian"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        В библиотечной системе таблица OperationLogs фиксирует операции выдачи и возврата книг. \n                        Каждая запись содержит информацию о том, какой пользователь взял какой экземпляр книги и когда.\n                        <br><br>\n                        Для каждого пользователя найти последние три взятые им произведения.\n                        Для каждого такого произведения указать пользователя (user_id), название произведения (book_title) и сколько всего раз его брали за всё время всеми пользователями (total_times_taken).\n                    ",
+  "title": "Последние 3 взятые произведения и общее число выдач",
+  "additional_info": []
+}

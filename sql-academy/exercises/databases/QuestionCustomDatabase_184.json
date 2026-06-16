@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200409",
+  "id": "4ed2b809d7446b9a0e200409",
+  "title": "Kaspi — транзакции",
+  "name": "QuestionCustomDatabase_184",
+  "tables": [
+    {
+      "id": "transactions",
+      "props": [
+        {
+          "id": "transaction_id",
+          "isKey": true,
+          "name": "transaction_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "transaction_date",
+          "isKey": false,
+          "name": "transaction_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "amount",
+          "isKey": false,
+          "name": "amount",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "transactions",
+      "description": "Транзакции пользователей: сумма amount в день transaction_date"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "transactions": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Kaspi — транзакции"
+}

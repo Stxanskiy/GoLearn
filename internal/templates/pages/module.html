@@ -28,7 +28,7 @@
         <span class="toc-row-status">
             {{if eq .Status "completed"}}<span class="trs-done">✓</span>{{else}}<span class="trs-num">{{.Num}}</span>{{end}}
         </span>
-        <span class="toc-row-icon">{{if eq .KindKey "lesson"}}📖{{else if eq .KindKey "quiz"}}💬{{else if eq .KindKey "sim"}}🎮{{else}}🧪{{end}}</span>
+        <span class="toc-row-icon">{{if eq .KindKey "lesson"}}📖{{else if eq .KindKey "quiz"}}💬{{else if eq .KindKey "sim"}}🎮{{else if eq .KindKey "sql"}}🗄️{{else}}🧪{{end}}</span>
         <span class="toc-row-title">{{.Title}}</span>
         <span class="toc-row-badge badge-{{.KindKey}}">{{.Kind}}</span>
         <span class="toc-row-end">
@@ -73,6 +73,7 @@
 .badge-quiz   { color:#e3b341; background:rgba(227,179,65,.16); }
 .badge-lab    { color:#f778ba; background:rgba(247,120,186,.16); }
 .badge-sim    { color:#39c5cf; background:rgba(57,197,207,.16); }
+.badge-sql    { color:#36c5f0; background:rgba(54,197,240,.16); }
 .toc-row-end { flex:0 0 auto; display:flex; align-items:center; gap:8px; }
 .tre-check { color:var(--green); font-weight:700; }
 .tre-next { font-size:.72em; font-weight:700; color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); padding:2px 9px; border-radius:999px; }

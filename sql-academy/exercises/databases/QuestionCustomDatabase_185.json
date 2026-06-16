@@ -1,0 +1,91 @@
+{
+  "_id": "4ed2b809d7446b9a0e200410",
+  "id": "4ed2b809d7446b9a0e200410",
+  "title": "Kaspi — просмотры и корзина",
+  "name": "QuestionCustomDatabase_185",
+  "tables": [
+    {
+      "id": "product_views",
+      "props": [
+        {
+          "id": "view_id",
+          "isKey": true,
+          "name": "view_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "product_id",
+          "isKey": false,
+          "name": "product_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "view_date",
+          "isKey": false,
+          "name": "view_date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "product_views",
+      "description": "Просмотры товаров пользователями"
+    },
+    {
+      "id": "product_add_to_cart",
+      "props": [
+        {
+          "id": "add_id",
+          "isKey": true,
+          "name": "add_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "user_id",
+          "isKey": false,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "product_id",
+          "isKey": false,
+          "name": "product_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "add_date",
+          "isKey": false,
+          "name": "add_date",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "product_add_to_cart",
+      "description": "Добавления товаров в корзину"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "product_views": {
+      "x": 0,
+      "y": 0
+    },
+    "product_add_to_cart": {
+      "x": 320,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Kaspi — просмотры и корзина"
+}

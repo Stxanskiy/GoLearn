@@ -1,0 +1,90 @@
+{
+  "_id": "4ed2b809d7446b9a0e200084",
+  "id": "4ed2b809d7446b9a0e200084",
+  "title": "TikTok",
+  "name": "QuestionCustomDatabase_84",
+  "tables": [
+    {
+      "id": "emails",
+      "props": [
+        {
+          "id": "user_id",
+          "isKey": true,
+          "name": "user_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "email_id",
+          "isKey": false,
+          "name": "email_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "signup_date",
+          "isKey": false,
+          "name": "signup_date",
+          "type": "DATETIME",
+          "description": null
+        }
+      ],
+      "title": "emails",
+      "description": "Содержит информацию о деталях регистрации пользователя"
+    },
+    {
+      "id": "texts",
+      "props": [
+        {
+          "id": "text_id",
+          "isKey": true,
+          "name": "text_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "email_id",
+          "isKey": false,
+          "name": "email_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "signup_action",
+          "isKey": false,
+          "name": "signup_action",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "texts",
+      "description": "Содержит информацию об активации пользователей"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "emails",
+        "field": "email_id"
+      },
+      "target": {
+        "table": "texts",
+        "field": "email_id"
+      },
+      "type": "one-to-many",
+      "id": "186646a0-837d-11ed-86a4-eb63bd778277"
+    }
+  ],
+  "tablePosition": {
+    "emails": {
+      "x": 0,
+      "y": 243
+    },
+    "texts": {
+      "x": 300,
+      "y": 243
+    }
+  },
+  "isHidden": true,
+  "description": "TikTok"
+}

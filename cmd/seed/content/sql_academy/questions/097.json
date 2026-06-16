@@ -1,0 +1,88 @@
+{
+  "_id": "4ed2b809d7446b9a0e000097",
+  "id": 97,
+  "fields": [
+    "city",
+    "warehouse_count"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "city",
+      "warehouse_count"
+    ],
+    "rows": [
+      {
+        "city": "Moscow",
+        "warehouse_count": 53
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "Samokat",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200097",
+    "id": "4ed2b809d7446b9a0e200097",
+    "title": "Samokat",
+    "name": "QuestionCustomDatabase_97",
+    "tables": [
+      {
+        "id": "Warehouses",
+        "props": [
+          {
+            "id": "warehouse_id",
+            "isKey": true,
+            "name": "warehouse_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "name",
+            "isKey": false,
+            "name": "name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "city",
+            "isKey": false,
+            "name": "city",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "date_open",
+            "isKey": false,
+            "name": "date_open",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "date_close",
+            "isKey": false,
+            "name": "date_close",
+            "type": "DATE",
+            "description": null
+          }
+        ],
+        "title": "Warehouses",
+        "description": "Справочник открытых складов"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Warehouses": {
+        "x": 0,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "Samokat"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Посчитать количество работающих складов на текущую дату по каждому городу. Вывести только те города, у которых количество складов более 80. Данные на выходе - город, количество складов.",
+  "title": "Работающие склады по городам",
+  "additional_info": []
+}

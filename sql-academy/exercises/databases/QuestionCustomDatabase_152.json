@@ -1,0 +1,52 @@
+{
+  "_id": "4ed2b809d7446b9a0e200313",
+  "id": "4ed2b809d7446b9a0e200313",
+  "title": "Точка Банк — платежи",
+  "name": "QuestionCustomDatabase_152",
+  "tables": [
+    {
+      "id": "payments",
+      "props": [
+        {
+          "id": "id",
+          "isKey": true,
+          "name": "id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "client_id",
+          "isKey": false,
+          "name": "client_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "pay_date",
+          "isKey": false,
+          "name": "pay_date",
+          "type": "TIMESTAMP",
+          "description": null
+        },
+        {
+          "id": "pay_sum",
+          "isKey": false,
+          "name": "pay_sum",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "payments",
+      "description": "Исходящие платежи клиентов"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "payments": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "Точка Банк — платежи"
+}

@@ -1,0 +1,127 @@
+{
+  "_id": "4ed2b809d7446b9a0e200321",
+  "id": "4ed2b809d7446b9a0e200321",
+  "title": "SAP",
+  "name": "QuestionCustomDatabase_153_154",
+  "tables": [
+    {
+      "id": "Consultants",
+      "props": [
+        {
+          "id": "consultant_id",
+          "isKey": true,
+          "name": "consultant_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "name",
+          "isKey": false,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Consultants",
+      "description": "Консультанты SAP"
+    },
+    {
+      "id": "Customers",
+      "props": [
+        {
+          "id": "customer_id",
+          "isKey": true,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "name",
+          "isKey": false,
+          "name": "name",
+          "type": "VARCHAR",
+          "description": null
+        }
+      ],
+      "title": "Customers",
+      "description": "Клиенты SAP"
+    },
+    {
+      "id": "EngagementRatings",
+      "props": [
+        {
+          "id": "consultant_id",
+          "isKey": true,
+          "name": "consultant_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "customer_id",
+          "isKey": true,
+          "name": "customer_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "rating",
+          "isKey": false,
+          "name": "rating",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "rated_at",
+          "isKey": true,
+          "name": "rated_at",
+          "type": "DATE",
+          "description": null
+        }
+      ],
+      "title": "EngagementRatings",
+      "description": "Оценки от клиентов по итогам консалтинговых внедрений (rating 1–5)"
+    }
+  ],
+  "relations": [
+    {
+      "source": {
+        "table": "Consultants",
+        "field": "consultant_id"
+      },
+      "target": {
+        "table": "EngagementRatings",
+        "field": "consultant_id"
+      },
+      "type": "one-to-many",
+      "id": "rel-sap-consultant-rating"
+    },
+    {
+      "source": {
+        "table": "Customers",
+        "field": "customer_id"
+      },
+      "target": {
+        "table": "EngagementRatings",
+        "field": "customer_id"
+      },
+      "type": "one-to-many",
+      "id": "rel-sap-customer-rating"
+    }
+  ],
+  "tablePosition": {
+    "Consultants": {
+      "x": 0,
+      "y": 0
+    },
+    "Customers": {
+      "x": 0,
+      "y": 200
+    },
+    "EngagementRatings": {
+      "x": 350,
+      "y": 100
+    }
+  },
+  "isHidden": true,
+  "description": "SAP"
+}

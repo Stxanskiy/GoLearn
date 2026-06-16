@@ -1,0 +1,59 @@
+{
+  "_id": "4ed2b809d7446b9a0e200412",
+  "id": "4ed2b809d7446b9a0e200412",
+  "title": "EPAM — проекты",
+  "name": "QuestionCustomDatabase_187",
+  "tables": [
+    {
+      "id": "projects",
+      "props": [
+        {
+          "id": "project_id",
+          "isKey": true,
+          "name": "project_id",
+          "type": "INT",
+          "description": null
+        },
+        {
+          "id": "client_name",
+          "isKey": false,
+          "name": "client_name",
+          "type": "VARCHAR",
+          "description": null
+        },
+        {
+          "id": "start_date",
+          "isKey": false,
+          "name": "start_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "finish_date",
+          "isKey": false,
+          "name": "finish_date",
+          "type": "DATE",
+          "description": null
+        },
+        {
+          "id": "price",
+          "isKey": false,
+          "name": "price",
+          "type": "INT",
+          "description": null
+        }
+      ],
+      "title": "projects",
+      "description": "Проекты: price — стоимость проекта"
+    }
+  ],
+  "relations": [],
+  "tablePosition": {
+    "projects": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "isHidden": true,
+  "description": "EPAM — проекты"
+}

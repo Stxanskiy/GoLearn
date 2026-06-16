@@ -1,0 +1,263 @@
+<!doctype html><meta charset="utf-8"><title>Создание и удаление таблиц</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content">
+<h1 id="sozdanie-i-udalenie-tablic" class="sc-bce5c646-1 fYolVj">Создание и удаление таблиц<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<h2 id="sozdanie-tablicy" class="sc-bce5c646-1 fYolVj">Создание таблицы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Перед созданием таблицы необходимо выбрать базу данных, в которую таблица будет записана. Это делается с помощью оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">USE</span>:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">USE</span> имя_базы_данных<span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>Для создания таблицы используется оператор <span class="sql-code sql-code-line sql-code-line--blue-color ">CREATE TABLE</span>. Его базовый синтаксис имеет следующий вид:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> <span class="token punctuation">[</span><span class="token keyword">IF</span> <span class="token operator">NOT</span> <span class="token keyword">EXISTS</span><span class="token punctuation">]</span> имя_таблицы <span class="token punctuation">(</span>
+     столбец_1 тип_данных<span class="token punctuation">,</span>
+    <span class="token punctuation">[</span>столбец_2 тип_данных<span class="token punctuation">,</span><span class="token punctuation">]</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token punctuation">[</span>столбец_n тип_данных<span class="token punctuation">,</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Например, создадим таблицу пользователей.</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-mysql-only"><p><span class="sql-code sql-code-line sql-code-line--blue-color ">INTEGER</span>, <span class="sql-code sql-code-line sql-code-line--blue-color ">VARCHAR(255)</span> - типы данных: числовой и строковый соответственно. Более подробно о них можно будет узнать в следующих статьях.</p></div>
+<div class="guide-postgresql-only"><p><span class="sql-code sql-code-line sql-code-line--blue-color ">INTEGER</span>, <span class="sql-code sql-code-line sql-code-line--blue-color ">VARCHAR(255)</span> - типы данных: числовой и строковый соответственно. Более подробно о них можно будет узнать в следующих статьях.</p></div>
+<h2 id="dopolnitelnye-parametry-opredeleniya-stolbcov" class="sc-bce5c646-1 fYolVj">Дополнительные параметры определения столбцов<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Вышеприведённое определение столбцов в таблице является упрощённым.
+Помимо названия столбца и его типа в определение иногда необходимо добавлять следующие необязательные параметры:</p>
+<ul>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">PRIMARY KEY</span></p>
+<p>Указывает колонку или множество колонок как первичный ключ.</p>
+</li>
+</ul>
+<div class="guide-mysql-only"><ul>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">AUTO_INCREMENT</span></p>
+<p>Указывает, что значение данной колонки будет автоматически увеличиваться при добавлении новых записей в таблицу. Каждая таблица имеет максимум одну <span class="sql-code sql-code-line sql-code-line--blue-color ">AUTO_INCREMENT</span> колонку.
+Стоит отметить, что данный параметр можно применять только к целочисленным типам и к типам с плавающей запятой.</p>
+</li>
+</ul></div>
+<div class="guide-postgresql-only"><ul>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">SERIAL</span> или <span class="sql-code sql-code-line sql-code-line--blue-color ">GENERATED ALWAYS AS IDENTITY</span></p>
+<p>Указывает, что значение данной колонки будет автоматически увеличиваться при добавлении новых записей в таблицу. <span class="sql-code sql-code-line sql-code-line--blue-color ">SERIAL</span> — это сокращение для создания автоинкрементного поля.</p>
+</li>
+</ul></div>
+<ul>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">UNIQUE</span></p>
+<p>Указывает, что значения в данной колонке для всех записей должны быть отличными друг от друга.</p>
+</li>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">NOT NULL</span></p>
+<p>Указывает, что значения в данной колонке должны быть отличными от <span class="sql-code sql-code-line sql-code-line--blue-color ">NULL</span>.</p>
+</li>
+<li>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">DEFAULT</span></p>
+<p>Указывает значение по умолчанию.</p>
+</li>
+</ul>
+<p>Для нашей таблицы пользователей можно указать следующие параметры:</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token keyword">AUTO_INCREMENT</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<p>Так, в данном примере:</p>
+<div class="guide-mysql-only"><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">id</span> - поле числового типа, являющееся первичным ключом с автоинкрементом;</li>
+</ul></div>
+<div class="guide-postgresql-only"><ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">id</span> - поле типа SERIAL (автоинкрементное целое число), являющееся первичным ключом;</li>
+</ul></div>
+<ul>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">name</span> - поле строкового типа с максимальной длиной в 255 символов, являющееся обязательным к заполнению;</li>
+<li><span class="sql-code sql-code-line sql-code-line--blue-color ">age</span> - поле числового типа со значением по умолчанию равным 18.</li>
+</ul>
+<h2 id="current_timestamp-kak-znachenie-po-umolchaniyu" class="sc-bce5c646-1 fYolVj">CURRENT_TIMESTAMP как значение по умолчанию<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">CURRENT_TIMESTAMP</span> удобно использовать, когда нужно автоматически записывать время создания строки. Например, его можно использовать вместе с типом <span class="sql-code sql-code-line sql-code-line--blue-color ">TIMESTAMP</span>.</p>
+<div class="guide-mysql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token keyword">AUTO_INCREMENT</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    created_at <span class="token keyword">TIMESTAMP</span> <span class="token keyword">DEFAULT</span> <span class="token keyword">CURRENT_TIMESTAMP</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<div class="guide-postgresql-only"><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    created_at <span class="token keyword">TIMESTAMP</span> <span class="token keyword">DEFAULT</span> <span class="token keyword">CURRENT_TIMESTAMP</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre></div>
+<h2 id="opisanie-tablicy" class="sc-bce5c646-1 fYolVj">Описание таблицы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<div class="guide-mysql-only"><p>Для того чтобы посмотреть описание созданной таблицы, можно воспользоваться оператором <span class="sql-code sql-code-line sql-code-line--blue-color ">DESCRIBE</span>.</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DESCRIBE</span> Users<span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:152px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">Field</th><th style="min-width:auto">Type</th><th style="min-width:auto">Null</th><th style="min-width:auto">Key</th><th style="min-width:auto">Default</th><th style="min-width:auto">Extra</th></tr></thead><tbody><tr class="highlight-row"><td>id</td><td>int</td><td>NO</td><td>PRI</td><td>NULL</td><td>auto_increment</td></tr><tr class="highlight-row"><td>name</td><td>varchar(255)</td><td>NO</td><td></td><td>NULL</td><td></td></tr><tr class="highlight-row"><td>age</td><td>int</td><td>NO</td><td></td><td>18</td><td></td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<div class="guide-postgresql-only"><p>Для того чтобы посмотреть описание созданной таблицы, можно воспользоваться SQL запросом к информационной схеме:</p><pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> column_name<span class="token punctuation">,</span> data_type<span class="token punctuation">,</span> is_nullable<span class="token punctuation">,</span> column_default
+<span class="token keyword">FROM</span> information_schema<span class="token punctuation">.</span><span class="token keyword">columns</span>
+<span class="token keyword">WHERE</span> table_schema <span class="token operator">=</span> current_schema<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">AND</span> table_name <span class="token operator">=</span> <span class="token string">&#x27;users&#x27;</span><span class="token punctuation">;</span>
+</code></pre></div></pre><div class="sc-34473f63-0 flVuQo scrollable-container-wrapper shadow query-table-scrollbars guide-query-table" style="position:relative;overflow:hidden;width:100%;height:152px"><div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;-webkit-overflow-scrolling:touch;margin-right:0;margin-bottom:0"><div class="result-table"><table><thead><tr><th style="min-width:auto">column_name</th><th style="min-width:auto">data_type</th><th style="min-width:auto">is_nullable</th><th style="min-width:auto">column_default</th></tr></thead><tbody><tr class="highlight-row"><td>id</td><td>integer</td><td>NO</td><td>nextval(&#x27;users_id_seq&#x27;::regclass)</td></tr><tr class="highlight-row"><td>name</td><td>character varying</td><td>NO</td><td>&lt;NULL&gt;</td></tr><tr class="highlight-row"><td>age</td><td>integer</td><td>NO</td><td>18</td></tr></tbody></table></div></div><div style="position:absolute;height:6px;display:none;right:2px;bottom:2px;left:2px;border-radius:3px"><div style="position:relative;display:block;height:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div><div style="position:absolute;width:6px;display:none;right:2px;bottom:2px;top:2px;border-radius:3px"><div style="position:relative;display:block;width:100%;cursor:pointer;border-radius:inherit;background-color:rgba(0,0,0,.2)"></div></div></div></div>
+<h2 id="dopolnitelnye-parametry-opredeleniya-tablicy" class="sc-bce5c646-1 fYolVj">Дополнительные параметры определения таблицы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Помимо описания столбцов, при создании таблицы можно дополнительно указать следующие параметры:</p>
+<div class="guide-mysql-only"><ul>
+<li>
+<p>Первичный ключ.</p>
+<p>Если вы не определили первичный ключ с помощью параметров столбца, то это можно сделать с помощью дополнительных параметров таблицы, добавив запись <span class="sql-code sql-code-line sql-code-line--blue-color ">PRIMARY KEY (&lt;столбец_1&gt;, &lt;столбец_n&gt;)</span> после перечисления столбцов:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+</li>
+</ul></div>
+<div class="guide-postgresql-only"><ul>
+<li>
+<p>Первичный ключ.</p>
+<p>Если вы не определили первичный ключ с помощью параметров столбца, то это можно сделать с помощью дополнительных параметров таблицы, добавив запись <span class="sql-code sql-code-line sql-code-line--blue-color ">PRIMARY KEY (&lt;столбец_1&gt;, &lt;столбец_n&gt;)</span> после перечисления столбцов:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+</li>
+</ul></div>
+<div class="guide-mysql-only"><ul>
+<li>
+<p>Внешние ключи.</p>
+<p>Предположим, что мы хотим хранить данные о компании, в которой работают наши пользователи. Давайте создадим небольшую таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>, в которой мы будем хранить уникальный идентификатор и название компании:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Companies <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Дальше нужно добавить в таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> поле <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> – место работы нашего пользователя, которое будет ссылаться на запись в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>. Полный запрос для создания таблицы будет выглядеть так:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Для того, чтобы при добавлении новых записей в таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> гарантировать, что в колонке <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> находится идентификатор, существующий в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>,
+используется внешний ключ. Он имеет следующий синтаксис:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span><span class="token operator">&lt;</span>столбец_1<span class="token operator">&gt;</span><span class="token punctuation">,</span> <span class="token operator">&lt;</span>столбец_n<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token keyword">REFERENCES</span> <span class="token operator">&lt;</span>внешняя_таблица<span class="token operator">&gt;</span> <span class="token punctuation">(</span><span class="token operator">&lt;</span>столбец_во_внешней_таблице_1<span class="token operator">&gt;</span><span class="token punctuation">,</span> <span class="token operator">&lt;</span>столбец_во_внешней_таблице_n<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token keyword">ON</span> <span class="token keyword">DELETE</span> действие<span class="token punctuation">]</span>
+<span class="token punctuation">[</span><span class="token keyword">ON</span> <span class="token keyword">UPDATE</span> действие<span class="token punctuation">]</span>
+</code></pre></div></pre>
+<p>Полный запрос для создания таблицы с внешним ключом будет таким:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>company<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Companies <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>При наличии внешних ключей можно определить поведение текущей записи, при изменении или удалении записи, на которую она ссылается.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>company<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Companies <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+    <span class="token keyword">ON</span> <span class="token keyword">DELETE</span> <span class="token keyword">RESTRICT</span> <span class="token keyword">ON</span> <span class="token keyword">UPDATE</span> <span class="token keyword">CASCADE</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE RESTRICT</span> означает, что если попробовать удалить компанию, у которой в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> есть данные, база данных не даст этого сделать:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">Cannot <span class="token keyword">delete</span> <span class="token operator">or</span> <span class="token keyword">update</span> a parent <span class="token keyword">row</span>: a <span class="token keyword">foreign</span> <span class="token keyword">key</span> <span class="token keyword">constraint</span> fails
+</code></pre></div></pre>
+<p>Если бы было указано <span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE CASCADE</span>, то при удалении компании были бы удалены все пользователи, ссылающиеся на эту компанию.</p>
+<p>Есть ещё одна опция — <span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE SET NULL</span>. При её использовании база данных запишет <span class="sql-code sql-code-line sql-code-line--blue-color ">NULL</span> в качестве значения поля <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> для всех пользователей, работавших в удалённой компании.</p>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">ON UPDATE CASCADE</span> означает, что если компания изменит свой идентификатор, то все пользователи (<span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span>) получат новый идентификатор в поле company.</p>
+</li>
+</ul></div>
+<div class="guide-postgresql-only"><ul>
+<li>
+<p>Внешние ключи.</p>
+<p>Предположим, что мы хотим хранить данные о компании, в которой работают наши пользователи. Давайте создадим небольшую таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>, в которой мы будем хранить уникальный идентификатор и название компании:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Companies <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Дальше нужно добавить в таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> поле <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> – место работы нашего пользователя, которое будет ссылаться на запись в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>. Полный запрос для создания таблицы будет выглядеть так:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>Для того, чтобы при добавлении новых записей в таблицу <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> гарантировать, что в колонке <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> находится идентификатор, существующий в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Companies</span>,
+используется внешний ключ. Он имеет следующий синтаксис:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span><span class="token operator">&lt;</span>столбец_1<span class="token operator">&gt;</span><span class="token punctuation">,</span> <span class="token operator">&lt;</span>столбец_n<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token keyword">REFERENCES</span> <span class="token operator">&lt;</span>внешняя_таблица<span class="token operator">&gt;</span> <span class="token punctuation">(</span><span class="token operator">&lt;</span>столбец_во_внешней_таблице_1<span class="token operator">&gt;</span><span class="token punctuation">,</span> <span class="token operator">&lt;</span>столбец_во_внешней_таблице_n<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token keyword">ON</span> <span class="token keyword">DELETE</span> действие<span class="token punctuation">]</span>
+<span class="token punctuation">[</span><span class="token keyword">ON</span> <span class="token keyword">UPDATE</span> действие<span class="token punctuation">]</span>
+</code></pre></div></pre>
+<p>Полный запрос для создания таблицы с внешним ключом будет таким:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>company<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Companies <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p>При наличии внешних ключей можно определить поведение текущей записи, при изменении или удалении записи, на которую она ссылается.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Users <span class="token punctuation">(</span>
+    id <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    name <span class="token keyword">VARCHAR</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    age <span class="token keyword">INTEGER</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">DEFAULT</span> <span class="token number">18</span><span class="token punctuation">,</span>
+    company <span class="token keyword">INTEGER</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>company<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Companies <span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+    <span class="token keyword">ON</span> <span class="token keyword">DELETE</span> <span class="token keyword">RESTRICT</span> <span class="token keyword">ON</span> <span class="token keyword">UPDATE</span> <span class="token keyword">CASCADE</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE RESTRICT</span> означает, что если попробовать удалить компанию, у которой в таблице <span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span> есть данные, база данных не даст этого сделать:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql">ERROR:  <span class="token keyword">update</span> <span class="token operator">or</span> <span class="token keyword">delete</span> <span class="token keyword">on</span> <span class="token keyword">table</span> <span class="token string">&quot;companies&quot;</span> violates <span class="token keyword">foreign</span> <span class="token keyword">key</span> <span class="token keyword">constraint</span> <span class="token string">&quot;users_company_fkey&quot;</span> <span class="token keyword">on</span> <span class="token keyword">table</span> <span class="token string">&quot;users&quot;</span>
+DETAIL:  <span class="token keyword">Key</span> <span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">is</span> still referenced <span class="token keyword">from</span> <span class="token keyword">table</span> <span class="token string">&quot;users&quot;</span><span class="token punctuation">.</span>
+</code></pre></div></pre>
+<p>Если бы было указано <span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE CASCADE</span>, то при удалении компании были бы удалены все пользователи, ссылающиеся на эту компанию.</p>
+<p>Есть ещё одна опция — <span class="sql-code sql-code-line sql-code-line--blue-color ">ON DELETE SET NULL</span>. При её использовании база данных запишет <span class="sql-code sql-code-line sql-code-line--blue-color ">NULL</span> в качестве значения поля <span class="sql-code sql-code-line sql-code-line--blue-color ">company</span> для всех пользователей, работавших в удалённой компании.</p>
+<p><span class="sql-code sql-code-line sql-code-line--blue-color ">ON UPDATE CASCADE</span> означает, что если компания изменит свой идентификатор, то все пользователи (<span class="sql-code sql-code-line sql-code-line--blue-color ">Users</span>) получат новый идентификатор в поле company.</p>
+</li>
+</ul></div>
+<h2 id="udalenie-tablicy" class="sc-bce5c646-1 fYolVj">Удаление таблицы<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Удаление таблицы производится при помощи оператора <span class="sql-code sql-code-line sql-code-line--blue-color ">DROP TABLE</span>.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">DROP</span> <span class="token keyword">TABLE</span> <span class="token punctuation">[</span><span class="token keyword">IF</span> <span class="token keyword">EXISTS</span><span class="token punctuation">]</span> имя_таблицы<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<h2 id="interaktivnoe-zadanie" class="sc-bce5c646-1 fYolVj">Интерактивное задание<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Теперь, когда вы изучили основы создания таблиц, попробуйте закрепить материал с помощью интерактивного задания:</p>
+<div><div class="sc-684318e8-15 bgYhJK"><h4>Интерактивное упражнение недоступно</h4><p>Для использования интерактивного упражнения необходим экран шириной не менее 768 пикселей. Попробуйте открыть эту страницу на компьютере или планшете.</p></div></div>

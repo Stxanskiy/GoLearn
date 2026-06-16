@@ -1,0 +1,89 @@
+{
+  "_id": "4ed2b809d7446b9a0e000140",
+  "id": 140,
+  "fields": [
+    "player_id",
+    "first_login"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "player_id",
+      "first_login"
+    ],
+    "rows": [
+      {
+        "player_id": 1,
+        "first_login": "2016-03-01"
+      },
+      {
+        "player_id": 2,
+        "first_login": "2017-01-15"
+      },
+      {
+        "player_id": 3,
+        "first_login": "2016-03-02"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Amazon",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200309",
+    "id": "4ed2b809d7446b9a0e200309",
+    "title": "Amazon",
+    "name": "QuestionCustomDatabase_140_141",
+    "tables": [
+      {
+        "id": "Activity",
+        "props": [
+          {
+            "id": "player_id",
+            "isKey": false,
+            "name": "player_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "device_id",
+            "isKey": false,
+            "name": "device_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "event_date",
+            "isKey": false,
+            "name": "event_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "games_played",
+            "isKey": false,
+            "name": "games_played",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "Activity",
+        "description": "Активность игроков"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Activity": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Amazon"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                        Дана таблица Activity с активностью игроков. Каждая строка — это запись об игроке, который вошёл в систему и сыграл несколько игр (возможно, 0) перед выходом в определённый день с определённого устройства.\n                        <br><br>\n                        Напишите запрос, чтобы найти дату первого входа (first_login) для каждого игрока (player_id).\n                    ",
+  "title": "Первый вход игрока",
+  "additional_info": []
+}

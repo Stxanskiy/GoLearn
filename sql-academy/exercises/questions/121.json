@@ -1,0 +1,129 @@
+{
+  "_id": "4ed2b809d7446b9a0e000121",
+  "id": 121,
+  "fields": [
+    "client_gender",
+    "second_loan_count"
+  ],
+  "difficulty": "hard",
+  "answerFormat": {
+    "fields": [
+      "client_gender",
+      "second_loan_count"
+    ],
+    "rows": [
+      {
+        "client_gender": "Male",
+        "second_loan_count": 10
+      },
+      {
+        "client_gender": "Female",
+        "second_loan_count": 15
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Sber",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200144",
+    "id": "4ed2b809d7446b9a0e200144",
+    "title": "Sber",
+    "name": "QuestionCustomDatabase_121",
+    "tables": [
+      {
+        "id": "Clients",
+        "props": [
+          {
+            "id": "client_id",
+            "isKey": true,
+            "name": "client_id",
+            "type": "BIGINT",
+            "description": null
+          },
+          {
+            "id": "client_name",
+            "isKey": false,
+            "name": "client_name",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "client_gender",
+            "isKey": false,
+            "name": "client_gender",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Clients",
+        "description": "Клиенты"
+      },
+      {
+        "id": "Loans",
+        "props": [
+          {
+            "id": "loan_id",
+            "isKey": true,
+            "name": "loan_id",
+            "type": "BIGINT",
+            "description": null
+          },
+          {
+            "id": "client_id",
+            "isKey": false,
+            "name": "client_id",
+            "type": "BIGINT",
+            "description": null
+          },
+          {
+            "id": "loan_date",
+            "isKey": false,
+            "name": "loan_date",
+            "type": "DATE",
+            "description": null
+          },
+          {
+            "id": "loan_amount",
+            "isKey": false,
+            "name": "loan_amount",
+            "type": "DOUBLE",
+            "description": null
+          }
+        ],
+        "title": "Loans",
+        "description": "Кредиты"
+      }
+    ],
+    "relations": [
+      {
+        "source": {
+          "table": "Clients",
+          "field": "client_id"
+        },
+        "target": {
+          "table": "Loans",
+          "field": "client_id"
+        },
+        "type": "one-to-many"
+      }
+    ],
+    "tablePosition": {
+      "Clients": {
+        "x": 0,
+        "y": 0
+      },
+      "Loans": {
+        "x": 300,
+        "y": 0
+      }
+    },
+    "isHidden": true,
+    "description": "Sber"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "\n                  Каждый клиент может обращаться в компанию несколько раз, соответственно в базе может храниться информация по нескольким договорам на одного клиента.\n                  <br />\n                  Договор, оформленный клиентом у нас впервые, будем называть первым договором; договор, оформленный после – вторым.\n                  <br />\n                  Необходимо написать SQL запрос, который найдет количество вторых договоров, оформленных мужчинами и женщинами.\n                  <br />\n                  \n                  Результат должен содержать:\n                  <ul>\n                    <li>пол клиента (client_gender),</li>\n                    <li>количество вторых договоров (second_loan_count).</li>\n                  </ul>\n              ",
+  "title": "Количество вторых договоров",
+  "additional_info": []
+}

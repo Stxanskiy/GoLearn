@@ -1,0 +1,85 @@
+{
+  "_id": "4ed2b809d7446b9a0e000089",
+  "id": 89,
+  "fields": [
+    "id_client",
+    "total_spent_last_30_days"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "id_client",
+      "total_spent_last_30_days"
+    ],
+    "rows": [
+      {
+        "id_client": 111,
+        "total_spent_last_30_days": "1799"
+      },
+      {
+        "id_client": 112,
+        "total_spent_last_30_days": "2900"
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "MTC",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200089",
+    "id": "4ed2b809d7446b9a0e200089",
+    "title": "MTC",
+    "name": "QuestionCustomDatabase_89",
+    "tables": [
+      {
+        "id": "transact",
+        "props": [
+          {
+            "id": "id_tran",
+            "isKey": true,
+            "name": "id_tran",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "id_client",
+            "isKey": false,
+            "name": "id_client",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "tran_time",
+            "isKey": false,
+            "name": "tran_time",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "sum_tran",
+            "isKey": false,
+            "name": "sum_tran",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "transact",
+        "description": "Транзакции"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "transact": {
+        "x": 0,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "MTC"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Есть таблица transact с транзакциями клиентов. Посчитать траты каждого клиента за последние 30 дней от текущего числа (период, который начинается 30 дней назад от текущей даты и заканчивается текущей датой включительно).",
+  "title": "Траты за последние 30 дней",
+  "additional_info": []
+}

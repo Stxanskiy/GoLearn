@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>Реляционные базы данных</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="relyacionnye-bazy-dannyh" class="sc-bce5c646-1 fYolVj">Реляционные базы данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<blockquote>
+<p>Реляционными называются базы данных, в основе построения которых лежит реляционная модель.
+В такой базе данные структурированы в виде таблиц, которые содержат строки и столбцы.</p>
+</blockquote>
+<p>Данные в реляционных структурах организованы в виде набора таблиц, называемых отношениями, состоящих из столбцов и строк.
+Каждая строка таблицы представляет собой набор связанных значений, относящихся к одному объекту или сущности.
+Каждая строка в таблице может быть помечена уникальным идентификатором, называемым первичным ключом, а строки из нескольких таблиц могут быть связаны с помощью внешних ключей.</p>
+<h2 id="primer-relyacionnoj-bazy-dannyh" class="sc-bce5c646-1 fYolVj">Пример реляционной базы данных<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Пример реляционной базы данных" alt="Пример реляционной базы данных" loading="lazy" width="1406" height="1103" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Fru_relation_dbms.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Fru_relation_dbms.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Fru_relation_dbms.png&amp;w=3840&amp;q=50"/></p>
+<h2 id="osobennosti-relyacionnyh-bd" class="sc-bce5c646-1 fYolVj">Особенности реляционных БД<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<ul>
+<li>Модель данных в реляционных БД определена заранее и является строго типизированной</li>
+<li>Данные хранятся в таблицах, состоящих из столбцов и строк</li>
+<li>На пересечении каждого столбца и строчки допускается только одно значение</li>
+<li>Каждый столбец проименован и имеет определённый тип, которому следуют значения со всех строк в данном столбце</li>
+<li>Столбцы располагаются в определённом порядке, который определяется при создании таблицы</li>
+<li>В таблице может не быть ни одной строчки, но обязательно должен быть хотя бы один столбец</li>
+<li>Запросы к базе данных возвращают результат в виде таблиц</li>
+</ul>
+<p>Более детальные особенности и принципы работы реляционных баз данных мы ещё рассмотрим в дальнейшем, так как именно они представляют
+наш особый интерес при изучении SQL.</p>
+<h2 id="rejting-relyacionnyh-bd-po-populyarnosti" class="sc-bce5c646-1 fYolVj">Рейтинг реляционных БД по популярности<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p><img title="Рейтинг реляционных БД" alt="Рейтинг реляционных БД" loading="lazy" width="1357" height="683" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Frelation_dbms_rating.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Frelation_dbms_rating.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Frelation-databases%2Frelation_dbms_rating.png&amp;w=3840&amp;q=50"/></p>

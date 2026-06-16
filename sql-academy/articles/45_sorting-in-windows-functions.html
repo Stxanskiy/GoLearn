@@ -1,0 +1,81 @@
+<!doctype html><meta charset="utf-8"><title>Сортировка внутри окна</title><style>body{font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;color:#1a1a1a;max-width:840px;margin:0 auto;padding:36px 22px}
+h1{border-bottom:2px solid #2a7;padding-bottom:6px}h2{margin-top:28px}
+img{max-width:100%;border-radius:8px}table{border-collapse:collapse;margin:14px 0}th,td{border:1px solid #ccc;padding:6px 10px}
+pre{background:#f4f5f7;padding:12px;border-radius:8px;overflow:auto}code{background:#eef0f3;padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+.toc{background:#f7f8fa;border:1px solid #e3e6ea;border-radius:10px;padding:14px 20px;margin:18px 0}.toc a{color:#1769aa;text-decoration:none}
+.article{border-top:1px dashed #ccc;margin-top:40px;padding-top:6px}
+@media print{.article{page-break-before:always}.article:first-of-type{page-break-before:avoid}}</style>
+<div class="content-box article-content"><h1 id="sortirovka-vnutri-okna" class="sc-bce5c646-1 fYolVj">Сортировка внутри окна<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h1>
+<p>В предыдущих статьях мы рассмотрели оконные функции и партиционирование в SQL.
+Теперь давайте перейдём к ещё одной важной особенности оконных функций — сортировке внутри окна.</p>
+<h2 id="zachem-nuzhna-sortirovka-v-okne" class="sc-bce5c646-1 fYolVj">Зачем нужна сортировка в окне?<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<p>Сортировка в оконных функциях SQL — ключ к расширенному анализу данных.
+Она позволяет упорядочивать данные внутри определённой группы или окна,
+обеспечивая более точные и нацеленные агрегатные вычисления.
+Это особенно полезно при работе с временными рядами, где важен порядок событий, или при ранжировании данных внутри групп.</p>
+<h2 id="primer-ispolzovaniya" class="sc-bce5c646-1 fYolVj">Пример использования<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h2>
+<h3 id="postanovka-zadachi" class="sc-bce5c646-1 fYolVj">Постановка задачи<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Предположим, нам нужно проанализировать данные о бронированиях жилых помещений,
+чтобы выяснить, как менялась общая сумма затраченных средств на аренду для каждого пользователя со временем.</p>
+<p>Изначально мы имеем следующую выборку о бронированиях:</p>
+<p><img title="Использование оконной функции без сортировки" alt="Использование оконной функции без сортировки" loading="lazy" width="1222" height="614" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Finitial-data.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Finitial-data.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Finitial-data.png&amp;w=3840&amp;q=50"/></p>
+<p>А как результат мы хотим увидеть изменение затраченных средств по каждому пользователю со временем, то есть
+таблицу следующего вида:</p>
+<p><img title="Использование оконной функции с сортировкой" alt="Использование оконной функции с сортировкой" loading="lazy" width="1209" height="525" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=3840&amp;q=50"/></p>
+<h4 id="razdelenie-dannyh-na-particii" class="sc-bce5c646-1 fYolVj">Разделение данных на партиции<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h4>
+<p>Чтобы получить необходимый результат, в первую очередь, мы должны разбить данные на партиции по каждому
+пользователю, чтоб оконная функция работала для каждого пользователя независимо.
+Для получения же суммы мы можем использовать оконную функцию <span class="sql-code sql-code-line sql-code-line--blue-color ">SUM</span>.</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> user_id<span class="token punctuation">,</span>
+       start_date<span class="token punctuation">,</span>
+       total <span class="token keyword">AS</span> reservation_price<span class="token punctuation">,</span>
+       <span class="token function">SUM</span><span class="token punctuation">(</span>total<span class="token punctuation">)</span> <span class="token keyword">OVER</span> <span class="token punctuation">(</span>
+            <span class="token keyword">PARTITION</span> <span class="token keyword">BY</span> user_id
+       <span class="token punctuation">)</span> <span class="token keyword">AS</span> total_expenses
+<span class="token keyword">FROM</span> Reservations<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p><img title="Промежуточный результат" alt="Промежуточный результат" loading="lazy" width="1209" height="524" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fresult-1.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fresult-1.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fresult-1.png&amp;w=3840&amp;q=50"/></p>
+<p>В результате выполненного запроса в колонке <span class="sql-code sql-code-line sql-code-line--blue-color ">total_expenses</span> вывелась общая сумма затраченных средств с
+разбивкой по пользователям. Но это не совсем то, что мы хотим: данные в таблице не упорядочены по дате, и
+мы не видим, как общие расходы росли со временем, мы видим только финальные расходы.</p>
+<p>Чтобы получить желаемый результат, нам как раз понадобится добавить в запрос сортировку по дате начала бронирования:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> user_id<span class="token punctuation">,</span>
+       start_date<span class="token punctuation">,</span>
+       total <span class="token keyword">AS</span> reservation_price<span class="token punctuation">,</span>
+       <span class="token function">SUM</span><span class="token punctuation">(</span>total<span class="token punctuation">)</span> <span class="token keyword">OVER</span> <span class="token punctuation">(</span>
+           <span class="token keyword">PARTITION</span> <span class="token keyword">BY</span> user_id
+           <span class="token keyword">ORDER</span> <span class="token keyword">BY</span> start_date
+       <span class="token punctuation">)</span> <span class="token keyword">AS</span> cumulative_total
+<span class="token keyword">FROM</span> Reservations<span class="token punctuation">;</span>
+</code></pre></div></pre>
+<p><img title="Финальные данные" alt="Финальные данные" loading="lazy" width="1209" height="525" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Ffinal-result.png&amp;w=3840&amp;q=50"/></p>
+<p>Теперь мы получили то, что и хотели. Но что изменилось после добавления <span class="sql-code sql-code-line sql-code-line--blue-color ">ORDER BY start_date</span>?</p>
+<ol>
+<li>Данные в рамках партиции стали отсортированы по дате начала бронирования</li>
+<li>Изменился способ подсчёта общей суммы затраченных средств: теперь сумма в рамках партиции накапливается,
+а не выводится как финальная. Это связано с одной особенностью использования сортировки без явного указания <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS|RANGE</span>
+в выражении <span class="sql-code sql-code-line sql-code-line--blue-color ">OVER</span>. На этом остановимся поподробнее.</li>
+</ol>
+<h3 id="osobennosti-ispolzovaniya-sortirovki-bez-ukazaniya-ramok-okna" class="sc-bce5c646-1 fYolVj">Особенности использования сортировки без указания рамок окна<span class="sc-bce5c646-4 bBkiIq"><div class="sc-bce5c646-3 jZiKCY"></div></span></h3>
+<p>Как мы помним, полный синтаксис оконной функции выглядит следующим образом:</p>
+<pre><div class="sql-code-block-wrapper"><div class="sc-7a02fa62-0 cafpXG not-printable"><div class="sc-7a02fa62-1 irjWvu">MySQL 8.1</div><div class="sc-7a02fa62-2 kAziIf"></div></div><pre class="sql-code sql-code-block prism language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token operator">&lt;</span>оконная_функция<span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="token operator">&lt;</span>поле_таблицы<span class="token operator">&gt;</span><span class="token punctuation">)</span>
+<span class="token keyword">OVER</span> <span class="token punctuation">(</span>
+      <span class="token punctuation">[</span><span class="token keyword">PARTITION</span> <span class="token keyword">BY</span> <span class="token operator">&lt;</span>столбцы_для_разделения<span class="token operator">&gt;</span><span class="token punctuation">]</span>
+      <span class="token punctuation">[</span><span class="token keyword">ORDER</span> <span class="token keyword">BY</span> <span class="token operator">&lt;</span>столбцы_для_сортировки<span class="token operator">&gt;</span><span class="token punctuation">]</span>
+      <span class="token punctuation">[</span><span class="token keyword">ROWS</span><span class="token operator">|</span>RANGE <span class="token operator">&lt;</span>определение_диапазона_строк<span class="token operator">&gt;</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span>
+</code></pre></div></pre>
+<p>Помимо блока с <span class="sql-code sql-code-line sql-code-line--blue-color ">PARTITION BY</span> и <span class="sql-code sql-code-line sql-code-line--blue-color ">ORDER BY</span> в нем присутствует опциональный блок <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS|RANGE</span>, на нем
+мы остановимся детально в следующей статье, но сейчас важнее, то для чего он нужен. Он позволяет указать рамки окна относительно текущей строки,
+которые будут использоваться для вычисления в оконной функции.</p>
+<p>Так, можно указать, чтобы при подсчёте значений
+для текущей строки в оконную функцию отправились не все записи в рамках текущей партиции,
+а только <span class="sql-code sql-code-line sql-code-line--blue-color ">N</span> записей до текущей строки и <span class="sql-code sql-code-line sql-code-line--blue-color ">N</span> после.</p>
+<p>При использовании <span class="sql-code sql-code-line sql-code-line--blue-color ">ORDER BY</span>, если в блоке <span class="sql-code sql-code-line sql-code-line--blue-color ">ROWS|RANGE</span> ничего не указано, то в оконной функции
+автоматически применяется правило <span class="sql-code sql-code-line sql-code-line--blue-color ">RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</span>.
+Это означает, что окно будет начинаться с первой строки и
+заканчиваться текущей строкой.</p>
+<p>То есть значения для колонки <span class="sql-code sql-code-line sql-code-line--blue-color ">cumulative_total</span> будут высчитываться следующим образом:</p>
+<p><img title="Объяснение как сработала сортировка" alt="Объяснение как сработала сортировка" loading="lazy" width="1776" height="523" decoding="async" data-nimg="1" class="guide-img" style="color:transparent" srcSet="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fexplanation.png&amp;w=1920&amp;q=50 1x, /_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fexplanation.png&amp;w=3840&amp;q=50 2x" src="/_next/image?url=%2Fstatic%2FguidePage%2Fsorting-in-windows-functions%2Fexplanation.png&amp;w=3840&amp;q=50"/></p>
+<p>Подробнее об рамках окон и их определении в следующей статье.</p>

@@ -1,0 +1,85 @@
+{
+  "_id": "4ed2b809d7446b9a0e000101",
+  "id": 101,
+  "fields": [
+    "user_id",
+    "item"
+  ],
+  "difficulty": "medium",
+  "answerFormat": {
+    "fields": [
+      "user_id",
+      "item"
+    ],
+    "rows": [
+      {
+        "user_id": 13811335,
+        "item": "cup"
+      },
+      {
+        "user_id": 3378204101,
+        "item": "tie"
+      }
+    ]
+  },
+  "premiumOnly": false,
+  "companyName": "VK",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200101",
+    "id": "4ed2b809d7446b9a0e200101",
+    "title": "VK",
+    "name": "QuestionCustomDatabase_101_102",
+    "tables": [
+      {
+        "id": "Transactions",
+        "props": [
+          {
+            "id": "transaction_ts",
+            "isKey": false,
+            "name": "transaction_ts",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "user_id",
+            "isKey": false,
+            "name": "user_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "transaction_id",
+            "isKey": true,
+            "name": "transaction_id",
+            "type": "INT",
+            "description": null
+          },
+          {
+            "id": "item",
+            "isKey": false,
+            "name": "item",
+            "type": "VARCHAR",
+            "description": null
+          }
+        ],
+        "title": "Transactions",
+        "description": "Список транзакций по заказам"
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "Transactions": {
+        "x": 0,
+        "y": 250
+      }
+    },
+    "isHidden": true,
+    "description": "VK"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Выведи для каждого пользователя первое наименование, которое он заказал (первое по времени транзакции).",
+  "title": "Первый заказ пользователя",
+  "additional_info": []
+}

@@ -1,0 +1,82 @@
+{
+  "_id": "4ed2b809d7446b9a0e000086",
+  "id": 86,
+  "fields": [
+    "part",
+    "assembly_step"
+  ],
+  "difficulty": "easy",
+  "answerFormat": {
+    "fields": [
+      "part",
+      "assembly_step"
+    ],
+    "rows": [
+      {
+        "part": "bumper",
+        "assembly_step": 3
+      },
+      {
+        "part": "bumper",
+        "assembly_step": 4
+      },
+      {
+        "part": "engine",
+        "assembly_step": 5
+      }
+    ]
+  },
+  "premiumOnly": true,
+  "companyName": "Tesla",
+  "database": {
+    "_id": "4ed2b809d7446b9a0e200086",
+    "id": "4ed2b809d7446b9a0e200086",
+    "title": "Tesla",
+    "name": "QuestionCustomDatabase_86",
+    "tables": [
+      {
+        "id": "parts_assembly",
+        "props": [
+          {
+            "id": "part",
+            "isKey": false,
+            "name": "part",
+            "type": "VARCHAR",
+            "description": null
+          },
+          {
+            "id": "finish_date",
+            "isKey": false,
+            "name": "finish_date",
+            "type": "DATETIME",
+            "description": null
+          },
+          {
+            "id": "assembly_step",
+            "isKey": false,
+            "name": "assembly_step",
+            "type": "INT",
+            "description": null
+          }
+        ],
+        "title": "parts_assembly",
+        "description": "Таблица содержит детали, находящиеся в настоящее время в производстве, каждая из которых находится на разных стадиях процесса сборки."
+      }
+    ],
+    "relations": [],
+    "tablePosition": {
+      "parts_assembly": {
+        "x": 0,
+        "y": 243
+      }
+    },
+    "isHidden": true,
+    "description": "Tesla"
+  },
+  "isSolved": false,
+  "isRevealed": false,
+  "isSolvedWithRevealing": false,
+  "question": "Tesla расследует узкие места производства, и им нужна ваша помощь для извлечения соответствующих данных. Напишите запрос, чтобы определить, над какими деталями уже начали процесс сборки, но еще не завершили. <br /> <br /> \n                    Уточнения:\n                        <ul>\n                            <li>Таблица «parts_assembly» содержит все детали, находящиеся в настоящее время в производстве, каждая из которых находится на разных стадиях процесса сборки.</li>\n                            <li>Незавершенной деталью считается деталь, у которой нет даты окончания («finish_date»).</li>\n                        </ul>\n                    ",
+  "title": "Незавёршенные детали",
+  "additional_info": []
+}
