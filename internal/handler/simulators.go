@@ -41,7 +41,86 @@ type Scenario struct {
 }
 
 func scenarios() []Scenario {
-	return []Scenario{juniorDevopsScenario()}
+	return []Scenario{juniorDevopsScenario(), middleDevopsScenario(), sreScenario()}
+}
+
+func baseMetrics(budget, sat, vel, debt int) []SimMetric {
+	return []SimMetric{
+		{Key: "budget", Label: "Бюджет", Unit: "k₽", Start: budget, Higher: true},
+		{Key: "satisfaction", Label: "Удовлетворённость", Unit: "%", Start: sat, Higher: true},
+		{Key: "velocity", Label: "Скорость", Unit: "SP", Start: vel, Higher: true},
+		{Key: "techdebt", Label: "Техдолг", Unit: "%", Start: debt, Higher: false},
+	}
+}
+
+func middleDevopsScenario() Scenario {
+	return Scenario{
+		Slug: "middle-devops", Title: "Middle DevOps: Второй год", Role: "Middle DevOps-инженер", Icon: "📈",
+		Intro: "Ты Middle DevOps в финтех-компании «ФинТехПро»: 50 000 пользователей, платёжная система, строгое SLA и регулятор ЦБ. За год нужно выстроить наблюдаемость, SLO, on-call и зрелые релизы. Нарушение SLA грозит штрафами.",
+		Metrics: baseMetrics(4000, 48, 35, 68),
+		Turns: []SimTurn{
+			{Title: "Наблюдаемость с нуля", Situation: "Есть метрики CPU, но нет понимания пользовательского опыта. Инциденты ловите постфактум.", Choices: []SimChoice{
+				{Text: "Внедрить трассировку + RED-метрики (latency/errors/rate) и дашборды", Effects: map[string]int{"budget": -200, "techdebt": -15, "satisfaction": 8}, Result: "Видишь систему глазами пользователя. Инциденты находятся за минуты."},
+				{Text: "Добавить ещё инфраструктурных метрик в Zabbix", Effects: map[string]int{"budget": -60, "techdebt": -3}, Result: "Графиков больше, но пользовательский опыт по-прежнему вслепую."},
+				{Text: "Отложить — сначала фичи", Effects: map[string]int{"satisfaction": -10, "techdebt": 8}, Result: "Очередной инцидент заметил регулятор. Неприятный разговор."},
+			}},
+			{Title: "SLO и error budget", Situation: "Бизнес требует 100% аптайма, разработка хочет катить быстрее. Конфликт.", Choices: []SimChoice{
+				{Text: "Договориться об SLO 99.9% и error budget, привязать к скорости релизов", Effects: map[string]int{"satisfaction": 10, "techdebt": -10, "velocity": 4}, Result: "Error budget стал общим языком: есть бюджет — катим, кончился — стабилизируем."},
+				{Text: "Пообещать 100% аптайма", Effects: map[string]int{"satisfaction": -8, "techdebt": 6}, Result: "Нереалистичное обещание — любой сбой теперь «провал»."},
+				{Text: "Не формализовать, решать по ситуации", Effects: map[string]int{"satisfaction": -4}, Result: "Споры про релизы повторяются каждую неделю."},
+			}},
+			{Title: "On-call процесс", Situation: "Ночью всё чинит один человек по памяти. Выгорание близко.", Choices: []SimChoice{
+				{Text: "Ввести ротацию on-call + runbook'и + алерты с приоритетами", Effects: map[string]int{"budget": -80, "satisfaction": 9, "techdebt": -8}, Result: "Дежурства честные, есть инструкции. MTTR падает, люди не выгорают."},
+				{Text: "Просто завести чат для алертов", Effects: map[string]int{"satisfaction": -3, "techdebt": 4}, Result: "Алерты тонут в шуме, реагирует всё тот же один человек."},
+				{Text: "Оставить как есть", Effects: map[string]int{"satisfaction": -12}, Result: "Ключевой инженер уволился. Знания ушли с ним."},
+			}},
+			{Title: "Инфраструктура руками", Situation: "Серверы настроены вручную, воспроизвести окружение тяжело.", Choices: []SimChoice{
+				{Text: "Перевести инфраструктуру в Terraform (IaC) + ревью изменений", Effects: map[string]int{"budget": -150, "techdebt": -18, "velocity": 3}, Result: "Инфраструктура в git, изменения через PR. Прозрачно и воспроизводимо."},
+				{Text: "Написать bash-скрипты для частых операций", Effects: map[string]int{"techdebt": -5}, Result: "Лучше, но дрейф конфигураций остаётся."},
+				{Text: "Не трогать — работает же", Effects: map[string]int{"techdebt": 10, "satisfaction": -5}, Result: "Снежинка-сервер упал, восстановление заняло полдня."},
+			}},
+			{Title: "Релиз платёжной фичи", Situation: "Большое изменение в платежах. Регулятор не прощает простоев.", Choices: []SimChoice{
+				{Text: "Blue-green деплой с мгновенным откатом", Effects: map[string]int{"budget": -100, "satisfaction": 10, "techdebt": -4}, Result: "Переключение без даунтайма, проблему откатил мгновенно. SLA соблюдён."},
+				{Text: "Catch ночью в окно обслуживания", Effects: map[string]int{"satisfaction": -4, "velocity": -3}, Result: "Сработало, но ночные релизы изматывают команду."},
+				{Text: "Прямой деплой в часы нагрузки", Effects: map[string]int{"satisfaction": -15, "techdebt": 8}, Result: "Просадка платежей в пик. Штраф от регулятора."},
+			}},
+		},
+	}
+}
+
+func sreScenario() Scenario {
+	return Scenario{
+		Slug: "senior-sre", Title: "Senior SRE: платформа", Role: "Senior SRE / Platform Lead", Icon: "🛡️",
+		Intro: "Ты Senior SRE в топ-маркетплейсе «МаркетПульс»: 3 млн пользователей, 150 микросервисов, 200+ инженеров. Задача — подготовить платформу к «Чёрной пятнице» (в прошлом году 4 часа даунтайма и потери 180 млн) и построить Internal Developer Platform: GitOps, DevSecOps, Golden Path.",
+		Metrics: baseMetrics(5000, 50, 32, 70),
+		Turns: []SimTurn{
+			{Title: "Готовность к Чёрной пятнице", Situation: "Прошлый год — 4 часа даунтайма в пик. До распродажи 2 месяца.", Choices: []SimChoice{
+				{Text: "Нагрузочное тестирование + capacity planning + автоскейлинг", Effects: map[string]int{"budget": -300, "techdebt": -12, "satisfaction": 10}, Result: "Нашли узкие места заранее, настроили HPA. Чёрная пятница прошла без падений."},
+				{Text: "Просто добавить серверов «с запасом»", Effects: map[string]int{"budget": -500, "satisfaction": 2}, Result: "Дорого и неэффективно — часть сервисов всё равно деградировала."},
+				{Text: "Понадеяться, что в этот раз пронесёт", Effects: map[string]int{"satisfaction": -15, "techdebt": 10}, Result: "Снова даунтайм в пик. Репутационные и денежные потери."},
+			}},
+			{Title: "Деплой 150 микросервисов", Situation: "Команды катят кто во что горазд, состояние кластера непредсказуемо.", Choices: []SimChoice{
+				{Text: "GitOps: ArgoCD, желаемое состояние в git, авто-синк", Effects: map[string]int{"budget": -150, "techdebt": -18, "velocity": 5}, Result: "Кластер = git. Откаты тривиальны, дрейфа нет, аудит из коробки."},
+				{Text: "Стандартизировать helm-чарты, катить вручную", Effects: map[string]int{"techdebt": -6}, Result: "Единообразнее, но релизы всё ещё ручные и разнородные."},
+				{Text: "Не вмешиваться в процессы команд", Effects: map[string]int{"techdebt": 12, "satisfaction": -6}, Result: "Очередной сервис уронил соседей из-за кривого деплоя."},
+			}},
+			{Title: "Безопасность цепочки поставок", Situation: "Секреты в образах, уязвимые зависимости, нет сканирования.", Choices: []SimChoice{
+				{Text: "DevSecOps: SAST/контейнер-скан в CI + секреты в Vault", Effects: map[string]int{"budget": -180, "techdebt": -14, "satisfaction": 7}, Result: "Уязвимости ловятся до прода, секреты под контролем. Security-incidents падают."},
+				{Text: "Раз в квартал ручной аудит безопасности", Effects: map[string]int{"budget": -80, "techdebt": -4}, Result: "Точечно помогает, но между аудитами дыры копятся."},
+				{Text: "Отложить до после распродажи", Effects: map[string]int{"satisfaction": -6, "techdebt": 8}, Result: "Утечка ключа в публичный образ — экстренный разбор."},
+			}},
+			{Title: "Платформа для команд (IDP)", Situation: "Каждая команда заново изобретает CI, деплой и мониторинг.", Choices: []SimChoice{
+				{Text: "Построить Golden Path + self-service Internal Developer Platform", Effects: map[string]int{"budget": -250, "techdebt": -16, "velocity": 8}, Result: "Команды поднимают сервис по шаблону за час. Скорость и единообразие выросли."},
+				{Text: "Написать подробную документацию", Effects: map[string]int{"techdebt": -4, "velocity": 1}, Result: "Док читают редко, велосипеды продолжаются."},
+				{Text: "Пусть каждая команда сама", Effects: map[string]int{"techdebt": 10, "velocity": -3}, Result: "Зоопарк инструментов растёт, поддержка дорожает."},
+			}},
+			{Title: "Политики инфраструктуры", Situation: "В прод иногда попадают манифесты без лимитов и с привилегиями.", Choices: []SimChoice{
+				{Text: "IaC policy as code (OPA/Gatekeeper) в пайплайне", Effects: map[string]int{"budget": -120, "techdebt": -12, "satisfaction": 6}, Result: "Небезопасные манифесты отклоняются автоматически. Прод стал предсказуемым."},
+				{Text: "Code review без автоматических проверок", Effects: map[string]int{"techdebt": -3}, Result: "Человеческий фактор пропускает часть нарушений."},
+				{Text: "Доверять командам", Effects: map[string]int{"techdebt": 9, "satisfaction": -4}, Result: "Под без лимитов съел ноду — каскадная деградация."},
+			}},
+		},
+	}
 }
 
 func findScenario(slug string) *Scenario {
