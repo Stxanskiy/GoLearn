@@ -1,0 +1,106 @@
+{
+  "n": 24,
+  "id": "ch_k8si_lab6",
+  "title": "Лабораторная 6: Requests и Limits для Pod и Deployment",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Создай временный Pod с заведомо слишком большими <code>requests.memory</code> и <code>limits.memory</code>, посмотри, как Kubernetes реагирует на такие значения, затем удали Pod, если он всё-таки был создан.</p>\n<pre><code>cat &gt; /root/too-large-pod.yaml &lt;&lt;'EOF'\napiVersion: v1\nkind: Pod\nmetadata:\n  name: too-large-pod\nspec:\n  containers:\n    - name: app\n      image: nginx:alpine\n      resources:\n        requests:\n          cpu: \"1\"\n          memory: \"100Ti\"\n        limits:\n          cpu: \"1\"\n          memory: \"100Ti\"\nEOF</code></pre>\n<pre><code>kubectl apply -f /root/too-large-pod.yaml</code></pre>\n<pre><code>kubectl get pod too-large-pod</code></pre>\n<pre><code>kubectl describe pod too-large-pod</code></pre>\n<pre><code>kubectl delete pod too-large-pod --ignore-not-found</code></pre>\n<p>Если в namespace настроен <code>LimitRange</code>, <code>kubectl apply</code> может сразу вернуть ошибку <code>Forbidden</code>: например, что максимальный <code>limits.memory</code> для контейнера равен <code>512Mi</code>, а в манифесте указано <code>100Ti</code>. В этом случае Pod даже не создаётся и scheduler до него не доходит.</p>\n<p>В другом кластере, где такой верхней границы нет, Pod может создаться, но остаться <code>Pending</code>: тогда scheduler смотрит на <code>requests.memory</code> и не находит node, где можно зарезервировать столько памяти.</p>\n<p>Полезно запомнить разницу: <code>LimitRange</code> и quota могут отклонить объект при создании, а scheduler работает уже с созданным Pod и решает, на какую node его поставить.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L27\",null,{}],[\"$\",\"$L28\",null,{\"initialData\":{\"id\":\"ch_k8si_lab6\",\"title\":\"Лабораторная 6: Requests и Limits для Pod и Deployment\",\"type\":\"lab\",\"description\":null,\"task_id\":null,\"vm_image\":\"kuber\",\"vm_init\":\"module_k",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Pod с requests и limits",
+      "taskid": "k8si_lab6_t1_pod_resources",
+      "hint": "<p>Блок ресурсов находится внутри контейнера: <code>spec.containers[].resources.requests</code> и <code>spec.containers[].resources.limits</code>.</p>",
+      "question_html": "<p>Создай файл <code>/root/resource-pod.yaml</code> с Pod <code>resource-pod</code>, label <code>run=resource-pod</code> и образом <code>nginx:alpine</code>. У контейнера задай <code>requests.cpu=50m</code>, <code>requests.memory=64Mi</code>, <code>limits.cpu=200m</code>, <code>limits.memory=128Mi</code>. Примени манифест и дождись Ready.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/resource-pod.yaml</code> с Pod <code>resource-pod</code>, label <code>run=resource-pod</code> и образом <code>nginx:alpine</code>. У контейнера задай <code>requests.cpu=50m</code>, <code>requests.memory=64Mi</code>, <code>limits.cpu=200m</code>, <code>limits.memory=128Mi</code>. Примени манифест и дождись Ready.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть ресурсы Pod",
+      "taskid": "k8si_lab6_t2_inspect_pod",
+      "hint": "",
+      "question_html": "<p>Посмотри, какие resources реально записаны в Pod <code>resource-pod</code>.</p>\n<pre><code>kubectl describe pod resource-pod</code></pre>\n<pre><code>kubectl get pod resource-pod -o jsonpath='{.spec.containers[0].resources}'</code></pre>\n<p>Обрати внимание: <code>requests</code> используются scheduler'ом при размещении, а <code>limits</code> ограничивают контейнер во время работы.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри, какие resources реально записаны в Pod <code>resource-pod</code>.</p>\n<pre><code>kubectl describe pod resource-pod</code></pre>\n<pre><code>kubectl get pod resource-pod -o jsonpath='{.spec.containers[0].resources}'</code></pre>\n<p>Обрати внимание: <code>requests</code> используются scheduler'ом при размещении, а <code>limits</code> ограничивают контейнер во время работы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать Deployment с resources в Pod template",
+      "taskid": "k8si_lab6_t3_deployment_resources",
+      "hint": "<p>В Deployment resources задаются не рядом с <code>replicas</code>, а внутри <code>spec.template.spec.containers[]</code>. После <code>kubectl apply -f /root/limited-web.yaml</code> используй <code>kubectl rollout status deployment/limited-web</code>.</p>",
+      "question_html": "<p>Создай файл <code>/root/limited-web.yaml</code> с Deployment <code>limited-web</code>: 2 реплики, image <code>nginx:alpine</code>, label/selector <code>app=limited-web</code>. В Pod template задай те же resources: request CPU <code>50m</code>, request memory <code>64Mi</code>, limit CPU <code>200m</code>, limit memory <code>128Mi</code>. Примени манифест и дождись rollout.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/limited-web.yaml</code> с Deployment <code>limited-web</code>: 2 реплики, image <code>nginx:alpine</code>, label/selector <code>app=limited-web</code>. В Pod template задай те же resources: request CPU <code>50m</code>, request memory <code>64Mi</code>, limit CPU <code>200m</code>, limit memory <code>128Mi</code>. Примени манифест и дождись rollout.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Изменить memory limit в Deployment",
+      "taskid": "k8si_lab6_t4_update_deployment_limit",
+      "hint": "<p>Меняется поле <code>spec.template.spec.containers[].resources.limits.memory</code>. Так как это часть Pod template, Deployment создаст новый ReplicaSet и обновит Pod'ы.</p>",
+      "question_html": "<p>Измени <code>/root/limited-web.yaml</code>: memory limit контейнера должен стать <code>256Mi</code>. Примени манифест снова и дождись rollout Deployment <code>limited-web</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Измени <code>/root/limited-web.yaml</code>: memory limit контейнера должен стать <code>256Mi</code>. Примени манифест снова и дождись rollout Deployment <code>limited-web</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить ресурсы новых Pod'ов",
+      "taskid": "k8si_lab6_t5_inspect_deployment_pods",
+      "hint": "",
+      "question_html": "<p>Посмотри Pod'ы Deployment <code>limited-web</code> и проверь, что новые Pod'ы получили memory limit <code>256Mi</code>.</p>\n<pre><code>kubectl get pods -l app=limited-web</code></pre>\n<pre><code>kubectl describe pod -l app=limited-web</code></pre>\n<pre><code>kubectl get pod -l app=limited-web -o jsonpath='{.items[0].spec.containers[0].resources.limits.memory}'</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри Pod'ы Deployment <code>limited-web</code> и проверь, что новые Pod'ы получили memory limit <code>256Mi</code>.</p>\n<pre><code>kubectl get pods -l app=limited-web</code></pre>\n<pre><code>kubectl describe pod -l app=limited-web</code></pre>\n<pre><code>kubectl get pod -l app=limited-web -o jsonpath='{.items[0].spec.containers[0].resources.limits.memory}'</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Увидеть отказ из-за слишком больших ресурсов",
+      "taskid": "k8si_lab6_t6_large_request",
+      "hint": "",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем requests отличается от limits?",
+      "taskid": "k8si_lab6_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Что гарантируют <code>requests</code> и что ограничивают <code>limits</code>?</p>",
+      "options": [
+        {
+          "text": "requests — максимум, limits — минимум",
+          "correct": false,
+          "explanation": "Нет — наоборот"
+        },
+        {
+          "text": "Оба означают одно и то же",
+          "correct": false,
+          "explanation": "Нет — это разные концепции"
+        },
+        {
+          "text": "requests — ресурсы для планирования Pod на node, limits — верхняя граница потребления контейнера",
+          "correct": true,
+          "explanation": "Верно! Scheduler использует requests, а limits ограничивают контейнер во время работы"
+        },
+        {
+          "text": "requests влияют только на сеть, limits — только на CPU",
+          "correct": false,
+          "explanation": "Нет — оба применяются к CPU и памяти"
+        }
+      ],
+      "raw_description": "<p>Что гарантируют <code>requests</code> и что ограничивают <code>limits</code>?</p><ul>\n<li>requests — максимум, limits — минимум [Нет — наоборот]</li>\n<li>Оба означают одно и то же [Нет — это разные концепции]</li>\n<li>+requests — ресурсы для планирования Pod на node, limits — верхняя граница потребления контейнера [Верно! Scheduler использует requests, а limits ограничивают контейнер во время работы]</li>\n<li>requests влияют только на сеть, limits — только на CPU [Нет — оба применяются к CPU и памяти]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить тестовые ресурсы",
+      "taskid": "k8si_lab6_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code> и <code>kubectl delete deployment</code>, затем проверь очистку через <code>kubectl get pods</code>.</p>",
+      "question_html": "<p>Удали Pod <code>resource-pod</code>, Deployment <code>limited-web</code> и временный Pod <code>too-large-pod</code>, если он остался.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Pod <code>resource-pod</code>, Deployment <code>limited-web</code> и временный Pod <code>too-large-pod</code>, если он остался.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab6/setup.yaml"
+}

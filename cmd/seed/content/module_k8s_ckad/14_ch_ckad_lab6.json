@@ -1,0 +1,106 @@
+{
+  "n": 14,
+  "id": "ch_ckad_lab6",
+  "title": "Лабораторная 7: HPA",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Создай Deployment <code>hpa-app</code> на образе <code>nginx:alpine</code> с ресурсами: <code>requests.memory: 32Mi</code> и <code>limits.memory: 128Mi</code>. HPA по memory utilization требует явный memory request, а limit ограничивает максимальное потребление памяти контейнером.</p>\n<p>Не путай request и limit: HPA считает процент memory utilization от <code>requests.memory</code>, а не от <code>limits.memory</code>. В этой лабораторной 50% означает 50% от <code>32Mi</code>, то есть примерно <code>16Mi</code>. <code>128Mi</code> — это верхняя граница, после которой контейнер рискует получить OOMKilled.</p>\n<p>Чтобы нагрузка на память была воспроизводимой, для контейнера задай команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"dd if=/dev/zero of=/dev/shm/hpa-load bs=1M count=40; nginx -g 'daemon off;'\"]</code></pre>\n<p>Команда записывает примерно 40 MB в memory-backed tmpfs <code>/dev/shm</code> и затем запускает nginx. Так Pod остаётся живым, а metrics-server видит стабильное потребление памяти. Сохрани манифест в <code>/root/hpa-deploy.yaml</code> и примени его в кластер.</p>27:T5f7,<p>Посмотри, как HPA реагирует на memory utilization и меняет количество реплик:</p>\n<pre><code>kubectl get hpa hpa-app</code></pre>\n<pre><code>kubectl top pods -l app=hpa-app</code></pre>\n<pre><code>kubectl get pods -l app=hpa-app</code></pre>\n<pre><code>kubectl get events --sort-by=.lastTimestamp | grep -i \"scale\" 2>/dev/null || true</code></pre>\n<p>Обрати внимание на столбец <code>REPLICAS</co",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Deployment для HPA",
+      "taskid": "ckad_lab6_t1_deploy",
+      "hint": "<p>Используй YAML-манифест Deployment. Образ контейнера: <code>nginx:alpine</code>, label/selector можно сделать <code>app: hpa-app</code>. После применения проверь готовность через <code>kubectl rollout status deployment/hpa-app</code>.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Создать HPA",
+      "taskid": "ckad_lab6_t2_hpa",
+      "hint": "<p>Используй <code>apiVersion: autoscaling/v2</code>. Memory utilization считается относительно <code>requests.memory</code> у контейнера. Если Pod использует около <code>42Mi</code> при request <code>32Mi</code>, HPA покажет около <code>131-132%</code>, потому что <code>42 / 32 = 1.31</code>. Limit <code>128Mi</code> в этот процент не входит.</p>",
+      "question_html": "<p>Создай HPA <code>hpa-app</code>, который масштабирует Deployment <code>hpa-app</code> при memory utilization 50%, с <code>minReplicas: 1</code> и <code>maxReplicas: 3</code>.</p>\n<p>В метрике HPA используй:</p>\n<pre><code>metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: Utilization\n        averageUtilization: 50</code></pre>\n<p>Сохрани манифест в <code>/root/hpa.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай HPA <code>hpa-app</code>, который масштабирует Deployment <code>hpa-app</code> при memory utilization 50%, с <code>minReplicas: 1</code> и <code>maxReplicas: 3</code>.</p>\n<p>В метрике HPA используй:</p>\n<pre><code>metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: Utilization\n        averageUtilization: 50</code></pre>\n<p>Сохрани манифест в <code>/root/hpa.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть статус HPA",
+      "taskid": "ckad_lab6_t3_status",
+      "hint": "",
+      "question_html": "<p>Посмотри статус HPA и текущие метрики:</p>\n<pre><code>kubectl get hpa</code></pre>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.minReplicas}{\"/\"}{.spec.maxReplicas}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.metrics[0].resource.name}{\" target=\"}{.spec.metrics[0].resource.target.averageUtilization}{\"%\\n\"}'</code></pre>\n<pre><code>kubectl describe hpa hpa-app</code></pre>\n<p>Обрати внимание на MinReplicas, MaxReplicas и целевую утилизацию memory. Если в <code>kubectl get hpa</code> видно <code>memory: &lt;unknown&gt;/50%</code>, HPA ещё не получил текущую memory-метрику. Пока значение <code>TARGETS</code> неизвестно, HPA не знает, нужно ли увеличивать replicas, и новые Pod'ы не создаёт.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статус HPA и текущие метрики:</p>\n<pre><code>kubectl get hpa</code></pre>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.minReplicas}{\"/\"}{.spec.maxReplicas}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.metrics[0].resource.name}{\" target=\"}{.spec.metrics[0].resource.target.averageUtilization}{\"%\\n\"}'</code></pre>\n<pre><code>kubectl describe hpa hpa-app</code></pre>\n<p>Обрати внимание на MinReplicas, MaxReplicas и целевую утилизацию memory. Если в <code>kubectl get hpa</code> видно <code>memory: &lt;unknown&gt;/50%</code>, HPA ещё не получил текущую memory-метрику. Пока значение <code>TARGETS</code> неизвестно, HPA не знает, нужно ли увеличивать replicas, и новые Pod'ы не создаёт.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть метрики нагрузки",
+      "taskid": "ckad_lab6_t4_load",
+      "hint": "<p>Service для этой проверки не нужен: нагрузка создаётся внутри контейнера, а HPA смотрит на resource-метрики Pod'ов. Если Pod в <code>CrashLoopBackOff</code> или <code>OOMKilled</code>, сначала исправь Deployment — у падающего Pod'а HPA может не видеть метрики.</p>",
+      "question_html": "<p>Нагрузка на память уже создаётся командой контейнера из первой задачи. Убедись, что Pod живой, и посмотри текущие метрики:</p>\n<pre><code>kubectl rollout status deployment/hpa-app</code></pre>\n<pre><code>kubectl get pods -l app=hpa-app</code></pre>\n<pre><code>kubectl top pods -l app=hpa-app</code></pre>\n<pre><code>kubectl get hpa hpa-app</code></pre>\n<p>Если видишь в HPA что-то вроде <code>memory: 132%/50%</code>, а <code>kubectl top</code> показывает около <code>42Mi</code>, это нормально для этой лабораторной: <code>42Mi</code> сравниваются с request <code>32Mi</code>, а не с limit <code>128Mi</code>.</p>\n<p>Если метрики ещё не появились, подожди 1-2 минуты и повтори команды. HPA тоже принимает решение не мгновенно: ему нужно получить метрики от metrics-server. Пока <code>kubectl top pods</code> не показывает memory для Pod'ов, в HPA обычно будет <code>TARGETS &lt;unknown&gt;</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Нагрузка на память уже создаётся командой контейнера из первой задачи. Убедись, что Pod живой, и посмотри текущие метрики:</p>\n<pre><code>kubectl rollout status deployment/hpa-app</code></pre>\n<pre><code>kubectl get pods -l app=hpa-app</code></pre>\n<pre><code>kubectl top pods -l app=hpa-app</code></pre>\n<pre><code>kubectl get hpa hpa-app</code></pre>\n<p>Если видишь в HPA что-то вроде <code>memory: 132%/50%</code>, а <code>kubectl top</code> показывает около <code>42Mi</code>, это нормально для этой лабораторной: <code>42Mi</code> сравниваются с request <code>32Mi</code>, а не с limit <code>128Mi</code>.</p>\n<p>Если метрики ещё не появились, подожди 1-2 минуты и повтори команды. HPA тоже принимает решение не мгновенно: ему нужно получить метрики от metrics-server. Пока <code>kubectl top pods</code> не показывает memory для Pod'ов, в HPA обычно будет <code>TARGETS &lt;unknown&gt;</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть масштабирование",
+      "taskid": "ckad_lab6_t5_scale",
+      "hint": "",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    },
+    {
+      "type": "check",
+      "title": "Проверить настройки HPA",
+      "taskid": "ckad_lab6_t6_manifest",
+      "hint": "<p>Используй <code>kubectl get hpa hpa-app -o jsonpath=...</code>, чтобы вывести minReplicas/maxReplicas.</p>",
+      "question_html": "<p>Убедись что HPA настроен с правильными лимитами реплик:</p>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.minReplicas}{\"/\"}{.spec.maxReplicas}{\"\\n\"}'</code></pre>\n<p>Ожидаемый вывод: <code>1/3</code></p>",
+      "options": [],
+      "raw_description": "<p>Убедись что HPA настроен с правильными лимитами реплик:</p>\n<pre><code>kubectl get hpa hpa-app -o jsonpath='{.spec.minReplicas}{\"/\"}{.spec.maxReplicas}{\"\\n\"}'</code></pre>\n<p>Ожидаемый вывод: <code>1/3</code></p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем HPA отличается от ручного scale?",
+      "taskid": "ckad_lab6_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Ты вручную запустил kubectl scale deployment --replicas=3 при наличии HPA. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "HPA через время вернёт число реплик к значению определённому его алгоритмом",
+          "correct": true,
+          "explanation": "Верно! HPA управляет replicas; ручное изменение будет перезаписано при следующем цикле HPA"
+        },
+        {
+          "text": "HPA остановит мониторинг после ручного изменения",
+          "correct": false,
+          "explanation": "Нет — HPA продолжит работать независимо"
+        },
+        {
+          "text": "Между HPA и ручным значением будет конфликт ошибка",
+          "correct": false,
+          "explanation": "Нет — HPA просто перезапишет при следующем reconcile цикле"
+        },
+        {
+          "text": "replicas останутся = 3 — HPA уважает ручные изменения",
+          "correct": false,
+          "explanation": "Нет — HPA переопределит значение"
+        }
+      ],
+      "raw_description": "<p>Ты вручную запустил kubectl scale deployment --replicas=3 при наличии HPA. Что произойдёт?</p><ul>\n<li>+HPA через время вернёт число реплик к значению определённому его алгоритмом [Верно! HPA управляет replicas; ручное изменение будет перезаписано при следующем цикле HPA]</li>\n<li>HPA остановит мониторинг после ручного изменения [Нет — HPA продолжит работать независимо]</li>\n<li>Между HPA и ручным значением будет конфликт ошибка [Нет — HPA просто перезапишет при следующем reconcile цикле]</li>\n<li>replicas останутся = 3 — HPA уважает ручные изменения [Нет — HPA переопределит значение]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы",
+      "taskid": "ckad_lab6_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete</code> для тех типов ресурсов, которые созданы в лабе. После удаления проверь <code>kubectl get</code> по тем же именам или namespace.</p>",
+      "question_html": "<p>Останови нагрузку и удали ресурсы HPA и Deployment <code>hpa-app</code>.</p>\n<pre><code>kubectl delete hpa hpa-app</code></pre>\n<pre><code>kubectl delete deployment hpa-app</code></pre>",
+      "options": [],
+      "raw_description": "<p>Останови нагрузку и удали ресурсы HPA и Deployment <code>hpa-app</code>.</p>\n<pre><code>kubectl delete hpa hpa-app</code></pre>\n<pre><code>kubectl delete deployment hpa-app</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab6/setup.yaml"
+}

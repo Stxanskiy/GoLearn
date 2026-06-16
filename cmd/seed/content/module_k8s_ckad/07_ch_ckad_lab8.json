@@ -1,0 +1,166 @@
+{
+  "n": 7,
+  "id": "ch_ckad_lab8",
+  "title": "Лабораторная 4: RBAC",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать ServiceAccount",
+      "taskid": "ckad_lab8_t1_sa",
+      "hint": "<p>Используй <code>kubectl create serviceaccount</code> или YAML-манифест ServiceAccount.</p>",
+      "question_html": "<p>Создай ServiceAccount <code>app-sa</code> для приложения.</p>",
+      "options": [],
+      "raw_description": "<p>Создай ServiceAccount <code>app-sa</code> для приложения.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Подготовить Role и увидеть границу RBAC",
+      "taskid": "ckad_lab8_t2_role",
+      "hint": "<p>В манифесте нужны <code>kind: Role</code>, <code>metadata.name: pod-reader</code>, <code>apiGroups: [\"\"]</code>, <code>resources: [\"pods\"]</code> и <code>verbs: [\"get\", \"list\", \"watch\"]</code>. Формат списка может быть inline или многострочным.</p>",
+      "question_html": "<p>Подготовь Role <code>pod-reader</code>, которая разрешает читать Pod'ы: resource <code>pods</code>, verbs <code>get</code>, <code>list</code> и <code>watch</code>. Обрати внимание на границу RBAC: роль описывает права, а выдача прав происходит только через binding к конкретному subject.</p><p>Сохрани результат в <code>/root/pod-reader-role.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Подготовь Role <code>pod-reader</code>, которая разрешает читать Pod'ы: resource <code>pods</code>, verbs <code>get</code>, <code>list</code> и <code>watch</code>. Обрати внимание на границу RBAC: роль описывает права, а выдача прав происходит только через binding к конкретному subject.</p><p>Сохрани результат в <code>/root/pod-reader-role.yaml</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Подготовить RoleBinding",
+      "taskid": "ckad_lab8_t3_rolebinding",
+      "hint": "<p>Используй <code>kubectl get</code>/<code>kubectl describe</code> для ServiceAccount, Role/ClusterRole и Binding. Проверь namespace и имя субъекта перед применением YAML.</p>",
+      "question_html": "<p>Попробуй привязать Role к ServiceAccount через RoleBinding.</p><p>Результат зависит от RBAC-прав в namespace — команда может завершиться с ошибкой, это нормально.</p>",
+      "options": [],
+      "raw_description": "<p>Попробуй привязать Role к ServiceAccount через RoleBinding.</p><p>Результат зависит от RBAC-прав в namespace — команда может завершиться с ошибкой, это нормально.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить права",
+      "taskid": "ckad_lab8_t4_check",
+      "hint": "",
+      "question_html": "<p>Проверь свои текущие права через <code>kubectl auth can-i</code>:</p>\n<pre><code>kubectl auth can-i list pods</code></pre>\n<pre><code>kubectl auth can-i create roles || true</code></pre>\n<p>Обрати внимание на разницу между правами на workload-ресурсы (pods) и правами на управление RBAC (roles).</p>",
+      "options": [],
+      "raw_description": "<p>Проверь свои текущие права через <code>kubectl auth can-i</code>:</p>\n<pre><code>kubectl auth can-i list pods</code></pre>\n<pre><code>kubectl auth can-i create roles || true</code></pre>\n<p>Обрати внимание на разницу между правами на workload-ресурсы (pods) и правами на управление RBAC (roles).</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать Pod с ServiceAccount",
+      "taskid": "ckad_lab8_t5_pod_sa",
+      "hint": "<p>В Pod manifest укажи <code>serviceAccountName: app-sa</code>, контейнер <code>app</code> с образом <code>nginx:alpine</code> и команду, которая оставит контейнер запущенным.</p>",
+      "question_html": "<p>Создай Pod <code>sa-pod</code> на образе <code>nginx:alpine</code>, который использует ServiceAccount <code>app-sa</code>.</p><p>Сохрани результат в <code>/root/sa-pod.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>sa-pod</code> на образе <code>nginx:alpine</code>, который использует ServiceAccount <code>app-sa</code>.</p><p>Сохрани результат в <code>/root/sa-pod.yaml</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть RBAC ресурсы",
+      "taskid": "ckad_lab8_t6_list",
+      "hint": "",
+      "question_html": "<p>Посмотри созданные RBAC-ресурсы:</p>\n<pre><code>kubectl get serviceaccount app-sa</code></pre>\n<pre><code>kubectl get role 2>/dev/null || true</code></pre>\n<pre><code>kubectl get rolebinding 2>/dev/null || true</code></pre>\n<p>Обрати внимание что Role и RoleBinding могут отсутствовать из-за RBAC-ограничений namespace.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри созданные RBAC-ресурсы:</p>\n<pre><code>kubectl get serviceaccount app-sa</code></pre>\n<pre><code>kubectl get role 2>/dev/null || true</code></pre>\n<pre><code>kubectl get rolebinding 2>/dev/null || true</code></pre>\n<p>Обрати внимание что Role и RoleBinding могут отсутствовать из-за RBAC-ограничений namespace.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем ServiceAccount вместо user credentials?",
+      "taskid": "ckad_lab8_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Pod'у нужно обращаться к API Server для получения списка Pod'ов. Почему используют ServiceAccount, а не учётные данные пользователя?</p>",
+      "options": [
+        {
+          "text": "ServiceAccount быстрее работает с API",
+          "correct": false,
+          "explanation": "Нет — производительность одинакова"
+        },
+        {
+          "text": "User credentials нельзя использовать в Kubernetes",
+          "correct": false,
+          "explanation": "Нет — можно, но это небезопасно и неудобно"
+        },
+        {
+          "text": "ServiceAccount автоматически монтируется в Pod и имеет ограниченные права; credentials пользователя нельзя хранить в Pod'е безопасно",
+          "correct": true,
+          "explanation": "Верно! SA токен монтируется в /var/run/secrets/kubernetes.io/serviceaccount; права минимальны"
+        },
+        {
+          "text": "ServiceAccount единственный способ аутентификации в k8s",
+          "correct": false,
+          "explanation": "Нет — есть также X.509 сертификаты, OIDC токены"
+        }
+      ],
+      "raw_description": "<p>Pod'у нужно обращаться к API Server для получения списка Pod'ов. Почему используют ServiceAccount, а не учётные данные пользователя?</p><ul>\n<li>ServiceAccount быстрее работает с API [Нет — производительность одинакова]</li>\n<li>User credentials нельзя использовать в Kubernetes [Нет — можно, но это небезопасно и неудобно]</li>\n<li>+ServiceAccount автоматически монтируется в Pod и имеет ограниченные права; credentials пользователя нельзя хранить в Pod'е безопасно [Верно! SA токен монтируется в /var/run/secrets/kubernetes.io/serviceaccount; права минимальны]</li>\n<li>ServiceAccount единственный способ аутентификации в k8s [Нет — есть также X.509 сертификаты, OIDC токены]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить RBAC ресурсы",
+      "taskid": "ckad_lab8_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code> и <code>kubectl delete serviceaccount</code>.</p>",
+      "question_html": "<p>Удали Pod <code>sa-pod</code> и ServiceAccount <code>app-sa</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Pod <code>sa-pod</code> и ServiceAccount <code>app-sa</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем принцип наименьших привилегий?",
+      "taskid": "ckad_lab8_t9_quiz_least_privilege",
+      "hint": "",
+      "question_html": "<p>Почему в Kubernetes важно выдавать ServiceAccount только минимально необходимые права?</p>",
+      "options": [
+        {
+          "text": "Потому что kubectl иначе работает медленнее",
+          "correct": false,
+          "explanation": "Нет — скорость не главная причина"
+        },
+        {
+          "text": "Потому что RoleBinding не поддерживает широкие права",
+          "correct": false,
+          "explanation": "Нет — поддерживает, но это небезопасно"
+        },
+        {
+          "text": "Потому что ServiceAccount не может читать Pod'ы",
+          "correct": false,
+          "explanation": "Нет — может, если есть соответствующая Role"
+        },
+        {
+          "text": "Компрометация Pod'а тогда ограничит ущерб, а не даст полный доступ к API",
+          "correct": true,
+          "explanation": "Верно! RBAC снижает blast radius"
+        }
+      ],
+      "raw_description": "<p>Почему в Kubernetes важно выдавать ServiceAccount только минимально необходимые права?</p><ul>\n<li>Потому что kubectl иначе работает медленнее [Нет — скорость не главная причина]</li>\n<li>Потому что RoleBinding не поддерживает широкие права [Нет — поддерживает, но это небезопасно]</li>\n<li>Потому что ServiceAccount не может читать Pod'ы [Нет — может, если есть соответствующая Role]</li>\n<li>+Компрометация Pod'а тогда ограничит ущерб, а не даст полный доступ к API [Верно! RBAC снижает blast radius]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда нужен ClusterRole вместо Role?",
+      "taskid": "ckad_lab8_t10_quiz_clusterrole",
+      "hint": "",
+      "question_html": "<p>В каком случае уместнее использовать ClusterRole + ClusterRoleBinding?</p>",
+      "options": [
+        {
+          "text": "Когда доступ нужен ко всем namespace или к кластерным ресурсам",
+          "correct": true,
+          "explanation": "Верно! Role ограничена одним namespace"
+        },
+        {
+          "text": "Когда нужно дать доступ только к одному Pod в текущем namespace",
+          "correct": false,
+          "explanation": "Нет — это локальный кейс для Role"
+        },
+        {
+          "text": "Когда нужно создать ServiceAccount",
+          "correct": false,
+          "explanation": "Нет — SA создаётся отдельно, без ClusterRole"
+        },
+        {
+          "text": "Только для kube-system, в других namespace запрещено",
+          "correct": false,
+          "explanation": "Нет — ClusterRole работает для всего кластера"
+        }
+      ],
+      "raw_description": "<p>В каком случае уместнее использовать ClusterRole + ClusterRoleBinding?</p><ul>\n<li>+Когда доступ нужен ко всем namespace или к кластерным ресурсам [Верно! Role ограничена одним namespace]</li>\n<li>Когда нужно дать доступ только к одному Pod в текущем namespace [Нет — это локальный кейс для Role]</li>\n<li>Когда нужно создать ServiceAccount [Нет — SA создаётся отдельно, без ClusterRole]</li>\n<li>Только для kube-system, в других namespace запрещено [Нет — ClusterRole работает для всего кластера]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab8/setup.yaml"
+}

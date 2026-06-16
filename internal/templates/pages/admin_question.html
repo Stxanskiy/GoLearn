@@ -1,0 +1,28 @@
+{{define "admin_question"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/lesson/{{.LessonID}}">Глава</a> / <span>{{if .IsNew}}Новый вопрос{{else}}Вопрос{{end}}</span></div>
+<h1 style="margin-bottom:18px;">{{if .IsNew}}Новый вопрос{{else}}Редактировать вопрос{{end}}</h1>
+
+<form class="adm-form" method="POST" action="{{if .IsNew}}/admin/question{{else}}/admin/question/{{.Question.ID}}{{end}}">
+    <input type="hidden" name="lesson_id" value="{{.LessonID}}">
+    <label>Вопрос (можно HTML)<textarea name="question" rows="2" required>{{.Question.Question}}</textarea></label>
+    <label>Варианты — по одному на строку<textarea name="options" rows="5" required>{{range $i,$o := .Question.Options}}{{$o}}
+{{end}}</textarea></label>
+    <label>Номер правильного варианта (1, 2, 3…)<input name="correct" type="number" min="1" value="{{add .Question.CorrectIndex 1}}"></label>
+    <label>Пояснение<textarea name="explanation" rows="2">{{.Question.Explanation}}</textarea></label>
+    <div class="row" style="margin-top:14px;">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a href="/admin/lesson/{{.LessonID}}" class="btn btn-ghost">Отмена</a>
+    </div>
+</form>
+
+<style>
+.adm-form { max-width:720px; display:flex; flex-direction:column; gap:14px; }
+.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
+.adm-form input, .adm-form textarea { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
+.adm-form input:focus, .adm-form textarea:focus { border-color:var(--accent); }
+</style>
+{{end}}

@@ -1,0 +1,103 @@
+{
+  "n": 3,
+  "id": "ch_helm_lab1",
+  "title": "Лабораторная 1: Первый helm install",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "<p>Посмотри values, которые явно передали при установке release <code>my-nginx</code>:</p>\n<pre><code>helm get values my-nginx</code></pre>\n<p>В chart действительно есть файл <code>values.yaml</code>, но это значения по умолчанию, которые задал автор chart. Команда <code>helm get values</code> без <code>--all</code> показывает другое: только те values, которые пользователь release передал при <code>install</code> или <code>upgrade</code> через <code>--set</code> или <code>-f</code>.</p>\n<p>Если ты устанавливал release командой <code>helm install my-nginx /root/charts/nginx-chart</code> без <code>--set</code> и без <code>-f</code>, вывод <code>USER-SUPPLIED VALUES: null</code> — это нормально. Это значит, что пользовательских override values не было.</p>\n<p>Теперь посмотри итоговые values вместе с дефолтами chart:</p>\n<pre><code>helm get values my-nginx --all</code></pre>\n<p>Сравни вывод: обычный <code>helm get values</code> показывает только то, что ты явно передал при install/upgrade, а <code>--all</code> добавляет значения по умолчанию из <code>values.yaml</code>.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L24\",null,{}],[\"$\",\"$L25\",null,{\"initialData\":{\"id\":\"ch_helm_lab1\",\"title\":\"Лабораторная 1: Первый helm install\",\"type\":\"lab\",\"descr",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Проверить версию Helm",
+      "taskid": "helm_lab1_t1_version",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Проверь, что Helm установлен, и посмотри версию.</p>\n<pre><code>helm version</code></pre>",
+      "options": [],
+      "raw_description": "<p>Проверь, что Helm установлен, и посмотри версию.</p>\n<pre><code>helm version</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть доступные charts",
+      "taskid": "helm_lab1_t2_list",
+      "hint": "<p>Используй <code>helm list</code>, <code>helm status</code> или <code>helm history</code> в правильном namespace: эти команды показывают разные уровни детализации.</p>",
+      "question_html": "<p>Посмотри доступные локальные charts и установленные релизы.</p>\n<pre><code>ls /root/charts/</code></pre>\n<pre><code>helm list</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри доступные локальные charts и установленные релизы.</p>\n<pre><code>ls /root/charts/</code></pre>\n<pre><code>helm list</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Установить первый chart",
+      "taskid": "helm_lab1_t3_install",
+      "hint": "<p>Используй <code>helm install</code>: проверь имя release, путь к chart и namespace.</p>",
+      "question_html": "<p>Установи chart <code>/root/charts/nginx-chart</code> из локальной директории как release <code>my-nginx</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install my-nginx /root/charts/nginx-chart</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart <code>/root/charts/nginx-chart</code> из локальной директории как release <code>my-nginx</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install my-nginx /root/charts/nginx-chart</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить Pod'ы после установки",
+      "taskid": "helm_lab1_t4_pods",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Проверь, что Pod'ы релиза <code>my-nginx</code> запустились после helm install.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что Pod'ы релиза <code>my-nginx</code> запустились после helm install.</p>"
+    },
+    {
+      "type": "check",
+      "title": "helm status",
+      "taskid": "helm_lab1_t5_status",
+      "hint": "<p>Используй <code>helm list</code>, <code>helm status</code> или <code>helm history</code> в правильном namespace: эти команды показывают разные уровни детализации.</p>",
+      "question_html": "<p>Посмотри статус установленного релиза <code>my-nginx</code> и убедись, что он <code>deployed</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статус установленного релиза <code>my-nginx</code> и убедись, что он <code>deployed</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm get values",
+      "taskid": "helm_lab1_t6_values",
+      "hint": "<p>Для release без override values команда без <code>--all</code> может показать <code>null</code>. Это не ошибка установки.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "self",
+      "title": "helm get manifest",
+      "taskid": "helm_lab1_t7_manifest",
+      "hint": "<p><code>helm get manifest</code> смотрит manifest уже установленного release. Для просмотра chart без установки используй <code>helm template</code>.</p>",
+      "question_html": "<p>Посмотри Kubernetes YAML, который Helm сохранил в истории release <code>my-nginx</code> после установки.</p>\n<pre><code>helm get manifest my-nginx</code></pre>\n<p>Если удобнее открыть вывод в редакторе или вернуться к нему позже, сохрани его в файл:</p>\n<pre><code>helm get manifest my-nginx &gt; /root/helm_manifest.txt</code></pre>\n<p>Обрати внимание на <code>Deployment</code>, <code>Service</code>, image контейнера и labels. Это уже не шаблон chart, а итоговый YAML установленного release.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри Kubernetes YAML, который Helm сохранил в истории release <code>my-nginx</code> после установки.</p>\n<pre><code>helm get manifest my-nginx</code></pre>\n<p>Если удобнее открыть вывод в редакторе или вернуться к нему позже, сохрани его в файл:</p>\n<pre><code>helm get manifest my-nginx &gt; /root/helm_manifest.txt</code></pre>\n<p>Обрати внимание на <code>Deployment</code>, <code>Service</code>, image контейнера и labels. Это уже не шаблон chart, а итоговый YAML установленного release.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm template (dry-run)",
+      "taskid": "helm_lab1_t8_template",
+      "hint": "<p>Используй <code>helm template</code>: рендеринг chart не устанавливает release в кластер, а выводит итоговый YAML. Override можно передать через <code>--set</code>, чтобы сразу сравнить результат.</p>",
+      "question_html": "<p>Посмотри что chart сгенерирует без установки release в кластер.</p>\n<pre><code>helm template test-release /root/charts/nginx-chart &gt; /root/helm_template.txt</code></pre>\n<p>Теперь сравни render с дефолтными values и render с override values. Эти команды ничего не устанавливают в Kubernetes, они только показывают итоговый YAML:</p>\n<pre><code>helm template default-view /root/charts/nginx-chart | grep -E 'replicas:|image:|type:'</code></pre>\n<pre><code>helm template custom-view /root/charts/nginx-chart \\\n  --set replicaCount=2 \\\n  --set service.type=NodePort | grep -E 'replicas:|image:|type:'</code></pre>\n<p>Во втором выводе должны измениться <code>replicas</code> и тип Service. Image остаётся <code>nginx:alpine</code>, чтобы пример был про render и override values, а не про наличие конкретного image tag в кластере. Полноценная практика с <code>--set</code>, values-файлами и <code>helm upgrade</code> будет в отдельной лабораторной про values и override.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри что chart сгенерирует без установки release в кластер.</p>\n<pre><code>helm template test-release /root/charts/nginx-chart &gt; /root/helm_template.txt</code></pre>\n<p>Теперь сравни render с дефолтными values и render с override values. Эти команды ничего не устанавливают в Kubernetes, они только показывают итоговый YAML:</p>\n<pre><code>helm template default-view /root/charts/nginx-chart | grep -E 'replicas:|image:|type:'</code></pre>\n<pre><code>helm template custom-view /root/charts/nginx-chart \\\n  --set replicaCount=2 \\\n  --set service.type=NodePort | grep -E 'replicas:|image:|type:'</code></pre>\n<p>Во втором выводе должны измениться <code>replicas</code> и тип Service. Image остаётся <code>nginx:alpine</code>, чтобы пример был про render и override values, а не про наличие конкретного image tag в кластере. Полноценная практика с <code>--set</code>, values-файлами и <code>helm upgrade</code> будет в отдельной лабораторной про values и override.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm history",
+      "taskid": "helm_lab1_t9_history",
+      "hint": "<p>Используй <code>helm history</code> и <code>helm rollback</code>: history показывает ревизии release, rollback возвращает release к выбранной ревизии.</p>",
+      "question_html": "<p>Посмотри историю ревизий релиза.</p>\n<pre><code>helm history my-nginx</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри историю ревизий релиза.</p>\n<pre><code>helm history my-nginx</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить релиз",
+      "taskid": "helm_lab1_t10_uninstall",
+      "hint": "<p>Используй <code>helm uninstall</code>, затем проверь список через <code>helm list</code>.</p>",
+      "question_html": "<p>Удали helm release <code>my-nginx</code> и проверь, что Pod'ы этого release удалились.</p>\n<pre><code>helm uninstall my-nginx</code></pre>\n<pre><code>helm list</code></pre>\n<pre><code>kubectl get pods -l app=my-nginx</code></pre>\n<p>В этом удобство release: Helm помнит, какие Kubernetes-ресурсы были созданы при установке, и удаляет их одной командой. Не нужно отдельно удалять Deployment, Service и остальные ресурсы release вручную.</p>",
+      "options": [],
+      "raw_description": "<p>Удали helm release <code>my-nginx</code> и проверь, что Pod'ы этого release удалились.</p>\n<pre><code>helm uninstall my-nginx</code></pre>\n<pre><code>helm list</code></pre>\n<pre><code>kubectl get pods -l app=my-nginx</code></pre>\n<p>В этом удобство release: Helm помнит, какие Kubernetes-ресурсы были созданы при установке, и удаляет их одной командой. Не нужно отдельно удалять Deployment, Service и остальные ресурсы release вручную.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab1/setup.yaml"
+}

@@ -1,0 +1,103 @@
+{
+  "n": 11,
+  "id": "ch_dkc_lab5",
+  "title": "Лабораторная 5: Override и несколько файлов",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить структуру override",
+      "taskid": "dkc_lab5_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/override</code> подготовлены два файла: базовый <code>docker-compose.yml</code> и override-файл <code>docker-compose.dev.yml</code>. Изучи оба:</p>\n<pre><code>cat /root/override/docker-compose.yml</code></pre>\n<pre><code>cat /root/override/docker-compose.dev.yml</code></pre>\n<p>Базовый файл описывает production-настройки. Override меняет переменные окружения и поведение сервиса для разработки. Позже ты сравнишь объединённый результат через <code>docker compose config</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/override</code> подготовлены два файла: базовый <code>docker-compose.yml</code> и override-файл <code>docker-compose.dev.yml</code>. Изучи оба:</p>\n<pre><code>cat /root/override/docker-compose.yml</code></pre>\n<pre><code>cat /root/override/docker-compose.dev.yml</code></pre>\n<p>Базовый файл описывает production-настройки. Override меняет переменные окружения и поведение сервиса для разработки. Позже ты сравнишь объединённый результат через <code>docker compose config</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить только базовый файл",
+      "taskid": "dkc_lab5_t2_base",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>\n<p>Флаг <code>-f</code> указывает конкретный файл, тогда <code>docker-compose.override.yml</code> не подхватывается автоматически.</p>",
+      "question_html": "<p>Запусти только базовый compose-файл (без override) для сервиса <code>app</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти только базовый compose-файл (без override) для сервиса <code>app</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть конфиг базового стека",
+      "taskid": "dkc_lab5_t3_config_base",
+      "hint": "",
+      "question_html": "<p>Посмотри итоговую конфигурацию базового стека:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose config | tee /root/base_config.txt</code></pre>\n<p>Обрати внимание, какие сервисы, volumes и переменные попали в итоговый config.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри итоговую конфигурацию базового стека:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose config | tee /root/base_config.txt</code></pre>\n<p>Обрати внимание, какие сервисы, volumes и переменные попали в итоговый config.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить базовый стек",
+      "taskid": "dkc_lab5_t4_down_base",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови базовый стек сервиса <code>app</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови базовый стек сервиса <code>app</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить объединённый стек (dev режим)",
+      "taskid": "dkc_lab5_t5_dev",
+      "hint": "<p>Из каталога <code>/root/override</code> запусти <code>docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d</code>.</p>\n<p>Обычный <code>docker compose up -d</code> прочитает только стандартные файлы и не применит <code>docker-compose.dev.yml</code>.</p>",
+      "question_html": "<p>Запусти стек сервиса <code>app</code> с объединением обоих файлов — для режима разработки. После запуска внутри контейнера переменная <code>APP_ENV</code> должна быть равна <code>development</code>.</p><p>Compose сливает оба файла: настройки из второго файла дополняют/переопределяют первый.</p>\n<p>Для dev-режима нужно явно указать оба файла: сначала базовый <code>docker-compose.yml</code>, затем <code>docker-compose.dev.yml</code>. Порядок важен: второй файл переопределяет значения из первого.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти стек сервиса <code>app</code> с объединением обоих файлов — для режима разработки. После запуска внутри контейнера переменная <code>APP_ENV</code> должна быть равна <code>development</code>.</p><p>Compose сливает оба файла: настройки из второго файла дополняют/переопределяют первый.</p>\n<p>Для dev-режима нужно явно указать оба файла: сначала базовый <code>docker-compose.yml</code>, затем <code>docker-compose.dev.yml</code>. Порядок важен: второй файл переопределяет значения из первого.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть итоговый объединённый конфиг",
+      "taskid": "dkc_lab5_t6_config_dev",
+      "hint": "",
+      "question_html": "<p>Посмотри итоговый config объединённого dev-стека:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose -f docker-compose.yml -f docker-compose.dev.yml config | tee /root/dev_config.txt</code></pre>\n<p>Сравни с базовым config: в dev-варианте <code>APP_ENV</code> должен стать <code>development</code>, должна появиться переменная <code>DEBUG=true</code>, а <code>restart</code> должен измениться с <code>always</code> на <code>no</code>.</p>\n<p>Важно: если после dev-запуска выполнить просто <code>docker compose config</code>, Compose снова прочитает только стандартный <code>docker-compose.yml</code> и покажет <code>APP_ENV: production</code>. Команда <code>config</code> не смотрит на уже запущенный контейнер, она рендерит только те файлы, которые указаны в текущей команде.</p>\n<p>Чтобы проверить runtime-значение внутри контейнера, выполни <code>docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T app printenv APP_ENV</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри итоговый config объединённого dev-стека:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose -f docker-compose.yml -f docker-compose.dev.yml config | tee /root/dev_config.txt</code></pre>\n<p>Сравни с базовым config: в dev-варианте <code>APP_ENV</code> должен стать <code>development</code>, должна появиться переменная <code>DEBUG=true</code>, а <code>restart</code> должен измениться с <code>always</code> на <code>no</code>.</p>\n<p>Важно: если после dev-запуска выполнить просто <code>docker compose config</code>, Compose снова прочитает только стандартный <code>docker-compose.yml</code> и покажет <code>APP_ENV: production</code>. Команда <code>config</code> не смотрит на уже запущенный контейнер, она рендерит только те файлы, которые указаны в текущей команде.</p>\n<p>Чтобы проверить runtime-значение внутри контейнера, выполни <code>docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T app printenv APP_ENV</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать override.yml (автоматический)",
+      "taskid": "dkc_lab5_t7_auto_override",
+      "hint": "<p>Используй <code>docker compose config</code>, чтобы проверить, какой env-файл читает Compose. Файл рядом с compose-файлом подхватывается автоматически, остальные указываются явно.</p>",
+      "question_html": "<p>Создай файл <code>docker-compose.override.yml</code> — он подхватывается Compose автоматически без <code>-f</code>. Добавь в него переменную <code>AUTO_OVERRIDE=true</code> для сервиса <code>app</code>.</p><p>Сохрани результат в <code>/root/override/docker-compose.override.yml</code>, затем примени стек командой <code>docker compose up -d</code> из каталога <code>/root/override</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>docker-compose.override.yml</code> — он подхватывается Compose автоматически без <code>-f</code>. Добавь в него переменную <code>AUTO_OVERRIDE=true</code> для сервиса <code>app</code>.</p><p>Сохрани результат в <code>/root/override/docker-compose.override.yml</code>, затем примени стек командой <code>docker compose up -d</code> из каталога <code>/root/override</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить что override применился",
+      "taskid": "dkc_lab5_t8_check_override",
+      "hint": "<p><code>docker-compose.override.yml</code> подхватывается автоматически только когда команда запускается из каталога проекта или явно видит базовый compose-файл.</p>",
+      "question_html": "<p>Проверь, что переменная <code>AUTO_OVERRIDE</code> есть внутри контейнера сервиса <code>app</code>:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose exec -T app printenv AUTO_OVERRIDE</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep 'AUTO_OVERRIDE\\|APP_ENV'</code></pre>\n<p>Ожидаемое значение <code>AUTO_OVERRIDE</code> — <code>true</code>. Файл сохранять не нужно: здесь важно самому увидеть, что автоматический <code>docker-compose.override.yml</code> попал в runtime-окружение контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что переменная <code>AUTO_OVERRIDE</code> есть внутри контейнера сервиса <code>app</code>:</p>\n<pre><code>cd /root/override</code></pre>\n<pre><code>docker compose exec -T app printenv AUTO_OVERRIDE</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep 'AUTO_OVERRIDE\\|APP_ENV'</code></pre>\n<p>Ожидаемое значение <code>AUTO_OVERRIDE</code> — <code>true</code>. Файл сохранять не нужно: здесь важно самому увидеть, что автоматический <code>docker-compose.override.yml</code> попал в runtime-окружение контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Использовать profiles",
+      "taskid": "dkc_lab5_t9_profile",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>",
+      "question_html": "<p>Добавь в compose-файл сервис <code>debugger</code> с профилем <code>debug</code> и запусти его через <code>--profile</code>.</p><p>Сохрани результат в <code>/root/override/docker-compose.yml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь в compose-файл сервис <code>debugger</code> с профилем <code>debug</code> и запусти его через <code>--profile</code>.</p><p>Сохрани результат в <code>/root/override/docker-compose.yml</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить стек",
+      "taskid": "dkc_lab5_t10_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови весь стек включая profiled сервисы.</p>",
+      "options": [],
+      "raw_description": "<p>Останови весь стек включая profiled сервисы.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab5/setup.yaml"
+}

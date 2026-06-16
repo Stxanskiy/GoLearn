@@ -1,0 +1,88 @@
+{{define "section"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/courses">Курсы</a> / <span>{{.Spec.Name}}</span></div>
+
+<div class="page-head" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="font-size:42px;line-height:1;">{{.Spec.Icon}}</div>
+    <div>
+        <h1>{{.Spec.Name}}</h1>
+        <p class="muted">{{.Spec.Desc}}</p>
+    </div>
+</div>
+
+<div class="sec-toolbar">
+    <div class="filter-row">
+        <button class="filter-chip active" onclick="filterCat('Все', this)">Все <span class="chip-count">{{len .Cards}}</span></button>
+        {{range .Categories}}
+        <button class="filter-chip" onclick="filterCat('{{.Name}}', this)">{{.Name}} <span class="chip-count">{{.Count}}</span></button>
+        {{end}}
+    </div>
+    <input id="course-search" class="course-search" type="search" placeholder="Поиск курса…" oninput="searchCourses(this.value)">
+</div>
+
+<div class="courses-grid" id="sec-grid">
+    {{range $i, $c := .Cards}}
+    <a class="course-card" data-cat="{{$c.Category}}" data-title="{{$c.Title}}" href="/module/{{$c.Slug}}" style="animation-delay:{{$i}}0ms;">
+        <div class="course-cover">
+            <img loading="lazy" src="{{$c.Cover}}" alt="{{$c.Title}}">
+            <span class="course-cover-tag">{{$c.Category}}</span>
+            {{if gt $c.Pct 0}}<span class="course-cover-pct">{{$c.Pct}}%</span>{{end}}
+        </div>
+        <div class="course-body">
+            <h3 class="course-title">{{$c.Title}}</h3>
+            <div class="course-meta">
+                <span class="meta-pill">{{$c.Chapters}} глав</span>
+                {{if $c.Duration}}<span class="meta-pill">{{$c.Duration}}</span>{{end}}
+                <span class="meta-pill meta-label">{{$c.Label}}</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:{{$c.Pct}}%;"></div></div>
+            <span class="course-cta">{{if $c.Started}}Продолжить →{{else}}Старт →{{end}}</span>
+        </div>
+    </a>
+    {{end}}
+</div>
+<div id="no-results" class="no-results" style="display:none;">Ничего не найдено</div>
+
+<style>
+.sec-toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+.filter-row { display:flex; flex-wrap:wrap; gap:8px; }
+.course-search { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:8px 14px; border-radius:999px; font-size:.88em; min-width:200px; outline:none; }
+.course-search:focus { border-color:var(--border-strong); }
+.filter-chip { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); padding:7px 14px; border-radius:999px; cursor:pointer; font-size:.86em; font-weight:600; transition:all .15s; }
+.filter-chip:hover { color:var(--text); border-color:var(--border-strong); }
+.filter-chip.active { background:var(--grad); color:#0a0c10; border:none; }
+.chip-count { opacity:.65; font-weight:700; margin-left:2px; }
+
+.courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+.course-card { display:flex; flex-direction:column; }
+.course-cover { aspect-ratio:600/340; height:auto; }
+.course-body { padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.course-title { font-size:1.04em; line-height:1.3; font-weight:700; }
+.course-meta { display:flex; flex-wrap:wrap; gap:6px; }
+.meta-pill { font-size:.72em; color:var(--text-muted); background:var(--bg-elevated); border:1px solid var(--border); padding:2px 9px; border-radius:999px; }
+.meta-label { color:var(--accent); border-color:transparent; background:color-mix(in srgb, var(--accent) 14%, transparent); font-weight:700; }
+.course-cta { margin-top:auto; font-size:.82em; font-weight:700; color:var(--accent); }
+.no-results { text-align:center; color:var(--text-muted); padding:50px; }
+</style>
+
+<script>
+var curCat='Все', curQuery='';
+function applyFilters(){
+    var shown=0;
+    document.querySelectorAll('.course-card').forEach(function(card){
+        var okCat=(curCat==='Все'||card.dataset.cat===curCat);
+        var okQ=(curQuery===''||card.dataset.title.toLowerCase().indexOf(curQuery)!==-1);
+        var show=okCat&&okQ; card.style.display=show?'':'none'; if(show)shown++;
+    });
+    document.getElementById('no-results').style.display=shown===0?'block':'none';
+}
+function filterCat(cat,el){
+    document.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active');});
+    el.classList.add('active'); curCat=cat; applyFilters();
+}
+function searchCourses(q){ curQuery=q.trim().toLowerCase(); applyFilters(); }
+</script>
+{{end}}

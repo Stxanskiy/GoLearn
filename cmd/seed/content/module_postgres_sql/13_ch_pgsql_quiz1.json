@@ -1,0 +1,253 @@
+{
+  "n": 13,
+  "id": "ch_pgsql_quiz1",
+  "title": "Проверка: SQL, psql, SELECT и JOIN",
+  "type": "quiz",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что такое SQL?",
+      "taskid": "pgsql_quiz1_t1_sql",
+      "hint": "",
+      "question_html": "<p>Что лучше всего описывает SQL?</p>",
+      "options": [
+        {
+          "text": "Язык разметки интерфейсов",
+          "correct": false,
+          "explanation": "Нет — интерфейсы описывают HTML/CSS и другие технологии"
+        },
+        {
+          "text": "Язык запросов к реляционным базам данных",
+          "correct": true,
+          "explanation": "Верно! SQL используют, чтобы читать и менять данные в таблицах"
+        },
+        {
+          "text": "Формат архивов приложений",
+          "correct": false,
+          "explanation": "Нет — это не относится к SQL"
+        },
+        {
+          "text": "Команда Linux для поиска файлов",
+          "correct": false,
+          "explanation": "Нет — для поиска файлов часто используют find или rg"
+        }
+      ],
+      "raw_description": "<p>Что лучше всего описывает SQL?</p><ul>\n<li>Язык разметки интерфейсов [Нет — интерфейсы описывают HTML/CSS и другие технологии]</li>\n<li>+Язык запросов к реляционным базам данных [Верно! SQL используют, чтобы читать и менять данные в таблицах]</li>\n<li>Формат архивов приложений [Нет — это не относится к SQL]</li>\n<li>Команда Linux для поиска файлов [Нет — для поиска файлов часто используют find или rg]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем завершается SQL-запрос в psql?",
+      "taskid": "pgsql_quiz1_t2_semicolon",
+      "hint": "",
+      "question_html": "<p>Что нужно поставить в конце SQL-запроса внутри <code>psql</code>?</p>",
+      "options": [
+        {
+          "text": "Две точки <code>..</code>",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Символ <code>#</code>",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Точку с запятой <code>;</code>",
+          "correct": true,
+          "explanation": "Верно! Без неё psql будет ждать продолжения запроса"
+        },
+        {
+          "text": "Ничего, Enter всегда запускает запрос",
+          "correct": false,
+          "explanation": "Нет — многострочный SQL должен завершаться явно"
+        }
+      ],
+      "raw_description": "<p>Что нужно поставить в конце SQL-запроса внутри <code>psql</code>?</p><ul>\n<li>Две точки <code>..</code> [Нет]</li>\n<li>Символ <code>#</code> [Нет]</li>\n<li>+Точку с запятой <code>;</code> [Верно! Без неё psql будет ждать продолжения запроса]</li>\n<li>Ничего, Enter всегда запускает запрос [Нет — многострочный SQL должен завершаться явно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает \\dt?",
+      "taskid": "pgsql_quiz1_t3_dt",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>\\dt</code> в <code>psql</code>?</p>",
+      "options": [
+        {
+          "text": "Удаляет таблицу",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Показывает список таблиц",
+          "correct": true,
+          "explanation": "Верно! Это внутренняя команда psql"
+        },
+        {
+          "text": "Показывает текущую дату",
+          "correct": false,
+          "explanation": "Нет — для даты можно использовать SELECT current_date"
+        },
+        {
+          "text": "Запускает транзакцию",
+          "correct": false,
+          "explanation": "Нет — транзакция начинается через BEGIN"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>\\dt</code> в <code>psql</code>?</p><ul>\n<li>Удаляет таблицу [Нет]</li>\n<li>+Показывает список таблиц [Верно! Это внутренняя команда psql]</li>\n<li>Показывает текущую дату [Нет — для даты можно использовать SELECT current_date]</li>\n<li>Запускает транзакцию [Нет — транзакция начинается через BEGIN]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем LIMIT?",
+      "taskid": "pgsql_quiz1_t4_limit",
+      "hint": "",
+      "question_html": "<p>Зачем в запросе используют <code>LIMIT</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы удалить лишние строки из таблицы",
+          "correct": false,
+          "explanation": "Нет — LIMIT не меняет данные"
+        },
+        {
+          "text": "Чтобы создать индекс",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы ограничить количество строк в результате",
+          "correct": true,
+          "explanation": "Верно! Например LIMIT 5 вернёт максимум 5 строк"
+        },
+        {
+          "text": "Чтобы подключиться к базе",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем в запросе используют <code>LIMIT</code>?</p><ul>\n<li>Чтобы удалить лишние строки из таблицы [Нет — LIMIT не меняет данные]</li>\n<li>Чтобы создать индекс [Нет]</li>\n<li>+Чтобы ограничить количество строк в результате [Верно! Например LIMIT 5 вернёт максимум 5 строк]</li>\n<li>Чтобы подключиться к базе [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как выбрать уникальные города?",
+      "taskid": "pgsql_quiz1_t5_distinct",
+      "hint": "",
+      "question_html": "<p>Какой запрос покажет уникальные значения <code>city</code> из <code>customers</code>?</p>",
+      "options": [
+        {
+          "text": "<code>SELECT city UNIQUE FROM customers;</code>",
+          "correct": false,
+          "explanation": "Нет — такой формы нет"
+        },
+        {
+          "text": "<code>SELECT DISTINCT city FROM customers;</code>",
+          "correct": true,
+          "explanation": "Верно! DISTINCT убирает повторы"
+        },
+        {
+          "text": "<code>SELECT ONLY city FROM customers;</code>",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "<code>SELECT city FROM customers GROUP city;</code>",
+          "correct": false,
+          "explanation": "Нет — синтаксис неверный"
+        }
+      ],
+      "raw_description": "<p>Какой запрос покажет уникальные значения <code>city</code> из <code>customers</code>?</p><ul>\n<li><code>SELECT city UNIQUE FROM customers;</code> [Нет — такой формы нет]</li>\n<li>+<code>SELECT DISTINCT city FROM customers;</code> [Верно! DISTINCT убирает повторы]</li>\n<li><code>SELECT ONLY city FROM customers;</code> [Нет]</li>\n<li><code>SELECT city FROM customers GROUP city;</code> [Нет — синтаксис неверный]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как проверить NULL?",
+      "taskid": "pgsql_quiz1_t6_null",
+      "hint": "",
+      "question_html": "<p>Как правильно найти строки, где <code>city</code> отсутствует?</p>",
+      "options": [
+        {
+          "text": "<code>WHERE city = NULL</code>",
+          "correct": false,
+          "explanation": "Нет — NULL так не сравнивается"
+        },
+        {
+          "text": "<code>WHERE city == NULL</code>",
+          "correct": false,
+          "explanation": "Нет — в SQL нет такого оператора для NULL"
+        },
+        {
+          "text": "<code>WHERE city IS NULL</code>",
+          "correct": true,
+          "explanation": "Верно! NULL проверяется через IS NULL"
+        },
+        {
+          "text": "<code>WHERE city LIKE NULL</code>",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Как правильно найти строки, где <code>city</code> отсутствует?</p><ul>\n<li><code>WHERE city = NULL</code> [Нет — NULL так не сравнивается]</li>\n<li><code>WHERE city == NULL</code> [Нет — в SQL нет такого оператора для NULL]</li>\n<li>+<code>WHERE city IS NULL</code> [Верно! NULL проверяется через IS NULL]</li>\n<li><code>WHERE city LIKE NULL</code> [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает ORDER BY price DESC?",
+      "taskid": "pgsql_quiz1_t7_order",
+      "hint": "",
+      "question_html": "<p>Что означает <code>ORDER BY price DESC</code>?</p>",
+      "options": [
+        {
+          "text": "Сортировка по цене от меньшей к большей",
+          "correct": false,
+          "explanation": "Нет — это ASC"
+        },
+        {
+          "text": "Сортировка по цене от большей к меньшей",
+          "correct": true,
+          "explanation": "Верно! DESC означает descending"
+        },
+        {
+          "text": "Удаление колонки price",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Группировка по цене",
+          "correct": false,
+          "explanation": "Нет — для группировки используют GROUP BY"
+        }
+      ],
+      "raw_description": "<p>Что означает <code>ORDER BY price DESC</code>?</p><ul>\n<li>Сортировка по цене от меньшей к большей [Нет — это ASC]</li>\n<li>+Сортировка по цене от большей к меньшей [Верно! DESC означает descending]</li>\n<li>Удаление колонки price [Нет]</li>\n<li>Группировка по цене [Нет — для группировки используют GROUP BY]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает JOIN?",
+      "taskid": "pgsql_quiz1_t8_join",
+      "hint": "",
+      "question_html": "<p>Для чего нужен <code>JOIN</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы выйти из psql",
+          "correct": false,
+          "explanation": "Нет — для выхода \\q"
+        },
+        {
+          "text": "Чтобы ограничить строки",
+          "correct": false,
+          "explanation": "Нет — для этого WHERE или LIMIT"
+        },
+        {
+          "text": "Чтобы соединить строки из разных таблиц по условию",
+          "correct": true,
+          "explanation": "Верно! Например orders.customer_id = customers.id"
+        },
+        {
+          "text": "Чтобы создать базу данных",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Для чего нужен <code>JOIN</code>?</p><ul>\n<li>Чтобы выйти из psql [Нет — для выхода \\q]</li>\n<li>Чтобы ограничить строки [Нет — для этого WHERE или LIMIT]</li>\n<li>+Чтобы соединить строки из разных таблиц по условию [Верно! Например orders.customer_id = customers.id]</li>\n<li>Чтобы создать базу данных [Нет]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

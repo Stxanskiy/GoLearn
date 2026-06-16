@@ -1,0 +1,208 @@
+{
+  "n": 22,
+  "id": "ch_lcore_lab11",
+  "title": "Лабораторная 11: Логи (/var/log, journalctl, dmesg)",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "ls /var/log: структура логов",
+      "taskid": "lcore_lab11_t1_varlog",
+      "hint": "<p>У <code>ls</code> можно совместить подробный формат, скрытые имена и human-readable размеры: это удобнее для просмотра каталогов с логами.</p>",
+      "question_html": "<p>Посмотри подробный список файлов в директории <code>/var/log/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри подробный список файлов в директории <code>/var/log/</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: где системные логи в этой VM?",
+      "taskid": "lcore_lab11_t2_quiz",
+      "hint": "",
+      "question_html": "<p>В этой VM в <code>/var/log/</code> может не быть файлов <code>syslog</code> и <code>auth.log</code>: системные логи собирает <code>systemd-journald</code>. Какой инструмент стоит использовать, чтобы смотреть системные логи и логи сервисов?</p>",
+      "options": [
+        {
+          "text": "<code>+journalctl</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>cat /var/log/syslog</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>tail /var/log/auth.log</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>/var/log/messages</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В этой VM в <code>/var/log/</code> может не быть файлов <code>syslog</code> и <code>auth.log</code>: системные логи собирает <code>systemd-journald</code>. Какой инструмент стоит использовать, чтобы смотреть системные логи и логи сервисов?</p>\n<ul>\n<li><code>+journalctl</code></li>\n<li><code>cat /var/log/syslog</code></li>\n<li><code>tail /var/log/auth.log</code></li>\n<li><code>/var/log/messages</code></li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "grep в dpkg.log",
+      "taskid": "lcore_lab11_t3_syslog",
+      "hint": "<p>В этой VM <code>syslog</code> может отсутствовать, поэтому для файлового поиска используем существующий лог <code>dpkg.log</code>. В <code>grep</code> здесь важны расширенные регулярные выражения и поиск без учёта регистра; последние строки оставляет <code>tail</code> с указанием количества.</p>",
+      "question_html": "<p>Найди последние 5 записей о пакетах в существующем файловом логе и посмотри их в терминале.</p>",
+      "options": [],
+      "raw_description": "<p>Найди последние 5 записей о пакетах в существующем файловом логе и посмотри их в терминале.</p>"
+    },
+    {
+      "type": "self",
+      "title": "dmesg: сообщения ядра",
+      "taskid": "lcore_lab11_t4_dmesg",
+      "hint": "<p><code>dmesg</code> выводит сообщения ядра целиком, поэтому для короткого просмотра удобно оставить только хвост вывода через <code>tail</code> с числом строк.</p>",
+      "question_html": "<p>Посмотри последние 10 сообщений ядра.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри последние 10 сообщений ядра.</p>"
+    },
+    {
+      "type": "self",
+      "title": "journalctl с временным фильтром",
+      "taskid": "lcore_lab11_t5_time",
+      "hint": "<p>Для времени у <code>journalctl</code> есть фильтр <code>--since</code>, а <code>--no-pager</code> делает вывод удобным для пайпа или сохранения. После этого можно оставить только последние строки.</p>",
+      "question_html": "<p>Посмотри последние строки системных логов за последний час.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри последние строки системных логов за последний час.</p>"
+    },
+    {
+      "type": "self",
+      "title": "logrotate конфиг",
+      "taskid": "lcore_lab11_t6_logrotate",
+      "hint": "<p>Конфиги logrotate лежат в <code>/etc/logrotate.conf</code> и <code>/etc/logrotate.d/</code>. Для проверки существования файла пригодится <code>test -f</code>, а для ветвления в shell — связка успешного и запасного действия через <code>&amp;&amp;</code> и <code>||</code>.</p>",
+      "question_html": "<p>Посмотри конфигурацию logrotate для nginx, если отдельный файл есть, а иначе открой главный конфиг logrotate.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри конфигурацию logrotate для nginx, если отдельный файл есть, а иначе открой главный конфиг logrotate.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему syslog может отсутствовать?",
+      "taskid": "lcore_lab11_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Почему в этой VM нельзя автоматически ожидать файл <code>/var/log/syslog</code>?</p>",
+      "options": [
+        {
+          "text": "Системные логи может собирать <code>systemd-journald</code>, и тогда их читают через <code>journalctl</code>",
+          "correct": true,
+          "explanation": "Верно! Не все дистрибутивы пишут syslog-файл"
+        },
+        {
+          "text": "Потому что Linux не умеет хранить системные логи",
+          "correct": false,
+          "explanation": "Нет — умеет, но место хранения отличается"
+        },
+        {
+          "text": "Потому что <code>/var/log</code> всегда пустой",
+          "correct": false,
+          "explanation": "Нет — там могут быть другие логи"
+        },
+        {
+          "text": "Потому что syslog доступен только через браузер",
+          "correct": false,
+          "explanation": "Нет — это системный журнал"
+        }
+      ],
+      "raw_description": "<p>Почему в этой VM нельзя автоматически ожидать файл <code>/var/log/syslog</code>?</p><ul><li>+Системные логи может собирать <code>systemd-journald</code>, и тогда их читают через <code>journalctl</code> [Верно! Не все дистрибутивы пишут syslog-файл]</li><li>Потому что Linux не умеет хранить системные логи [Нет — умеет, но место хранения отличается]</li><li>Потому что <code>/var/log</code> всегда пустой [Нет — там могут быть другие логи]</li><li>Потому что syslog доступен только через браузер [Нет — это системный журнал]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем фильтровать журнал?",
+      "taskid": "lcore_lab11_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем при чтении системного журнала использовать фильтры по unit, времени или уровню сообщения?</p>",
+      "options": [
+        {
+          "text": "Чтобы уменьшить шум и оставить события, относящиеся к конкретной диагностике",
+          "correct": true,
+          "explanation": "Верно! Без фильтров журнал быстро становится слишком большим"
+        },
+        {
+          "text": "Чтобы удалить старые записи журнала",
+          "correct": false,
+          "explanation": "Нет — фильтры ограничивают вывод, а не очищают журнал"
+        },
+        {
+          "text": "Чтобы включить автозапуск сервиса",
+          "correct": false,
+          "explanation": "Нет — это делает <code>systemctl enable</code>"
+        },
+        {
+          "text": "Чтобы показать только файловые права",
+          "correct": false,
+          "explanation": "Нет — журнал содержит события, а не режимы файлов"
+        }
+      ],
+      "raw_description": "<p>Зачем при чтении системного журнала использовать фильтры по unit, времени или уровню сообщения?</p><ul><li>+Чтобы уменьшить шум и оставить события, относящиеся к конкретной диагностике [Верно! Без фильтров журнал быстро становится слишком большим]</li><li>Чтобы удалить старые записи журнала [Нет — фильтры ограничивают вывод, а не очищают журнал]</li><li>Чтобы включить автозапуск сервиса [Нет — это делает <code>systemctl enable</code>]</li><li>Чтобы показать только файловые права [Нет — журнал содержит события, а не режимы файлов]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем dmesg отличается от journalctl?",
+      "taskid": "lcore_lab11_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Чем <code>dmesg</code> отличается от <code>journalctl</code> в базовой диагностике?</p>",
+      "options": [
+        {
+          "text": "<code>dmesg</code> показывает сообщения ядра, а <code>journalctl</code> читает systemd-журнал с системными и сервисными событиями",
+          "correct": true,
+          "explanation": "Верно! Источники и область видимости разные"
+        },
+        {
+          "text": "<code>dmesg</code> показывает только список пользователей",
+          "correct": false,
+          "explanation": "Нет — это сообщения ядра"
+        },
+        {
+          "text": "<code>journalctl</code> работает только с tar-архивами",
+          "correct": false,
+          "explanation": "Нет — это журнал systemd"
+        },
+        {
+          "text": "Обе команды всегда показывают один и тот же файл без отличий",
+          "correct": false,
+          "explanation": "Нет — вывод и источник могут отличаться"
+        }
+      ],
+      "raw_description": "<p>Чем <code>dmesg</code> отличается от <code>journalctl</code> в базовой диагностике?</p><ul><li>+<code>dmesg</code> показывает сообщения ядра, а <code>journalctl</code> читает systemd-журнал с системными и сервисными событиями [Верно! Источники и область видимости разные]</li><li><code>dmesg</code> показывает только список пользователей [Нет — это сообщения ядра]</li><li><code>journalctl</code> работает только с tar-архивами [Нет — это журнал systemd]</li><li>Обе команды всегда показывают один и тот же файл без отличий [Нет — вывод и источник могут отличаться]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему время события важно в логах?",
+      "taskid": "lcore_lab11_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему при разборе логов важно сопоставлять событие со временем возникновения проблемы?</p>",
+      "options": [
+        {
+          "text": "Так проще отделить свежую причину инцидента от старых и нерелевантных сообщений",
+          "correct": true,
+          "explanation": "Верно! Время — один из главных фильтров диагностики"
+        },
+        {
+          "text": "Потому что старые логи всегда неверные",
+          "correct": false,
+          "explanation": "Нет — они могут быть верными, но не относиться к текущей проблеме"
+        },
+        {
+          "text": "Потому что время события меняет права доступа к файлу",
+          "correct": false,
+          "explanation": "Нет — права меняются отдельно"
+        },
+        {
+          "text": "Потому что journalctl показывает только будущие события",
+          "correct": false,
+          "explanation": "Нет — он читает уже записанный журнал"
+        }
+      ],
+      "raw_description": "<p>Почему при разборе логов важно сопоставлять событие со временем возникновения проблемы?</p><ul><li>+Так проще отделить свежую причину инцидента от старых и нерелевантных сообщений [Верно! Время — один из главных фильтров диагностики]</li><li>Потому что старые логи всегда неверные [Нет — они могут быть верными, но не относиться к текущей проблеме]</li><li>Потому что время события меняет права доступа к файлу [Нет — права меняются отдельно]</li><li>Потому что journalctl показывает только будущие события [Нет — он читает уже записанный журнал]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab11/setup.yaml"
+}

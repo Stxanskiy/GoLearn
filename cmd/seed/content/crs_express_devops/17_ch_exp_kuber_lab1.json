@@ -1,0 +1,86 @@
+{
+  "n": 17,
+  "id": "ch_exp_kuber_lab1",
+  "title": "Практика: первый под в Kubernetes",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что такое namespace?",
+      "taskid": "exp_kuber_lab1_t5_ns_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем в Kubernetes нужны <strong>namespace</strong> (пространства имён)?</p>",
+      "options": [
+        {
+          "text": "Это синоним node",
+          "correct": false,
+          "explanation": "Нет — node это сервер, namespace это логическое разделение"
+        },
+        {
+          "text": "Это имя для Pod",
+          "correct": false,
+          "explanation": "Нет — у Pod есть своё имя (metadata.name), namespace это другое"
+        },
+        {
+          "text": "Namespace — это тип хранилища данных",
+          "correct": false,
+          "explanation": "Нет — для хранения данных используются PersistentVolume"
+        },
+        {
+          "text": "Для логического разделения ресурсов внутри одного кластера",
+          "correct": true,
+          "explanation": "Верно! Namespaces позволяют изолировать ресурсы: dev/staging/prod или разные команды в одном кластере. kubectl get pods -A — показывает поды из всех namespace"
+        }
+      ],
+      "raw_description": "<p>Зачем в Kubernetes нужны <strong>namespace</strong> (пространства имён)?</p><ul><li>Это синоним node [Нет — node это сервер, namespace это логическое разделение]</li><li>Это имя для Pod [Нет — у Pod есть своё имя (metadata.name), namespace это другое]</li><li>Namespace — это тип хранилища данных [Нет — для хранения данных используются PersistentVolume]</li><li>+Для логического разделения ресурсов внутри одного кластера [Верно! Namespaces позволяют изолировать ресурсы: dev/staging/prod или разные команды в одном кластере. kubectl get pods -A — показывает поды из всех namespace]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить первый pod",
+      "taskid": "exp_kuber_lab1_t3_run",
+      "hint": "<p>Используй <code>kubectl get</code> и <code>kubectl describe</code>: проверь kind Pod, namespace, labels и состояние контейнера. Изменения применяй через YAML, когда задача просит правку ресурса.</p>",
+      "question_html": "<p>Запусти pod с образом <code>nginx:alpine</code> — похоже на <code>docker run nginx:alpine</code>, только в Kubernetes. Если кластер только что открылся, сначала проверь, что <code>kubectl</code> уже видит твой namespace:</p>",
+      "options": [
+        {
+          "text": "<code>nginx</code> — имя пода",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>--image=nginx:alpine</code> — образ контейнера",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>--restart=Never</code> — не перезапускать автоматически (простой pod, не Deployment)",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Запусти pod с образом <code>nginx:alpine</code> — похоже на <code>docker run nginx:alpine</code>, только в Kubernetes. Если кластер только что открылся, сначала проверь, что <code>kubectl</code> уже видит твой namespace:</p><ul>\n  <li><code>nginx</code> — имя пода</li>\n  <li><code>--image=nginx:alpine</code> — образ контейнера</li>\n  <li><code>--restart=Never</code> — не перезапускать автоматически (простой pod, не Deployment)</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Сохранить pod в YAML",
+      "taskid": "exp_kuber_lab1_t7_save_yaml",
+      "hint": "<p>После сохранения можно быстро посмотреть начало файла командой <code>sed -n '1,40p' /root/nginx-pod.yaml</code>. Для чистого учебного манифеста без статуса и runtime-полей обычно используют <code>kubectl run ... --dry-run=client -o yaml</code>.</p>",
+      "question_html": "<p>Сохрани текущее описание Pod <code>nginx</code> в YAML-файл. Команда:</p>\n<pre><code>kubectl get pod nginx -o yaml &gt; /root/nginx-pod.yaml</code></pre>\n<p>Так можно выгружать почти любой Kubernetes-объект: Pod, Deployment, Service, ConfigMap, Namespace. Это часто нужно для отладки и проверки: посмотреть реальные <code>metadata</code>, <code>spec</code>, <code>status</code>, labels, annotations и сравнить текущее состояние с тем, что ожидалось.</p>\n<p>Файл получится заметно длиннее команды запуска — это нормально. Kubernetes добавляет служебные поля: <code>uid</code>, <code>resourceVersion</code>, <code>status</code>, IP Pod-а, node, service account volume, limits/requests и другие defaults. Такой YAML показывает фактическое состояние объекта в кластере.</p>",
+      "options": [],
+      "raw_description": "<p>Сохрани текущее описание Pod <code>nginx</code> в YAML-файл. Команда:</p>\n<pre><code>kubectl get pod nginx -o yaml &gt; /root/nginx-pod.yaml</code></pre>\n<p>Так можно выгружать почти любой Kubernetes-объект: Pod, Deployment, Service, ConfigMap, Namespace. Это часто нужно для отладки и проверки: посмотреть реальные <code>metadata</code>, <code>spec</code>, <code>status</code>, labels, annotations и сравнить текущее состояние с тем, что ожидалось.</p>\n<p>Файл получится заметно длиннее команды запуска — это нормально. Kubernetes добавляет служебные поля: <code>uid</code>, <code>resourceVersion</code>, <code>status</code>, IP Pod-а, node, service account volume, limits/requests и другие defaults. Такой YAML показывает фактическое состояние объекта в кластере.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Открыть YAML в VSCode",
+      "taskid": "exp_kuber_lab1_t8_vscode_yaml",
+      "hint": "<p>В VSCode слева открой Explorer. Если дерево файлов не видно, нажми иконку Explorer в верхней части боковой панели.</p>",
+      "question_html": "<p>Когда терминал загрузился, нажми сверху <strong>VSCode</strong>. Откроется редактор прямо в браузере, подключённый к этой же виртуальной машине.</p>\n<p>Слева в Explorer будет дерево файлов сервера. Открой файл <code>/root/nginx-pod.yaml</code> и посмотри структуру YAML: <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>, <code>status</code>.</p>\n<p>Это задача с самопроверкой: когда убедился, что файл открыт и дерево файлов видно, нажми <strong>Готово</strong>.</p>",
+      "options": [],
+      "raw_description": "<p>Когда терминал загрузился, нажми сверху <strong>VSCode</strong>. Откроется редактор прямо в браузере, подключённый к этой же виртуальной машине.</p>\n<p>Слева в Explorer будет дерево файлов сервера. Открой файл <code>/root/nginx-pod.yaml</code> и посмотри структуру YAML: <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>, <code>status</code>.</p>\n<p>Это задача с самопроверкой: когда убедился, что файл открыт и дерево файлов видно, нажми <strong>Готово</strong>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": ""
+}

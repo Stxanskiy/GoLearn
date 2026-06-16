@@ -25,17 +25,17 @@
 
 {{range $i, $r := .Results}}
 <div class="quiz-question">
-    <h3>Question {{add $i 1}} {{if $r.IsCorrect}}<span style="color: var(--green);">&#10003;</span>{{else}}<span style="color: var(--red);">&#10007;</span>{{end}}</h3>
-    <p style="margin-bottom: 12px;">{{$r.Question}}</p>
+    <h3>Вопрос {{add $i 1}} {{if $r.IsCorrect}}<span style="color: var(--green);">&#10003;</span>{{else}}<span style="color: var(--red);">&#10007;</span>{{end}}</h3>
+    <p style="margin-bottom: 12px;">{{safeHTML $r.Question}}</p>
     {{range $j, $opt := $r.Options}}
     <div class="quiz-option {{if eq $j $r.Correct}}correct{{else if and (eq $j $r.Selected) (not (eq $j $r.Correct))}}wrong{{end}}" style="cursor: default;">
-        {{$opt}}
+        {{safeHTML $opt}}
         {{if eq $j $r.Correct}} &#10003;{{end}}
-        {{if and (eq $j $r.Selected) (not (eq $j $r.Correct))}} (your answer){{end}}
+        {{if and (eq $j $r.Selected) (not (eq $j $r.Correct))}} (твой ответ){{end}}
     </div>
     {{end}}
     {{if $r.Explanation}}
-    <div class="explanation">{{$r.Explanation}}</div>
+    <div class="explanation">{{safeHTML $r.Explanation}}</div>
     {{end}}
 </div>
 {{end}}

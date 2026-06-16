@@ -1,0 +1,85 @@
+{
+  "n": 15,
+  "id": "ch_dkc_lab7",
+  "title": "Лабораторная 7: Scale и профили",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить масштабируемый стек",
+      "taskid": "dkc_lab7_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/scaleapp</code> подготовлен стек для масштабирования. Посмотри файл:</p>\n<pre><code>cat /root/scaleapp/docker-compose.yml</code></pre>\n<p>Сервис <code>worker</code> не использует фиксированные порты — это нужно для масштабирования (несколько реплик не могут использовать один порт хоста).</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/scaleapp</code> подготовлен стек для масштабирования. Посмотри файл:</p>\n<pre><code>cat /root/scaleapp/docker-compose.yml</code></pre>\n<p>Сервис <code>worker</code> не использует фиксированные порты — это нужно для масштабирования (несколько реплик не могут использовать один порт хоста).</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить один экземпляр",
+      "taskid": "dkc_lab7_t2_up_one",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>",
+      "question_html": "<p>Запусти стек с одним экземпляром <code>worker</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти стек с одним экземпляром <code>worker</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Масштабировать до 3 экземпляров",
+      "taskid": "dkc_lab7_t3_scale3",
+      "hint": "<p>Используй <code>docker compose up</code> с масштабированием сервиса: задай нужное число реплик и затем проверь статус проекта из каталога с compose-файлом.</p>",
+      "question_html": "<p>Масштабируй сервис <code>worker</code> до 3 экземпляров.</p><p>Compose создаст три контейнера для сервиса <code>worker</code>; их имена можно посмотреть через <code>docker compose ps</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Масштабируй сервис <code>worker</code> до 3 экземпляров.</p><p>Compose создаст три контейнера для сервиса <code>worker</code>; их имена можно посмотреть через <code>docker compose ps</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить количество экземпляров",
+      "taskid": "dkc_lab7_t4_check_scale",
+      "hint": "<p>Используй <code>docker compose up</code> с масштабированием сервиса: задай нужное число реплик и затем проверь статус проекта из каталога с compose-файлом.</p>",
+      "question_html": "<p>Проверь, что после масштабирования запущено 3 экземпляра сервиса <code>worker</code> в текущем Compose-проекте.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что после масштабирования запущено 3 экземпляра сервиса <code>worker</code> в текущем Compose-проекте.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Использовать deploy.replicas",
+      "taskid": "dkc_lab7_t5_replicas",
+      "hint": "<p>Используй <code>docker compose up</code> с масштабированием сервиса и затем проверь статус проекта из каталога с compose-файлом. Проверь содержимое итогового файла: <code>/root/scaleapp/docker-compose.yml</code>.</p>",
+      "question_html": "<p>В файле <code>/root/scaleapp/docker-compose.yml</code> добавь секцию <code>deploy.replicas</code> для сервиса <code>worker</code> и укажи <code>replicas: 2</code>.</p><p>После изменения перезапусти стек и проверь, что второй контейнер worker появился.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/root/scaleapp/docker-compose.yml</code> добавь секцию <code>deploy.replicas</code> для сервиса <code>worker</code> и укажи <code>replicas: 2</code>.</p><p>После изменения перезапусти стек и проверь, что второй контейнер worker появился.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть статус после replicas",
+      "taskid": "dkc_lab7_t6_status_replicas",
+      "hint": "",
+      "question_html": "<p>Посмотри статус запущенных сервисов после настройки <code>deploy.replicas</code>:</p>\n<pre><code>cd /root/scaleapp</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>Убедись, что у сервиса <code>worker</code> осталось 2 реплики.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статус запущенных сервисов после настройки <code>deploy.replicas</code>:</p>\n<pre><code>cd /root/scaleapp</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>Убедись, что у сервиса <code>worker</code> осталось 2 реплики.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Уменьшить до 1 экземпляра",
+      "taskid": "dkc_lab7_t7_scale_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Уменьши количество экземпляров Compose-сервиса <code>worker</code> до 1.</p><p>Compose остановит и удалит лишние контейнеры.</p>",
+      "options": [],
+      "raw_description": "<p>Уменьши количество экземпляров Compose-сервиса <code>worker</code> до 1.</p><p>Compose остановит и удалит лишние контейнеры.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить стек",
+      "taskid": "dkc_lab7_t8_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови стек.</p>",
+      "options": [],
+      "raw_description": "<p>Останови стек.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab7/setup.yaml"
+}

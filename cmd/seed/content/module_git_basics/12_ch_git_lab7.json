@@ -1,0 +1,187 @@
+{
+  "n": 12,
+  "id": "ch_git_lab7",
+  "title": "Лабораторная 7: Продвинутый git log и cherry-pick",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Граф веток",
+      "taskid": "git_lab7_t1",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Посмотри граф всех веток в репозитории <code>/root/project</code> в компактном формате.</p>\n<pre><code>git -C /root/project log --oneline --graph --all --decorate</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри граф всех веток в репозитории <code>/root/project</code> в компактном формате.</p>\n<pre><code>git -C /root/project log --oneline --graph --all --decorate</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Коммиты конкретного автора",
+      "taskid": "git_lab7_t2",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Найди все коммиты автора <code>student</code> в репозитории <code>/root/project</code> и запиши в <code>/root/student_commits.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все коммиты автора <code>student</code> в репозитории <code>/root/project</code> и запиши в <code>/root/student_commits.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "История файла",
+      "taskid": "git_lab7_t3",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Получи историю изменений файла <code>README.md</code> в репозитории <code>/root/project</code> и сохрани в <code>/root/readme_history.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи историю изменений файла <code>README.md</code> в репозитории <code>/root/project</code> и сохрани в <code>/root/readme_history.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое cherry-pick?",
+      "taskid": "git_lab7_t4_quiz",
+      "hint": "",
+      "question_html": "<p>В чём сценарий использования <code>git cherry-pick</code>?</p>",
+      "options": [
+        {
+          "text": "Выбрать лучший коммит из нескольких конфликтующих",
+          "correct": false,
+          "explanation": "Нет — cherry-pick не разрешает конфликты автоматически"
+        },
+        {
+          "text": "Объединить несколько коммитов в один",
+          "correct": false,
+          "explanation": "Нет — для этого используют git rebase -i (squash)"
+        },
+        {
+          "text": "Перенести один конкретный коммит из одной ветки в другую, не merge'я всю ветку",
+          "correct": true,
+          "explanation": "Верно! Типично: hotfix в main нужно перенести в develop. cherry-pick копирует изменения одного коммита. История остаётся чистой"
+        },
+        {
+          "text": "Создать копию ветки",
+          "correct": false,
+          "explanation": "Нет — для копии ветки используют git switch -c new-branch или git branch new-branch"
+        }
+      ],
+      "raw_description": "<p>В чём сценарий использования <code>git cherry-pick</code>?</p><ul>\n<li>Выбрать лучший коммит из нескольких конфликтующих [Нет — cherry-pick не разрешает конфликты автоматически]</li>\n<li>Объединить несколько коммитов в один [Нет — для этого используют git rebase -i (squash)]</li>\n<li>+Перенести один конкретный коммит из одной ветки в другую, не merge'я всю ветку [Верно! Типично: hotfix в main нужно перенести в develop. cherry-pick копирует изменения одного коммита. История остаётся чистой]</li>\n<li>Создать копию ветки [Нет — для копии ветки используют git switch -c new-branch или git branch new-branch]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Cherry-pick коммит",
+      "taskid": "git_lab7_t5",
+      "hint": "<p>Сначала найди нужный commit через <code>git log</code>, затем примени его через <code>git cherry-pick</code> и проверь историю.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> есть ветка <code>hotfix</code> с одним коммитом.</p>\n<p>Находясь на ветке <code>main</code>, сделай cherry-pick этого коммита.</p>\n<p>Возьми последний коммит из ветки <code>hotfix</code> и примени его поверх <code>main</code>. После cherry-pick файл <code>/root/project/fix.txt</code> должен появиться в рабочем дереве.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> есть ветка <code>hotfix</code> с одним коммитом.</p>\n<p>Находясь на ветке <code>main</code>, сделай cherry-pick этого коммита.</p>\n<p>Возьми последний коммит из ветки <code>hotfix</code> и примени его поверх <code>main</code>. После cherry-pick файл <code>/root/project/fix.txt</code> должен появиться в рабочем дереве.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git diff между ветками",
+      "taskid": "git_lab7_t6",
+      "hint": "<p>Сравни нужные состояния через <code>git diff --name-only main develop</code>: рабочую директорию, индекс или две ветки. В итоговом файле должен быть список имён без лишнего текста, минимум строка <code>develop.txt</code>.</p>",
+      "question_html": "<p>Посмотри разницу между ветками <code>main</code> и <code>develop</code> в репозитории <code>/root/project</code> и сохрани список изменённых файлов в <code>/root/branch_diff.txt</code>. В этой лаборатории отличаться должен файл <code>develop.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри разницу между ветками <code>main</code> и <code>develop</code> в репозитории <code>/root/project</code> и сохрани список изменённых файлов в <code>/root/branch_diff.txt</code>. В этой лаборатории отличаться должен файл <code>develop.txt</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Финальный граф",
+      "taskid": "git_lab7_t7",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Посмотри финальный граф всех веток с датами в репозитории <code>/root/project</code>.</p>\n<pre><code>git -C /root/project log --graph --all --decorate --date=short --pretty=format:'%h %ad %d %s'</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри финальный граф всех веток с датами в репозитории <code>/root/project</code>.</p>\n<pre><code>git -C /root/project log --graph --all --decorate --date=short --pretty=format:'%h %ad %d %s'</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "main..develop vs develop..main",
+      "taskid": "git_lab7_t8_quiz_diff_direction",
+      "hint": "",
+      "question_html": "<p>Что важно помнить о направлении в диапазоне <code>git diff main..develop</code>?</p>",
+      "options": [
+        {
+          "text": "Порядок веток не влияет на diff",
+          "correct": false,
+          "explanation": "Нет — влияет"
+        },
+        {
+          "text": "Команда показывает только merge-коммиты",
+          "correct": false,
+          "explanation": "Нет — это diff по состоянию деревьев"
+        },
+        {
+          "text": "Команда работает только с локальными ветками",
+          "correct": false,
+          "explanation": "Нет — можно сравнивать и remote refs"
+        },
+        {
+          "text": "Направление влияет на результат: это изменения develop относительно main",
+          "correct": true,
+          "explanation": "Верно! перестановка веток меняет вывод"
+        }
+      ],
+      "raw_description": "<p>Что важно помнить о направлении в диапазоне <code>git diff main..develop</code>?</p><ul>\n<li>Порядок веток не влияет на diff [Нет — влияет]</li>\n<li>Команда показывает только merge-коммиты [Нет — это diff по состоянию деревьев]</li>\n<li>Команда работает только с локальными ветками [Нет — можно сравнивать и remote refs]</li>\n<li>+Направление влияет на результат: это изменения develop относительно main [Верно! перестановка веток меняет вывод]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда cherry-pick рискован?",
+      "taskid": "git_lab7_t9_quiz_risk",
+      "hint": "",
+      "question_html": "<p>В каком случае cherry-pick может вызвать проблемы с дублированием истории?</p>",
+      "options": [
+        {
+          "text": "Когда тот же коммит позже попадёт через merge — можно получить повтор изменений",
+          "correct": true,
+          "explanation": "Верно! важно понимать последующую стратегию интеграции"
+        },
+        {
+          "text": "Когда коммит содержит только README",
+          "correct": false,
+          "explanation": "Нет — тип файла не важен"
+        },
+        {
+          "text": "Когда ветка названа не feature/*",
+          "correct": false,
+          "explanation": "Нет — имя ветки не влияет"
+        },
+        {
+          "text": "Когда используешь --oneline в git log",
+          "correct": false,
+          "explanation": "Нет — это только формат вывода"
+        }
+      ],
+      "raw_description": "<p>В каком случае cherry-pick может вызвать проблемы с дублированием истории?</p><ul>\n<li>+Когда тот же коммит позже попадёт через merge — можно получить повтор изменений [Верно! важно понимать последующую стратегию интеграции]</li>\n<li>Когда коммит содержит только README [Нет — тип файла не важен]</li>\n<li>Когда ветка названа не feature/* [Нет — имя ветки не влияет]</li>\n<li>Когда используешь --oneline в git log [Нет — это только формат вывода]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как быстро понять происхождение коммита?",
+      "taskid": "git_lab7_t10_quiz_log",
+      "hint": "",
+      "question_html": "<p>Какая комбинация опций <code>git log</code> чаще всего помогает быстро понять, откуда пришли коммиты?</p>",
+      "options": [
+        {
+          "text": "<code>--name-only</code>",
+          "correct": false,
+          "explanation": "Покажет файлы, но не общую картину ветвления"
+        },
+        {
+          "text": "<code>--oneline --graph --all --decorate</code>",
+          "correct": true,
+          "explanation": "Верно! даёт и компактность, и граф, и метки веток/тегов"
+        },
+        {
+          "text": "<code>--author</code>",
+          "correct": false,
+          "explanation": "Фильтрует автора, но не объясняет структуру истории"
+        },
+        {
+          "text": "<code>--stat</code>",
+          "correct": false,
+          "explanation": "Показывает объём изменений, но не граф связей"
+        }
+      ],
+      "raw_description": "<p>Какая комбинация опций <code>git log</code> чаще всего помогает быстро понять, откуда пришли коммиты?</p><ul>\n<li><code>--name-only</code> [Покажет файлы, но не общую картину ветвления]</li>\n<li>+<code>--oneline --graph --all --decorate</code> [Верно! даёт и компактность, и граф, и метки веток/тегов]</li>\n<li><code>--author</code> [Фильтрует автора, но не объясняет структуру истории]</li>\n<li><code>--stat</code> [Показывает объём изменений, но не граф связей]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab7/setup.yaml"
+}

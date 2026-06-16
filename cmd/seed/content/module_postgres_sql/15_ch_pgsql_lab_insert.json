@@ -1,0 +1,85 @@
+{
+  "n": 15,
+  "id": "ch_pgsql_lab_insert",
+  "title": "Лабораторная 5: добавить записи и проверить данные",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Войти в training_shop и осмотреть пустые таблицы",
+      "taskid": "pgsql_insert_t1_enter_and_inspect",
+      "hint": "<p>Если видишь ошибку подключения к базе, проверь, что setup лабораторной завершился и PostgreSQL запущен.</p>\n<pre><code>\\conninfo\n\\dn\n\\dt store.*\n\\d store.orders</code></pre>",
+      "question_html": "<p>Открой <code>psql</code> в базе <code>training_shop</code>.</p>\n<pre><code>psql -U student -d training_shop</code></pre>\n<p>Проверь подключение, посмотри схемы, таблицы <code>store.*</code> и структуру таблицы заказов <code>store.orders</code>.</p>\n<p>Обрати внимание: таблицы уже созданы, но строки ты добавишь сам.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>psql</code> в базе <code>training_shop</code>.</p>\n<pre><code>psql -U student -d training_shop</code></pre>\n<p>Проверь подключение, посмотри схемы, таблицы <code>store.*</code> и структуру таблицы заказов <code>store.orders</code>.</p>\n<p>Обрати внимание: таблицы уже созданы, но строки ты добавишь сам.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить двух клиентов",
+      "taskid": "pgsql_insert_t2_insert_customers",
+      "hint": "<p><code>id</code> указывать не нужно: PostgreSQL выдаст его сам через <code>serial</code>.</p>\n<pre><code>INSERT INTO store.customers (full_name, email)\nVALUES\n  ('Alex', 'alex@example.test'),\n  ('Max', 'max@example.test');\n\nSELECT *\nFROM store.customers;</code></pre>",
+      "question_html": "<p>Добавь двух клиентов в <code>store.customers</code>.</p>\n<p>Нужны строки: клиент <code>Alex</code> с email <code>alex@example.test</code> и клиент <code>Max</code> с email <code>max@example.test</code>.</p>\n<p>После вставки посмотри строки в таблице клиентов.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь двух клиентов в <code>store.customers</code>.</p>\n<p>Нужны строки: клиент <code>Alex</code> с email <code>alex@example.test</code> и клиент <code>Max</code> с email <code>max@example.test</code>.</p>\n<p>После вставки посмотри строки в таблице клиентов.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить строки и количество клиентов",
+      "taskid": "pgsql_insert_t3_select_customers",
+      "hint": "<p><code>count(*)</code> считает строки в таблице. Здесь файл сохранять не нужно: достаточно увидеть, что счётчик вернул <code>2</code>.</p>\n<pre><code>SELECT id, full_name, email\nFROM store.customers\nORDER BY id;\n\nSELECT count(*)\nFROM store.customers;</code></pre>",
+      "question_html": "<p>Проверь, что записи действительно появились.</p>\n<p>Сначала посмотри добавленные строки в <code>store.customers</code>: нужны колонки <code>id</code>, <code>full_name</code> и <code>email</code>, порядок — по <code>id</code>.</p>\n<p>Затем отдельным запросом посчитай клиентов.</p>\n<p>В таблице должно быть две строки: Alex и Max.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что записи действительно появились.</p>\n<p>Сначала посмотри добавленные строки в <code>store.customers</code>: нужны колонки <code>id</code>, <code>full_name</code> и <code>email</code>, порядок — по <code>id</code>.</p>\n<p>Затем отдельным запросом посчитай клиентов.</p>\n<p>В таблице должно быть две строки: Alex и Max.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить три товара",
+      "taskid": "pgsql_insert_t4_insert_products",
+      "hint": "<p>Если ошибся в цене или остатке, PostgreSQL может сработать на <code>CHECK</code>: отрицательные значения запрещены.</p>\n<pre><code>INSERT INTO store.products (name, category, price, in_stock)\nVALUES\n  ('PostgreSQL Guide', 'book', 1900.00, 25),\n  ('SQL Basics Course', 'course', 4900.00, 100),\n  ('Sticker Pack', 'merch', 500.00, 200);\n\nSELECT id, name, category, price, in_stock\nFROM store.products\nORDER BY price;</code></pre>",
+      "question_html": "<p>Добавь три товара в <code>store.products</code>.</p>\n<p>Нужны товары: <code>PostgreSQL Guide</code> в категории <code>book</code> с ценой <code>1900.00</code> и остатком <code>25</code>; <code>SQL Basics Course</code> в категории <code>course</code> с ценой <code>4900.00</code> и остатком <code>100</code>; <code>Sticker Pack</code> в категории <code>merch</code> с ценой <code>500.00</code> и остатком <code>200</code>.</p>\n<p>После вставки посмотри товары с сортировкой по цене.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь три товара в <code>store.products</code>.</p>\n<p>Нужны товары: <code>PostgreSQL Guide</code> в категории <code>book</code> с ценой <code>1900.00</code> и остатком <code>25</code>; <code>SQL Basics Course</code> в категории <code>course</code> с ценой <code>4900.00</code> и остатком <code>100</code>; <code>Sticker Pack</code> в категории <code>merch</code> с ценой <code>500.00</code> и остатком <code>200</code>.</p>\n<p>После вставки посмотри товары с сортировкой по цене.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить два заказа",
+      "taskid": "pgsql_insert_t5_insert_orders",
+      "hint": "<p><code>customer_id</code> — внешний ключ (foreign key). Значения <code>1</code> и <code>2</code> должны существовать в <code>store.customers.id</code>.</p>\n<pre><code>INSERT INTO store.orders (customer_id, status)\nVALUES\n  (1, 'new'),\n  (2, 'paid');\n\nSELECT id, customer_id, status, created_at\nFROM store.orders\nORDER BY id;</code></pre>",
+      "question_html": "<p>Добавь два заказа в <code>store.orders</code>. Они должны ссылаться на существующих клиентов через <code>customer_id</code>.</p>\n<p>Нужны заказы: для клиента <code>1</code> со статусом <code>new</code> и для клиента <code>2</code> со статусом <code>paid</code>.</p>\n<p>После вставки проверь колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>, порядок — по <code>id</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь два заказа в <code>store.orders</code>. Они должны ссылаться на существующих клиентов через <code>customer_id</code>.</p>\n<p>Нужны заказы: для клиента <code>1</code> со статусом <code>new</code> и для клиента <code>2</code> со статусом <code>paid</code>.</p>\n<p>После вставки проверь колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>, порядок — по <code>id</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить строки заказов",
+      "taskid": "pgsql_insert_t6_insert_order_items",
+      "hint": "<p><code>order_id</code> ссылается на <code>store.orders(id)</code>, а <code>product_id</code> — на <code>store.products(id)</code>.</p>\n<pre><code>INSERT INTO store.order_items (order_id, product_id, quantity, unit_price)\nVALUES\n  (1, 2, 1, 4900.00),\n  (2, 1, 2, 1900.00),\n  (2, 3, 3, 500.00);\n\nSELECT order_id, product_id, quantity, unit_price,\n       quantity * unit_price AS line_total\nFROM store.order_items\nORDER BY order_id, product_id;</code></pre>",
+      "question_html": "<p>Добавь строки заказов в <code>store.order_items</code>. Каждая строка связывает заказ и товар.</p>\n<p>Нужны позиции: заказ <code>1</code> — товар <code>2</code>, количество <code>1</code>, цена <code>4900.00</code>; заказ <code>2</code> — товар <code>1</code>, количество <code>2</code>, цена <code>1900.00</code>; заказ <code>2</code> — товар <code>3</code>, количество <code>3</code>, цена <code>500.00</code>.</p>\n<p>После вставки посмотри строки и сумму каждой позиции <code>line_total</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь строки заказов в <code>store.order_items</code>. Каждая строка связывает заказ и товар.</p>\n<p>Нужны позиции: заказ <code>1</code> — товар <code>2</code>, количество <code>1</code>, цена <code>4900.00</code>; заказ <code>2</code> — товар <code>1</code>, количество <code>2</code>, цена <code>1900.00</code>; заказ <code>2</code> — товар <code>3</code>, количество <code>3</code>, цена <code>500.00</code>.</p>\n<p>После вставки посмотри строки и сумму каждой позиции <code>line_total</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть связанные данные",
+      "taskid": "pgsql_insert_t7_select_related",
+      "hint": "<p><code>orders.customer_id</code> указывает на <code>customers.id</code>. Поэтому заказ можно соединить с именем клиента. <code>count(*)</code> показывает количество строк в таблице.</p>\n<pre><code>SELECT\n  o.id AS order_id,\n  c.full_name,\n  o.status\nFROM store.orders AS o\nJOIN store.customers AS c ON c.id = o.customer_id\nORDER BY o.id;\n\nSELECT count(*) FROM store.customers;\nSELECT count(*) FROM store.products;\nSELECT count(*) FROM store.orders;\nSELECT count(*) FROM store.order_items;</code></pre>",
+      "question_html": "<p>Проверь, что заказы связаны с клиентами через <code>customer_id</code>.</p>\n<p>Выведи заказ, имя клиента и статус заказа. Нужны колонки <code>order_id</code>, <code>full_name</code>, <code>status</code>, сортировка <code>ORDER BY o.id</code>.</p>\n<p>Потом отдельными простыми запросами посчитай строки в таблицах:</p>\n<p><code>store.customers</code>, <code>store.products</code>, <code>store.orders</code> и <code>store.order_items</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что заказы связаны с клиентами через <code>customer_id</code>.</p>\n<p>Выведи заказ, имя клиента и статус заказа. Нужны колонки <code>order_id</code>, <code>full_name</code>, <code>status</code>, сортировка <code>ORDER BY o.id</code>.</p>\n<p>Потом отдельными простыми запросами посчитай строки в таблицах:</p>\n<p><code>store.customers</code>, <code>store.products</code>, <code>store.orders</code> и <code>store.order_items</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить, что внешний ключ защищает данные",
+      "taskid": "pgsql_insert_t8_foreign_key_error",
+      "hint": "<p>Если после ошибки приглашение стало похоже на <code>training_shop=!&gt;</code>, нажми <code>ROLLBACK;</code>. Это сбросит ошибочную транзакцию.</p>\n<pre><code>INSERT INTO store.orders (customer_id, status)\nVALUES (999, 'new');\n\nSELECT count(*)\nFROM store.orders;</code></pre>",
+      "question_html": "<p>Попробуй создать заказ для клиента, которого нет: используй <code>customer_id</code> со значением <code>999</code> и статус <code>new</code>.</p>\n<p>PostgreSQL должен вернуть ошибку внешнего ключа (foreign key). Это ожидаемо: база не даёт записать заказ без существующего клиента.</p>\n<p>После ошибки проверь, что количество заказов осталось прежним.</p>",
+      "options": [],
+      "raw_description": "<p>Попробуй создать заказ для клиента, которого нет: используй <code>customer_id</code> со значением <code>999</code> и статус <code>new</code>.</p>\n<p>PostgreSQL должен вернуть ошибку внешнего ключа (foreign key). Это ожидаемо: база не даёт записать заказ без существующего клиента.</p>\n<p>После ошибки проверь, что количество заказов осталось прежним.</p>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab_insert/setup.yaml"
+}

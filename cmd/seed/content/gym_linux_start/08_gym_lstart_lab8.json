@@ -1,0 +1,208 @@
+{
+  "n": 8,
+  "id": "gym_lstart_lab8",
+  "title": "Тренировка 8: Архивы и сжатие",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что делает tar tf?",
+      "taskid": "gym_lstart_lab8_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>tar tf backup.tar.gz</code>?</p>",
+      "options": [
+        {
+          "text": "Показывает список файлов внутри архива без распаковки",
+          "correct": true,
+          "explanation": "Верно! <code>t</code> означает list"
+        },
+        {
+          "text": "Создаёт новый архив из текущей директории",
+          "correct": false,
+          "explanation": "Нет — создание задаёт <code>c</code>"
+        },
+        {
+          "text": "Удаляет исходные файлы после архивации",
+          "correct": false,
+          "explanation": "Нет — <code>tar tf</code> только читает архив"
+        },
+        {
+          "text": "Шифрует архив паролем",
+          "correct": false,
+          "explanation": "Нет — tar не делает шифрование"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>tar tf backup.tar.gz</code>?</p><ul>\n<li>+Показывает список файлов внутри архива без распаковки [Верно! <code>t</code> означает list]</li>\n<li>Создаёт новый архив из текущей директории [Нет — создание задаёт <code>c</code>]</li>\n<li>Удаляет исходные файлы после архивации [Нет — <code>tar tf</code> только читает архив]</li>\n<li>Шифрует архив паролем [Нет — tar не делает шифрование]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать архив",
+      "taskid": "gym_lstart_lab8_t2_create",
+      "hint": "<p>Используй <code>tar</code> и выбери режим по действию: создать, посмотреть список или распаковать. Флаги gzip нужны только для <code>.tar.gz</code>.</p>",
+      "question_html": "<p>Создай сжатый tar-архив директории <code>/opt/devops/lab8/src/</code> и сохрани его как <code>/root/backup.tar.gz</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай сжатый tar-архив директории <code>/opt/devops/lab8/src/</code> и сохрани его как <code>/root/backup.tar.gz</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Просмотр архива",
+      "taskid": "gym_lstart_lab8_t3_list",
+      "hint": "<p>Используй <code>tar</code> и выбери режим по действию: создать, посмотреть список или распаковать. Флаги gzip нужны только для <code>.tar.gz</code>.</p>\n<p>Флаг <code>t</code> у tar означает «показать содержимое» (list).</p>",
+      "question_html": "<p>Просмотри содержимое архива <code>/root/backup.tar.gz</code> (без распаковки) и запиши список файлов в <code>/root/archive_list.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Просмотри содержимое архива <code>/root/backup.tar.gz</code> (без распаковки) и запиши список файлов в <code>/root/archive_list.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Извлечь архив",
+      "taskid": "gym_lstart_lab8_t4_extract",
+      "hint": "<p>Используй <code>tar</code> и выбери режим по действию: создать, посмотреть список или распаковать. Флаги gzip нужны только для <code>.tar.gz</code>.</p>\n<p>Флаг <code>-C</code> у tar задаёт целевую директорию.</p>",
+      "question_html": "<p>Создай директорию <code>/root/extracted</code> и распакуй в неё архив <code>/root/backup.tar.gz</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/extracted</code> и распакуй в неё архив <code>/root/backup.tar.gz</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "gzip файл",
+      "taskid": "gym_lstart_lab8_t5_gzip",
+      "hint": "<p>Используй <code>gzip</code> или <code>gunzip</code> по направлению задачи: сжатие создаёт <code>.gz</code>, распаковка возвращает исходный файл.</p>",
+      "question_html": "<p>Скопируй файл <code>/opt/devops/lab8/large_file.txt</code> в <code>/root/large_file.txt</code> и сожми копию с помощью <code>gzip</code>.</p>\n<p>После сжатия должен появиться файл <code>/root/large_file.txt.gz</code> (оригинал будет заменён).</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй файл <code>/opt/devops/lab8/large_file.txt</code> в <code>/root/large_file.txt</code> и сожми копию с помощью <code>gzip</code>.</p>\n<p>После сжатия должен появиться файл <code>/root/large_file.txt.gz</code> (оригинал будет заменён).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему tar сохраняет структуру?",
+      "taskid": "gym_lstart_lab8_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Почему <code>tar</code> удобен для бэкапа каталога с несколькими файлами и поддиректориями?</p>",
+      "options": [
+        {
+          "text": "Он упаковывает дерево файлов в один архив, сохраняя пути внутри архива",
+          "correct": true,
+          "explanation": "Верно! Поэтому структуру можно восстановить при распаковке"
+        },
+        {
+          "text": "Он всегда удаляет исходный каталог после создания архива",
+          "correct": false,
+          "explanation": "Нет — по умолчанию исходники остаются"
+        },
+        {
+          "text": "Он работает только с одним обычным файлом",
+          "correct": false,
+          "explanation": "Нет — это скорее про обычный <code>gzip</code>"
+        },
+        {
+          "text": "Он автоматически запускает nginx после распаковки",
+          "correct": false,
+          "explanation": "Нет — tar не управляет сервисами"
+        }
+      ],
+      "raw_description": "<p>Почему <code>tar</code> удобен для бэкапа каталога с несколькими файлами и поддиректориями?</p><ul>\n<li>+Он упаковывает дерево файлов в один архив, сохраняя пути внутри архива [Верно! Поэтому структуру можно восстановить при распаковке]</li><li>Он всегда удаляет исходный каталог после создания архива [Нет — по умолчанию исходники остаются]</li><li>Он работает только с одним обычным файлом [Нет — это скорее про обычный <code>gzip</code>]</li><li>Он автоматически запускает nginx после распаковки [Нет — tar не управляет сервисами]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Распаковать .gz",
+      "taskid": "gym_lstart_lab8_t7_gunzip",
+      "hint": "<p>Используй <code>gzip</code> или <code>gunzip</code> по направлению задачи: сжатие создаёт <code>.gz</code>, распаковка возвращает исходный файл.</p>\n<p>Проверка убедится, что появился распакованный файл <code>/root/large_file.txt</code> с ожидаемым содержимым.</p>",
+      "question_html": "<p>Распакуй файл <code>/root/large_file.txt.gz</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Распакуй файл <code>/root/large_file.txt.gz</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда выбрать .tar.gz?",
+      "taskid": "gym_lstart_lab8_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Когда логично выбрать архив <code>.tar.gz</code>, а не просто <code>.tar</code>?</p>",
+      "options": [
+        {
+          "text": "Когда нужно не только объединить файлы, но и уменьшить размер архива gzip-сжатием",
+          "correct": true,
+          "explanation": "Верно! <code>.tar.gz</code> сочетает tar и gzip"
+        },
+        {
+          "text": "Когда нужно сохранить файл без упаковки",
+          "correct": false,
+          "explanation": "Нет — tar всё равно создаёт архив"
+        },
+        {
+          "text": "Когда нужно выполнить cron-задачу",
+          "correct": false,
+          "explanation": "Нет — это не связано с архивом"
+        },
+        {
+          "text": "Когда нужно поменять владельца файлов",
+          "correct": false,
+          "explanation": "Нет — это задача <code>chown</code>"
+        }
+      ],
+      "raw_description": "<p>Когда логично выбрать архив <code>.tar.gz</code>, а не просто <code>.tar</code>?</p><ul>\n<li>+Когда нужно не только объединить файлы, но и уменьшить размер архива gzip-сжатием [Верно! <code>.tar.gz</code> сочетает tar и gzip]</li><li>Когда нужно сохранить файл без упаковки [Нет — tar всё равно создаёт архив]</li><li>Когда нужно выполнить cron-задачу [Нет — это не связано с архивом]</li><li>Когда нужно поменять владельца файлов [Нет — это задача <code>chown</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем распаковывать в отдельный каталог?",
+      "taskid": "gym_lstart_lab8_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему при распаковке учебного архива удобно заранее создать каталог и использовать <code>tar -C</code>?</p>",
+      "options": [
+        {
+          "text": "Так файлы попадают в ожидаемое место и не смешиваются со случайным содержимым текущей директории",
+          "correct": true,
+          "explanation": "Верно! Целевая директория делает результат контролируемым"
+        },
+        {
+          "text": "Так архив автоматически шифруется",
+          "correct": false,
+          "explanation": "Нет — <code>-C</code> задаёт каталог"
+        },
+        {
+          "text": "Так удаляются все файлы вне архива",
+          "correct": false,
+          "explanation": "Нет — распаковка не должна удалять лишнее"
+        },
+        {
+          "text": "Так команда становится сетевым запросом",
+          "correct": false,
+          "explanation": "Нет — tar работает с файлами"
+        }
+      ],
+      "raw_description": "<p>Почему при распаковке учебного архива удобно заранее создать каталог и использовать <code>tar -C</code>?</p><ul>\n<li>+Так файлы попадают в ожидаемое место и не смешиваются со случайным содержимым текущей директории [Верно! Целевая директория делает результат контролируемым]</li><li>Так архив автоматически шифруется [Нет — <code>-C</code> задаёт каталог]</li><li>Так удаляются все файлы вне архива [Нет — распаковка не должна удалять лишнее]</li><li>Так команда становится сетевым запросом [Нет — tar работает с файлами]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как сохранить исходник при gzip?",
+      "taskid": "gym_lstart_lab8_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Какой флаг <code>gzip</code> обычно используют, чтобы сжать файл и оставить исходник рядом?</p>",
+      "options": [
+        {
+          "text": "<code>-k</code>",
+          "correct": true,
+          "explanation": "Верно! keep сохраняет исходный файл"
+        },
+        {
+          "text": "<code>-r</code>",
+          "correct": false,
+          "explanation": "Нет — это рекурсивный режим"
+        },
+        {
+          "text": "<code>-l</code>",
+          "correct": false,
+          "explanation": "Нет — показывает информацию о сжатом файле"
+        },
+        {
+          "text": "<code>-9</code>",
+          "correct": false,
+          "explanation": "Нет — это уровень сжатия, а не сохранение исходника"
+        }
+      ],
+      "raw_description": "<p>Какой флаг <code>gzip</code> обычно используют, чтобы сжать файл и оставить исходник рядом?</p><ul>\n<li>+<code>-k</code> [Верно! keep сохраняет исходный файл]</li>\n<li><code>-r</code> [Нет — это рекурсивный режим]</li>\n<li><code>-l</code> [Нет — показывает информацию о сжатом файле]</li>\n<li><code>-9</code> [Нет — это уровень сжатия, а не сохранение исходника]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab8/setup.yaml"
+}

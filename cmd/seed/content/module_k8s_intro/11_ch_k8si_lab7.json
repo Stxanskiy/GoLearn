@@ -1,0 +1,166 @@
+{
+  "n": 11,
+  "id": "ch_k8si_lab7",
+  "title": "Лабораторная 3: Labels и Selectors",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Pod'ы с labels",
+      "taskid": "k8si_lab7_t1_labels",
+      "hint": "<p>Используй <code>kubectl run</code> с <code>--image=nginx:alpine</code> и labels или YAML-манифесты Pod с блоком <code>metadata.labels</code>.</p>",
+      "question_html": "<p>Создай три Pod'а с разными labels для имитации нескольких окружений. Для всех трёх Pod'ов используй образ <code>nginx:alpine</code>: <code>web-prod</code> с labels <code>app=web</code>, <code>env=prod</code>; <code>web-staging</code> с labels <code>app=web</code>, <code>env=staging</code>; <code>db-prod</code> с labels <code>app=db</code>, <code>env=prod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай три Pod'а с разными labels для имитации нескольких окружений. Для всех трёх Pod'ов используй образ <code>nginx:alpine</code>: <code>web-prod</code> с labels <code>app=web</code>, <code>env=prod</code>; <code>web-staging</code> с labels <code>app=web</code>, <code>env=staging</code>; <code>db-prod</code> с labels <code>app=db</code>, <code>env=prod</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Список Pod'ов с labels",
+      "taskid": "k8si_lab7_t2_show_labels",
+      "hint": "<p>Используй <code>kubectl get pods --show-labels</code>, <code>kubectl get pods -L</code> или <code>kubectl get pod -o jsonpath</code>.</p>",
+      "question_html": "<p>Посмотри значения label <code>app</code> у Pod'ов <code>web-prod</code> и <code>db-prod</code>.</p>\n<pre><code>kubectl get pods --show-labels</code></pre>\n<pre><code>kubectl get pods -L app,env</code></pre>\n<pre><code>kubectl get pod web-prod -o jsonpath='{.metadata.labels.app}';</code></pre>\n<pre><code>kubectl get pod db-prod -o jsonpath='{.metadata.labels.app}';</code></pre>\n<p>Здесь важно увидеть, что label — это обычная пара ключ=значение, по которой Kubernetes потом может выбирать объекты.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри значения label <code>app</code> у Pod'ов <code>web-prod</code> и <code>db-prod</code>.</p>\n<pre><code>kubectl get pods --show-labels</code></pre>\n<pre><code>kubectl get pods -L app,env</code></pre>\n<pre><code>kubectl get pod web-prod -o jsonpath='{.metadata.labels.app}';</code></pre>\n<pre><code>kubectl get pod db-prod -o jsonpath='{.metadata.labels.app}';</code></pre>\n<p>Здесь важно увидеть, что label — это обычная пара ключ=значение, по которой Kubernetes потом может выбирать объекты.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Фильтрация по label",
+      "taskid": "k8si_lab7_t3_filter",
+      "hint": "<p>Используй флаг <code>-l</code>: он передаёт label selector в <code>kubectl get</code>.</p>",
+      "question_html": "<p>Посмотри только Pod'ы с selector <code>env=prod</code>.</p>\n<pre><code>kubectl get pods -l env=prod</code></pre>\n<pre><code>kubectl get pods -l env=prod --show-labels</code></pre>\n<p>В выводе должны остаться только объекты из условного production-окружения: <code>web-prod</code> и <code>db-prod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри только Pod'ы с selector <code>env=prod</code>.</p>\n<pre><code>kubectl get pods -l env=prod</code></pre>\n<pre><code>kubectl get pods -l env=prod --show-labels</code></pre>\n<p>В выводе должны остаться только объекты из условного production-окружения: <code>web-prod</code> и <code>db-prod</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Комплексная фильтрация",
+      "taskid": "k8si_lab7_t4_complex",
+      "hint": "<p>Используй selector <code>-l app=web,env!=prod</code> и выведи имя Pod через <code>jsonpath</code>.</p>",
+      "question_html": "<p>Найди Pod, который подходит под условие <code>app=web</code> и <code>env != prod</code>.</p>\n<pre><code>kubectl get pods -l 'app=web,env!=prod'</code></pre>\n<pre><code>kubectl get pods -l 'app=web,env!=prod' -o jsonpath='{.items[*].metadata.name}'; echo</code></pre>\n<p>Ожидаемый смысл результата: это web-приложение, но не production, то есть <code>web-staging</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди Pod, который подходит под условие <code>app=web</code> и <code>env != prod</code>.</p>\n<pre><code>kubectl get pods -l 'app=web,env!=prod'</code></pre>\n<pre><code>kubectl get pods -l 'app=web,env!=prod' -o jsonpath='{.items[*].metadata.name}'; echo</code></pre>\n<p>Ожидаемый смысл результата: это web-приложение, но не production, то есть <code>web-staging</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить label к Pod'у",
+      "taskid": "k8si_lab7_t5_add_label",
+      "hint": "<p>Используй <code>kubectl label pod</code>. Если label уже существует, нужен флаг <code>--overwrite</code>.</p>",
+      "question_html": "<p>Добавь label <code>monitored=true</code> к Pod'у <code>web-prod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь label <code>monitored=true</code> к Pod'у <code>web-prod</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить label с Pod'а",
+      "taskid": "k8si_lab7_t6_rm_label",
+      "hint": "<p>Используй <code>kubectl label pod</code> с синтаксисом удаления label через суффикс <code>-</code>.</p>",
+      "question_html": "<p>Удали label <code>monitored</code> с Pod'а <code>web-prod</code> (синтаксис: добавь <code>-</code> к имени label).</p>",
+      "options": [],
+      "raw_description": "<p>Удали label <code>monitored</code> с Pod'а <code>web-prod</code> (синтаксис: добавь <code>-</code> к имени label).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Annotations vs Labels",
+      "taskid": "k8si_lab7_t7_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между labels и annotations?</p>",
+      "options": [
+        {
+          "text": "Labels только для Pod'ов, annotations для всех объектов",
+          "correct": false,
+          "explanation": "Нет — labels можно добавлять на любые объекты"
+        },
+        {
+          "text": "Annotations хранятся в etcd, labels — нет",
+          "correct": false,
+          "explanation": "Нет — оба хранятся в etcd как часть объекта"
+        },
+        {
+          "text": "Labels ограничены 63 символами, annotations — нет",
+          "correct": false,
+          "explanation": "Есть ограничение на символы в values, но это не ключевое различие"
+        },
+        {
+          "text": "Labels используются для выборки объектов (selector), annotations — для метаданных без выборки",
+          "correct": true,
+          "explanation": "Верно! Selector работает только с labels; annotations для prometheus, ingress, арго и т.д."
+        }
+      ],
+      "raw_description": "<p>В чём разница между labels и annotations?</p><ul>\n<li>Labels только для Pod'ов, annotations для всех объектов [Нет — labels можно добавлять на любые объекты]</li>\n<li>Annotations хранятся в etcd, labels — нет [Нет — оба хранятся в etcd как часть объекта]</li>\n<li>Labels ограничены 63 символами, annotations — нет [Есть ограничение на символы в values, но это не ключевое различие]</li>\n<li>+Labels используются для выборки объектов (selector), annotations — для метаданных без выборки [Верно! Selector работает только с labels; annotations для prometheus, ingress, арго и т.д.]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить тестовые Pod'ы",
+      "taskid": "k8si_lab7_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code>, затем проверь очистку через <code>kubectl get pods</code>.</p>",
+      "question_html": "<p>Удали все тестовые Pod'ы: <code>web-prod</code>, <code>web-staging</code> и <code>db-prod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали все тестовые Pod'ы: <code>web-prod</code>, <code>web-staging</code> и <code>db-prod</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Для чего нужны selector-based команды?",
+      "taskid": "k8si_lab7_t9_quiz_selectors",
+      "hint": "",
+      "question_html": "<p>Почему в Kubernetes часто используют <code>-l key=value</code> вместо перечисления имён Pod?</p>",
+      "options": [
+        {
+          "text": "Selector устойчив к пересозданию Pod'ов и работает с группой объектов",
+          "correct": true,
+          "explanation": "Верно! Имена Pod могут меняться, labels остаются логическими"
+        },
+        {
+          "text": "Selector работает только в namespace default",
+          "correct": false,
+          "explanation": "Нет — selector работает в любом namespace"
+        },
+        {
+          "text": "Selector автоматически создаёт missing labels",
+          "correct": false,
+          "explanation": "Нет — labels нужно задавать явно"
+        },
+        {
+          "text": "Selector всегда быстрее чем get без фильтра",
+          "correct": false,
+          "explanation": "Не всегда; это не главная причина использования"
+        }
+      ],
+      "raw_description": "<p>Почему в Kubernetes часто используют <code>-l key=value</code> вместо перечисления имён Pod?</p><ul>\n<li>+Selector устойчив к пересозданию Pod'ов и работает с группой объектов [Верно! Имена Pod могут меняться, labels остаются логическими]</li>\n<li>Selector работает только в namespace default [Нет — selector работает в любом namespace]</li>\n<li>Selector автоматически создаёт missing labels [Нет — labels нужно задавать явно]</li>\n<li>Selector всегда быстрее чем get без фильтра [Не всегда; это не главная причина использования]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как labels связаны с Service?",
+      "taskid": "k8si_lab7_t10_quiz_service_selector",
+      "hint": "",
+      "question_html": "<p>Что произойдёт, если labels Pod'ов изменятся и перестанут подходить под selector Service?</p>",
+      "options": [
+        {
+          "text": "Service автоматически обновит selector под новые labels",
+          "correct": false,
+          "explanation": "Нет — selector меняется только явным действием"
+        },
+        {
+          "text": "Service останется без Endpoints и трафик не попадёт в Pod'ы",
+          "correct": true,
+          "explanation": "Верно! Service маршрутизирует только на matching Endpoints"
+        },
+        {
+          "text": "Pod'ы будут удалены контроллером",
+          "correct": false,
+          "explanation": "Нет — изменение labels не удаляет Pod само по себе"
+        },
+        {
+          "text": "Kubernetes создаст новый Service",
+          "correct": false,
+          "explanation": "Нет — объект Service не клонируется автоматически"
+        }
+      ],
+      "raw_description": "<p>Что произойдёт, если labels Pod'ов изменятся и перестанут подходить под selector Service?</p><ul>\n<li>Service автоматически обновит selector под новые labels [Нет — selector меняется только явным действием]</li>\n<li>+Service останется без Endpoints и трафик не попадёт в Pod'ы [Верно! Service маршрутизирует только на matching Endpoints]</li>\n<li>Pod'ы будут удалены контроллером [Нет — изменение labels не удаляет Pod само по себе]</li>\n<li>Kubernetes создаст новый Service [Нет — объект Service не клонируется автоматически]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab7/setup.yaml"
+}

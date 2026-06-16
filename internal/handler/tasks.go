@@ -8,10 +8,12 @@ import (
 )
 
 type TasksPageData struct {
-	PageTitle string
-	Module    *model.Module
-	Lesson    *model.Lesson
-	Tasks     []model.Task
+	PageTitle   string
+	Module      *model.Module
+	Lesson      *model.Lesson
+	Tasks       []model.Task
+	IsShellLab  bool
+	SessionTask int // shared sandbox session id for the whole lab (first task)
 }
 
 func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
@@ -39,10 +41,14 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := TasksPageData{
-		PageTitle: "Tasks: " + lesson.Title,
+		PageTitle: "Лаборатория: " + lesson.Title,
 		Module:    mod,
 		Lesson:    lesson,
 		Tasks:     tasks,
+	}
+	if len(tasks) > 0 && tasks[0].Kind == "shell" {
+		data.IsShellLab = true
+		data.SessionTask = tasks[0].ID
 	}
 
 	h.render(w, "tasks", &data)

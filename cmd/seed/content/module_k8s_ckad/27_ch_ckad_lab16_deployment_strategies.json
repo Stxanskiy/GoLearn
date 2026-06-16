@@ -1,0 +1,124 @@
+{
+  "n": 27,
+  "id": "ch_ckad_lab16_deployment_strategies",
+  "title": "Лабораторная 11: Стратегии деплоя",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Сначала сделай обе версии одинакового размера: <code>shop-v1</code> до 3 реплик и <code>shop-v2</code> до 3 реплик.</p>\n<pre><code>kubectl scale deployment shop-v1 --replicas=3</code></pre>\n<pre><code>kubectl scale deployment shop-v2 --replicas=3</code></pre>\n<pre><code>kubectl rollout status deployment/shop-v1 --timeout=120s</code></pre>\n<pre><code>kubectl rollout status deployment/shop-v2 --timeout=120s</code></pre>\n<p>Теперь Service видит примерно одинаковое количество endpoints v1 и v2. Сделай несколько запросов и посмотри, что ответы начинают распределяться между версиями примерно равномерно:</p>\n<pre><code>for i in $(seq 1 20); do\n  kubectl exec strategy-debug -- wget -qO- http://shop-svc | grep -o 'shop v[12]'\ndone | sort | uniq -c</code></pre>\n<p>После этого продвинь canary до stable: уменьши <code>shop-v1</code> до 0 реплик, а <code>shop-v2</code> оставь в 3 репликах.</p>\n<pre><code>kubectl scale deployment shop-v1 --replicas=0</code></pre>\n<pre><code>kubectl scale deployment shop-v2 --replicas=3</code></pre>\n<pre><code>kubectl rollout status deployment/shop-v2 --timeout=120s</code></pre>\n<p>Повтори запросы. Теперь все ответы должны приходить от v2:</p>\n<pre><code>for i in $(seq 1 10); do\n  kubectl exec strategy-debug -- wget -qO- http://shop-svc | grep -o 'shop v[12]'\ndone | sort | uniq -c</code></pre>\n<p>Так видно ограничение простого canary на обычном Service: мы не задаём точные проценты, а меняем количество Pod'ов разных версий за одним selector.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L27\",null,{}],[\"$\",\"$L28\",null,{\"initialData\":{\"id\":\"ch_ckad_lab16_deployment_strategies\",\"title\":\"Лабораторная 11: Стратегии деплоя",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Запустить stable-версию для canary",
+      "taskid": "k8s_strategy_lab_t1_stable",
+      "hint": "<p>Используй <code>kubectl apply -f /root/deploy-strategies/canary-v1.yaml</code>, затем <code>kubectl rollout status deployment/shop-v1</code> и <code>kubectl get svc,endpoints shop-svc</code>.</p>",
+      "question_html": "<p>Примени <code>/root/deploy-strategies/canary-v1.yaml</code>. Он создаёт Deployment <code>shop-v1</code> с 3 репликами образа <code>nginx:alpine</code> и Service <code>shop-svc</code>.</p>\n<p>Service выбирает Pod'ы по labels <code>app=shop</code> и <code>track=active</code>. Это будет базовая stable-версия перед canary.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/deploy-strategies/canary-v1.yaml</code>. Он создаёт Deployment <code>shop-v1</code> с 3 репликами образа <code>nginx:alpine</code> и Service <code>shop-svc</code>.</p>\n<p>Service выбирает Pod'ы по labels <code>app=shop</code> и <code>track=active</code>. Это будет базовая stable-версия перед canary.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить stable-версию из Pod",
+      "taskid": "k8s_strategy_lab_t2_stable_self",
+      "hint": "",
+      "question_html": "<p>Запусти временный Pod-клиент и проверь Service изнутри кластера:</p>\n<pre><code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/strategy-debug --timeout=60s</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://shop-svc</code></pre>\n<p>В ответе должен быть текст <code>shop v1 stable</code>. Это аналог быстрой smoke-проверки после деплоя.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти временный Pod-клиент и проверь Service изнутри кластера:</p>\n<pre><code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/strategy-debug --timeout=60s</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://shop-svc</code></pre>\n<p>В ответе должен быть текст <code>shop v1 stable</code>. Это аналог быстрой smoke-проверки после деплоя.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить canary-версию",
+      "taskid": "k8s_strategy_lab_t3_canary",
+      "hint": "<p>После применения проверь <code>kubectl get deploy shop-v1 shop-v2</code>, <code>kubectl get endpoints shop-svc</code> и labels у Pod'ов через <code>kubectl get pods --show-labels</code>.</p>",
+      "question_html": "<p>Примени <code>/root/deploy-strategies/canary-v2.yaml</code>. Он создаёт Deployment <code>shop-v2</code> с 1 репликой и теми же labels <code>app=shop</code>, <code>track=active</code>.</p>\n<p>Теперь Service <code>shop-svc</code> будет видеть Pod'ы обеих версий: 3 Pod'а v1 и 1 Pod v2. Это простой canary на “голом” Kubernetes через количество Pod'ов за одним Service.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/deploy-strategies/canary-v2.yaml</code>. Он создаёт Deployment <code>shop-v2</code> с 1 репликой и теми же labels <code>app=shop</code>, <code>track=active</code>.</p>\n<p>Теперь Service <code>shop-svc</code> будет видеть Pod'ы обеих версий: 3 Pod'а v1 и 1 Pod v2. Это простой canary на “голом” Kubernetes через количество Pod'ов за одним Service.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть распределение ответов",
+      "taskid": "k8s_strategy_lab_t4_canary_self",
+      "hint": "",
+      "question_html": "<p>Сделай несколько запросов из <code>strategy-debug</code> и посмотри, попадаешь ли в разные версии:</p>\n<pre><code>for i in $(seq 1 12); do\n  kubectl exec strategy-debug -- wget -qO- http://shop-svc | grep -o 'shop v[12]'\ndone</code></pre>\n<p>Обычный Kubernetes Service не умеет точные веса. Здесь распределение примерно зависит от количества endpoints: 3 Pod'а v1 и 1 Pod v2.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай несколько запросов из <code>strategy-debug</code> и посмотри, попадаешь ли в разные версии:</p>\n<pre><code>for i in $(seq 1 12); do\n  kubectl exec strategy-debug -- wget -qO- http://shop-svc | grep -o 'shop v[12]'\ndone</code></pre>\n<p>Обычный Kubernetes Service не умеет точные веса. Здесь распределение примерно зависит от количества endpoints: 3 Pod'а v1 и 1 Pod v2.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать promotion canary",
+      "taskid": "k8s_strategy_lab_t5_promote",
+      "hint": "<p>Если <code>strategy-debug</code> был удалён, создай его заново через <code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code>.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "check",
+      "title": "Запустить blue-green окружение",
+      "taskid": "k8s_strategy_lab_t6_blue_green",
+      "hint": "<p>Примени файл, дождись готовности обоих Deployment'ов и проверь selector: <code>kubectl get svc checkout-svc -o yaml</code>.</p>",
+      "question_html": "<p>Примени <code>/root/deploy-strategies/blue-green.yaml</code>. Он создаёт два Deployment'а: <code>checkout-blue</code> и <code>checkout-green</code>, а также Service <code>checkout-svc</code>.</p>\n<p>Изначально Service должен выбирать blue-версию через selector <code>color=blue</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/deploy-strategies/blue-green.yaml</code>. Он создаёт два Deployment'а: <code>checkout-blue</code> и <code>checkout-green</code>, а также Service <code>checkout-svc</code>.</p>\n<p>Изначально Service должен выбирать blue-версию через selector <code>color=blue</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переключить traffic на green",
+      "taskid": "k8s_strategy_lab_t7_green",
+      "hint": "<p>Используй YAML или <code>kubectl patch service checkout-svc</code>. Ответ можно проверить командой <code>kubectl exec strategy-debug -- wget -qO- http://checkout-svc</code>.</p>",
+      "question_html": "<p>Переключи Service <code>checkout-svc</code> на green-версию: selector должен стать <code>app=checkout</code>, <code>color=green</code>. Затем проверь HTTP-ответ через <code>strategy-debug</code>: он должен приходить от green-версии.</p>\n<pre><code>kubectl patch service checkout-svc -p '{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"green\"}}}'</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://checkout-svc</code></pre>\n<p>Это blue-green переключение: обе версии уже запущены, а трафик переводится изменением Service selector.</p>",
+      "options": [],
+      "raw_description": "<p>Переключи Service <code>checkout-svc</code> на green-версию: selector должен стать <code>app=checkout</code>, <code>color=green</code>. Затем проверь HTTP-ответ через <code>strategy-debug</code>: он должен приходить от green-версии.</p>\n<pre><code>kubectl patch service checkout-svc -p '{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"green\"}}}'</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://checkout-svc</code></pre>\n<p>Это blue-green переключение: обе версии уже запущены, а трафик переводится изменением Service selector.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Откатить traffic обратно на blue",
+      "taskid": "k8s_strategy_lab_t8_blue",
+      "hint": "<p>Проверь selector через <code>kubectl get svc checkout-svc -o jsonpath='{.spec.selector.color}'</code>, затем сделай запрос к Service из debug Pod.</p>",
+      "question_html": "<p>Сделай rollback blue-green: верни Service <code>checkout-svc</code> на selector <code>color=blue</code> и проверь HTTP-ответ через <code>strategy-debug</code>. После rollback ответ должен снова приходить от blue-версии.</p>\n<pre><code>kubectl patch service checkout-svc -p '{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"blue\"}}}'</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://checkout-svc</code></pre>\n<p>Плюс blue-green в том, что rollback может быть быстрым: старая версия уже запущена.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай rollback blue-green: верни Service <code>checkout-svc</code> на selector <code>color=blue</code> и проверь HTTP-ответ через <code>strategy-debug</code>. После rollback ответ должен снова приходить от blue-версии.</p>\n<pre><code>kubectl patch service checkout-svc -p '{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"blue\"}}}'</code></pre>\n<pre><code>kubectl exec strategy-debug -- wget -qO- http://checkout-svc</code></pre>\n<p>Плюс blue-green в том, что rollback может быть быстрым: старая версия уже запущена.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Ограничение canary в обычном Service",
+      "taskid": "k8s_strategy_lab_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему canary через несколько Deployment за одним обычным Kubernetes Service нельзя считать точным процентным rollout?</p>",
+      "options": [
+        {
+          "text": "Обычный Service не умеет задавать веса трафика между версиями",
+          "correct": true,
+          "explanation": "Верно. Он балансирует по endpoints, но не даёт точных 5%, 10%, 50%"
+        },
+        {
+          "text": "Потому что Deployment не умеет несколько реплик",
+          "correct": false,
+          "explanation": "Нет. Deployment умеет replicas"
+        },
+        {
+          "text": "Потому что nginx:alpine не может отвечать HTTP",
+          "correct": false,
+          "explanation": "Нет. nginx как раз отвечает HTTP"
+        },
+        {
+          "text": "Потому что labels нельзя использовать для Service",
+          "correct": false,
+          "explanation": "Нет. Service как раз выбирает Pod'ы по labels"
+        }
+      ],
+      "raw_description": "<p>Почему canary через несколько Deployment за одним обычным Kubernetes Service нельзя считать точным процентным rollout?</p><ul>\n<li>+Обычный Service не умеет задавать веса трафика между версиями [Верно. Он балансирует по endpoints, но не даёт точных 5%, 10%, 50%]</li>\n<li>Потому что Deployment не умеет несколько реплик [Нет. Deployment умеет replicas]</li>\n<li>Потому что nginx:alpine не может отвечать HTTP [Нет. nginx как раз отвечает HTTP]</li>\n<li>Потому что labels нельзя использовать для Service [Нет. Service как раз выбирает Pod'ы по labels]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы лабораторной",
+      "taskid": "k8s_strategy_lab_t10_cleanup",
+      "hint": "<p>Используй <code>kubectl delete</code>. Если какой-то объект уже удалён, добавь <code>--ignore-not-found</code>.</p>",
+      "question_html": "<p>Удали ресурсы лабораторной: Deployment'ы <code>shop-v1</code>, <code>shop-v2</code>, <code>checkout-blue</code>, <code>checkout-green</code>, Service'ы <code>shop-svc</code>, <code>checkout-svc</code> и Pod <code>strategy-debug</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали ресурсы лабораторной: Deployment'ы <code>shop-v1</code>, <code>shop-v2</code>, <code>checkout-blue</code>, <code>checkout-green</code>, Service'ы <code>shop-svc</code>, <code>checkout-svc</code> и Pod <code>strategy-debug</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/deploy_strategies_lab/setup.yaml"
+}

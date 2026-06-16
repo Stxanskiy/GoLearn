@@ -1,0 +1,229 @@
+{
+  "n": 24,
+  "id": "ch_lcore_lab12",
+  "title": "Лабораторная 12: nano и vim",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: выйти из vim",
+      "taskid": "lcore_lab12_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Ты случайно открыл файл в <code>vim</code>. Как выйти без сохранения изменений?</p>",
+      "options": [
+        {
+          "text": "<code>Ctrl+X</code> затем <code>N</code>, как в nano, если редактор поддерживает такой способ отмены изменений",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+:q! Enter</code> (двоеточие, q, восклицательный знак, Enter)",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Ctrl+C</code> и <code>Enter</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>exit</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Ты случайно открыл файл в <code>vim</code>. Как выйти без сохранения изменений?</p>\n<ul>\n<li><code>Ctrl+X</code> затем <code>N</code>, как в nano, если редактор поддерживает такой способ отмены изменений</li>\n<li><code>+:q! Enter</code> (двоеточие, q, восклицательный знак, Enter)</li>\n<li><code>Ctrl+C</code> и <code>Enter</code></li>\n<li><code>exit</code></li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "nano/vim: создать и сохранить файл",
+      "taskid": "lcore_lab12_t2_nano",
+      "hint": "<p>В <code>nano</code> сохрани файл через <code>Ctrl+O</code>, затем выйди через <code>Ctrl+X</code>. В <code>vim</code> перейди в insert mode через <code>i</code>, после ввода нажми <code>Esc</code> и сохрани через <code>:wq</code>.</p>",
+      "question_html": "<p>Открой файл <code>/root/mynote.txt</code> в терминальном редакторе <code>nano</code> или <code>vim</code>, добавь строку <code>Hello from editor</code> и сохрани файл.</p>",
+      "options": [],
+      "raw_description": "<p>Открой файл <code>/root/mynote.txt</code> в терминальном редакторе <code>nano</code> или <code>vim</code>, добавь строку <code>Hello from editor</code> и сохрани файл.</p>"
+    },
+    {
+      "type": "check",
+      "title": "sed -i: редактирование без редактора",
+      "taskid": "lcore_lab12_t3_sed",
+      "hint": "<p>Для точечной замены в <code>sed</code> используется выражение вида “заменить старое на новое”, а для записи в исходный файл нужен режим in-place (<code>-i</code>). Сначала можно проверить выражение без изменения файла.</p>",
+      "question_html": "<p>В файле <code>/opt/devops/lab12/broken.conf</code> строка <code>port=9999</code> должна быть <code>port=8080</code>. Исправь её на месте без открытия редактора.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/opt/devops/lab12/broken.conf</code> строка <code>port=9999</code> должна быть <code>port=8080</code>. Исправь её на месте без открытия редактора.</p>"
+    },
+    {
+      "type": "check",
+      "title": "vim: базовые движения",
+      "taskid": "lcore_lab12_t4_vim",
+      "hint": "<p>Для вставки в начало файла у <code>sed</code> можно адресовать первую строку и выполнить вставку перед ней. Если делаешь это через <code>vim</code>, сначала перейди в insert mode, потом сохрани файл.</p>",
+      "question_html": "<p>Добавь строку <code># Edited by student</code> в начало файла <code>/opt/devops/lab12/notes.txt</code> и сохрани его.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь строку <code># Edited by student</code> в начало файла <code>/opt/devops/lab12/notes.txt</code> и сохрани его.</p>"
+    },
+    {
+      "type": "self",
+      "title": "cat -n: посмотреть с номерами строк",
+      "taskid": "lcore_lab12_t5_catn",
+      "hint": "<p>У <code>cat</code> есть флаг для нумерации строк; он полезен, когда нужно ориентироваться в конфиге перед заменой или вставкой.</p>",
+      "question_html": "<p>Выведи файл <code>/opt/devops/lab12/broken.conf</code> с номерами строк.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи файл <code>/opt/devops/lab12/broken.conf</code> с номерами строк.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем nano проще vim?",
+      "taskid": "lcore_lab12_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Почему <code>nano</code> часто проще для первого редактирования в терминале, чем <code>vim</code>?</p>",
+      "options": [
+        {
+          "text": "У nano основные команды сохранения и выхода видны внизу экрана, а vim требует понимать режимы",
+          "correct": true,
+          "explanation": "Верно! Это снижает порог входа"
+        },
+        {
+          "text": "Потому что nano умеет редактировать только бинарные файлы",
+          "correct": false,
+          "explanation": "Нет — обычно его используют для текста"
+        },
+        {
+          "text": "Потому что vim не умеет сохранять файлы",
+          "correct": false,
+          "explanation": "Нет — умеет, например через <code>:wq</code>"
+        },
+        {
+          "text": "Потому что nano автоматически проверяет systemd unit",
+          "correct": false,
+          "explanation": "Нет — редактор не валидирует сервисы"
+        }
+      ],
+      "raw_description": "<p>Почему <code>nano</code> часто проще для первого редактирования в терминале, чем <code>vim</code>?</p><ul><li>+У nano основные команды сохранения и выхода видны внизу экрана, а vim требует понимать режимы [Верно! Это снижает порог входа]</li><li>Потому что nano умеет редактировать только бинарные файлы [Нет — обычно его используют для текста]</li><li>Потому что vim не умеет сохранять файлы [Нет — умеет, например через <code>:wq</code>]</li><li>Потому что nano автоматически проверяет systemd unit [Нет — редактор не валидирует сервисы]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем опасен sed -i без проверки?",
+      "taskid": "lcore_lab12_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Почему команду <code>sed -i</code> лучше сначала мысленно или на выводе проверить перед запуском?</p>",
+      "options": [
+        {
+          "text": "<code>-i</code> меняет исходный файл на месте, и неверный шаблон сразу попадёт в файл",
+          "correct": true,
+          "explanation": "Верно! Без бэкапа откат сложнее"
+        },
+        {
+          "text": "<code>sed -i</code> всегда работает только в интерактивном редакторе",
+          "correct": false,
+          "explanation": "Нет — это неинтерактивная команда"
+        },
+        {
+          "text": "<code>sed -i</code> меняет владельца файла на root",
+          "correct": false,
+          "explanation": "Нет — он редактирует содержимое"
+        },
+        {
+          "text": "<code>sed -i</code> умеет работать только с архивами",
+          "correct": false,
+          "explanation": "Нет — это текстовый инструмент"
+        }
+      ],
+      "raw_description": "<p>Почему команду <code>sed -i</code> лучше сначала мысленно или на выводе проверить перед запуском?</p><ul><li>+<code>-i</code> меняет исходный файл на месте, и неверный шаблон сразу попадёт в файл [Верно! Без бэкапа откат сложнее]</li><li><code>sed -i</code> всегда работает только в интерактивном редакторе [Нет — это неинтерактивная команда]</li><li><code>sed -i</code> меняет владельца файла на root [Нет — он редактирует содержимое]</li><li><code>sed -i</code> умеет работать только с архивами [Нет — это текстовый инструмент]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как понять режим vim?",
+      "taskid": "lcore_lab12_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Почему в <code>vim</code> перед командой <code>:wq</code> обычно нажимают <code>Esc</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы выйти из insert mode в normal mode, где доступны команды через двоеточие",
+          "correct": true,
+          "explanation": "Верно! В insert mode текст вводится в файл"
+        },
+        {
+          "text": "Чтобы удалить весь файл перед сохранением",
+          "correct": false,
+          "explanation": "Нет — <code>Esc</code> только меняет режим"
+        },
+        {
+          "text": "Чтобы открыть nano вместо vim",
+          "correct": false,
+          "explanation": "Нет — это разные редакторы"
+        },
+        {
+          "text": "Чтобы автоматически исправить синтаксис конфига",
+          "correct": false,
+          "explanation": "Нет — режим не валидирует файл"
+        }
+      ],
+      "raw_description": "<p>Почему в <code>vim</code> перед командой <code>:wq</code> обычно нажимают <code>Esc</code>?</p><ul><li>+Чтобы выйти из insert mode в normal mode, где доступны команды через двоеточие [Верно! В insert mode текст вводится в файл]</li><li>Чтобы удалить весь файл перед сохранением [Нет — <code>Esc</code> только меняет режим]</li><li>Чтобы открыть nano вместо vim [Нет — это разные редакторы]</li><li>Чтобы автоматически исправить синтаксис конфига [Нет — режим не валидирует файл]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что значит редактирование на месте?",
+      "taskid": "lcore_lab12_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает редактирование файла “на месте” в командах вроде <code>sed -i</code>?</p>",
+      "options": [
+        {
+          "text": "Команда меняет исходный файл, а не просто печатает изменённый текст в stdout",
+          "correct": true,
+          "explanation": "Верно! Поэтому с <code>-i</code> нужно быть аккуратнее"
+        },
+        {
+          "text": "Команда открывает файл только для чтения",
+          "correct": false,
+          "explanation": "Нет — на месте означает изменение файла"
+        },
+        {
+          "text": "Команда создаёт архив файла",
+          "correct": false,
+          "explanation": "Нет — это задача <code>tar</code> или <code>gzip</code>"
+        },
+        {
+          "text": "Команда меняет владельца файла",
+          "correct": false,
+          "explanation": "Нет — владельца меняет <code>chown</code>"
+        }
+      ],
+      "raw_description": "<p>Что означает редактирование файла “на месте” в командах вроде <code>sed -i</code>?</p><ul><li>+Команда меняет исходный файл, а не просто печатает изменённый текст в stdout [Верно! Поэтому с <code>-i</code> нужно быть аккуратнее]</li><li>Команда открывает файл только для чтения [Нет — на месте означает изменение файла]</li><li>Команда создаёт архив файла [Нет — это задача <code>tar</code> или <code>gzip</code>]</li><li>Команда меняет владельца файла [Нет — владельца меняет <code>chown</code>]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда sed удобнее редактора?",
+      "taskid": "lcore_lab12_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Когда неинтерактивный <code>sed</code> обычно удобнее, чем открывать файл в nano или vim?</p>",
+      "options": [
+        {
+          "text": "Когда нужно выполнить точную однотипную замену или вставку, которую легко проверить командой",
+          "correct": true,
+          "explanation": "Верно! Это удобно для повторяемых изменений"
+        },
+        {
+          "text": "Когда нужно вручную прочитать большой текст с комментариями",
+          "correct": false,
+          "explanation": "Нет — для чтения лучше viewer или редактор"
+        },
+        {
+          "text": "Когда нужно изменить права доступа к файлу",
+          "correct": false,
+          "explanation": "Нет — это делает <code>chmod</code>"
+        },
+        {
+          "text": "Когда нужно создать tar-архив",
+          "correct": false,
+          "explanation": "Нет — это задача <code>tar</code>"
+        }
+      ],
+      "raw_description": "<p>Когда неинтерактивный <code>sed</code> обычно удобнее, чем открывать файл в nano или vim?</p><ul><li>+Когда нужно выполнить точную однотипную замену или вставку, которую легко проверить командой [Верно! Это удобно для повторяемых изменений]</li><li>Когда нужно вручную прочитать большой текст с комментариями [Нет — для чтения лучше viewer или редактор]</li><li>Когда нужно изменить права доступа к файлу [Нет — это делает <code>chmod</code>]</li><li>Когда нужно создать tar-архив [Нет — это задача <code>tar</code>]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab12/setup.yaml"
+}

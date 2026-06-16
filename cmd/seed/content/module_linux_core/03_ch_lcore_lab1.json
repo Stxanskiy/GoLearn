@@ -1,0 +1,229 @@
+{
+  "n": 3,
+  "id": "ch_lcore_lab1",
+  "title": "Лабораторная 1: Просмотр логов и поиск текста",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: tail -f",
+      "taskid": "lcore_lab1_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Ты хочешь наблюдать за логом nginx в реальном времени, видя каждый новый запрос сразу при его появлении. Какая команда для этого подходит?</p>",
+      "options": [
+        {
+          "text": "<code>cat -f /var/log/nginx/access.log</code>",
+          "correct": false,
+          "explanation": "cat не имеет флага -f для слежения"
+        },
+        {
+          "text": "<code>head -f /var/log/nginx/access.log</code>",
+          "correct": false,
+          "explanation": "head не умеет следить за файлом"
+        },
+        {
+          "text": "<code>watch cat /var/log/nginx/access.log</code>",
+          "correct": false,
+          "explanation": "watch перечитывает весь файл целиком каждые 2 секунды"
+        },
+        {
+          "text": "<code>+tail -f /var/log/nginx/access.log</code>",
+          "correct": false,
+          "explanation": "Верно! tail -f (follow) выводит новые строки по мере их появления"
+        }
+      ],
+      "raw_description": "<p>Ты хочешь наблюдать за логом nginx в реальном времени, видя каждый новый запрос сразу при его появлении. Какая команда для этого подходит?</p>\n<ul>\n<li><code>cat -f /var/log/nginx/access.log</code> [cat не имеет флага -f для слежения]</li>\n<li><code>head -f /var/log/nginx/access.log</code> [head не умеет следить за файлом]</li>\n<li><code>watch cat /var/log/nginx/access.log</code> [watch перечитывает весь файл целиком каждые 2 секунды]</li>\n<li><code>+tail -f /var/log/nginx/access.log</code> [Верно! tail -f (follow) выводит новые строки по мере их появления]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Первые строки лога",
+      "taskid": "lcore_lab1_t2_head",
+      "hint": "<p>Используй <code>head</code> с параметром количества строк. Для записи результата в файл используй <code>&gt;</code>.</p>",
+      "question_html": "<p>Выведи первые 5 строк файла <code>/opt/devops/lab1/app.log</code> и сохрани результат в <code>/root/first5.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи первые 5 строк файла <code>/opt/devops/lab1/app.log</code> и сохрани результат в <code>/root/first5.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Последние строки лога",
+      "taskid": "lcore_lab1_t3_tail",
+      "hint": "<p>Используй <code>tail</code> с параметром количества строк. Для записи результата в файл используй <code>&gt;</code>.</p>",
+      "question_html": "<p>Выведи последние 10 строк файла <code>/opt/devops/lab1/app.log</code> и сохрани результат в <code>/root/last10.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи последние 10 строк файла <code>/opt/devops/lab1/app.log</code> и сохрани результат в <code>/root/last10.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Подсчёт строк",
+      "taskid": "lcore_lab1_t4_wc",
+      "hint": "",
+      "question_html": "<p>Подсчитай общее количество строк в файле <code>/opt/devops/lab1/app.log</code> и выбери правильный результат.</p>",
+      "options": [
+        {
+          "text": "<code>+12</code>",
+          "correct": false,
+          "explanation": "Верно! В файле 12 строк"
+        },
+        {
+          "text": "<code>10</code>",
+          "correct": false,
+          "explanation": "Нет — файл длиннее"
+        },
+        {
+          "text": "<code>15</code>",
+          "correct": false,
+          "explanation": "Нет — это больше фактического количества"
+        },
+        {
+          "text": "<code>5</code>",
+          "correct": false,
+          "explanation": "Нет — это количество строк из предыдущей задачи"
+        }
+      ],
+      "raw_description": "<p>Подсчитай общее количество строк в файле <code>/opt/devops/lab1/app.log</code> и выбери правильный результат.</p>\n<ul>\n<li><code>+12</code> [Верно! В файле 12 строк]</li>\n<li><code>10</code> [Нет — файл длиннее]</li>\n<li><code>15</code> [Нет — это больше фактического количества]</li>\n<li><code>5</code> [Нет — это количество строк из предыдущей задачи]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: less vs more",
+      "taskid": "lcore_lab1_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Чем <code>less</code> лучше <code>cat</code> при просмотре большого файла (например, лога на 50 000 строк)?</p>",
+      "options": [
+        {
+          "text": "<code>less</code> выводит всё быстрее",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+less</code> не загружает весь файл в память и позволяет листать вперёд-назад",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>less</code> автоматически ищет ошибки в тексте и сразу показывает только подозрительные строки большого лога",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>less</code> подсвечивает синтаксис конфигов",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Чем <code>less</code> лучше <code>cat</code> при просмотре большого файла (например, лога на 50 000 строк)?</p>\n<ul>\n<li><code>less</code> выводит всё быстрее</li>\n<li><code>+less</code> не загружает весь файл в память и позволяет листать вперёд-назад</li>\n<li><code>less</code> автоматически ищет ошибки в тексте и сразу показывает только подозрительные строки большого лога</li>\n<li><code>less</code> подсвечивает синтаксис конфигов</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Подсчёт успешных ответов",
+      "taskid": "lcore_lab1_t6_pipe",
+      "hint": "",
+      "question_html": "<p>Подсчитай количество строк в файле <code>/opt/devops/lab1/access.log</code>, которые содержат код ответа <code>200</code>, и выбери правильный результат.</p>",
+      "options": [
+        {
+          "text": "<code>2</code>",
+          "correct": false,
+          "explanation": "Нет — один успешный запрос пропущен"
+        },
+        {
+          "text": "<code>4</code>",
+          "correct": false,
+          "explanation": "Нет — это уже включает другие коды"
+        },
+        {
+          "text": "<code>+3</code>",
+          "correct": false,
+          "explanation": "Верно! В логе три ответа с кодом 200"
+        },
+        {
+          "text": "<code>5</code>",
+          "correct": false,
+          "explanation": "Нет — это общее количество строк в access.log"
+        }
+      ],
+      "raw_description": "<p>Подсчитай количество строк в файле <code>/opt/devops/lab1/access.log</code>, которые содержат код ответа <code>200</code>, и выбери правильный результат.</p>\n<ul>\n<li><code>2</code> [Нет — один успешный запрос пропущен]</li>\n<li><code>4</code> [Нет — это уже включает другие коды]</li>\n<li><code>+3</code> [Верно! В логе три ответа с кодом 200]</li>\n<li><code>5</code> [Нет — это общее количество строк в access.log]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Сортировка строк",
+      "taskid": "lcore_lab1_t7_sort",
+      "hint": "<p>Используй <code>sort</code>; результат команды нужно перенаправить в новый файл через <code>&gt;</code>.</p>",
+      "question_html": "<p>Отсортируй содержимое файла <code>/opt/devops/lab1/words.txt</code> и сохрани в <code>/root/sorted.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Отсортируй содержимое файла <code>/opt/devops/lab1/words.txt</code> и сохрани в <code>/root/sorted.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Уникальные IP-адреса",
+      "taskid": "lcore_lab1_t8_uniq",
+      "hint": "<p>Используй <code>awk</code> или <code>cut</code>, чтобы извлечь IP-адреса из строк лога, затем убери дубликаты через <code>sort</code>/<code>uniq</code>.</p>",
+      "question_html": "<p>Получи список уникальных IP-адресов из файла <code>/opt/devops/lab1/access.log</code> и сохрани в <code>/root/unique_ips.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи список уникальных IP-адресов из файла <code>/opt/devops/lab1/access.log</code> и сохрани в <code>/root/unique_ips.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему важно сначала проверить входные данные?",
+      "taskid": "lcore_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Перед анализом логов ты хочешь быстро убедиться, что работаешь с нужным файлом. Почему это хорошая практика?</p>",
+      "options": [
+        {
+          "text": "<code>Потому что это автоматически исправляет лог</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что без этого команды head/tail не работают</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что только root может читать логи</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Проверка контекста снижает риск неверных выводов и лишней отладки</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Перед анализом логов ты хочешь быстро убедиться, что работаешь с нужным файлом. Почему это хорошая практика?</p>\n<ul>\n<li><code>Потому что это автоматически исправляет лог</code></li>\n<li><code>Потому что без этого команды head/tail не работают</code></li>\n<li><code>Потому что только root может читать логи</code></li>\n<li><code>+Проверка контекста снижает риск неверных выводов и лишней отладки</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Безопасный подход к фильтрации",
+      "taskid": "lcore_lab1_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Какой подход обычно безопаснее при поиске проблем в логе?</p>",
+      "options": [
+        {
+          "text": "<code>+Идти шагами: сначала grep/head, затем добавлять сортировку и агрегацию</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу запускать длинный pipeline из 6 команд</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу удалять строки, которые кажутся лишними</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Игнорировать stderr, чтобы не засорять вывод</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Какой подход обычно безопаснее при поиске проблем в логе?</p>\n<ul>\n<li><code>+Идти шагами: сначала grep/head, затем добавлять сортировку и агрегацию</code></li>\n<li><code>Сразу запускать длинный pipeline из 6 команд</code></li>\n<li><code>Сразу удалять строки, которые кажутся лишними</code></li>\n<li><code>Игнорировать stderr, чтобы не засорять вывод</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab1/setup.yaml"
+}

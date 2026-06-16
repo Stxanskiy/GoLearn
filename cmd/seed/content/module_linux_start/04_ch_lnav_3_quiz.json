@@ -1,0 +1,313 @@
+{
+  "n": 4,
+  "id": "ch_lnav_3_quiz",
+  "title": "Проверка: как устроены пути и директории",
+  "type": "quiz",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Корневая директория",
+      "taskid": "lnav_q1_t1_root",
+      "hint": "",
+      "question_html": "<p>Какая директория является корнем файловой системы в Linux?</p>",
+      "options": [
+        {
+          "text": "<code>/bin</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/bin</code> содержит базовые исполняемые программы"
+        },
+        {
+          "text": "<code>/root</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/root</code> это домашняя директория суперпользователя root, не корень ФС"
+        },
+        {
+          "text": "<code>/home</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/home</code> содержит домашние директории обычных пользователей"
+        },
+        {
+          "text": "<code>/</code>",
+          "correct": true,
+          "explanation": "Верно! Всё дерево файловой системы начинается с <code>/</code>. Любой путь можно записать начиная с <code>/</code>"
+        }
+      ],
+      "raw_description": "<p>Какая директория является корнем файловой системы в Linux?</p><ul>\n<li><code>/bin</code> [Нет — <code>/bin</code> содержит базовые исполняемые программы]</li>\n<li><code>/root</code> [Нет — <code>/root</code> это домашняя директория суперпользователя root, не корень ФС]</li>\n<li><code>/home</code> [Нет — <code>/home</code> содержит домашние директории обычных пользователей]</li>\n<li>+<code>/</code> [Верно! Всё дерево файловой системы начинается с <code>/</code>. Любой путь можно записать начиная с <code>/</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Домашняя директория root",
+      "taskid": "lnav_q1_t2_home",
+      "hint": "",
+      "question_html": "<p>Ты подключился к серверу по SSH как пользователь <code>root</code>. Чему равен символ <code>~</code> в этой сессии?</p>",
+      "options": [
+        {
+          "text": "<code>/home/root</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/home/root</code> не существует. У root особое место — <code>/root</code>"
+        },
+        {
+          "text": "<code>/</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/</code> это корень всей файловой системы, не домашняя директория root"
+        },
+        {
+          "text": "<code>/usr/root</code>",
+          "correct": false,
+          "explanation": "Нет — такой директории нет"
+        },
+        {
+          "text": "<code>/root</code>",
+          "correct": true,
+          "explanation": "Верно! Домашняя директория суперпользователя — <code>/root</code>, а не <code>/home/root</code>"
+        }
+      ],
+      "raw_description": "<p>Ты подключился к серверу по SSH как пользователь <code>root</code>. Чему равен символ <code>~</code> в этой сессии?</p><ul>\n<li><code>/home/root</code> [Нет — <code>/home/root</code> не существует. У root особое место — <code>/root</code>]</li>\n<li><code>/</code> [Нет — <code>/</code> это корень всей файловой системы, не домашняя директория root]</li>\n<li><code>/usr/root</code> [Нет — такой директории нет]</li>\n<li>+<code>/root</code> [Верно! Домашняя директория суперпользователя — <code>/root</code>, а не <code>/home/root</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Скрытые файлы",
+      "taskid": "lnav_q1_t3_hidden",
+      "hint": "",
+      "question_html": "<p>Какая команда покажет <strong>все</strong> файлы в директории, включая скрытые?</p>",
+      "options": [
+        {
+          "text": "ls --all-files",
+          "correct": false,
+          "explanation": "Нет — такого флага нет"
+        },
+        {
+          "text": "ls -l",
+          "correct": false,
+          "explanation": "Нет — -l даёт длинный формат, но скрытые файлы всё равно не показывает"
+        },
+        {
+          "text": "ls",
+          "correct": false,
+          "explanation": "Нет — ls без флагов не показывает скрытые файлы"
+        },
+        {
+          "text": "ls -la",
+          "correct": true,
+          "explanation": "Верно! Флаг -a показывает все файлы включая скрытые (начинаются с точки), -l даёт длинный формат"
+        }
+      ],
+      "raw_description": "<p>Какая команда покажет <strong>все</strong> файлы в директории, включая скрытые?</p><ul>\n<li>ls --all-files [Нет — такого флага нет]</li>\n<li>ls -l [Нет — -l даёт длинный формат, но скрытые файлы всё равно не показывает]</li>\n<li>ls [Нет — ls без флагов не показывает скрытые файлы]</li>\n<li>+ls -la [Верно! Флаг -a показывает все файлы включая скрытые (начинаются с точки), -l даёт длинный формат]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Конфигурационные файлы",
+      "taskid": "lnav_q1_t4_etc",
+      "hint": "",
+      "question_html": "<p>В какой директории хранятся конфигурационные файлы сервисов в Linux (nginx, ssh, systemd)?</p>",
+      "options": [
+        {
+          "text": "/etc",
+          "correct": true,
+          "explanation": "Верно! /etc — стандартное место для всех конфигурационных файлов системы"
+        },
+        {
+          "text": "/var/config",
+          "correct": false,
+          "explanation": "Нет — такой директории нет"
+        },
+        {
+          "text": "/opt",
+          "correct": false,
+          "explanation": "Нет — /opt используется для программ, установленных вручную"
+        },
+        {
+          "text": "/usr/config",
+          "correct": false,
+          "explanation": "Нет — /usr/config не существует"
+        }
+      ],
+      "raw_description": "<p>В какой директории хранятся конфигурационные файлы сервисов в Linux (nginx, ssh, systemd)?</p><ul>\n<li>+/etc [Верно! /etc — стандартное место для всех конфигурационных файлов системы]</li>\n<li>/var/config [Нет — такой директории нет]</li>\n<li>/opt [Нет — /opt используется для программ, установленных вручную]</li>\n<li>/usr/config [Нет — /usr/config не существует]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Абсолютный путь",
+      "taskid": "lnav_q1_t5_abspath",
+      "hint": "",
+      "question_html": "<p>Что такое абсолютный путь в Linux?</p>",
+      "options": [
+        {
+          "text": "Путь, содержащий символ ~",
+          "correct": false,
+          "explanation": "Нет — ~ это сокращение для домашней директории, а не признак абсолютного пути"
+        },
+        {
+          "text": "Путь относительно текущей директории",
+          "correct": false,
+          "explanation": "Нет — это определение относительного пути"
+        },
+        {
+          "text": "Путь, начинающийся с / и описывающий местоположение файла от корня ФС",
+          "correct": true,
+          "explanation": "Верно! Например: /etc/nginx/nginx.conf — абсолютный путь всегда начинается с /"
+        },
+        {
+          "text": "Кратчайший возможный путь к файлу",
+          "correct": false,
+          "explanation": "Нет — длина пути не определяет его тип"
+        }
+      ],
+      "raw_description": "<p>Что такое абсолютный путь в Linux?</p><ul>\n<li>Путь, содержащий символ ~ [Нет — ~ это сокращение для домашней директории, а не признак абсолютного пути]</li>\n<li>Путь относительно текущей директории [Нет — это определение относительного пути]</li>\n<li>+Путь, начинающийся с / и описывающий местоположение файла от корня ФС [Верно! Например: /etc/nginx/nginx.conf — абсолютный путь всегда начинается с /]</li>\n<li>Кратчайший возможный путь к файлу [Нет — длина пути не определяет его тип]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "/var директория",
+      "taskid": "lnav_q1_t6_var",
+      "hint": "",
+      "question_html": "<p>Где в Linux хранятся логи сервисов (nginx, syslog, auth.log)?</p>",
+      "options": [
+        {
+          "text": "/root/logs",
+          "correct": false,
+          "explanation": "Нет — это нестандартное место, и логи сервисов там не хранятся"
+        },
+        {
+          "text": "/tmp/logs",
+          "correct": false,
+          "explanation": "Нет — /tmp очищается при перезагрузке, логи там не хранят"
+        },
+        {
+          "text": "/var/log",
+          "correct": true,
+          "explanation": "Верно! /var содержит изменяющиеся данные: логи в /var/log, кеш в /var/cache, данные сервисов в /var/lib"
+        },
+        {
+          "text": "/etc/logs",
+          "correct": false,
+          "explanation": "Нет — /etc предназначен для конфигурационных файлов, а не логов"
+        }
+      ],
+      "raw_description": "<p>Где в Linux хранятся логи сервисов (nginx, syslog, auth.log)?</p><ul>\n<li>/root/logs [Нет — это нестандартное место, и логи сервисов там не хранятся]</li>\n<li>/tmp/logs [Нет — /tmp очищается при перезагрузке, логи там не хранят]</li>\n<li>+/var/log [Верно! /var содержит изменяющиеся данные: логи в /var/log, кеш в /var/cache, данные сервисов в /var/lib]</li>\n<li>/etc/logs [Нет — /etc предназначен для конфигурационных файлов, а не логов]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Символ точки в путях",
+      "taskid": "lnav_q1_t7_dot",
+      "hint": "",
+      "question_html": "<p>Что означает <code>..</code> в пути <code>cd ../../etc</code>?</p>",
+      "options": [
+        {
+          "text": "Перейти в домашнюю директорию",
+          "correct": false,
+          "explanation": "Нет — для этого используется cd ~ или просто cd"
+        },
+        {
+          "text": "Подняться на уровень выше — выполнить дважды означает подняться на два уровня вверх по дереву директорий",
+          "correct": true,
+          "explanation": "Верно! ../.. — это два шага вверх. Если ты в /home/user/project, то ../.. ведёт в /home"
+        },
+        {
+          "text": "Перейти в корень файловой системы",
+          "correct": false,
+          "explanation": "Нет — для этого нужен cd /"
+        },
+        {
+          "text": "Создать две новые директории",
+          "correct": false,
+          "explanation": "Нет — cd не создаёт директории"
+        }
+      ],
+      "raw_description": "<p>Что означает <code>..</code> в пути <code>cd ../../etc</code>?</p><ul>\n<li>Перейти в домашнюю директорию [Нет — для этого используется cd ~ или просто cd]</li>\n<li>+Подняться на уровень выше — выполнить дважды означает подняться на два уровня вверх по дереву директорий [Верно! ../.. — это два шага вверх. Если ты в /home/user/project, то ../.. ведёт в /home]</li>\n<li>Перейти в корень файловой системы [Нет — для этого нужен cd /]</li>\n<li>Создать две новые директории [Нет — cd не создаёт директории]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "/usr директория",
+      "taskid": "lnav_q1_t8_usr",
+      "hint": "",
+      "question_html": "<p>Где обычно хранятся исполняемые файлы установленных программ (например, nginx, git, python3)?</p>",
+      "options": [
+        {
+          "text": "/opt/bin",
+          "correct": false,
+          "explanation": "Нет — /opt/bin нестандартен. /opt используется для ручной установки пакетов"
+        },
+        {
+          "text": "/usr/bin",
+          "correct": true,
+          "explanation": "Верно! /usr/bin — основное место для исполняемых файлов установленных программ. Базовые утилиты — в /bin"
+        },
+        {
+          "text": "/etc/bin",
+          "correct": false,
+          "explanation": "Нет — /etc предназначен для конфигурационных файлов"
+        },
+        {
+          "text": "/home/bin",
+          "correct": false,
+          "explanation": "Нет — /home предназначен для домашних директорий пользователей"
+        }
+      ],
+      "raw_description": "<p>Где обычно хранятся исполняемые файлы установленных программ (например, nginx, git, python3)?</p><ul>\n<li>/opt/bin [Нет — /opt/bin нестандартен. /opt используется для ручной установки пакетов]</li>\n<li>+/usr/bin [Верно! /usr/bin — основное место для исполняемых файлов установленных программ. Базовые утилиты — в /bin]</li>\n<li>/etc/bin [Нет — /etc предназначен для конфигурационных файлов]</li>\n<li>/home/bin [Нет — /home предназначен для домашних директорий пользователей]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Команда pwd",
+      "taskid": "lnav_q1_t9_pwd",
+      "hint": "",
+      "question_html": "<p>Ты выполнил <code>cd /var/log/nginx</code>, а затем <code>cd ..</code> Что выведет команда <code>pwd</code>?</p>",
+      "options": [
+        {
+          "text": "/var/log",
+          "correct": true,
+          "explanation": "Верно! cd .. поднимает на уровень вверх: из /var/log/nginx попадаем в /var/log"
+        },
+        {
+          "text": "/",
+          "correct": false,
+          "explanation": "Нет — нужно было выполнить cd / или cd ../../.., чтобы попасть в корень"
+        },
+        {
+          "text": "/var/log/nginx",
+          "correct": false,
+          "explanation": "Нет — cd .. меняет текущую директорию"
+        },
+        {
+          "text": "/var",
+          "correct": false,
+          "explanation": "Нет — cd .. поднимает лишь на один уровень, а не на два"
+        }
+      ],
+      "raw_description": "<p>Ты выполнил <code>cd /var/log/nginx</code>, а затем <code>cd ..</code> Что выведет команда <code>pwd</code>?</p><ul>\n<li>+/var/log [Верно! cd .. поднимает на уровень вверх: из /var/log/nginx попадаем в /var/log]</li>\n<li>/ [Нет — нужно было выполнить cd / или cd ../../.., чтобы попасть в корень]</li>\n<li>/var/log/nginx [Нет — cd .. меняет текущую директорию]</li>\n<li>/var [Нет — cd .. поднимает лишь на один уровень, а не на два]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Относительный путь",
+      "taskid": "lnav_q1_t10_relpath",
+      "hint": "",
+      "question_html": "<p>Ты находишься в директории <code>/opt/devops</code>. Какой относительный путь ведёт к файлу <code>/opt/devops/lab1/config.txt</code>?</p>",
+      "options": [
+        {
+          "text": "/opt/devops/lab1/config.txt",
+          "correct": false,
+          "explanation": "Нет — это абсолютный путь, он начинается с /"
+        },
+        {
+          "text": "../lab1/config.txt",
+          "correct": false,
+          "explanation": "Нет — .. поднимает вверх в /opt, тогда нужен был бы ../devops/lab1/config.txt"
+        },
+        {
+          "text": "lab1/config.txt",
+          "correct": true,
+          "explanation": "Верно! Относительный путь начинается не с /, а с имени поддиректории относительно текущего местоположения"
+        },
+        {
+          "text": "~/lab1/config.txt",
+          "correct": false,
+          "explanation": "Нет — ~ указывает на домашнюю директорию /root, а не на текущую /opt/devops"
+        }
+      ],
+      "raw_description": "<p>Ты находишься в директории <code>/opt/devops</code>. Какой относительный путь ведёт к файлу <code>/opt/devops/lab1/config.txt</code>?</p><ul>\n<li>/opt/devops/lab1/config.txt [Нет — это абсолютный путь, он начинается с /]</li>\n<li>../lab1/config.txt [Нет — .. поднимает вверх в /opt, тогда нужен был бы ../devops/lab1/config.txt]</li>\n<li>+lab1/config.txt [Верно! Относительный путь начинается не с /, а с имени поддиректории относительно текущего местоположения]</li>\n<li>~/lab1/config.txt [Нет — ~ указывает на домашнюю директорию /root, а не на текущую /opt/devops]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

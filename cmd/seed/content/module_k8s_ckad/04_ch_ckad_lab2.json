@@ -1,0 +1,106 @@
+{
+  "n": 4,
+  "id": "ch_ckad_lab2",
+  "title": "Лабораторная 2: PVC и данные между Pod'ами",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Теперь проверь главное свойство PVC: данные живут отдельно от Pod. Удали Pod <code>pvc-writer-pod</code>, создай новый Pod <code>pvc-reader-pod</code> с тем же PVC <code>lab-pvc</code> и прочитай тот же файл.</p>\n<pre><code>kubectl delete pod pvc-writer-pod</code></pre>\n<p>Создай файл <code>/root/pvc-reader-pod.yaml</code>:</p>\n<pre><code>apiVersion: v1\nkind: Pod\nmetadata:\n  name: pvc-reader-pod\nspec:\n  containers:\n    - name: app\n      image: nginx:alpine\n      command: [\"sh\", \"-c\", \"sleep 3600\"]\n      volumeMounts:\n        - name: app-data\n          mountPath: /data\n  volumes:\n    - name: app-data\n      persistentVolumeClaim:\n        claimName: lab-pvc</code></pre>\n<p>Примени манифест:</p>\n<pre><code>kubectl apply -f /root/pvc-reader-pod.yaml</code></pre>\n<p>Дождись готовности нового Pod:</p>\n<pre><code>kubectl wait --for=condition=Ready pod/pvc-reader-pod --timeout=120s</code></pre>\n<p>Прочитай файл:</p>\n<pre><code>kubectl exec pvc-reader-pod -- cat /data/data.txt</code></pre>\n<p>Если видишь <code>persistent data</code>, значит новый Pod подключился к тому же PVC и прочитал данные, записанные старым Pod.</p>2a:Tc5d,<p>Теперь сравни PVC с <code>emptyDir</code>. PVC пережил удаление Pod'а в предыдущей самопроверке, а <code>emptyDir</code> живёт только вместе с конкретным Pod. В примере размер временного volume ограничен чере",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать PersistentVolumeClaim",
+      "taskid": "ckad_lab2_t1_pvc",
+      "hint": "<p>Примени манифест командой <code>kubectl apply -f /root/pvc.yaml</code>. Затем посмотри PVC:</p>\n<pre><code>kubectl get pvc lab-pvc</code></pre>\n<p>Если в PVC не указан <code>storageClassName</code>, Kubernetes использует default StorageClass кластера. В k3s это обычно <code>local-path</code>. Это не Traefik: Traefik отвечает за Ingress, а не за storage. В этой лабораторной PV руками не создаётся — его создаёт storage provisioner.</p>\n<p>В кластерах с динамическим provisioner PVC может стать <code>Bound</code> сразу или после появления Pod, который его использует.</p>",
+      "question_html": "<p>Создай PVC <code>lab-pvc</code> с <code>accessModes: [ReadWriteOnce]</code> и запросом <code>storage: 100Mi</code>. PVC — это заявка приложения на постоянное хранилище. Сам PersistentVolume обычно создаёт администратор кластера или динамический provisioner.</p>\n<p>Сохрани манифест в <code>/root/pvc.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай PVC <code>lab-pvc</code> с <code>accessModes: [ReadWriteOnce]</code> и запросом <code>storage: 100Mi</code>. PVC — это заявка приложения на постоянное хранилище. Сам PersistentVolume обычно создаёт администратор кластера или динамический provisioner.</p>\n<p>Сохрани манифест в <code>/root/pvc.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Подключить PVC в Pod",
+      "taskid": "ckad_lab2_t2_pod_uses_pvc",
+      "hint": "<p>Ключевой блок здесь — <code>persistentVolumeClaim.claimName: lab-pvc</code>. Именно он подключает PVC к Pod.</p>\n<p>Примени манифест:</p>\n<pre><code>kubectl apply -f /root/pvc-writer-pod.yaml</code></pre>\n<p>Дождись готовности Pod:</p>\n<pre><code>kubectl wait --for=condition=Ready pod/pvc-writer-pod --timeout=120s</code></pre>",
+      "question_html": "<p>Создай Pod <code>pvc-writer-pod</code>, который подключает PVC <code>lab-pvc</code> в каталог <code>/data</code>. Контейнер <code>app</code> должен записать строку <code>persistent data</code> в файл <code>/data/data.txt</code> и остаться запущенным.</p>\n<p>Сохрани манифест в <code>/root/pvc-writer-pod.yaml</code> и примени его в кластер.</p>\n<pre><code>apiVersion: v1\nkind: Pod\nmetadata:\n  name: pvc-writer-pod\nspec:\n  containers:\n    - name: app\n      image: nginx:alpine\n      command: [\"sh\", \"-c\", \"echo persistent data &gt; /data/data.txt; sleep 3600\"]\n      volumeMounts:\n        - name: app-data\n          mountPath: /data\n  volumes:\n    - name: app-data\n      persistentVolumeClaim:\n        claimName: lab-pvc</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>pvc-writer-pod</code>, который подключает PVC <code>lab-pvc</code> в каталог <code>/data</code>. Контейнер <code>app</code> должен записать строку <code>persistent data</code> в файл <code>/data/data.txt</code> и остаться запущенным.</p>\n<p>Сохрани манифест в <code>/root/pvc-writer-pod.yaml</code> и примени его в кластер.</p>\n<pre><code>apiVersion: v1\nkind: Pod\nmetadata:\n  name: pvc-writer-pod\nspec:\n  containers:\n    - name: app\n      image: nginx:alpine\n      command: [\"sh\", \"-c\", \"echo persistent data &gt; /data/data.txt; sleep 3600\"]\n      volumeMounts:\n        - name: app-data\n          mountPath: /data\n  volumes:\n    - name: app-data\n      persistentVolumeClaim:\n        claimName: lab-pvc</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Прочитать данные из PVC",
+      "taskid": "ckad_lab2_t3_read_pvc_data",
+      "hint": "<p>Если файл не читается, проверь, что Pod готов, volume <code>app-data</code> ссылается на <code>lab-pvc</code>, а volumeMount контейнера <code>app</code> указывает на <code>/data</code>.</p>",
+      "question_html": "<p>Прочитай файл, который Pod записал на подключённый PVC:</p>\n<pre><code>kubectl exec pvc-writer-pod -- cat /data/data.txt</code></pre>\n<p>Ожидаемый вывод: <code>persistent data</code>. Обрати внимание: путь <code>/data/data.txt</code> находится внутри контейнера, но каталог <code>/data</code> — это <code>mountPath</code>, подключённый к PVC.</p>\n<p>Проверь связь Pod → volume → PVC:</p>\n<p>Сначала посмотри, к какому PVC ссылается volume <code>app-data</code>:</p>\n<pre><code>kubectl get pod pvc-writer-pod -o jsonpath='{.spec.volumes[?(@.name==\"app-data\")].persistentVolumeClaim.claimName}'</code></pre>\n<p>Затем посмотри, куда этот volume смонтирован в контейнере <code>app</code>:</p>\n<pre><code>kubectl get pod pvc-writer-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].volumeMounts[?(@.name==\"app-data\")].mountPath}'</code></pre>\n<p>Первый вывод должен быть <code>lab-pvc</code>, второй — <code>/data</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Прочитай файл, который Pod записал на подключённый PVC:</p>\n<pre><code>kubectl exec pvc-writer-pod -- cat /data/data.txt</code></pre>\n<p>Ожидаемый вывод: <code>persistent data</code>. Обрати внимание: путь <code>/data/data.txt</code> находится внутри контейнера, но каталог <code>/data</code> — это <code>mountPath</code>, подключённый к PVC.</p>\n<p>Проверь связь Pod → volume → PVC:</p>\n<p>Сначала посмотри, к какому PVC ссылается volume <code>app-data</code>:</p>\n<pre><code>kubectl get pod pvc-writer-pod -o jsonpath='{.spec.volumes[?(@.name==\"app-data\")].persistentVolumeClaim.claimName}'</code></pre>\n<p>Затем посмотри, куда этот volume смонтирован в контейнере <code>app</code>:</p>\n<pre><code>kubectl get pod pvc-writer-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].volumeMounts[?(@.name==\"app-data\")].mountPath}'</code></pre>\n<p>Первый вывод должен быть <code>lab-pvc</code>, второй — <code>/data</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Самопроверка: подключить тот же PVC к новому Pod",
+      "taskid": "ckad_lab2_t4_reconnect_pvc",
+      "hint": "<p>Это самопроверка: здесь важно увидеть поведение глазами. Pod можно удалить, PVC остаётся. Новый Pod подключает тот же claim через <code>persistentVolumeClaim.claimName</code>.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "quiz",
+      "title": "Что произойдёт с PVC при удалении Pod'а?",
+      "taskid": "ckad_lab2_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Pod удалён. Что происходит с PVC и данными в нём?</p>",
+      "options": [
+        {
+          "text": "PVC удаляется вместе с Pod'ом",
+          "correct": false,
+          "explanation": "Нет — Pod и PVC имеют разные жизненные циклы"
+        },
+        {
+          "text": "Данные очищаются, но PVC остаётся",
+          "correct": false,
+          "explanation": "Нет — данные живут столько же, сколько volume backend"
+        },
+        {
+          "text": "PVC и данные остаются — они независимы от Pod'а",
+          "correct": true,
+          "explanation": "Верно! PVC — отдельный объект. Данные сохраняются до явного удаления PVC или volume backend"
+        },
+        {
+          "text": "PVC автоматически становится новым Pod'ом",
+          "correct": false,
+          "explanation": "Нет — PVC только предоставляет хранилище, Pod нужно создать отдельно"
+        }
+      ],
+      "raw_description": "<p>Pod удалён. Что происходит с PVC и данными в нём?</p><ul>\n<li>PVC удаляется вместе с Pod'ом [Нет — Pod и PVC имеют разные жизненные циклы]</li>\n<li>Данные очищаются, но PVC остаётся [Нет — данные живут столько же, сколько volume backend]</li>\n<li>+PVC и данные остаются — они независимы от Pod'а [Верно! PVC — отдельный объект. Данные сохраняются до явного удаления PVC или volume backend]</li>\n<li>PVC автоматически становится новым Pod'ом [Нет — PVC только предоставляет хранилище, Pod нужно создать отдельно]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть StorageClass и привязку PVC",
+      "taskid": "ckad_lab2_t6_sc",
+      "hint": "<p>Важно понимать границу: PVC — namespace-ресурс приложения, а StorageClass/PV — уровень кластера, который обычно готовит платформа. В прикладной диагностике чаще всего достаточно увидеть <code>StorageClass</code>, <code>Volume</code> и <code>Events</code> у самого PVC.</p>",
+      "question_html": "<p>Посмотри PVC подробнее:</p>\n<pre><code>kubectl get pvc lab-pvc -o wide</code></pre>\n<pre><code>kubectl describe pvc lab-pvc</code></pre>\n<p>Отдельно посмотри StorageClass, который использует PVC:</p>\n<pre><code>kubectl get pvc lab-pvc -o jsonpath='{.spec.storageClassName}{\"\\n\"}'</code></pre>\n<p>Затем посмотри имя PV, к которому привязался PVC:</p>\n<pre><code>kubectl get pvc lab-pvc -o jsonpath='{.spec.volumeName}{\"\\n\"}'</code></pre>\n<p>В <code>describe pvc</code> обрати внимание на <code>Status</code>, <code>Volume</code>, <code>StorageClass</code> и <code>Events</code>. Эти поля показывают, привязался ли claim к реальному volume и кто выделил хранилище.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри PVC подробнее:</p>\n<pre><code>kubectl get pvc lab-pvc -o wide</code></pre>\n<pre><code>kubectl describe pvc lab-pvc</code></pre>\n<p>Отдельно посмотри StorageClass, который использует PVC:</p>\n<pre><code>kubectl get pvc lab-pvc -o jsonpath='{.spec.storageClassName}{\"\\n\"}'</code></pre>\n<p>Затем посмотри имя PV, к которому привязался PVC:</p>\n<pre><code>kubectl get pvc lab-pvc -o jsonpath='{.spec.volumeName}{\"\\n\"}'</code></pre>\n<p>В <code>describe pvc</code> обрати внимание на <code>Status</code>, <code>Volume</code>, <code>StorageClass</code> и <code>Events</code>. Эти поля показывают, привязался ли claim к реальному volume и кто выделил хранилище.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Самопроверка: сравнить PVC и emptyDir",
+      "taskid": "ckad_lab2_t7_emptydir_compare",
+      "hint": "<p>Если хочешь увидеть это в манифестах, сравни <code>volumes[].emptyDir</code> у <code>emptydir-demo</code> и <code>volumes[].persistentVolumeClaim.claimName</code> у <code>pvc-reader-pod</code>.</p>",
+      "question_html": "$2a",
+      "options": [],
+      "raw_description": "$2a"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы",
+      "taskid": "ckad_lab2_t8_cleanup",
+      "hint": "<p>После удаления проверь:</p>\n<pre><code>kubectl get pod pvc-writer-pod pvc-reader-pod emptydir-demo</code></pre>\n<pre><code>kubectl get pvc lab-pvc</code></pre>",
+      "question_html": "<p>Удали Pod'ы <code>pvc-writer-pod</code>, <code>pvc-reader-pod</code>, <code>emptydir-demo</code> и PVC <code>lab-pvc</code>.</p>\n<p>Сначала удали Pod'ы:</p>\n<pre><code>kubectl delete pod pvc-writer-pod pvc-reader-pod emptydir-demo --ignore-not-found --wait=true</code></pre>\n<p>Затем удали PVC:</p>\n<pre><code>kubectl delete pvc lab-pvc --ignore-not-found --wait=true</code></pre>",
+      "options": [],
+      "raw_description": "<p>Удали Pod'ы <code>pvc-writer-pod</code>, <code>pvc-reader-pod</code>, <code>emptydir-demo</code> и PVC <code>lab-pvc</code>.</p>\n<p>Сначала удали Pod'ы:</p>\n<pre><code>kubectl delete pod pvc-writer-pod pvc-reader-pod emptydir-demo --ignore-not-found --wait=true</code></pre>\n<p>Затем удали PVC:</p>\n<pre><code>kubectl delete pvc lab-pvc --ignore-not-found --wait=true</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab2/setup.yaml"
+}

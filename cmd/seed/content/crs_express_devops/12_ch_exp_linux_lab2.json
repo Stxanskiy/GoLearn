@@ -1,0 +1,280 @@
+{
+  "n": 12,
+  "id": "ch_exp_linux_lab2",
+  "title": "Практика: текст и поиск",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что делает cat?",
+      "taskid": "lin_lab2_t1_cat_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>cat app.log</code>?</p>",
+      "options": [
+        {
+          "text": "Выводит содержимое файла app.log на экран",
+          "correct": true,
+          "explanation": "Верно! cat (concatenate) читает файл и печатает его содержимое"
+        },
+        {
+          "text": "Создаёт файл app.log",
+          "correct": false,
+          "explanation": "Нет — для создания файла используй touch или echo >"
+        },
+        {
+          "text": "Удаляет файл app.log",
+          "correct": false,
+          "explanation": "Нет — для удаления используй rm"
+        },
+        {
+          "text": "Копирует файл app.log",
+          "correct": false,
+          "explanation": "Нет — для копирования используй cp"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>cat app.log</code>?</p><ul><li>+Выводит содержимое файла app.log на экран [Верно! cat (concatenate) читает файл и печатает его содержимое]</li><li>Создаёт файл app.log [Нет — для создания файла используй touch или echo >]</li><li>Удаляет файл app.log [Нет — для удаления используй rm]</li><li>Копирует файл app.log [Нет — для копирования используй cp]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Посчитать строки",
+      "taskid": "lin_lab2_t2_wc_lines",
+      "hint": "",
+      "question_html": "<p>Подсчитай количество строк в файле <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p>",
+      "options": [
+        {
+          "text": "35",
+          "correct": false,
+          "explanation": "Нет — это только строки с ERROR и WARNING вместе"
+        },
+        {
+          "text": "50",
+          "correct": true,
+          "explanation": "Верно! В логе 15 строк ERROR, 20 WARNING и 15 INFO"
+        },
+        {
+          "text": "65",
+          "correct": false,
+          "explanation": "Нет — в исходном файле меньше строк"
+        },
+        {
+          "text": "15",
+          "correct": false,
+          "explanation": "Нет — это количество строк INFO или ERROR, а не весь файл"
+        }
+      ],
+      "raw_description": "<p>Подсчитай количество строк в файле <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p><ul><li>35 [Нет — это только строки с ERROR и WARNING вместе]</li><li>+50 [Верно! В логе 15 строк ERROR, 20 WARNING и 15 INFO]</li><li>65 [Нет — в исходном файле меньше строк]</li><li>15 [Нет — это количество строк INFO или ERROR, а не весь файл]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Последние строки файла",
+      "taskid": "lin_lab2_t3_tail",
+      "hint": "<p>Используй <code>tail</code> с параметром количества строк.</p>",
+      "question_html": "<p>Выведи последние 10 строк файла <code>/opt/devops/lab2/app.log</code> и сохрани их в <code>/root/last10.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи последние 10 строк файла <code>/opt/devops/lab2/app.log</code> и сохрани их в <code>/root/last10.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает less?",
+      "taskid": "lin_lab2_t4_less_quiz",
+      "hint": "",
+      "question_html": "<p>В чём главное отличие <code>less</code> от <code>cat</code> при просмотре большого файла?</p>",
+      "options": [
+        {
+          "text": "less работает быстрее, чем cat",
+          "correct": false,
+          "explanation": "Нет — скорость здесь не ключевое отличие"
+        },
+        {
+          "text": "less изменяет файл, cat — нет",
+          "correct": false,
+          "explanation": "Нет — оба инструмента только читают файл"
+        },
+        {
+          "text": "less показывает файл постранично, без вывода всего содержимого сразу",
+          "correct": true,
+          "explanation": "Верно! less открывает интерактивный просмотр. Листай стрелками, выходи клавишей q"
+        },
+        {
+          "text": "less работает только с текстовыми файлами, cat с любыми",
+          "correct": false,
+          "explanation": "Нет — оба работают с текстовыми файлами"
+        }
+      ],
+      "raw_description": "<p>В чём главное отличие <code>less</code> от <code>cat</code> при просмотре большого файла?</p><ul><li>less работает быстрее, чем cat [Нет — скорость здесь не ключевое отличие]</li><li>less изменяет файл, cat — нет [Нет — оба инструмента только читают файл]</li><li>+less показывает файл постранично, без вывода всего содержимого сразу [Верно! less открывает интерактивный просмотр. Листай стрелками, выходи клавишей q]</li><li>less работает только с текстовыми файлами, cat с любыми [Нет — оба работают с текстовыми файлами]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "grep: посчитать ERROR",
+      "taskid": "lin_lab2_t5_grep_count",
+      "hint": "",
+      "question_html": "<p>Посчитай, сколько строк содержат слово <code>ERROR</code> в файле <code>/opt/devops/lab2/app.log</code>, и выбери получившееся число.</p>",
+      "options": [
+        {
+          "text": "10",
+          "correct": false,
+          "explanation": "Нет — проверь поиск по всему файлу"
+        },
+        {
+          "text": "20",
+          "correct": false,
+          "explanation": "Нет — это количество строк WARNING"
+        },
+        {
+          "text": "50",
+          "correct": false,
+          "explanation": "Нет — это общее количество строк в логе"
+        },
+        {
+          "text": "15",
+          "correct": true,
+          "explanation": "Верно! В подготовленном логе 15 строк с ERROR"
+        }
+      ],
+      "raw_description": "<p>Посчитай, сколько строк содержат слово <code>ERROR</code> в файле <code>/opt/devops/lab2/app.log</code>, и выбери получившееся число.</p><ul><li>10 [Нет — проверь поиск по всему файлу]</li><li>20 [Нет — это количество строк WARNING]</li><li>50 [Нет — это общее количество строк в логе]</li><li>+15 [Верно! В подготовленном логе 15 строк с ERROR]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "grep -v: инвертированный поиск",
+      "taskid": "lin_lab2_t6_grep_v",
+      "hint": "<p>Используй <code>grep</code> с подходящим флагом для нужного вида поиска.</p>",
+      "question_html": "<p>Выведи все строки из <code>/opt/devops/lab2/app.log</code>, которые <strong>не</strong> содержат слово <code>INFO</code>, и сохрани их в <code>/root/no_info.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи все строки из <code>/opt/devops/lab2/app.log</code>, которые <strong>не</strong> содержат слово <code>INFO</code>, и сохрани их в <code>/root/no_info.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Pipe: посчитать WARNING",
+      "taskid": "lin_lab2_t7_pipe",
+      "hint": "",
+      "question_html": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p>",
+      "options": [
+        {
+          "text": "20",
+          "correct": true,
+          "explanation": "Верно! В подготовленном логе 20 строк с WARNING"
+        },
+        {
+          "text": "15",
+          "correct": false,
+          "explanation": "Нет — это количество строк ERROR или INFO"
+        },
+        {
+          "text": "35",
+          "correct": false,
+          "explanation": "Нет — это сумма ERROR и WARNING"
+        },
+        {
+          "text": "50",
+          "correct": false,
+          "explanation": "Нет — это общее количество строк"
+        }
+      ],
+      "raw_description": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p><ul><li>+20 [Верно! В подготовленном логе 20 строк с WARNING]</li><li>15 [Нет — это количество строк ERROR или INFO]</li><li>35 [Нет — это сумма ERROR и WARNING]</li><li>50 [Нет — это общее количество строк]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "grep -i: без учёта регистра",
+      "taskid": "lin_lab2_t8_grep_i_quiz",
+      "hint": "",
+      "question_html": "<p>Команда <code>grep 'error' app.log</code> найдёт строки с <code>error</code>, но пропустит <code>ERROR</code> и <code>Error</code>. Какой флаг сделает поиск нечувствительным к регистру?</p>",
+      "options": [
+        {
+          "text": "-r",
+          "correct": false,
+          "explanation": "Нет — флаг -r делает рекурсивный поиск по директориям"
+        },
+        {
+          "text": "-i",
+          "correct": true,
+          "explanation": "Верно! grep -i (ignore case) ищет без учёта регистра: error, ERROR, Error — всё найдёт"
+        },
+        {
+          "text": "-n",
+          "correct": false,
+          "explanation": "Нет — флаг -n показывает номера строк"
+        },
+        {
+          "text": "-c",
+          "correct": false,
+          "explanation": "Нет — флаг -c считает количество совпадений"
+        }
+      ],
+      "raw_description": "<p>Команда <code>grep 'error' app.log</code> найдёт строки с <code>error</code>, но пропустит <code>ERROR</code> и <code>Error</code>. Какой флаг сделает поиск нечувствительным к регистру?</p><ul><li>-r [Нет — флаг -r делает рекурсивный поиск по директориям]</li><li>+-i [Верно! grep -i (ignore case) ищет без учёта регистра: error, ERROR, Error — всё найдёт]</li><li>-n [Нет — флаг -n показывает номера строк]</li><li>-c [Нет — флаг -c считает количество совпадений]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "grep -n: номера строк",
+      "taskid": "lin_lab2_t9_grep_n_quiz",
+      "hint": "",
+      "question_html": "<p>Что добавляет флаг <code>-n</code> к выводу <code>grep</code>?</p>",
+      "options": [
+        {
+          "text": "Показывает только N первых совпадений",
+          "correct": false,
+          "explanation": "Нет — для ограничения числа совпадений используй head после pipe"
+        },
+        {
+          "text": "Инвертирует поиск",
+          "correct": false,
+          "explanation": "Нет — инверсия это флаг -v"
+        },
+        {
+          "text": "Показывает номер строки перед каждым совпадением",
+          "correct": true,
+          "explanation": "Верно! grep -n выводит: «42:ERROR: connection refused» — сначала номер строки, потом текст"
+        },
+        {
+          "text": "Ищет без учёта регистра",
+          "correct": false,
+          "explanation": "Нет — это флаг -i"
+        }
+      ],
+      "raw_description": "<p>Что добавляет флаг <code>-n</code> к выводу <code>grep</code>?</p><ul><li>Показывает только N первых совпадений [Нет — для ограничения числа совпадений используй head после pipe]</li><li>Инвертирует поиск [Нет — инверсия это флаг -v]</li><li>+Показывает номер строки перед каждым совпадением [Верно! grep -n выводит: «42:ERROR: connection refused» — сначала номер строки, потом текст]</li><li>Ищет без учёта регистра [Нет — это флаг -i]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "grep -r: поиск по директории",
+      "taskid": "lin_lab2_t10_grep_r_quiz",
+      "hint": "",
+      "question_html": "<p>Команда <code>grep 'ERROR' /opt/devops/lab2/app.log</code> ищет в одном файле. Как найти <code>ERROR</code> во всех файлах внутри директории <code>/opt/devops/lab2/</code> рекурсивно?</p>",
+      "options": [
+        {
+          "text": "grep 'ERROR' /opt/devops/lab2/*",
+          "correct": false,
+          "explanation": "Почти, но это не рекурсивно — не зайдёт в поддиректории"
+        },
+        {
+          "text": "grep 'ERROR' -all /opt/devops/lab2/",
+          "correct": false,
+          "explanation": "Нет — флага -all нет"
+        },
+        {
+          "text": "find /opt/devops/lab2/ | grep 'ERROR'",
+          "correct": false,
+          "explanation": "Нет — это поиск файлов по имени, не по содержимому"
+        },
+        {
+          "text": "grep -r 'ERROR' /opt/devops/lab2/",
+          "correct": true,
+          "explanation": "Верно! Флаг -r (recursive) ищет во всех файлах директории и поддиректориях"
+        }
+      ],
+      "raw_description": "<p>Команда <code>grep 'ERROR' /opt/devops/lab2/app.log</code> ищет в одном файле. Как найти <code>ERROR</code> во всех файлах внутри директории <code>/opt/devops/lab2/</code> рекурсивно?</p><ul><li>grep 'ERROR' /opt/devops/lab2/* [Почти, но это не рекурсивно — не зайдёт в поддиректории]</li><li>grep 'ERROR' -all /opt/devops/lab2/ [Нет — флага -all нет]</li><li>find /opt/devops/lab2/ | grep 'ERROR' [Нет — это поиск файлов по имени, не по содержимому]</li><li>+grep -r 'ERROR' /opt/devops/lab2/ [Верно! Флаг -r (recursive) ищет во всех файлах директории и поддиректориях]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "find: найти скрипты",
+      "taskid": "lin_lab2_t11_find",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>",
+      "question_html": "<p>Найди все файлы с расширением <code>.sh</code> в директории <code>/opt/devops/lab2</code> и сохрани список в <code>/root/scripts.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы с расширением <code>.sh</code> в директории <code>/opt/devops/lab2</code> и сохрани список в <code>/root/scripts.txt</code>.</p>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module0_express/linux/lab2/setup.yaml"
+}

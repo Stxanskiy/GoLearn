@@ -1,0 +1,106 @@
+{
+  "n": 6,
+  "id": "ch_git_lab3",
+  "title": "Лабораторная 3: branch, switch, merge",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "git branch: создать ветку",
+      "taskid": "git_lab3_t1_branch",
+      "hint": "<p>Используй <code>git branch</code>: создай ветку отдельно и проверь список веток перед переключением.</p>",
+      "question_html": "<p>Создай ветку <code>feature/login</code> в репозитории <code>/root/project</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай ветку <code>feature/login</code> в репозитории <code>/root/project</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git switch: переключиться",
+      "taskid": "git_lab3_t2_switch",
+      "hint": "<p>Используй <code>git switch</code>: после переключения проверь текущую ветку через <code>git status</code> или список веток.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> переключись на ветку <code>feature/login</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> переключись на ветку <code>feature/login</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "коммит в ветке",
+      "taskid": "git_lab3_t3_commit",
+      "hint": "<p>Используй <code>git add</code> и <code>git commit</code>: перед коммитом проверь, что файл уже попал в индекс.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> в ветке <code>feature/login</code> создай файл <code>login.py</code> с содержимым <code># login module</code> и закоммить с сообщением <code>add login</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> в ветке <code>feature/login</code> создай файл <code>login.py</code> с содержимым <code># login module</code> и закоммить с сообщением <code>add login</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git switch -c: создать и переключиться",
+      "taskid": "git_lab3_t4_switch_c",
+      "hint": "<p>Используй <code>git switch</code> в режиме создания ветки. После действия проверь, что текущая ветка изменилась.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> создай и сразу переключись на ветку <code>feature/api</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> создай и сразу переключись на ветку <code>feature/api</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: fast-forward merge",
+      "taskid": "git_lab3_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Когда происходит fast-forward merge?</p>",
+      "options": [
+        {
+          "text": "Когда есть конфликты в файлах",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Когда ветки разошлись в разные стороны",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Когда используется флаг --fast-forward",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Когда целевая ветка (main) не имеет новых коммитов с момента создания feature-ветки — Git просто перемещает указатель</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Когда происходит fast-forward merge?</p>\n<ul>\n<li>Когда есть конфликты в файлах</li>\n<li>Когда ветки разошлись в разные стороны</li>\n<li>Когда используется флаг --fast-forward</li>\n<li><code>+Когда целевая ветка (main) не имеет новых коммитов с момента создания feature-ветки — Git просто перемещает указатель</code></li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "merge: слить ветку",
+      "taskid": "git_lab3_t6_merge",
+      "hint": "<p>Используй <code>git merge</code>: сначала перейди на ветку-приёмник, затем слей нужную ветку и проверь историю.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> переключись на <code>main</code> и слей ветку <code>feature/login</code> в неё. После слияния файл <code>/root/project/login.py</code> должен быть в рабочем дереве.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> переключись на <code>main</code> и слей ветку <code>feature/login</code> в неё. После слияния файл <code>/root/project/login.py</code> должен быть в рабочем дереве.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git branch -d: удалить ветку",
+      "taskid": "git_lab3_t7_delete",
+      "hint": "<p>Используй <code>git branch</code> для удаления уже слитой ветки. Перед удалением проверь, что ты не находишься на ней.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> удали слитую ветку <code>feature/login</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> удали слитую ветку <code>feature/login</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "git log --graph: история с ветками",
+      "taskid": "git_lab3_t8_graph",
+      "hint": "<p>Для истории используй <code>git log</code>: добавь режимы, которые показывают граф и все ветки.</p>",
+      "question_html": "<p>Посмотри граф истории всех веток в репозитории <code>/root/project</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project log --oneline --graph --all --decorate\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри граф истории всех веток в репозитории <code>/root/project</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project log --oneline --graph --all --decorate\n</code></pre>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab3/setup.yaml"
+}

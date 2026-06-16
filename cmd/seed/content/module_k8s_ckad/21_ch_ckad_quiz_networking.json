@@ -1,0 +1,313 @@
+{
+  "n": 21,
+  "id": "ch_ckad_quiz_networking",
+  "title": "Проверка: сети Kubernetes",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "CNI",
+      "taskid": "k8sn_quiz1_t1",
+      "hint": "",
+      "question_html": "<p>Что такое CNI в Kubernetes?</p>",
+      "options": [
+        {
+          "text": "Container Network Identity — идентификатор контейнера",
+          "correct": false,
+          "explanation": "Нет — это не про идентификацию"
+        },
+        {
+          "text": "Cluster Node Inspector — инструмент мониторинга",
+          "correct": false,
+          "explanation": "Нет — CNI это Container Network Interface"
+        },
+        {
+          "text": "Container Network Interface — плагин который настраивает сеть для Pod'ов",
+          "correct": true,
+          "explanation": "Верно! CNI создаёт виртуальные интерфейсы, настраивает маршруты и реализует overlay сеть"
+        },
+        {
+          "text": "CoreDNS Network Interface — DNS для контейнеров",
+          "correct": false,
+          "explanation": "Нет — CoreDNS это DNS сервер, CNI — сетевой плагин"
+        }
+      ],
+      "raw_description": "<p>Что такое CNI в Kubernetes?</p><ul>\n<li>Container Network Identity — идентификатор контейнера [Нет — это не про идентификацию]</li>\n<li>Cluster Node Inspector — инструмент мониторинга [Нет — CNI это Container Network Interface]</li>\n<li>+Container Network Interface — плагин который настраивает сеть для Pod'ов [Верно! CNI создаёт виртуальные интерфейсы, настраивает маршруты и реализует overlay сеть]</li>\n<li>CoreDNS Network Interface — DNS для контейнеров [Нет — CoreDNS это DNS сервер, CNI — сетевой плагин]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "ClusterIP доступность",
+      "taskid": "k8sn_quiz1_t2",
+      "hint": "",
+      "question_html": "<p>Pod запущен снаружи кластера (на хост-машине). Может ли он обратиться к ClusterIP Service?</p>",
+      "options": [
+        {
+          "text": "Да — ClusterIP это просто IP адрес, маршрутизируемый как обычно",
+          "correct": false,
+          "explanation": "Нет — ClusterIP виртуальный, существует только внутри кластерной сети"
+        },
+        {
+          "text": "Только если Pod на той же машине что и master",
+          "correct": false,
+          "explanation": "Нет — ClusterIP недоступен снаружи кластера вообще"
+        },
+        {
+          "text": "Нет — ClusterIP маршрутизируется только через kube-proxy внутри кластера",
+          "correct": true,
+          "explanation": "Верно! ClusterIP существует только в iptables/IPVS на Node'ах кластера"
+        },
+        {
+          "text": "Да если включить режим host networking",
+          "correct": false,
+          "explanation": "Нет — host networking дает Pod доступ к Node сети, но не к ClusterIP из вне"
+        }
+      ],
+      "raw_description": "<p>Pod запущен снаружи кластера (на хост-машине). Может ли он обратиться к ClusterIP Service?</p><ul>\n<li>Да — ClusterIP это просто IP адрес, маршрутизируемый как обычно [Нет — ClusterIP виртуальный, существует только внутри кластерной сети]</li>\n<li>Только если Pod на той же машине что и master [Нет — ClusterIP недоступен снаружи кластера вообще]</li>\n<li>+Нет — ClusterIP маршрутизируется только через kube-proxy внутри кластера [Верно! ClusterIP существует только в iptables/IPVS на Node'ах кластера]</li>\n<li>Да если включить режим host networking [Нет — host networking дает Pod доступ к Node сети, но не к ClusterIP из вне]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DNS имя Service",
+      "taskid": "k8sn_quiz1_t3",
+      "hint": "",
+      "question_html": "<p>Service <code>db</code> находится в namespace <code>prod</code>. Как к нему обратиться из namespace <code>staging</code>?</p>",
+      "options": [
+        {
+          "text": "db — короткое имя всегда работает",
+          "correct": false,
+          "explanation": "Нет — короткое имя разрезолвится в db.staging.svc.cluster.local"
+        },
+        {
+          "text": "Нельзя — Service'ы изолированы по namespace",
+          "correct": false,
+          "explanation": "Нет — сеть между namespace'ами не изолирована без NetworkPolicy"
+        },
+        {
+          "text": "db.prod.svc.cluster.local — полное FQDN работает из любого namespace",
+          "correct": true,
+          "explanation": "Верно! Короткое имя работает только в том же namespace; FQDN — из любого"
+        },
+        {
+          "text": "prod/db — путь через namespace",
+          "correct": false,
+          "explanation": "Нет — это не URL, DNS не работает с slash"
+        }
+      ],
+      "raw_description": "<p>Service <code>db</code> находится в namespace <code>prod</code>. Как к нему обратиться из namespace <code>staging</code>?</p><ul>\n<li>db — короткое имя всегда работает [Нет — короткое имя разрезолвится в db.staging.svc.cluster.local]</li>\n<li>Нельзя — Service'ы изолированы по namespace [Нет — сеть между namespace'ами не изолирована без NetworkPolicy]</li>\n<li>+db.prod.svc.cluster.local — полное FQDN работает из любого namespace [Верно! Короткое имя работает только в том же namespace; FQDN — из любого]</li>\n<li>prod/db — путь через namespace [Нет — это не URL, DNS не работает с slash]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "pathType в Ingress",
+      "taskid": "k8sn_quiz1_t4",
+      "hint": "",
+      "question_html": "<p>Ingress имеет правило <code>path: /api</code> с <code>pathType: Prefix</code>. Какой запрос будет маршрутизирован?</p>",
+      "options": [
+        {
+          "text": "Любой путь содержащий строку api",
+          "correct": false,
+          "explanation": "Нет — Prefix проверяет начало пути, не вхождение"
+        },
+        {
+          "text": "Только /api/ со слешем в конце",
+          "correct": false,
+          "explanation": "Нет — /api без слеша тоже подходит"
+        },
+        {
+          "text": "Только точный путь /api",
+          "correct": false,
+          "explanation": "Нет — для точного совпадения нужен pathType: Exact"
+        },
+        {
+          "text": "Все запросы начинающиеся с /api: /api, /api/users, /api/v2/items",
+          "correct": true,
+          "explanation": "Верно! Prefix означает «начинается с», включая сам путь"
+        }
+      ],
+      "raw_description": "<p>Ingress имеет правило <code>path: /api</code> с <code>pathType: Prefix</code>. Какой запрос будет маршрутизирован?</p><ul>\n<li>Любой путь содержащий строку api [Нет — Prefix проверяет начало пути, не вхождение]</li>\n<li>Только /api/ со слешем в конце [Нет — /api без слеша тоже подходит]</li>\n<li>Только точный путь /api [Нет — для точного совпадения нужен pathType: Exact]</li>\n<li>+Все запросы начинающиеся с /api: /api, /api/users, /api/v2/items [Верно! Prefix означает «начинается с», включая сам путь]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "NetworkPolicy AND vs OR",
+      "taskid": "k8sn_quiz1_t5",
+      "hint": "",
+      "question_html": "<p>В NetworkPolicy ingress.from содержит один элемент с двумя полями: namespaceSelector И podSelector. Это:</p>",
+      "options": [
+        {
+          "text": "XOR — только одно из двух условий",
+          "correct": false,
+          "explanation": "Нет — такой логики в NetworkPolicy нет"
+        },
+        {
+          "text": "NOT — исключает эти Pod'ы",
+          "correct": false,
+          "explanation": "Нет — from описывает разрешённый трафик, не запрещённый"
+        },
+        {
+          "text": "AND — только Pod'ы соответствующие обоим selector'ам одновременно",
+          "correct": true,
+          "explanation": "Верно! Один элемент from с несколькими полями = AND логика"
+        },
+        {
+          "text": "OR — подходит namespace ИЛИ подходит Pod label",
+          "correct": false,
+          "explanation": "Нет — OR логика = два отдельных элемента в массиве from"
+        }
+      ],
+      "raw_description": "<p>В NetworkPolicy ingress.from содержит один элемент с двумя полями: namespaceSelector И podSelector. Это:</p><ul>\n<li>XOR — только одно из двух условий [Нет — такой логики в NetworkPolicy нет]</li>\n<li>NOT — исключает эти Pod'ы [Нет — from описывает разрешённый трафик, не запрещённый]</li>\n<li>+AND — только Pod'ы соответствующие обоим selector'ам одновременно [Верно! Один элемент from с несколькими полями = AND логика]</li>\n<li>OR — подходит namespace ИЛИ подходит Pod label [Нет — OR логика = два отдельных элемента в массиве from]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Headless Service",
+      "taskid": "k8sn_quiz1_t6",
+      "hint": "",
+      "question_html": "<p>Что происходит когда Headless Service (clusterIP: None) получает DNS запрос?</p>",
+      "options": [
+        {
+          "text": "DNS возвращает ошибку — Headless не имеет IP для ответа",
+          "correct": false,
+          "explanation": "Нет — DNS записи есть, просто возвращают Pod IP"
+        },
+        {
+          "text": "DNS возвращает только IP первого Pod'а",
+          "correct": false,
+          "explanation": "Нет — возвращаются все Pod'ы"
+        },
+        {
+          "text": "Трафик распределяется kube-proxy как обычно",
+          "correct": false,
+          "explanation": "Нет — у Headless нет iptables правил, балансировки через kube-proxy нет"
+        },
+        {
+          "text": "DNS возвращает список IP всех Pod'ов, соответствующих selector",
+          "correct": true,
+          "explanation": "Верно! Нет VIP — DNS отдаёт A-записи Pod'ов напрямую"
+        }
+      ],
+      "raw_description": "<p>Что происходит когда Headless Service (clusterIP: None) получает DNS запрос?</p><ul>\n<li>DNS возвращает ошибку — Headless не имеет IP для ответа [Нет — DNS записи есть, просто возвращают Pod IP]</li>\n<li>DNS возвращает только IP первого Pod'а [Нет — возвращаются все Pod'ы]</li>\n<li>Трафик распределяется kube-proxy как обычно [Нет — у Headless нет iptables правил, балансировки через kube-proxy нет]</li>\n<li>+DNS возвращает список IP всех Pod'ов, соответствующих selector [Верно! Нет VIP — DNS отдаёт A-записи Pod'ов напрямую]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "ExternalName",
+      "taskid": "k8sn_quiz1_t7",
+      "hint": "",
+      "question_html": "<p>Service типа ExternalName создан с externalName: db.company.com. Что происходит при DNS запросе к этому Service?</p>",
+      "options": [
+        {
+          "text": "Kubernetes кэширует IP db.company.com",
+          "correct": false,
+          "explanation": "Нет — каждый раз делается реальный DNS запрос"
+        },
+        {
+          "text": "Kubernetes создаёт прокси к db.company.com",
+          "correct": false,
+          "explanation": "Нет — никакого прокси нет, только DNS redirect"
+        },
+        {
+          "text": "ExternalName блокирует прямые обращения к db.company.com",
+          "correct": false,
+          "explanation": "Нет — он не блокирует, просто добавляет DNS alias"
+        },
+        {
+          "text": "Kubernetes DNS возвращает CNAME запись указывающую на db.company.com",
+          "correct": true,
+          "explanation": "Верно! ExternalName = CNAME в кластерном DNS"
+        }
+      ],
+      "raw_description": "<p>Service типа ExternalName создан с externalName: db.company.com. Что происходит при DNS запросе к этому Service?</p><ul>\n<li>Kubernetes кэширует IP db.company.com [Нет — каждый раз делается реальный DNS запрос]</li>\n<li>Kubernetes создаёт прокси к db.company.com [Нет — никакого прокси нет, только DNS redirect]</li>\n<li>ExternalName блокирует прямые обращения к db.company.com [Нет — он не блокирует, просто добавляет DNS alias]</li>\n<li>+Kubernetes DNS возвращает CNAME запись указывающую на db.company.com [Верно! ExternalName = CNAME в кластерном DNS]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "kube-proxy",
+      "taskid": "k8sn_quiz1_t8",
+      "hint": "",
+      "question_html": "<p>Что делает kube-proxy на каждом Node?</p>",
+      "options": [
+        {
+          "text": "Проксирует каждый пакет через userspace процесс",
+          "correct": false,
+          "explanation": "Нет — современный kube-proxy использует iptables/IPVS в ядре, не userspace"
+        },
+        {
+          "text": "Настраивает iptables/IPVS правила для маршрутизации трафика к Service Endpoints",
+          "correct": true,
+          "explanation": "Верно! kube-proxy — это не proxy в классическом смысле, а менеджер сетевых правил"
+        },
+        {
+          "text": "Управляет DNS записями CoreDNS",
+          "correct": false,
+          "explanation": "Нет — CoreDNS управляется отдельно, kube-proxy не работает с DNS"
+        },
+        {
+          "text": "Запускает контейнеры на Node",
+          "correct": false,
+          "explanation": "Нет — контейнеры запускает kubelet через container runtime"
+        }
+      ],
+      "raw_description": "<p>Что делает kube-proxy на каждом Node?</p><ul>\n<li>Проксирует каждый пакет через userspace процесс [Нет — современный kube-proxy использует iptables/IPVS в ядре, не userspace]</li>\n<li>+Настраивает iptables/IPVS правила для маршрутизации трафика к Service Endpoints [Верно! kube-proxy — это не proxy в классическом смысле, а менеджер сетевых правил]</li>\n<li>Управляет DNS записями CoreDNS [Нет — CoreDNS управляется отдельно, kube-proxy не работает с DNS]</li>\n<li>Запускает контейнеры на Node [Нет — контейнеры запускает kubelet через container runtime]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Ingress TLS",
+      "taskid": "k8sn_quiz1_t9",
+      "hint": "",
+      "question_html": "<p>Ingress настроен с TLS. Где происходит TLS termination?</p>",
+      "options": [
+        {
+          "text": "На Node'е перед Ingress Controller",
+          "correct": false,
+          "explanation": "Нет — Node не знает про TLS приложений"
+        },
+        {
+          "text": "На Ingress Controller — Pod'ы backend получают незашифрованный HTTP",
+          "correct": true,
+          "explanation": "Верно! Ingress Controller декриптует TLS и пересылает чистый HTTP к сервисам"
+        },
+        {
+          "text": "TLS termination не происходит — трафик остаётся зашифрованным",
+          "correct": false,
+          "explanation": "Нет — кто-то должен расшифровать; в стандартном Ingress это контроллер"
+        },
+        {
+          "text": "На каждом Pod'е backend — каждый Pod сам расшифровывает",
+          "correct": false,
+          "explanation": "Нет — тогда TLS в Ingress теряет смысл"
+        }
+      ],
+      "raw_description": "<p>Ingress настроен с TLS. Где происходит TLS termination?</p><ul>\n<li>На Node'е перед Ingress Controller [Нет — Node не знает про TLS приложений]</li>\n<li>+На Ingress Controller — Pod'ы backend получают незашифрованный HTTP [Верно! Ingress Controller декриптует TLS и пересылает чистый HTTP к сервисам]</li>\n<li>TLS termination не происходит — трафик остаётся зашифрованным [Нет — кто-то должен расшифровать; в стандартном Ingress это контроллер]</li>\n<li>На каждом Pod'е backend — каждый Pod сам расшифровывает [Нет — тогда TLS в Ingress теряет смысл]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "NetworkPolicy и CNI",
+      "taskid": "k8sn_quiz1_t10",
+      "hint": "",
+      "question_html": "<p>Ты создал NetworkPolicy но трафик не блокируется. Наиболее вероятная причина?</p>",
+      "options": [
+        {
+          "text": "NetworkPolicy работает только в namespace kube-system",
+          "correct": false,
+          "explanation": "Нет — NetworkPolicy применяется в любом namespace"
+        },
+        {
+          "text": "NetworkPolicy требует роль ClusterAdmin",
+          "correct": false,
+          "explanation": "Нет — обычные RBAC роли позволяют создавать NetworkPolicy"
+        },
+        {
+          "text": "Нужно перезапустить kube-proxy",
+          "correct": false,
+          "explanation": "Нет — kube-proxy не реализует NetworkPolicy"
+        },
+        {
+          "text": "Используемый CNI плагин не поддерживает NetworkPolicy (например Flannel по умолчанию)",
+          "correct": true,
+          "explanation": "Верно! NetworkPolicy объекты создаются в API Server, но применяются CNI. Flannel без дополнений их игнорирует"
+        }
+      ],
+      "raw_description": "<p>Ты создал NetworkPolicy но трафик не блокируется. Наиболее вероятная причина?</p><ul>\n<li>NetworkPolicy работает только в namespace kube-system [Нет — NetworkPolicy применяется в любом namespace]</li>\n<li>NetworkPolicy требует роль ClusterAdmin [Нет — обычные RBAC роли позволяют создавать NetworkPolicy]</li>\n<li>Нужно перезапустить kube-proxy [Нет — kube-proxy не реализует NetworkPolicy]</li>\n<li>+Используемый CNI плагин не поддерживает NetworkPolicy (например Flannel по умолчанию) [Верно! NetworkPolicy объекты создаются в API Server, но применяются CNI. Flannel без дополнений их игнорирует]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

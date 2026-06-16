@@ -1,0 +1,229 @@
+{
+  "n": 6,
+  "id": "ch_lnav_lab1",
+  "title": "Лабораторная 1: Навигация в терминале",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Где я нахожусь?",
+      "taskid": "lnav_lab1_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Ты только что подключился к серверу как <code>root</code>. Что покажет команда <code>pwd</code>?</p>",
+      "options": [
+        {
+          "text": "/root",
+          "correct": true,
+          "explanation": "Верно! pwd (print working directory) покажет /root — домашнюю директорию root"
+        },
+        {
+          "text": "/",
+          "correct": false,
+          "explanation": "Нет — / это корень всей ФС. После входа root оказывается в /root, не в /"
+        },
+        {
+          "text": "/home/root",
+          "correct": false,
+          "explanation": "Нет — /home/root не существует. Домашняя директория root — /root"
+        },
+        {
+          "text": "/usr/root",
+          "correct": false,
+          "explanation": "Нет — такой директории нет"
+        }
+      ],
+      "raw_description": "<p>Ты только что подключился к серверу как <code>root</code>. Что покажет команда <code>pwd</code>?</p><ul>\n<li>+/root [Верно! pwd (print working directory) покажет /root — домашнюю директорию root]</li>\n<li>/ [Нет — / это корень всей ФС. После входа root оказывается в /root, не в /]</li>\n<li>/home/root [Нет — /home/root не существует. Домашняя директория root — /root]</li>\n<li>/usr/root [Нет — такой директории нет]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Текущий путь в файл",
+      "taskid": "lnav_lab1_t2_pwd",
+      "hint": "<p>Используй <code>pwd</code>: его вывод нужно направить в файл через <code>&gt;</code>, затем проверь содержимое файла.</p>",
+      "question_html": "<p>Узнай текущий рабочий каталог и запиши его в файл.</p>\n<p>Файл результата: <code>/root/location.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Узнай текущий рабочий каталог и запиши его в файл.</p>\n<p>Файл результата: <code>/root/location.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Список файлов с деталями",
+      "taskid": "lnav_lab1_t3_ls",
+      "hint": "<p>Нужен список файлов через <code>ls</code> в длинном формате и с показом скрытых имён. Флаги можно объединять.</p>",
+      "question_html": "<p>Выведи полный список файлов в директории <code>/opt/devops/lab1</code>, включая скрытые, и сохрани результат в <code>/root/lab1_listing.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи полный список файлов в директории <code>/opt/devops/lab1</code>, включая скрытые, и сохрани результат в <code>/root/lab1_listing.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает ..",
+      "taskid": "lnav_lab1_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Ты находишься в <code>/opt/devops/lab1/notes</code>. Что означает команда <code>cd ..</code>?</p>",
+      "options": [
+        {
+          "text": "Перейти в корень /",
+          "correct": false,
+          "explanation": "Нет — для корня нужно cd / или cd ../../../../"
+        },
+        {
+          "text": "Перейти на уровень выше — в /opt/devops/lab1",
+          "correct": true,
+          "explanation": "Верно! .. всегда означает родительскую директорию"
+        },
+        {
+          "text": "Перейти в домашнюю директорию",
+          "correct": false,
+          "explanation": "Нет — для этого cd ~ или просто cd"
+        },
+        {
+          "text": "Создать директорию ..",
+          "correct": false,
+          "explanation": "Нет — cd не создаёт директории"
+        }
+      ],
+      "raw_description": "<p>Ты находишься в <code>/opt/devops/lab1/notes</code>. Что означает команда <code>cd ..</code>?</p><ul>\n<li>Перейти в корень / [Нет — для корня нужно cd / или cd ../../../../]</li>\n<li>+Перейти на уровень выше — в /opt/devops/lab1 [Верно! .. всегда означает родительскую директорию]</li>\n<li>Перейти в домашнюю директорию [Нет — для этого cd ~ или просто cd]</li>\n<li>Создать директорию .. [Нет — cd не создаёт директории]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Навигация и подсчёт файлов",
+      "taskid": "lnav_lab1_t5_ls_count",
+      "hint": "",
+      "question_html": "<p>Подсчитай количество <strong>обычных файлов</strong> (не директорий, не скрытых) в <code>/opt/devops/lab1</code> и выбери получившееся число.</p>",
+      "options": [
+        {
+          "text": "2",
+          "correct": false,
+          "explanation": "Нет — проверь все обычные файлы верхнего уровня"
+        },
+        {
+          "text": "4",
+          "correct": false,
+          "explanation": "Нет — скрытый файл не считается"
+        },
+        {
+          "text": "3",
+          "correct": true,
+          "explanation": "Верно! Это <code>config.txt</code>, <code>data.log</code> и <code>readme.md</code>"
+        },
+        {
+          "text": "5",
+          "correct": false,
+          "explanation": "Нет — директория <code>notes</code> не является обычным файлом"
+        }
+      ],
+      "raw_description": "<p>Подсчитай количество <strong>обычных файлов</strong> (не директорий, не скрытых) в <code>/opt/devops/lab1</code> и выбери получившееся число.</p>\n<ul>\n<li>2 [Нет — проверь все обычные файлы верхнего уровня]</li>\n<li>4 [Нет — скрытый файл не считается]</li>\n<li>+3 [Верно! Это <code>config.txt</code>, <code>data.log</code> и <code>readme.md</code>]</li>\n<li>5 [Нет — директория <code>notes</code> не является обычным файлом]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить переход в каталог",
+      "taskid": "lnav_lab1_t6_cd",
+      "hint": "<p>Используй <code>cd</code> для перехода и <code>pwd</code> для проверки текущего каталога. Вывод команды проверки нужно направить в файл.</p>",
+      "question_html": "<p>Открой каталог с заметками <code>/opt/devops/lab1/notes</code> и убедись, что текущая директория изменилась именно на него.</p>\n<p>Сохрани путь текущей директории в файл <code>/root/notes_path.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой каталог с заметками <code>/opt/devops/lab1/notes</code> и убедись, что текущая директория изменилась именно на него.</p>\n<p>Сохрани путь текущей директории в файл <code>/root/notes_path.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Отличие /root от ~",
+      "taskid": "lnav_lab1_t7_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между <code>/root</code> и <code>~</code> при работе под пользователем <code>root</code>?</p>",
+      "options": [
+        {
+          "text": "/root — это корень, ~ — домашняя директория",
+          "correct": false,
+          "explanation": "Нет — корень файловой системы это /, а не /root"
+        },
+        {
+          "text": "~ не работает под root",
+          "correct": false,
+          "explanation": "Нет — ~ работает для всех пользователей"
+        },
+        {
+          "text": "/root и ~ всегда разные",
+          "correct": false,
+          "explanation": "Нет — они совпадают, пока ты работаешь под root"
+        },
+        {
+          "text": "Никакой разницы: для root оба пути означают одно и то же место",
+          "correct": true,
+          "explanation": "Верно! ~ это псевдоним для домашней директории, для root это /root"
+        }
+      ],
+      "raw_description": "<p>В чём разница между <code>/root</code> и <code>~</code> при работе под пользователем <code>root</code>?</p><ul>\n<li>/root — это корень, ~ — домашняя директория [Нет — корень файловой системы это /, а не /root]</li>\n<li>~ не работает под root [Нет — ~ работает для всех пользователей]</li>\n<li>/root и ~ всегда разные [Нет — они совпадают, пока ты работаешь под root]</li>\n<li>+Никакой разницы: для root оба пути означают одно и то же место [Верно! ~ это псевдоним для домашней директории, для root это /root]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Скрытый файл",
+      "taskid": "lnav_lab1_t8_secret",
+      "hint": "<p>Используй <code>ls</code> с режимом показа скрытых имён: файл с точкой в начале имени не виден в обычном списке.</p>",
+      "question_html": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Для чего нужен pwd в troubleshooting?",
+      "taskid": "lnav_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему команда <code>pwd</code> полезна перед файловыми операциями?</p>",
+      "options": [
+        {
+          "text": "Помогает убедиться, что ты в правильной директории и не работаешь \"не там\"",
+          "correct": true,
+          "explanation": "Верно! Это снижает риск ошибочных rm/mv/cp"
+        },
+        {
+          "text": "Показывает владельца всех файлов",
+          "correct": false,
+          "explanation": "Нет — это делает ls -l"
+        },
+        {
+          "text": "Переключает в домашнюю директорию",
+          "correct": false,
+          "explanation": "Нет — pwd ничего не меняет"
+        },
+        {
+          "text": "Создаёт текущую директорию",
+          "correct": false,
+          "explanation": "Нет — директории создаёт mkdir"
+        }
+      ],
+      "raw_description": "<p>Почему команда <code>pwd</code> полезна перед файловыми операциями?</p><ul>\n<li>+Помогает убедиться, что ты в правильной директории и не работаешь \"не там\" [Верно! Это снижает риск ошибочных rm/mv/cp]</li>\n<li>Показывает владельца всех файлов [Нет — это делает ls -l]</li>\n<li>Переключает в домашнюю директорию [Нет — pwd ничего не меняет]</li>\n<li>Создаёт текущую директорию [Нет — директории создаёт mkdir]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Абсолютный vs относительный путь",
+      "taskid": "lnav_lab1_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Какой путь называется абсолютным?</p>",
+      "options": [
+        {
+          "text": "Тот, который начинается с <code>./</code>",
+          "correct": false,
+          "explanation": "Нет — это относительный путь от текущей директории"
+        },
+        {
+          "text": "Тот, который начинается с <code>/</code> и не зависит от текущей директории",
+          "correct": true,
+          "explanation": "Верно! Например /opt/devops/lab1/config.txt"
+        },
+        {
+          "text": "Тот, который содержит <code>..</code>",
+          "correct": false,
+          "explanation": "Нет — это также относительный путь"
+        },
+        {
+          "text": "Любой путь в домашней директории",
+          "correct": false,
+          "explanation": "Нет — абсолютность определяется формой пути, а не местом"
+        }
+      ],
+      "raw_description": "<p>Какой путь называется абсолютным?</p><ul>\n<li>Тот, который начинается с <code>./</code> [Нет — это относительный путь от текущей директории]</li>\n<li>+Тот, который начинается с <code>/</code> и не зависит от текущей директории [Верно! Например /opt/devops/lab1/config.txt]</li>\n<li>Тот, который содержит <code>..</code> [Нет — это также относительный путь]</li>\n<li>Любой путь в домашней директории [Нет — абсолютность определяется формой пути, а не местом]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_start/linux_nav/lab1/setup.yaml"
+}

@@ -1,0 +1,349 @@
+{
+  "n": 15,
+  "id": "ch_exp_docker_basics",
+  "title": "Практика: первые шаги с Docker",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Посмотреть образы",
+      "taskid": "exp_dock_basics_t1_images",
+      "hint": "",
+      "question_html": "<p>Посмотри, какие Docker-образы уже загружены на эту машину.</p>\n<p>Выполни команду <code>docker images</code>. Какой столбец показывает полное имя образа, например <code>nginx:alpine</code> или <code>python:3.12-alpine</code>?</p>",
+      "options": [
+        {
+          "text": "IMAGE",
+          "correct": true,
+          "explanation": "Правильно! В IMAGE указано полное имя образа вместе с тегом"
+        },
+        {
+          "text": "REPOSITORY",
+          "correct": false,
+          "explanation": "Нет — в этом выводе нет отдельного столбца REPOSITORY, имя образа видно в IMAGE"
+        },
+        {
+          "text": "ID",
+          "correct": false,
+          "explanation": "Нет — это внутренний идентификатор образа"
+        },
+        {
+          "text": "DISK USAGE",
+          "correct": false,
+          "explanation": "Нет — это размер образа на диске"
+        }
+      ],
+      "raw_description": "<p>Посмотри, какие Docker-образы уже загружены на эту машину.</p>\n<p>Выполни команду <code>docker images</code>. Какой столбец показывает полное имя образа, например <code>nginx:alpine</code> или <code>python:3.12-alpine</code>?</p>\n<ul>\n<li>+IMAGE [Правильно! В IMAGE указано полное имя образа вместе с тегом]</li>\n<li>REPOSITORY [Нет — в этом выводе нет отдельного столбца REPOSITORY, имя образа видно в IMAGE]</li>\n<li>ID [Нет — это внутренний идентификатор образа]</li>\n<li>DISK USAGE [Нет — это размер образа на диске]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: какого образа нет?",
+      "taskid": "exp_dock_basics_t2_quiz",
+      "hint": "",
+      "question_html": "<p>Ты посмотрел список образов командой <code>docker images</code>. Какого из перечисленных образов <strong>нет</strong> среди загруженных?</p>",
+      "options": [
+        {
+          "text": "nginx:alpine",
+          "correct": false,
+          "explanation": "Этот образ есть — ты видел его в списке"
+        },
+        {
+          "text": "golang",
+          "correct": true,
+          "explanation": "Правильно! Образ golang не загружен. На машине есть nginx:alpine, python:3.12-alpine, alpine и hello-world"
+        },
+        {
+          "text": "python:3.12-alpine",
+          "correct": false,
+          "explanation": "Этот образ есть — ты видел его в списке"
+        },
+        {
+          "text": "alpine",
+          "correct": false,
+          "explanation": "Этот образ есть — ты видел его в списке"
+        }
+      ],
+      "raw_description": "<p>Ты посмотрел список образов командой <code>docker images</code>. Какого из перечисленных образов <strong>нет</strong> среди загруженных?</p>\n<ul>\n<li>nginx:alpine [Этот образ есть — ты видел его в списке]</li>\n<li>+golang [Правильно! Образ golang не загружен. На машине есть nginx:alpine, python:3.12-alpine, alpine и hello-world]</li>\n<li>python:3.12-alpine [Этот образ есть — ты видел его в списке]</li>\n<li>alpine [Этот образ есть — ты видел его в списке]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Список запущенных контейнеров",
+      "taskid": "exp_dock_basics_t3_ps",
+      "hint": "",
+      "question_html": "<p>Посмотри, какие контейнеры сейчас запущены:</p>\n<pre><code>docker ps</code></pre>\n<p>Что показывает команда до запуска первого контейнера?</p>",
+      "options": [
+        {
+          "text": "Контейнер backend в статусе Up",
+          "correct": false,
+          "explanation": "Нет — backend будет создан позже"
+        },
+        {
+          "text": "Все загруженные Docker-образы",
+          "correct": false,
+          "explanation": "Нет — образы показывает docker images"
+        },
+        {
+          "text": "Только заголовок таблицы, без контейнеров",
+          "correct": true,
+          "explanation": "Правильно! Запущенных контейнеров пока нет"
+        },
+        {
+          "text": "Остановленные контейнеры",
+          "correct": false,
+          "explanation": "Нет — для них нужен docker ps -a"
+        }
+      ],
+      "raw_description": "<p>Посмотри, какие контейнеры сейчас запущены:</p>\n<pre><code>docker ps</code></pre>\n<p>Что показывает команда до запуска первого контейнера?</p><ul>\n<li>Контейнер backend в статусе Up [Нет — backend будет создан позже]</li>\n<li>Все загруженные Docker-образы [Нет — образы показывает docker images]</li>\n<li>+Только заголовок таблицы, без контейнеров [Правильно! Запущенных контейнеров пока нет]</li>\n<li>Остановленные контейнеры [Нет — для них нужен docker ps -a]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Запусти nginx, но назови по-другому",
+      "taskid": "exp_dock_basics_t4_run_backend",
+      "hint": "<p>Скопируй команду из описания. В ней <code>-d</code> запускает контейнер в фоне, <code>--name backend</code> задаёт имя, <code>-p 80:80</code> открывает контейнер через <code>Web Preview</code>, а <code>-v ...</code> подставляет готовую HTML-страницу в nginx.</p>",
+      "question_html": "<p>Запусти контейнер из образа <code>nginx:alpine</code> в фоне, но дай ему имя <code>backend</code> — не <code>nginx</code>. Опубликуй порт <code>80</code> VM в порт <code>80</code> контейнера и подключи подготовленную страницу из <code>/opt/devops/express-docker-site</code>.</p>\n<pre><code>docker run -d --name backend -p 80:80 -v /opt/devops/express-docker-site:/usr/share/nginx/html:ro nginx:alpine</code></pre>\n<p>Имя контейнера — это просто удобный псевдоним. Оно никак не связано с образом, из которого запущен контейнер.</p>\n<p>Флаги <code>-p</code> и <code>-v</code> здесь нужны, чтобы <code>Web Preview</code> показал страницу из контейнера. Подробно публикацию портов и volume/bind mount мы разберём в отдельном курсе про Docker.</p>\n<p>После запуска открой <code>Web Preview</code> и убедись, что видишь страницу <code>Express Docker Preview</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер из образа <code>nginx:alpine</code> в фоне, но дай ему имя <code>backend</code> — не <code>nginx</code>. Опубликуй порт <code>80</code> VM в порт <code>80</code> контейнера и подключи подготовленную страницу из <code>/opt/devops/express-docker-site</code>.</p>\n<pre><code>docker run -d --name backend -p 80:80 -v /opt/devops/express-docker-site:/usr/share/nginx/html:ro nginx:alpine</code></pre>\n<p>Имя контейнера — это просто удобный псевдоним. Оно никак не связано с образом, из которого запущен контейнер.</p>\n<p>Флаги <code>-p</code> и <code>-v</code> здесь нужны, чтобы <code>Web Preview</code> показал страницу из контейнера. Подробно публикацию портов и volume/bind mount мы разберём в отдельном курсе про Docker.</p>\n<p>После запуска открой <code>Web Preview</code> и убедись, что видишь страницу <code>Express Docker Preview</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что показывает docker ps?",
+      "taskid": "exp_dock_basics_t5_ps_backend",
+      "hint": "",
+      "question_html": "<p>Выполни <code>docker ps</code> и найди контейнер <code>backend</code>.</p>\n<p>Что указано у него в столбце <strong>IMAGE</strong>?</p>",
+      "options": [
+        {
+          "text": "backend",
+          "correct": false,
+          "explanation": "Нет — это имя контейнера из столбца NAMES"
+        },
+        {
+          "text": "python:3.12-alpine",
+          "correct": false,
+          "explanation": "Нет — этот образ будет использоваться для worker позже"
+        },
+        {
+          "text": "hello-world",
+          "correct": false,
+          "explanation": "Нет — контейнер backend запущен из nginx:alpine"
+        },
+        {
+          "text": "nginx:alpine",
+          "correct": true,
+          "explanation": "Правильно! backend — это имя контейнера, а образ указан отдельно"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker ps</code> и найди контейнер <code>backend</code>.</p>\n<p>Что указано у него в столбце <strong>IMAGE</strong>?</p><ul>\n<li>backend [Нет — это имя контейнера из столбца NAMES]</li>\n<li>python:3.12-alpine [Нет — этот образ будет использоваться для worker позже]</li>\n<li>hello-world [Нет — контейнер backend запущен из nginx:alpine]</li>\n<li>+nginx:alpine [Правильно! backend — это имя контейнера, а образ указан отдельно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: имя vs образ",
+      "taskid": "exp_dock_basics_t6_quiz_name",
+      "hint": "",
+      "question_html": "<p>Ты запустил контейнер с именем <code>backend</code>, но образ — <code>nginx:alpine</code>. По какому столбцу в выводе <code>docker ps</code> можно узнать, из какого образа запущен контейнер?</p>",
+      "options": [
+        {
+          "text": "IMAGE",
+          "correct": true,
+          "explanation": "Правильно! Столбцы NAMES и IMAGE — разные вещи. Имя задаётся произвольно через <code>--name</code>, а IMAGE — это реальный образ, из которого создан контейнер"
+        },
+        {
+          "text": "NAMES",
+          "correct": false,
+          "explanation": "Нет. В NAMES — псевдоним, который ты задал через --name. Он может быть любым"
+        },
+        {
+          "text": "STATUS",
+          "correct": false,
+          "explanation": "Нет. STATUS показывает Up/Exited и время"
+        },
+        {
+          "text": "COMMAND",
+          "correct": false,
+          "explanation": "Нет. COMMAND — это стартовая команда внутри контейнера"
+        }
+      ],
+      "raw_description": "<p>Ты запустил контейнер с именем <code>backend</code>, но образ — <code>nginx:alpine</code>. По какому столбцу в выводе <code>docker ps</code> можно узнать, из какого образа запущен контейнер?</p>\n<ul>\n<li>+IMAGE [Правильно! Столбцы NAMES и IMAGE — разные вещи. Имя задаётся произвольно через <code>--name</code>, а IMAGE — это реальный образ, из которого создан контейнер]</li>\n<li>NAMES [Нет. В NAMES — псевдоним, который ты задал через --name. Он может быть любым]</li>\n<li>STATUS [Нет. STATUS показывает Up/Exited и время]</li>\n<li>COMMAND [Нет. COMMAND — это стартовая команда внутри контейнера]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить второй контейнер с именем worker",
+      "taskid": "exp_dock_basics_t7_run_worker",
+      "hint": "<p>Для нового контейнера нужен <code>docker run</code> с именем и detached-режимом. После имени образа можно передать оболочке долгую команду, например через <code>sh -c</code>, чтобы процесс не завершился сразу.</p>",
+      "question_html": "<p>Запусти контейнер из образа <code>python:3.12-alpine</code> в фоне с именем <code>worker</code>.</p>\n<p>Контейнер должен остаться запущенным после старта, а не завершиться сразу.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер из образа <code>python:3.12-alpine</code> в фоне с именем <code>worker</code>.</p>\n<p>Контейнер должен остаться запущенным после старта, а не завершиться сразу.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Два контейнера в docker ps",
+      "taskid": "exp_dock_basics_t8_ps_both",
+      "hint": "",
+      "question_html": "<p>Выполни <code>docker ps</code> и посмотри имена запущенных контейнеров.</p>\n<p>Какие два контейнера должны быть в списке?</p>",
+      "options": [
+        {
+          "text": "nginx и python",
+          "correct": false,
+          "explanation": "Нет — это не имена контейнеров в этой лабораторной"
+        },
+        {
+          "text": "backend и worker",
+          "correct": true,
+          "explanation": "Правильно! Оба контейнера были запущены в предыдущих задачах"
+        },
+        {
+          "text": "mynginx и myredis",
+          "correct": false,
+          "explanation": "Нет — такие имена здесь не создавались"
+        },
+        {
+          "text": "Только backend",
+          "correct": false,
+          "explanation": "Нет — worker тоже должен быть запущен"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker ps</code> и посмотри имена запущенных контейнеров.</p>\n<p>Какие два контейнера должны быть в списке?</p><ul>\n<li>nginx и python [Нет — это не имена контейнеров в этой лабораторной]</li>\n<li>+backend и worker [Правильно! Оба контейнера были запущены в предыдущих задачах]</li>\n<li>mynginx и myredis [Нет — такие имена здесь не создавались]</li>\n<li>Только backend [Нет — worker тоже должен быть запущен]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: что делает флаг -d?",
+      "taskid": "exp_dock_basics_t9_quiz_d",
+      "hint": "",
+      "question_html": "<p>Ты запускал контейнеры с флагом <code>-d</code>. Что он делает?</p>",
+      "options": [
+        {
+          "text": "Удаляет контейнер после завершения",
+          "correct": false,
+          "explanation": "Это флаг <code>--rm</code>"
+        },
+        {
+          "text": "Задаёт имя контейнеру",
+          "correct": false,
+          "explanation": "Это флаг <code>--name</code>"
+        },
+        {
+          "text": "Запускает контейнер в фоне (detached mode) — терминал свободен",
+          "correct": true,
+          "explanation": "Правильно! <code>-d</code> — сокращение от <code>--detach</code>. Контейнер работает в фоне, вывод в терминал не идёт"
+        },
+        {
+          "text": "Пробрасывает порт из контейнера на хост",
+          "correct": false,
+          "explanation": "Это флаг <code>-p хост:контейнер</code>"
+        }
+      ],
+      "raw_description": "<p>Ты запускал контейнеры с флагом <code>-d</code>. Что он делает?</p>\n<ul>\n<li>Удаляет контейнер после завершения [Это флаг <code>--rm</code>]</li>\n<li>Задаёт имя контейнеру [Это флаг <code>--name</code>]</li>\n<li>+Запускает контейнер в фоне (detached mode) — терминал свободен [Правильно! <code>-d</code> — сокращение от <code>--detach</code>. Контейнер работает в фоне, вывод в терминал не идёт]</li>\n<li>Пробрасывает порт из контейнера на хост [Это флаг <code>-p хост:контейнер</code>]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить контейнер",
+      "taskid": "exp_dock_basics_t10_stop",
+      "hint": "<p>Выбери команду из пары <code>docker stop</code>/<code>docker rm</code>: одна останавливает работающий контейнер, другая удаляет его. Здесь нужно сохранить контейнер и затем проверить его через список всех контейнеров.</p>",
+      "question_html": "<p>Останови контейнер <code>backend</code>, но не удаляй его.</p>\n<p>После остановки контейнер должен остаться в списке всех контейнеров со статусом <code>Exited</code>, чтобы его можно было запустить снова.</p>",
+      "options": [],
+      "raw_description": "<p>Останови контейнер <code>backend</code>, но не удаляй его.</p>\n<p>После остановки контейнер должен остаться в списке всех контейнеров со статусом <code>Exited</code>, чтобы его можно было запустить снова.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Все контейнеры включая остановленные",
+      "taskid": "exp_dock_basics_t11_psa",
+      "hint": "",
+      "question_html": "<p>Посмотри список <strong>всех</strong> контейнеров — и запущенных, и остановленных:</p>\n<pre><code>docker ps -a</code></pre>\n<p>Какой статус должен быть у контейнера <code>backend</code> после <code>docker stop backend</code>?</p>",
+      "options": [
+        {
+          "text": "Up",
+          "correct": false,
+          "explanation": "Нет — Up означает, что контейнер сейчас запущен"
+        },
+        {
+          "text": "Created",
+          "correct": false,
+          "explanation": "Нет — контейнер уже запускался и был остановлен"
+        },
+        {
+          "text": "Deleted",
+          "correct": false,
+          "explanation": "Нет — docker stop не удаляет контейнер"
+        },
+        {
+          "text": "Exited",
+          "correct": true,
+          "explanation": "Правильно! Остановленный контейнер остаётся в системе со статусом Exited"
+        }
+      ],
+      "raw_description": "<p>Посмотри список <strong>всех</strong> контейнеров — и запущенных, и остановленных:</p>\n<pre><code>docker ps -a</code></pre>\n<p>Какой статус должен быть у контейнера <code>backend</code> после <code>docker stop backend</code>?</p><ul>\n<li>Up [Нет — Up означает, что контейнер сейчас запущен]</li>\n<li>Created [Нет — контейнер уже запускался и был остановлен]</li>\n<li>Deleted [Нет — docker stop не удаляет контейнер]</li>\n<li>+Exited [Правильно! Остановленный контейнер остаётся в системе со статусом Exited]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить остановленный контейнер",
+      "taskid": "exp_dock_basics_t12_start",
+      "hint": "<p>Вспомни разницу между <code>docker run</code> и <code>docker start</code>: одна команда создаёт новый контейнер из образа, другая запускает уже существующий остановленный контейнер. Здесь нужен второй сценарий.</p>",
+      "question_html": "<p>Верни остановленный контейнер <code>backend</code> в рабочее состояние, не создавая новый контейнер.</p>\n<p>Итог: в списке запущенных контейнеров снова должен быть контейнер с именем <code>backend</code>, а <code>Web Preview</code> снова должен показывать страницу <code>Express Docker Preview</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Верни остановленный контейнер <code>backend</code> в рабочее состояние, не создавая новый контейнер.</p>\n<p>Итог: в списке запущенных контейнеров снова должен быть контейнер с именем <code>backend</code>, а <code>Web Preview</code> снова должен показывать страницу <code>Express Docker Preview</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: docker stop vs docker rm",
+      "taskid": "exp_dock_basics_t13_quiz_rm",
+      "hint": "",
+      "question_html": "<p>В чём разница между командами <code>docker stop</code> и <code>docker rm</code>?</p>",
+      "options": [
+        {
+          "text": "<code>stop</code> останавливает контейнер (он остаётся, его можно запустить снова), <code>rm</code> удаляет контейнер полностью",
+          "correct": true,
+          "explanation": "Правильно! После <code>docker stop</code> контейнер виден в <code>docker ps -a</code> — его можно запустить через <code>docker start</code>. После <code>docker rm</code> контейнер исчезает навсегда"
+        },
+        {
+          "text": "Они делают одно и то же",
+          "correct": false,
+          "explanation": "Нет — это разные операции"
+        },
+        {
+          "text": "<code>stop</code> удаляет контейнер, <code>rm</code> только останавливает",
+          "correct": false,
+          "explanation": "Всё наоборот"
+        },
+        {
+          "text": "<code>rm</code> удаляет образ, а не контейнер",
+          "correct": false,
+          "explanation": "Нет — для удаления образов используется <code>docker rmi</code>"
+        }
+      ],
+      "raw_description": "<p>В чём разница между командами <code>docker stop</code> и <code>docker rm</code>?</p>\n<ul>\n<li>+<code>stop</code> останавливает контейнер (он остаётся, его можно запустить снова), <code>rm</code> удаляет контейнер полностью [Правильно! После <code>docker stop</code> контейнер виден в <code>docker ps -a</code> — его можно запустить через <code>docker start</code>. После <code>docker rm</code> контейнер исчезает навсегда]</li>\n<li>Они делают одно и то же [Нет — это разные операции]</li>\n<li><code>stop</code> удаляет контейнер, <code>rm</code> только останавливает [Всё наоборот]</li>\n<li><code>rm</code> удаляет образ, а не контейнер [Нет — для удаления образов используется <code>docker rmi</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Удалить образ",
+      "taskid": "exp_dock_basics_t14_rmi_quiz",
+      "hint": "",
+      "question_html": "<p>Ты скачал образ <code>nginx:1.24</code>, но он тебе больше не нужен и занимает место. Какая команда удаляет Docker-образ с диска?</p>",
+      "options": [
+        {
+          "text": "docker stop nginx:1.24",
+          "correct": false,
+          "explanation": "Нет — stop останавливает контейнер, а не удаляет образ"
+        },
+        {
+          "text": "docker rmi nginx:1.24",
+          "correct": true,
+          "explanation": "Верно! docker rmi (remove image) удаляет образ. Нельзя удалить образ, если от него запущены контейнеры"
+        },
+        {
+          "text": "docker rm nginx:1.24",
+          "correct": false,
+          "explanation": "Нет — docker rm удаляет контейнер, а не образ"
+        },
+        {
+          "text": "docker delete nginx:1.24",
+          "correct": false,
+          "explanation": "Нет — такой команды нет в Docker"
+        }
+      ],
+      "raw_description": "<p>Ты скачал образ <code>nginx:1.24</code>, но он тебе больше не нужен и занимает место. Какая команда удаляет Docker-образ с диска?</p><ul><li>docker stop nginx:1.24 [Нет — stop останавливает контейнер, а не удаляет образ]</li><li>+docker rmi nginx:1.24 [Верно! docker rmi (remove image) удаляет образ. Нельзя удалить образ, если от него запущены контейнеры]</li><li>docker rm nginx:1.24 [Нет — docker rm удаляет контейнер, а не образ]</li><li>docker delete nginx:1.24 [Нет — такой команды нет в Docker]</li></ul>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module0_express/docker/basics/setup.yaml"
+}

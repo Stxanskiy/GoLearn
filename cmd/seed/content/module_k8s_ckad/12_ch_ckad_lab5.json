@@ -1,0 +1,124 @@
+{
+  "n": 12,
+  "id": "ch_ckad_lab5",
+  "title": "Лабораторная 6: Jobs и CronJobs",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать простой Job",
+      "taskid": "ckad_lab5_t1_job",
+      "hint": "<p>Можно сгенерировать основу так: <code>kubectl create job pi-job --image=nginx:alpine --dry-run=client -o yaml -- sh -c 'echo 3.14159' &gt; /root/pi-job.yaml</code>. Проверь, что в манифесте есть <code>restartPolicy: Never</code>, затем примени файл.</p>",
+      "question_html": "<p>Создай Job <code>pi-job</code> на образе <code>nginx:alpine</code>, который выполняет одноразовую задачу и выводит строку <code>3.14159</code>. Для Pod template используй <code>restartPolicy: Never</code>.</p>\n<p>В контейнере задай команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo 3.14159\"]</code></pre>\n<p>Сохрани манифест в <code>/root/pi-job.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Job <code>pi-job</code> на образе <code>nginx:alpine</code>, который выполняет одноразовую задачу и выводит строку <code>3.14159</code>. Для Pod template используй <code>restartPolicy: Never</code>.</p>\n<p>В контейнере задай команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo 3.14159\"]</code></pre>\n<p>Сохрани манифест в <code>/root/pi-job.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть статус Job",
+      "taskid": "ckad_lab5_t2_job_status",
+      "hint": "",
+      "question_html": "<p>Посмотри статус Job и его логи:</p>\n<pre><code>kubectl get job pi-job</code></pre>\n<pre><code>kubectl logs job/pi-job</code></pre>\n<p>Убедись что Job завершился успешно — в столбце COMPLETIONS должно быть <code>1/1</code>, а в логах — вывод команды.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статус Job и его логи:</p>\n<pre><code>kubectl get job pi-job</code></pre>\n<pre><code>kubectl logs job/pi-job</code></pre>\n<p>Убедись что Job завершился успешно — в столбце COMPLETIONS должно быть <code>1/1</code>, а в логах — вывод команды.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Job с несколькими completions",
+      "taskid": "ckad_lab5_t3_completions",
+      "hint": "<p>В YAML укажи <code>spec.completions: 3</code>, <code>spec.parallelism: 2</code>, образ <code>nginx:alpine</code>, команду <code>echo multi-job</code> и <code>restartPolicy: Never</code>.</p>",
+      "question_html": "<p>Создай Job <code>multi-job</code> на образе <code>nginx:alpine</code>, который выполнится 3 раза: <code>completions: 3</code>, <code>parallelism: 2</code>.</p>\n<p>В контейнере задай короткую завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo multi-job\"]</code></pre>\n<p>Сохрани манифест в <code>/root/multi-job.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Job <code>multi-job</code> на образе <code>nginx:alpine</code>, который выполнится 3 раза: <code>completions: 3</code>, <code>parallelism: 2</code>.</p>\n<p>В контейнере задай короткую завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo multi-job\"]</code></pre>\n<p>Сохрани манифест в <code>/root/multi-job.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Ждать завершения Job",
+      "taskid": "ckad_lab5_t4_wait",
+      "hint": "<p>В статусе Job должно быть <code>COMPLETIONS 3/3</code>, а condition <code>Complete</code> должна стать <code>True</code>.</p>",
+      "question_html": "<p>Дождись завершения Job <code>multi-job</code> и проверь результат.</p>\n<pre><code>kubectl wait --for=condition=complete job/multi-job --timeout=90s</code></pre>\n<pre><code>kubectl get job multi-job</code></pre>",
+      "options": [],
+      "raw_description": "<p>Дождись завершения Job <code>multi-job</code> и проверь результат.</p>\n<pre><code>kubectl wait --for=condition=complete job/multi-job --timeout=90s</code></pre>\n<pre><code>kubectl get job multi-job</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Создать CronJob",
+      "taskid": "ckad_lab5_t5_cronjob",
+      "hint": "<p>Можно сгенерировать основу так: <code>kubectl create cronjob hello-cron --image=nginx:alpine --schedule=\"*/1 * * * *\" --dry-run=client -o yaml -- sh -c 'date; echo hello from cron' &gt; /root/cron-job.yaml</code>. Проверь <code>jobTemplate</code> и <code>restartPolicy: OnFailure</code>, затем примени файл.</p>",
+      "question_html": "<p>Создай CronJob <code>hello-cron</code> на образе <code>nginx:alpine</code>, который запускается каждую минуту по расписанию <code>*/1 * * * *</code>. Для Pod template используй <code>restartPolicy: OnFailure</code>.</p>\n<p>В контейнере задай команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"date; echo hello from cron\"]</code></pre>\n<p>Сохрани манифест в <code>/root/cron-job.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай CronJob <code>hello-cron</code> на образе <code>nginx:alpine</code>, который запускается каждую минуту по расписанию <code>*/1 * * * *</code>. Для Pod template используй <code>restartPolicy: OnFailure</code>.</p>\n<p>В контейнере задай команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"date; echo hello from cron\"]</code></pre>\n<p>Сохрани манифест в <code>/root/cron-job.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть статус CronJob",
+      "taskid": "ckad_lab5_t6_cron_status",
+      "hint": "<p>CronJob должен запускаться каждую минуту: <code>*/1 * * * *</code>.</p>",
+      "question_html": "<p>Проверь расписание CronJob <code>hello-cron</code>.</p>\n<pre><code>kubectl get cronjob hello-cron -o jsonpath='{.spec.schedule}'</code></pre>",
+      "options": [],
+      "raw_description": "<p>Проверь расписание CronJob <code>hello-cron</code>.</p>\n<pre><code>kubectl get cronjob hello-cron -o jsonpath='{.spec.schedule}'</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем backoffLimit в Job?",
+      "taskid": "ckad_lab5_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Job с backoffLimit: 4. Контейнер падает каждый раз с exit code 1. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "Job будет перезапускаться бесконечно",
+          "correct": false,
+          "explanation": "Нет — backoffLimit ограничивает количество попыток"
+        },
+        {
+          "text": "Job сразу помечается Failed при первом провале",
+          "correct": false,
+          "explanation": "Нет — именно для этого и нужен backoffLimit"
+        },
+        {
+          "text": "Job перезапускает контейнер без backoff задержки",
+          "correct": false,
+          "explanation": "Нет — задержка экспоненциальная: 10s, 20s, 40s..."
+        },
+        {
+          "text": "Job будет перезапускать Pod'ы 4 раза, затем пометит Job как Failed",
+          "correct": true,
+          "explanation": "Верно! backoffLimit — максимум попыток. После превышения Job переходит в Failed"
+        }
+      ],
+      "raw_description": "<p>Job с backoffLimit: 4. Контейнер падает каждый раз с exit code 1. Что произойдёт?</p><ul>\n<li>Job будет перезапускаться бесконечно [Нет — backoffLimit ограничивает количество попыток]</li>\n<li>Job сразу помечается Failed при первом провале [Нет — именно для этого и нужен backoffLimit]</li>\n<li>Job перезапускает контейнер без backoff задержки [Нет — задержка экспоненциальная: 10s, 20s, 40s...]</li>\n<li>+Job будет перезапускать Pod'ы 4 раза, затем пометит Job как Failed [Верно! backoffLimit — максимум попыток. После превышения Job переходит в Failed]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить CronJob вручную",
+      "taskid": "ckad_lab5_t8_manual",
+      "hint": "<p>Команда <code>--from=cronjob/hello-cron</code> берёт Pod template из CronJob и создаёт разовый Job <code>manual-run</code>.</p>",
+      "question_html": "<p>Запусти CronJob <code>hello-cron</code> вручную, создав из него Job <code>manual-run</code>.</p>\n<pre><code>kubectl create job manual-run --from=cronjob/hello-cron</code></pre>\n<pre><code>kubectl wait --for=condition=complete job/manual-run --timeout=90s</code></pre>",
+      "options": [],
+      "raw_description": "<p>Запусти CronJob <code>hello-cron</code> вручную, создав из него Job <code>manual-run</code>.</p>\n<pre><code>kubectl create job manual-run --from=cronjob/hello-cron</code></pre>\n<pre><code>kubectl wait --for=condition=complete job/manual-run --timeout=90s</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть манифест CronJob",
+      "taskid": "ckad_lab5_t9_manifest",
+      "hint": "",
+      "question_html": "<p>Посмотри YAML-манифест CronJob и разберись в его структуре:</p>\n<pre><code>kubectl get cronjob hello-cron -o yaml</code></pre>\n<p>Обрати внимание на поля <code>schedule</code>, <code>successfulJobsHistoryLimit</code> и структуру <code>jobTemplate</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри YAML-манифест CronJob и разберись в его структуре:</p>\n<pre><code>kubectl get cronjob hello-cron -o yaml</code></pre>\n<p>Обрати внимание на поля <code>schedule</code>, <code>successfulJobsHistoryLimit</code> и структуру <code>jobTemplate</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы",
+      "taskid": "ckad_lab5_t10_cleanup",
+      "hint": "<p>Используй <code>kubectl delete</code> для тех типов ресурсов, которые созданы в лабе. После удаления проверь <code>kubectl get</code> по тем же именам или namespace.</p>",
+      "question_html": "<p>Удали Jobs <code>pi-job</code>, <code>multi-job</code>, <code>manual-run</code> и CronJob <code>hello-cron</code>.</p>\n<pre><code>kubectl delete job pi-job multi-job manual-run</code></pre>\n<pre><code>kubectl delete cronjob hello-cron</code></pre>",
+      "options": [],
+      "raw_description": "<p>Удали Jobs <code>pi-job</code>, <code>multi-job</code>, <code>manual-run</code> и CronJob <code>hello-cron</code>.</p>\n<pre><code>kubectl delete job pi-job multi-job manual-run</code></pre>\n<pre><code>kubectl delete cronjob hello-cron</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab5/setup.yaml"
+}

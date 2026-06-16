@@ -15,8 +15,11 @@ type User struct {
 	Email        string
 	PasswordHash string
 	Name         string
+	Role         string
 	CreatedAt    time.Time
 }
+
+func (u *User) IsAdmin() bool { return u != nil && u.Role == "admin" }
 
 type UserRepo struct {
 	pool *pgxpool.Pool
@@ -35,18 +38,18 @@ func (r *UserRepo) Create(ctx context.Context, email, password, name string) (*U
 	var user User
 	err = r.pool.QueryRow(ctx,
 		`INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3)
-		 RETURNING id, email, password_hash, name, created_at`,
+		 RETURNING id, email, password_hash, name, role, created_at`,
 		email, string(hash), name,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
 	return &user, err
 }
 
 func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, email, password_hash, name, created_at FROM users WHERE email = $1`,
+		`SELECT id, email, password_hash, name, role, created_at FROM users WHERE email = $1`,
 		email,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -56,13 +59,18 @@ func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*User, error) 
 func (r *UserRepo) GetByID(ctx context.Context, id int) (*User, error) {
 	var user User
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, email, password_hash, name, created_at FROM users WHERE id = $1`,
+		`SELECT id, email, password_hash, name, role, created_at FROM users WHERE id = $1`,
 		id,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepo) SetRole(ctx context.Context, userID int, role string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE users SET role = $1 WHERE id = $2`, role, userID)
+	return err
 }
 
 func (r *UserRepo) CheckPassword(user *User, password string) bool {
@@ -85,11 +93,11 @@ func (r *UserRepo) CreateSession(ctx context.Context, userID int) (string, error
 func (r *UserRepo) GetUserBySession(ctx context.Context, token string) (*User, error) {
 	var user User
 	err := r.pool.QueryRow(ctx,
-		`SELECT u.id, u.email, u.password_hash, u.name, u.created_at
+		`SELECT u.id, u.email, u.password_hash, u.name, u.role, u.created_at
 		 FROM users u JOIN sessions s ON s.user_id = u.id
 		 WHERE s.token = $1 AND s.expires_at > NOW()`,
 		token,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

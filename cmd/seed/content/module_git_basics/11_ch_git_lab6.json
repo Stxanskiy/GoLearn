@@ -1,0 +1,187 @@
+{
+  "n": 11,
+  "id": "ch_git_lab6",
+  "title": "Лабораторная 6: Теги, stash и revert",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать тег",
+      "taskid": "git_lab6_t1",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Создай аннотированный тег <code>v1.0.0</code> на последний коммит в <code>/root/project</code> с сообщением <code>First release</code>.</p>\n<p>Аннотированные теги (-a) хранят автора, дату и сообщение — предпочтительный формат для релизов.</p>",
+      "options": [],
+      "raw_description": "<p>Создай аннотированный тег <code>v1.0.0</code> на последний коммит в <code>/root/project</code> с сообщением <code>First release</code>.</p>\n<p>Аннотированные теги (-a) хранят автора, дату и сообщение — предпочтительный формат для релизов.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Список тегов",
+      "taskid": "git_lab6_t2",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Посмотри список всех тегов в репозитории <code>/root/project</code> и убедись, что среди них есть <code>v1.0.0</code>.</p>\n<pre><code>git -C /root/project tag --list</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри список всех тегов в репозитории <code>/root/project</code> и убедись, что среди них есть <code>v1.0.0</code>.</p>\n<pre><code>git -C /root/project tag --list</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "git stash",
+      "taskid": "git_lab6_t3",
+      "hint": "<p>Используй <code>git stash</code>: stash временно убирает незакоммиченные изменения из рабочего дерева. После save/pop проверяй <code>git status</code> и содержимое файлов.</p>",
+      "question_html": "<p>В файле <code>/root/project/feature.txt</code> уже есть незакоммиченные изменения. Сохрани их в stash, чтобы рабочая директория стала чистой.</p>\n<p>После сохранения изменений во временное хранилище рабочая директория должна быть чистой.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/root/project/feature.txt</code> уже есть незакоммиченные изменения. Сохрани их в stash, чтобы рабочая директория стала чистой.</p>\n<p>После сохранения изменений во временное хранилище рабочая директория должна быть чистой.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git stash pop",
+      "taskid": "git_lab6_t4",
+      "hint": "<p>Используй <code>git stash</code>: stash временно убирает незакоммиченные изменения из рабочего дерева. После save/pop проверяй <code>git status</code> и содержимое файлов.</p>",
+      "question_html": "<p>Восстанови изменения из stash в репозитории <code>/root/project</code>.</p>\n<p>После <code>git stash pop</code> изменения возвращаются в рабочую директорию и удаляются из stash.</p>",
+      "options": [],
+      "raw_description": "<p>Восстанови изменения из stash в репозитории <code>/root/project</code>.</p>\n<p>После <code>git stash pop</code> изменения возвращаются в рабочую директорию и удаляются из stash.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем stash?",
+      "taskid": "git_lab6_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Ты работаешь над feature/payment и тебя попросили срочно исправить баг в main. Какой порядок действий с git stash?</p>",
+      "options": [
+        {
+          "text": "git commit → git switch main → исправить → git switch feature/payment",
+          "correct": false,
+          "explanation": "Нет — это тоже работает, но создаёт «мусорный» WIP коммит. stash чище"
+        },
+        {
+          "text": "git push → git switch main",
+          "correct": false,
+          "explanation": "Нет — git push отправит незаконченные изменения на сервер"
+        },
+        {
+          "text": "git stash → git switch main → исправить баг → git commit → git switch feature/payment → git stash pop",
+          "correct": true,
+          "explanation": "Верно! stash сохраняет незакоммиченные изменения, позволяет переключиться, а потом вернуть работу"
+        },
+        {
+          "text": "Нельзя переключиться, пока есть незакоммиченные изменения",
+          "correct": false,
+          "explanation": "Нет — Git позволяет переключаться если нет конфликтов. stash — чистый способ"
+        }
+      ],
+      "raw_description": "<p>Ты работаешь над feature/payment и тебя попросили срочно исправить баг в main. Какой порядок действий с git stash?</p><ul>\n<li>git commit → git switch main → исправить → git switch feature/payment [Нет — это тоже работает, но создаёт «мусорный» WIP коммит. stash чище]</li>\n<li>git push → git switch main [Нет — git push отправит незаконченные изменения на сервер]</li>\n<li>+git stash → git switch main → исправить баг → git commit → git switch feature/payment → git stash pop [Верно! stash сохраняет незакоммиченные изменения, позволяет переключиться, а потом вернуть работу]</li>\n<li>Нельзя переключиться, пока есть незакоммиченные изменения [Нет — Git позволяет переключаться если нет конфликтов. stash — чистый способ]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "git revert",
+      "taskid": "git_lab6_t6",
+      "hint": "<p>Используй <code>git revert</code>: он создаёт новый commit, который отменяет выбранный старый commit. Сначала найди commit в истории, затем проверь новый <code>git log</code>.</p>\n<p>Флаг <code>--no-edit</code> использует стандартное сообщение без открытия редактора.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> есть «плохой» коммит с сообщением \"bad commit\". Отмени его используя <code>git revert</code> без открытия редактора.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> есть «плохой» коммит с сообщением \"bad commit\". Отмени его используя <code>git revert</code> без открытия редактора.</p>"
+    },
+    {
+      "type": "check",
+      "title": "История после revert",
+      "taskid": "git_lab6_t7",
+      "hint": "<p>Используй <code>git revert</code>: он создаёт новый commit, который отменяет выбранный старый commit. Сначала найди commit в истории, затем проверь новый <code>git log</code>.</p>",
+      "question_html": "<p>Проверь историю коммитов репозитория <code>/root/project</code>.</p>\n<p>Обрати внимание: git revert добавляет коммит с \"Revert\" в сообщении — история не переписывается.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь историю коммитов репозитория <code>/root/project</code>.</p>\n<p>Обрати внимание: git revert добавляет коммит с \"Revert\" в сообщении — история не переписывается.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда использовать revert вместо reset?",
+      "taskid": "git_lab6_t8_quiz_revert_reset",
+      "hint": "",
+      "question_html": "<p>Когда предпочтительнее использовать <code>git revert</code>, а не <code>git reset</code>?</p>",
+      "options": [
+        {
+          "text": "Когда нужно удалить файл из индекса",
+          "correct": false,
+          "explanation": "Нет — для этого есть git restore --staged или git rm --cached"
+        },
+        {
+          "text": "Когда нужно временно отложить изменения",
+          "correct": false,
+          "explanation": "Нет — для этого git stash"
+        },
+        {
+          "text": "Когда нужно переименовать тег",
+          "correct": false,
+          "explanation": "Нет — это операции с git tag"
+        },
+        {
+          "text": "Когда коммит уже в общем remote и нельзя переписывать историю",
+          "correct": true,
+          "explanation": "Верно! revert добавляет новый коммит и безопасен для совместной работы"
+        }
+      ],
+      "raw_description": "<p>Когда предпочтительнее использовать <code>git revert</code>, а не <code>git reset</code>?</p><ul>\n<li>Когда нужно удалить файл из индекса [Нет — для этого есть git restore --staged или git rm --cached]</li>\n<li>Когда нужно временно отложить изменения [Нет — для этого git stash]</li>\n<li>Когда нужно переименовать тег [Нет — это операции с git tag]</li>\n<li>+Когда коммит уже в общем remote и нельзя переписывать историю [Верно! revert добавляет новый коммит и безопасен для совместной работы]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает stash pop?",
+      "taskid": "git_lab6_t9_quiz_stash_pop",
+      "hint": "",
+      "question_html": "<p>Как ведёт себя <code>git stash pop</code> по сравнению с <code>git stash apply</code>?</p>",
+      "options": [
+        {
+          "text": "pop применяет изменения и удаляет запись из stash, apply только применяет",
+          "correct": true,
+          "explanation": "Верно! apply оставляет stash entry для повторного использования"
+        },
+        {
+          "text": "pop работает только в main ветке",
+          "correct": false,
+          "explanation": "Нет — команда работает в любой ветке"
+        },
+        {
+          "text": "pop автоматически коммитит изменения",
+          "correct": false,
+          "explanation": "Нет — после применения изменения остаются в рабочей директории"
+        },
+        {
+          "text": "apply удаляет stash, а pop оставляет",
+          "correct": false,
+          "explanation": "Наоборот"
+        }
+      ],
+      "raw_description": "<p>Как ведёт себя <code>git stash pop</code> по сравнению с <code>git stash apply</code>?</p><ul>\n<li>+pop применяет изменения и удаляет запись из stash, apply только применяет [Верно! apply оставляет stash entry для повторного использования]</li>\n<li>pop работает только в main ветке [Нет — команда работает в любой ветке]</li>\n<li>pop автоматически коммитит изменения [Нет — после применения изменения остаются в рабочей директории]</li>\n<li>apply удаляет stash, а pop оставляет [Наоборот]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему аннотированный тег полезен для релиза?",
+      "taskid": "git_lab6_t10_quiz_tag",
+      "hint": "",
+      "question_html": "<p>Почему для релизов обычно используют аннотированные теги (<code>git tag -a</code>)?</p>",
+      "options": [
+        {
+          "text": "Они автоматически пушатся без команды push",
+          "correct": false,
+          "explanation": "Нет — теги нужно пушить явно"
+        },
+        {
+          "text": "Они хранят метаданные (автор, дата, сообщение) и лучше для аудита релизов",
+          "correct": true,
+          "explanation": "Верно! lightweight tag — просто указатель на коммит"
+        },
+        {
+          "text": "Они ускоряют clone репозитория",
+          "correct": false,
+          "explanation": "Нет — формат тега не влияет так существенно"
+        },
+        {
+          "text": "Они заменяют ветку release",
+          "correct": false,
+          "explanation": "Нет — тег и ветка решают разные задачи"
+        }
+      ],
+      "raw_description": "<p>Почему для релизов обычно используют аннотированные теги (<code>git tag -a</code>)?</p><ul>\n<li>Они автоматически пушатся без команды push [Нет — теги нужно пушить явно]</li>\n<li>+Они хранят метаданные (автор, дата, сообщение) и лучше для аудита релизов [Верно! lightweight tag — просто указатель на коммит]</li>\n<li>Они ускоряют clone репозитория [Нет — формат тега не влияет так существенно]</li>\n<li>Они заменяют ветку release [Нет — тег и ветка решают разные задачи]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab6/setup.yaml"
+}

@@ -1,0 +1,208 @@
+{
+  "n": 16,
+  "id": "ch_ladv_lab9",
+  "title": "Лабораторная 9: df, du, free, vmstat",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "df -h: использование дисков",
+      "taskid": "ladv_lab9_t1_df",
+      "hint": "<p>Используй <code>df -h</code> и обрати внимание на <code>Use%</code>.</p>",
+      "question_html": "<p>Выполни команду <code>df -h</code>, чтобы посмотреть использование всех смонтированных разделов в human-readable формате.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>df -h</code>, чтобы посмотреть использование всех смонтированных разделов в human-readable формате.</p>"
+    },
+    {
+      "type": "check",
+      "title": "du: размер директорий",
+      "taskid": "ladv_lab9_t2_du",
+      "hint": "<p>Используй <code>sort</code> как часть обработки списка; при необходимости сначала отсортируй данные. Собирай pipeline постепенно: сначала проверь левую часть, затем добавляй следующий фильтр. Если важен поток ошибок, явно обработай <code>stderr</code> через <code>2&gt;</code> или <code>2&gt;&amp;1</code>.</p>",
+      "question_html": "<p>Выведи размер каждой поддиректории в <code>/var/</code> и сохрани в <code>/root/var_sizes.txt</code> (отсортировано по убыванию).</p>",
+      "options": [],
+      "raw_description": "<p>Выведи размер каждой поддиректории в <code>/var/</code> и сохрани в <code>/root/var_sizes.txt</code> (отсортировано по убыванию).</p>"
+    },
+    {
+      "type": "self",
+      "title": "free -m: память",
+      "taskid": "ladv_lab9_t3_free",
+      "hint": "<p>Используй <code>free -m</code> и сравни <code>free</code> с <code>available</code>.</p>",
+      "question_html": "<p>Выполни команду <code>free -m</code>, чтобы посмотреть использование памяти в мегабайтах.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>free -m</code>, чтобы посмотреть использование памяти в мегабайтах.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: available vs free",
+      "taskid": "ladv_lab9_t4_quiz",
+      "hint": "",
+      "question_html": "<p>В выводе <code>free -h</code> есть колонки <code>free</code> и <code>available</code>. В чём разница?</p>",
+      "options": [
+        {
+          "text": "<code>free</code> — свободна физически, <code>available</code> — только для пользователей",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+free</code> — физически свободная RAM, <code>available</code> — сколько реально можно дать приложению (включая кэш, который ядро освободит при необходимости)`",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Это одно и то же, просто разные названия",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>available</code> всегда меньше <code>free</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В выводе <code>free -h</code> есть колонки <code>free</code> и <code>available</code>. В чём разница?</p>\n<ul>\n<li><code>free</code> — свободна физически, <code>available</code> — только для пользователей</li>\n<li><code>+free</code> — физически свободная RAM, <code>available</code> — сколько реально можно дать приложению (включая кэш, который ядро освободит при необходимости)`</li>\n<li>Это одно и то же, просто разные названия</li>\n<li><code>available</code> всегда меньше <code>free</code></li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "vmstat: статистика виртуальной памяти",
+      "taskid": "ladv_lab9_t5_vmstat",
+      "hint": "<p>В выводе <code>vmstat</code> важны не только значения, но и их изменение между снимками.</p>",
+      "question_html": "<p>Выполни команду <code>vmstat 1 3</code>, чтобы получить 3 снимка с интервалом 1 секунда, и посмотри, как меняются CPU, memory и I/O поля.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>vmstat 1 3</code>, чтобы получить 3 снимка с интервалом 1 секунда, и посмотри, как меняются CPU, memory и I/O поля.</p>"
+    },
+    {
+      "type": "check",
+      "title": "найти самый большой файл",
+      "taskid": "ladv_lab9_t6_largest",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла. Собирай pipeline постепенно: сначала проверь левую часть, затем добавляй следующий фильтр. Если важен поток ошибок, явно обработай <code>stderr</code> через <code>2&gt;</code> или <code>2&gt;&amp;1</code>.</p>",
+      "question_html": "<p>Найди 5 самых больших файлов в <code>/var/</code> (рекурсивно) и сохрани в <code>/root/largest_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди 5 самых больших файлов в <code>/var/</code> (рекурсивно) и сохрани в <code>/root/largest_files.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: df и du",
+      "taskid": "ladv_lab9_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Почему <code>df</code> и <code>du</code> могут показывать разные значения?</p>",
+      "options": [
+        {
+          "text": "<code>Потому что du всегда считает сжатый размер</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что df считает только inode</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+df показывает занятость файловой системы, а du — сумму файлов в выбранном пути</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что du работает только для root</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему <code>df</code> и <code>du</code> могут показывать разные значения?</p>\n<ul>\n<li><code>Потому что du всегда считает сжатый размер</code></li>\n<li><code>Потому что df считает только inode</code></li>\n<li><code>+df показывает занятость файловой системы, а du — сумму файлов в выбранном пути</code></li>\n<li><code>Потому что du работает только для root</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: мониторинг в динамике",
+      "taskid": "ladv_lab9_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем запускать <code>vmstat</code> с интервалом, а не один раз?</p>",
+      "options": [
+        {
+          "text": "<code>Один запуск всегда точнее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что vmstat иначе не показывает CPU</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что vmstat без интервала не работает</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Чтобы увидеть изменение нагрузки во времени, а не только моментальный снимок</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем запускать <code>vmstat</code> с интервалом, а не один раз?</p>\n<ul>\n<li><code>Один запуск всегда точнее</code></li>\n<li><code>Потому что vmstat иначе не показывает CPU</code></li>\n<li><code>Потому что vmstat без интервала не работает</code></li>\n<li><code>+Чтобы увидеть изменение нагрузки во времени, а не только моментальный снимок</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: свободная память и cache",
+      "taskid": "ladv_lab9_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему низкий <code>free</code> не всегда проблема?</p>",
+      "options": [
+        {
+          "text": "<code>+Потому что часть памяти занята кэшем и может быть освобождена при необходимости</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что Linux не использует RAM полностью</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что free показывает только swap</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что память очищается только после reboot</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему низкий <code>free</code> не всегда проблема?</p>\n<ul>\n<li><code>+Потому что часть памяти занята кэшем и может быть освобождена при необходимости</code></li>\n<li><code>Потому что Linux не использует RAM полностью</code></li>\n<li><code>Потому что free показывает только swap</code></li>\n<li><code>Потому что память очищается только после reboot</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: приоритет анализа",
+      "taskid": "ladv_lab9_t10_quiz",
+      "hint": "",
+      "question_html": "<p>С чего обычно начать разбор жалобы «сервер тормозит»?</p>",
+      "options": [
+        {
+          "text": "<code>Сразу удалять большие файлы</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Собрать базовые метрики: CPU, RAM, disk, I/O и только потом менять систему</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу перезагрузить сервер</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу отключить swap</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>С чего обычно начать разбор жалобы «сервер тормозит»?</p>\n<ul>\n<li><code>Сразу удалять большие файлы</code></li>\n<li><code>+Собрать базовые метрики: CPU, RAM, disk, I/O и только потом менять систему</code></li>\n<li><code>Сразу перезагрузить сервер</code></li>\n<li><code>Сразу отключить swap</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_advanced/linux_adv/lab9/setup.yaml"
+}

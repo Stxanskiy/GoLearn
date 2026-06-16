@@ -1,0 +1,313 @@
+{
+  "n": 12,
+  "id": "ch_dkc_quiz1",
+  "title": "Проверка: Docker Compose",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что означает docker compose down -v?",
+      "taskid": "dkc_quiz1_t1",
+      "hint": "",
+      "question_html": "<p>Ты выполнил команду <code>docker compose down -v</code>. Что произойдёт с именованными volumes?</p>",
+      "options": [
+        {
+          "text": "Произойдёт ошибка если volumes в use",
+          "correct": false,
+          "explanation": "Нет — down -v принудительно удаляет"
+        },
+        {
+          "text": "Volumes будут заархивированы",
+          "correct": false,
+          "explanation": "Нет — Docker не архивирует volumes"
+        },
+        {
+          "text": "Volumes сохранятся",
+          "correct": false,
+          "explanation": "Нет — -v означает volumes, verbose это --verbose"
+        },
+        {
+          "text": "Volumes будут удалены вместе с контейнерами",
+          "correct": true,
+          "explanation": "Верно! Флаг -v удаляет и volumes, объявленные в compose-файле"
+        }
+      ],
+      "raw_description": "<p>Ты выполнил команду <code>docker compose down -v</code>. Что произойдёт с именованными volumes?</p><ul>\n<li>Произойдёт ошибка если volumes в use [Нет — down -v принудительно удаляет]</li>\n<li>Volumes будут заархивированы [Нет — Docker не архивирует volumes]</li>\n<li>Volumes сохранятся [Нет — -v означает volumes, verbose это --verbose]</li>\n<li>+Volumes будут удалены вместе с контейнерами [Верно! Флаг -v удаляет и volumes, объявленные в compose-файле]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как называется автоматически подхватываемый override файл?",
+      "taskid": "dkc_quiz1_t2",
+      "hint": "",
+      "question_html": "<p>Какой файл Docker Compose подхватывает автоматически в дополнение к <code>docker-compose.yml</code>, без указания через <code>-f</code>?</p>",
+      "options": [
+        {
+          "text": ".env файл",
+          "correct": false,
+          "explanation": "Нет — .env читается для переменных, а не как compose-файл"
+        },
+        {
+          "text": "docker-compose.local.yml",
+          "correct": false,
+          "explanation": "Нет — не существует автоматики для этого имени"
+        },
+        {
+          "text": "docker-compose.override.yml",
+          "correct": true,
+          "explanation": "Верно! Этот файл Compose читает и сливает с основным автоматически"
+        },
+        {
+          "text": "docker-compose.dev.yml",
+          "correct": false,
+          "explanation": "Нет — этот нужно указывать явно через -f"
+        }
+      ],
+      "raw_description": "<p>Какой файл Docker Compose подхватывает автоматически в дополнение к <code>docker-compose.yml</code>, без указания через <code>-f</code>?</p><ul>\n<li>.env файл [Нет — .env читается для переменных, а не как compose-файл]</li>\n<li>docker-compose.local.yml [Нет — не существует автоматики для этого имени]</li>\n<li>+docker-compose.override.yml [Верно! Этот файл Compose читает и сливает с основным автоматически]</li>\n<li>docker-compose.dev.yml [Нет — этот нужно указывать явно через -f]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что гарантирует healthcheck condition?",
+      "taskid": "dkc_quiz1_t3",
+      "hint": "",
+      "question_html": "<p>Ты написал <code>depends_on: db: condition: service_healthy</code>. Что это гарантирует?</p>",
+      "options": [
+        {
+          "text": "Что контейнеры запустятся одновременно",
+          "correct": false,
+          "explanation": "Нет — это как раз противоположное — последовательный запуск"
+        },
+        {
+          "text": "То же самое что просто depends_on без condition",
+          "correct": false,
+          "explanation": "Нет — без condition ждётся только старт, с condition — готовность"
+        },
+        {
+          "text": "Что db никогда не упадёт пока работает app",
+          "correct": false,
+          "explanation": "Нет — это не влияет на поведение db после запуска"
+        },
+        {
+          "text": "Сервис app стартует только когда db пройдёт healthcheck",
+          "correct": true,
+          "explanation": "Верно! service_healthy ждёт успешного прохождения healthcheck теста"
+        }
+      ],
+      "raw_description": "<p>Ты написал <code>depends_on: db: condition: service_healthy</code>. Что это гарантирует?</p><ul>\n<li>Что контейнеры запустятся одновременно [Нет — это как раз противоположное — последовательный запуск]</li>\n<li>То же самое что просто depends_on без condition [Нет — без condition ждётся только старт, с condition — готовность]</li>\n<li>Что db никогда не упадёт пока работает app [Нет — это не влияет на поведение db после запуска]</li>\n<li>+Сервис app стартует только когда db пройдёт healthcheck [Верно! service_healthy ждёт успешного прохождения healthcheck теста]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как передать несколько .env файлов?",
+      "taskid": "dkc_quiz1_t4",
+      "hint": "",
+      "question_html": "<p>Нужно передать переменные из двух файлов: <code>.env</code> и <code>.env.local</code>. Как правильно указать это в compose-файле?</p>",
+      "options": [
+        {
+          "text": "Это невозможно, только один файл",
+          "correct": false,
+          "explanation": "Нет — env_file поддерживает массив"
+        },
+        {
+          "text": "Указать дважды env_file с разными значениями",
+          "correct": false,
+          "explanation": "Нет — второй env_file перезапишет первый"
+        },
+        {
+          "text": "Создать один большой .env объединив их",
+          "correct": false,
+          "explanation": "Нет — это работает, но env_file список удобнее"
+        },
+        {
+          "text": "Использовать env_file с массивом файлов",
+          "correct": true,
+          "explanation": "Верно! env_file принимает список: [\".env\", \".env.local\"]"
+        }
+      ],
+      "raw_description": "<p>Нужно передать переменные из двух файлов: <code>.env</code> и <code>.env.local</code>. Как правильно указать это в compose-файле?</p><ul>\n<li>Это невозможно, только один файл [Нет — env_file поддерживает массив]</li>\n<li>Указать дважды env_file с разными значениями [Нет — второй env_file перезапишет первый]</li>\n<li>Создать один большой .env объединив их [Нет — это работает, но env_file список удобнее]</li>\n<li>+Использовать env_file с массивом файлов [Верно! env_file принимает список: [\".env\", \".env.local\"]]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает docker compose config?",
+      "taskid": "dkc_quiz1_t5",
+      "hint": "",
+      "question_html": "<p>Ты выполнил <code>docker compose config</code>. Что эта команда выводит?</p>",
+      "options": [
+        {
+          "text": "Список использованных образов",
+          "correct": false,
+          "explanation": "Нет — для этого docker compose images"
+        },
+        {
+          "text": "Текущий статус запущенных контейнеров",
+          "correct": false,
+          "explanation": "Нет — это docker compose ps"
+        },
+        {
+          "text": "Итоговый compose-файл с подставленными переменными окружения",
+          "correct": true,
+          "explanation": "Верно! config показывает что именно получит Docker после подстановки всех переменных"
+        },
+        {
+          "text": "Конфигурацию Docker Engine",
+          "correct": false,
+          "explanation": "Нет — это docker info"
+        }
+      ],
+      "raw_description": "<p>Ты выполнил <code>docker compose config</code>. Что эта команда выводит?</p><ul>\n<li>Список использованных образов [Нет — для этого docker compose images]</li>\n<li>Текущий статус запущенных контейнеров [Нет — это docker compose ps]</li>\n<li>+Итоговый compose-файл с подставленными переменными окружения [Верно! config показывает что именно получит Docker после подстановки всех переменных]</li>\n<li>Конфигурацию Docker Engine [Нет — это docker info]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем profiles полезны?",
+      "taskid": "dkc_quiz1_t6",
+      "hint": "",
+      "question_html": "<p>Зачем в docker-compose.yml использовать <code>profiles</code> для некоторых сервисов?</p>",
+      "options": [
+        {
+          "text": "Для авторизации",
+          "correct": false,
+          "explanation": "Нет — profiles не связаны с авторизацией"
+        },
+        {
+          "text": "Для назначения CPU/Memory профиля",
+          "correct": false,
+          "explanation": "Нет — для ресурсов есть deploy.resources"
+        },
+        {
+          "text": "Чтобы запускать вспомогательные сервисы только когда нужно (dev, testing, debug)",
+          "correct": true,
+          "explanation": "Верно! Профили позволяют иметь одни сервисы \"всегда\" и другие \"по запросу\""
+        },
+        {
+          "text": "Для выбора версии образа",
+          "correct": false,
+          "explanation": "Нет — версия указывается в image:"
+        }
+      ],
+      "raw_description": "<p>Зачем в docker-compose.yml использовать <code>profiles</code> для некоторых сервисов?</p><ul>\n<li>Для авторизации [Нет — profiles не связаны с авторизацией]</li>\n<li>Для назначения CPU/Memory профиля [Нет — для ресурсов есть deploy.resources]</li>\n<li>+Чтобы запускать вспомогательные сервисы только когда нужно (dev, testing, debug) [Верно! Профили позволяют иметь одни сервисы \"всегда\" и другие \"по запросу\"]</li>\n<li>Для выбора версии образа [Нет — версия указывается в image:]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Приоритет переменных окружения",
+      "taskid": "dkc_quiz1_t7",
+      "hint": "",
+      "question_html": "<p>Переменная <code>DEBUG</code> определена в трёх местах: в <code>.env</code> (значение false), в секции <code>environment</code> compose-файла (значение true), и в env хоста (значение 1). Какое значение получит контейнер?</p>",
+      "options": [
+        {
+          "text": "true",
+          "correct": true,
+          "explanation": "Верно! Приоритет: env хоста > environment в compose > .env файл. Но если в environment указано значение явно (не просто имя), оно используется как есть"
+        },
+        {
+          "text": "1",
+          "correct": false,
+          "explanation": "Нет — env хоста имеет приоритет только когда в environment указано просто имя переменной без значения"
+        },
+        {
+          "text": "false",
+          "correct": false,
+          "explanation": "Нет — .env имеет самый низкий приоритет"
+        },
+        {
+          "text": "Произойдёт конфликт и Compose упадёт с ошибкой",
+          "correct": false,
+          "explanation": "Нет — Compose обрабатывает это по приоритету"
+        }
+      ],
+      "raw_description": "<p>Переменная <code>DEBUG</code> определена в трёх местах: в <code>.env</code> (значение false), в секции <code>environment</code> compose-файла (значение true), и в env хоста (значение 1). Какое значение получит контейнер?</p><ul>\n<li>+true [Верно! Приоритет: env хоста > environment в compose > .env файл. Но если в environment указано значение явно (не просто имя), оно используется как есть]</li>\n<li>1 [Нет — env хоста имеет приоритет только когда в environment указано просто имя переменной без значения]</li>\n<li>false [Нет — .env имеет самый низкий приоритет]</li>\n<li>Произойдёт конфликт и Compose упадёт с ошибкой [Нет — Compose обрабатывает это по приоритету]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что происходит с volumes при docker compose down?",
+      "taskid": "dkc_quiz1_t8",
+      "hint": "",
+      "question_html": "<p>Ты выполнил <code>docker compose down</code> (без флагов). Что происходит с именованными volumes?</p>",
+      "options": [
+        {
+          "text": "Volumes удаляются",
+          "correct": false,
+          "explanation": "Нет — для удаления volumes нужен флаг -v"
+        },
+        {
+          "text": "Volumes сохраняются — удаляются только контейнеры и сети",
+          "correct": true,
+          "explanation": "Верно! down без флагов не трогает volumes — это защита данных"
+        },
+        {
+          "text": "Volumes архивируются в /tmp",
+          "correct": false,
+          "explanation": "Нет — Docker не архивирует volumes"
+        },
+        {
+          "text": "Поведение зависит от driver volume",
+          "correct": false,
+          "explanation": "Нет — стандартное поведение одинаково"
+        }
+      ],
+      "raw_description": "<p>Ты выполнил <code>docker compose down</code> (без флагов). Что происходит с именованными volumes?</p><ul>\n<li>Volumes удаляются [Нет — для удаления volumes нужен флаг -v]</li>\n<li>+Volumes сохраняются — удаляются только контейнеры и сети [Верно! down без флагов не трогает volumes — это защита данных]</li>\n<li>Volumes архивируются в /tmp [Нет — Docker не архивирует volumes]</li>\n<li>Поведение зависит от driver volume [Нет — стандартное поведение одинаково]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как проверить что bind mount работает?",
+      "taskid": "dkc_quiz1_t9",
+      "hint": "",
+      "question_html": "<p>Ты настроил bind mount <code>./src:/app/src</code>. Как убедиться что изменения в файлах хоста видны в контейнере?</p>",
+      "options": [
+        {
+          "text": "Перезапустить контейнер — изменения подхватятся при старте",
+          "correct": false,
+          "explanation": "Нет — bind mount работает без перезапуска, изменения видны сразу"
+        },
+        {
+          "text": "Использовать docker compose sync",
+          "correct": false,
+          "explanation": "Нет — такой команды нет"
+        },
+        {
+          "text": "Выполнить docker compose build",
+          "correct": false,
+          "explanation": "Нет — build пересобирает образ, bind mount не требует сборки"
+        },
+        {
+          "text": "Изменить файл на хосте и прочитать его из контейнера через docker compose exec -T",
+          "correct": true,
+          "explanation": "Верно! Bind mount синхронизирует файлы в реальном времени"
+        }
+      ],
+      "raw_description": "<p>Ты настроил bind mount <code>./src:/app/src</code>. Как убедиться что изменения в файлах хоста видны в контейнере?</p><ul>\n<li>Перезапустить контейнер — изменения подхватятся при старте [Нет — bind mount работает без перезапуска, изменения видны сразу]</li>\n<li>Использовать docker compose sync [Нет — такой команды нет]</li>\n<li>Выполнить docker compose build [Нет — build пересобирает образ, bind mount не требует сборки]</li>\n<li>+Изменить файл на хосте и прочитать его из контейнера через docker compose exec -T [Верно! Bind mount синхронизирует файлы в реальном времени]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Для чего используется docker compose exec -T vs run?",
+      "taskid": "dkc_quiz1_t10",
+      "hint": "",
+      "question_html": "<p>В чём разница между <code>docker compose exec -T app sh</code> и <code>docker compose run app sh</code>?</p>",
+      "options": [
+        {
+          "text": "exec выполняет команду в уже запущенном контейнере, run создаёт новый временный контейнер",
+          "correct": true,
+          "explanation": "Верно! exec требует работающего контейнера, run запускает новый"
+        },
+        {
+          "text": "Это синонимы, разницы нет",
+          "correct": false,
+          "explanation": "Нет — принципиальное различие в том, создаётся новый контейнер или нет"
+        },
+        {
+          "text": "exec только для root-команд, run для обычных",
+          "correct": false,
+          "explanation": "Нет — оба могут выполнять любые команды"
+        },
+        {
+          "text": "exec работает быстрее, run медленнее",
+          "correct": false,
+          "explanation": "Нет — скорость не главное различие"
+        }
+      ],
+      "raw_description": "<p>В чём разница между <code>docker compose exec -T app sh</code> и <code>docker compose run app sh</code>?</p><ul>\n<li>+exec выполняет команду в уже запущенном контейнере, run создаёт новый временный контейнер [Верно! exec требует работающего контейнера, run запускает новый]</li>\n<li>Это синонимы, разницы нет [Нет — принципиальное различие в том, создаётся новый контейнер или нет]</li>\n<li>exec только для root-команд, run для обычных [Нет — оба могут выполнять любые команды]</li>\n<li>exec работает быстрее, run медленнее [Нет — скорость не главное различие]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

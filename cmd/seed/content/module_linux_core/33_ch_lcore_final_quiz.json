@@ -1,0 +1,313 @@
+{
+  "n": 33,
+  "id": "ch_lcore_final_quiz",
+  "title": "Итоговый квиз: процессы, сервисы, логи",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Сигналы",
+      "taskid": "lcore_qfin_t1",
+      "hint": "",
+      "question_html": "<p>Чем отличается сигнал <code>SIGTERM</code> (15) от <code>SIGKILL</code> (9)?</p>",
+      "options": [
+        {
+          "text": "SIGTERM работает только от root",
+          "correct": false,
+          "explanation": "Нет — любой пользователь может послать SIGTERM своим процессам"
+        },
+        {
+          "text": "Разница только в скорости завершения",
+          "correct": false,
+          "explanation": "Нет — ключевое отличие в том, может ли процесс перехватить сигнал"
+        },
+        {
+          "text": "SIGTERM убивает процесс вместе с дочерними, SIGKILL — только текущий",
+          "correct": false,
+          "explanation": "Нет — это не связано с дочерними процессами напрямую"
+        },
+        {
+          "text": "SIGTERM — мягкое завершение, процесс может перехватить и обработать. SIGKILL — немедленное завершение, перехватить нельзя",
+          "correct": true,
+          "explanation": "Верно! Всегда сначала SIGTERM (kill PID), жди несколько секунд, потом SIGKILL (kill -9 PID). Это даёт процессу шанс корректно завершиться"
+        }
+      ],
+      "raw_description": "<p>Чем отличается сигнал <code>SIGTERM</code> (15) от <code>SIGKILL</code> (9)?</p><ul>\n<li>SIGTERM работает только от root [Нет — любой пользователь может послать SIGTERM своим процессам]</li>\n<li>Разница только в скорости завершения [Нет — ключевое отличие в том, может ли процесс перехватить сигнал]</li>\n<li>SIGTERM убивает процесс вместе с дочерними, SIGKILL — только текущий [Нет — это не связано с дочерними процессами напрямую]</li>\n<li>+SIGTERM — мягкое завершение, процесс может перехватить и обработать. SIGKILL — немедленное завершение, перехватить нельзя [Верно! Всегда сначала SIGTERM (kill PID), жди несколько секунд, потом SIGKILL (kill -9 PID). Это даёт процессу шанс корректно завершиться]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "ps aux",
+      "taskid": "lcore_qfin_t2",
+      "hint": "",
+      "question_html": "<p>Что показывают флаги <code>aux</code> у команды <code>ps aux</code>?</p>",
+      "options": [
+        {
+          "text": "a — активные, u — пользовательские, x — исключить системные",
+          "correct": false,
+          "explanation": "Нет — это неправильная интерпретация флагов"
+        },
+        {
+          "text": "Показать процессы в формате дерева",
+          "correct": false,
+          "explanation": "Нет — для дерева используют ps --forest или pstree"
+        },
+        {
+          "text": "a — все пользователи, u — формат с именем пользователя и CPU/RAM, x — включая процессы без терминала",
+          "correct": true,
+          "explanation": "Верно! ps aux — стандартная команда для полного списка всех процессов системы. Колонки: USER, PID, %CPU, %MEM, COMMAND и т.д."
+        },
+        {
+          "text": "Сортировать по использованию CPU",
+          "correct": false,
+          "explanation": "Нет — для сортировки: ps aux --sort=-%cpu"
+        }
+      ],
+      "raw_description": "<p>Что показывают флаги <code>aux</code> у команды <code>ps aux</code>?</p><ul>\n<li>a — активные, u — пользовательские, x — исключить системные [Нет — это неправильная интерпретация флагов]</li>\n<li>Показать процессы в формате дерева [Нет — для дерева используют ps --forest или pstree]</li>\n<li>+a — все пользователи, u — формат с именем пользователя и CPU/RAM, x — включая процессы без терминала [Верно! ps aux — стандартная команда для полного списка всех процессов системы. Колонки: USER, PID, %CPU, %MEM, COMMAND и т.д.]</li>\n<li>Сортировать по использованию CPU [Нет — для сортировки: ps aux --sort=-%cpu]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "systemctl start vs enable",
+      "taskid": "lcore_qfin_t3",
+      "hint": "",
+      "question_html": "<p>Тебе нужно, чтобы сервис <code>nginx</code> запускался автоматически при каждой перезагрузке. Какая команда это настраивает?</p>",
+      "options": [
+        {
+          "text": "systemctl enable nginx",
+          "correct": true,
+          "explanation": "Верно! enable создаёт симлинки для автозапуска при загрузке. start запускает прямо сейчас. Часто нужно оба: systemctl enable --now nginx"
+        },
+        {
+          "text": "systemctl start nginx",
+          "correct": false,
+          "explanation": "Нет — start запускает сервис прямо сейчас, но после перезагрузки он не запустится автоматически"
+        },
+        {
+          "text": "systemctl activate nginx",
+          "correct": false,
+          "explanation": "Нет — такой команды нет"
+        },
+        {
+          "text": "systemctl restart nginx",
+          "correct": false,
+          "explanation": "Нет — restart перезапускает уже работающий сервис"
+        }
+      ],
+      "raw_description": "<p>Тебе нужно, чтобы сервис <code>nginx</code> запускался автоматически при каждой перезагрузке. Какая команда это настраивает?</p><ul>\n<li>+systemctl enable nginx [Верно! enable создаёт симлинки для автозапуска при загрузке. start запускает прямо сейчас. Часто нужно оба: systemctl enable --now nginx]</li>\n<li>systemctl start nginx [Нет — start запускает сервис прямо сейчас, но после перезагрузки он не запустится автоматически]</li>\n<li>systemctl activate nginx [Нет — такой команды нет]</li>\n<li>systemctl restart nginx [Нет — restart перезапускает уже работающий сервис]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "journalctl -u",
+      "taskid": "lcore_qfin_t4",
+      "hint": "",
+      "question_html": "<p>Как посмотреть только последние 50 строк логов конкретного сервиса (например, nginx) без постраничного просмотра?</p>",
+      "options": [
+        {
+          "text": "journalctl --service nginx -lines 50",
+          "correct": false,
+          "explanation": "Нет — правильный синтаксис: -u для сервиса, -n для строк"
+        },
+        {
+          "text": "journalctl -u nginx -n 50 --no-pager",
+          "correct": true,
+          "explanation": "Верно! -u задаёт сервис, -n количество строк, --no-pager выводит всё сразу без пагинации (полезно в скриптах)"
+        },
+        {
+          "text": "systemctl logs nginx --last 50",
+          "correct": false,
+          "explanation": "Нет — такой команды нет"
+        },
+        {
+          "text": "cat /var/log/nginx/nginx.log | tail -50",
+          "correct": false,
+          "explanation": "Нет — nginx пишет в access.log и error.log, а не nginx.log. Плюс journald хранит логи централизованно"
+        }
+      ],
+      "raw_description": "<p>Как посмотреть только последние 50 строк логов конкретного сервиса (например, nginx) без постраничного просмотра?</p><ul>\n<li>journalctl --service nginx -lines 50 [Нет — правильный синтаксис: -u для сервиса, -n для строк]</li>\n<li>+journalctl -u nginx -n 50 --no-pager [Верно! -u задаёт сервис, -n количество строк, --no-pager выводит всё сразу без пагинации (полезно в скриптах)]</li>\n<li>systemctl logs nginx --last 50 [Нет — такой команды нет]</li>\n<li>cat /var/log/nginx/nginx.log | tail -50 [Нет — nginx пишет в access.log и error.log, а не nginx.log. Плюс journald хранит логи централизованно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "cron синтаксис",
+      "taskid": "lcore_qfin_t5",
+      "hint": "",
+      "question_html": "<p>Что означает запись в crontab: <code>0 2 * * 1 /opt/scripts/backup.sh</code>?</p>",
+      "options": [
+        {
+          "text": "Каждый день в 2 минуты первого",
+          "correct": false,
+          "explanation": "Нет — порядок полей: мин час день месяц день_недели. 0 2 = 2 часа 0 минут = 02:00"
+        },
+        {
+          "text": "Каждые 2 часа по понедельникам",
+          "correct": false,
+          "explanation": "Нет — для «каждые N часов» используют */2 в поле часов"
+        },
+        {
+          "text": "Каждый понедельник в 02:00",
+          "correct": true,
+          "explanation": "Верно! Поля: минуты(0) часы(2) день_месяца(*) месяц(*) день_недели(1=понедельник). * = любое значение"
+        },
+        {
+          "text": "Первый день каждого второго месяца",
+          "correct": false,
+          "explanation": "Нет — 0 2 — это время, а не день/месяц"
+        }
+      ],
+      "raw_description": "<p>Что означает запись в crontab: <code>0 2 * * 1 /opt/scripts/backup.sh</code>?</p><ul>\n<li>Каждый день в 2 минуты первого [Нет — порядок полей: мин час день месяц день_недели. 0 2 = 2 часа 0 минут = 02:00]</li>\n<li>Каждые 2 часа по понедельникам [Нет — для «каждые N часов» используют */2 в поле часов]</li>\n<li>+Каждый понедельник в 02:00 [Верно! Поля: минуты(0) часы(2) день_месяца(*) месяц(*) день_недели(1=понедельник). * = любое значение]</li>\n<li>Первый день каждого второго месяца [Нет — 0 2 — это время, а не день/месяц]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "df vs du",
+      "taskid": "lcore_qfin_t6",
+      "hint": "",
+      "question_html": "<p>В чём разница между командами <code>df -h</code> и <code>du -sh /var/log</code>?</p>",
+      "options": [
+        {
+          "text": "df показывает свободное место на файловых системах, du — размер конкретной директории/файла",
+          "correct": true,
+          "explanation": "Верно! df (disk free) — статистика по разделам. du (disk usage) — сколько занимает конкретный каталог. Совместно: df -h для общей картины, du -sh /* для поиска кто занял место"
+        },
+        {
+          "text": "df работает быстрее du",
+          "correct": false,
+          "explanation": "Нет — это не основное различие"
+        },
+        {
+          "text": "du показывает только свободное место",
+          "correct": false,
+          "explanation": "Нет — всё наоборот: du показывает занятое место, df — свободное"
+        },
+        {
+          "text": "Команды делают одно и то же",
+          "correct": false,
+          "explanation": "Нет — у них принципиально разное назначение"
+        }
+      ],
+      "raw_description": "<p>В чём разница между командами <code>df -h</code> и <code>du -sh /var/log</code>?</p><ul>\n<li>+df показывает свободное место на файловых системах, du — размер конкретной директории/файла [Верно! df (disk free) — статистика по разделам. du (disk usage) — сколько занимает конкретный каталог. Совместно: df -h для общей картины, du -sh /* для поиска кто занял место]</li>\n<li>df работает быстрее du [Нет — это не основное различие]</li>\n<li>du показывает только свободное место [Нет — всё наоборот: du показывает занятое место, df — свободное]</li>\n<li>Команды делают одно и то же [Нет — у них принципиально разное назначение]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "lsof порты",
+      "taskid": "lcore_qfin_t7",
+      "hint": "",
+      "question_html": "<p>Как узнать, какой процесс занимает порт 8080?</p>",
+      "options": [
+        {
+          "text": "ss -tlnp | grep :8080 или lsof -i :8080",
+          "correct": true,
+          "explanation": "Верно! ss -tlnp показывает TCP listening sockets с именами процессов. lsof -i :8080 тоже работает. Оба требуют sudo для всех процессов"
+        },
+        {
+          "text": "netstat -p 8080",
+          "correct": false,
+          "explanation": "Нет — у netstat нет флага -p PORT для прямой фильтрации"
+        },
+        {
+          "text": "ping localhost:8080",
+          "correct": false,
+          "explanation": "Нет — ping работает с IP, не с портами"
+        },
+        {
+          "text": "ps aux | grep 8080",
+          "correct": false,
+          "explanation": "Нет — ps показывает командную строку процесса, но порт в ней может не быть указан явно"
+        }
+      ],
+      "raw_description": "<p>Как узнать, какой процесс занимает порт 8080?</p><ul>\n<li>+ss -tlnp | grep :8080 или lsof -i :8080 [Верно! ss -tlnp показывает TCP listening sockets с именами процессов. lsof -i :8080 тоже работает. Оба требуют sudo для всех процессов]</li>\n<li>netstat -p 8080 [Нет — у netstat нет флага -p PORT для прямой фильтрации]</li>\n<li>ping localhost:8080 [Нет — ping работает с IP, не с портами]</li>\n<li>ps aux | grep 8080 [Нет — ps показывает командную строку процесса, но порт в ней может не быть указан явно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "logrotate",
+      "taskid": "lcore_qfin_t8",
+      "hint": "",
+      "question_html": "<p>Для чего используется <code>logrotate</code>?</p>",
+      "options": [
+        {
+          "text": "Автоматическая ротация логов: архивирование старых файлов, удаление устаревших, сжатие",
+          "correct": true,
+          "explanation": "Верно! Без logrotate логи росли бы бесконечно и заполнили диск. Конфиги в /etc/logrotate.d/, запускается через cron"
+        },
+        {
+          "text": "Парсинг логов и отправка их в Elasticsearch",
+          "correct": false,
+          "explanation": "Нет — для этого используют Filebeat, Logstash"
+        },
+        {
+          "text": "Мониторинг логов в реальном времени",
+          "correct": false,
+          "explanation": "Нет — для этого tail -f или journalctl -f"
+        },
+        {
+          "text": "Фильтрация логов по уровню серьёзности",
+          "correct": false,
+          "explanation": "Нет — logrotate не фильтрует содержимое"
+        }
+      ],
+      "raw_description": "<p>Для чего используется <code>logrotate</code>?</p><ul>\n<li>+Автоматическая ротация логов: архивирование старых файлов, удаление устаревших, сжатие [Верно! Без logrotate логи росли бы бесконечно и заполнили диск. Конфиги в /etc/logrotate.d/, запускается через cron]</li>\n<li>Парсинг логов и отправка их в Elasticsearch [Нет — для этого используют Filebeat, Logstash]</li>\n<li>Мониторинг логов в реальном времени [Нет — для этого tail -f или journalctl -f]</li>\n<li>Фильтрация логов по уровню серьёзности [Нет — logrotate не фильтрует содержимое]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "crontab -e",
+      "taskid": "lcore_qfin_t9",
+      "hint": "",
+      "question_html": "<p>Чем отличается запись задачи в <code>crontab -e</code> от создания файла в <code>/etc/cron.d/</code>?</p>",
+      "options": [
+        {
+          "text": "crontab -e редактирует задачи конкретного пользователя, /etc/cron.d/ — системные задачи с явным указанием пользователя",
+          "correct": true,
+          "explanation": "Верно! В /etc/cron.d/ формат: мин час день мес день_нед пользователь команда. crontab -e — для задач конкретного пользователя без явного указания"
+        },
+        {
+          "text": "Задачи в /etc/cron.d/ выполняются только от root",
+          "correct": false,
+          "explanation": "Нет — в /etc/cron.d/ можно указать любого пользователя"
+        },
+        {
+          "text": "Разницы нет, оба одинаковы",
+          "correct": false,
+          "explanation": "Нет — есть принципиальная разница в области видимости"
+        },
+        {
+          "text": "crontab -e запускает задачи каждую минуту, /etc/cron.d/ — с любым расписанием",
+          "correct": false,
+          "explanation": "Нет — оба поддерживают любое расписание"
+        }
+      ],
+      "raw_description": "<p>Чем отличается запись задачи в <code>crontab -e</code> от создания файла в <code>/etc/cron.d/</code>?</p><ul>\n<li>+crontab -e редактирует задачи конкретного пользователя, /etc/cron.d/ — системные задачи с явным указанием пользователя [Верно! В /etc/cron.d/ формат: мин час день мес день_нед пользователь команда. crontab -e — для задач конкретного пользователя без явного указания]</li>\n<li>Задачи в /etc/cron.d/ выполняются только от root [Нет — в /etc/cron.d/ можно указать любого пользователя]</li>\n<li>Разницы нет, оба одинаковы [Нет — есть принципиальная разница в области видимости]</li>\n<li>crontab -e запускает задачи каждую минуту, /etc/cron.d/ — с любым расписанием [Нет — оба поддерживают любое расписание]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "systemctl status",
+      "taskid": "lcore_qfin_t10",
+      "hint": "",
+      "question_html": "<p>Сервис показывает <code>Active: failed (Result: exit-code)</code>. Как быстро посмотреть причину падения?</p>",
+      "options": [
+        {
+          "text": "cat /var/log/syslog | grep service_name",
+          "correct": false,
+          "explanation": "Нет — systemd-сервисы логируют через journald, в syslog могут не попасть"
+        },
+        {
+          "text": "systemctl restart service_name",
+          "correct": false,
+          "explanation": "Нет — сначала нужно понять причину, иначе сервис упадёт снова"
+        },
+        {
+          "text": "journalctl -u service_name --since today -n 50",
+          "correct": true,
+          "explanation": "Верно! journalctl -u покажет все логи сервиса, --since today ограничит сегодняшним днём. Также systemctl status service покажет последние несколько строк логов"
+        },
+        {
+          "text": "dmesg | grep service_name",
+          "correct": false,
+          "explanation": "Нет — dmesg показывает сообщения ядра, не логи systemd-сервисов"
+        }
+      ],
+      "raw_description": "<p>Сервис показывает <code>Active: failed (Result: exit-code)</code>. Как быстро посмотреть причину падения?</p><ul>\n<li>cat /var/log/syslog | grep service_name [Нет — systemd-сервисы логируют через journald, в syslog могут не попасть]</li>\n<li>systemctl restart service_name [Нет — сначала нужно понять причину, иначе сервис упадёт снова]</li>\n<li>+journalctl -u service_name --since today -n 50 [Верно! journalctl -u покажет все логи сервиса, --since today ограничит сегодняшним днём. Также systemctl status service покажет последние несколько строк логов]</li>\n<li>dmesg | grep service_name [Нет — dmesg показывает сообщения ядра, не логи systemd-сервисов]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

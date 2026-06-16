@@ -1,0 +1,106 @@
+{
+  "n": 9,
+  "id": "ch_git_lab5",
+  "title": "Лабораторная 5: Remote — clone, fetch, pull, push",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "git clone: клонировать репозиторий",
+      "taskid": "git_lab5_t1_clone",
+      "hint": "<p>Используй <code>git clone</code>: укажи URL исходного репозитория и каталог назначения. После клонирования проверь <code>.git</code> и рабочие файлы.</p>",
+      "question_html": "<p>Склонируй bare-репозиторий <code>/srv/git/project.git</code> в <code>/root/project</code>. После клонирования в <code>/root/project</code> должен быть файл <code>README.md</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Склонируй bare-репозиторий <code>/srv/git/project.git</code> в <code>/root/project</code>. После клонирования в <code>/root/project</code> должен быть файл <code>README.md</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "git remote: посмотреть remote",
+      "taskid": "git_lab5_t2_remote",
+      "hint": "<p>Используй <code>git remote</code>: проверь имя remote и URL, затем выбери действие с удалённым репозиторием.</p>",
+      "question_html": "<p>Посмотри список remote-репозиториев с URL в репозитории <code>/root/project</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project remote -v\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри список remote-репозиториев с URL в репозитории <code>/root/project</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project remote -v\n</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "сделать коммит и git push",
+      "taskid": "git_lab5_t3_push",
+      "hint": "<p>Используй <code>git push</code>: перед отправкой проверь имя remote и ветку назначения.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> создай файл <code>feature.txt</code>, закоммить с сообщением <code>add feature</code> и запуши в origin <code>/srv/git/project.git</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> создай файл <code>feature.txt</code>, закоммить с сообщением <code>add feature</code> и запуши в origin <code>/srv/git/project.git</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "проверить push в bare repo",
+      "taskid": "git_lab5_t4_verify",
+      "hint": "<p>Используй <code>git push</code>, затем проверь результат через историю bare-репозитория.</p>",
+      "question_html": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git fetch: получить изменения",
+      "taskid": "git_lab5_t5_fetch",
+      "hint": "<p><code>git remote -v</code> показывает адреса remote и после fetch обычно выглядит так же. После <code>git fetch</code> используй команду, которая показывает ветки вида <code>remotes/origin/...</code>.</p>",
+      "question_html": "<p>Выполни <code>git fetch origin</code>, затем проверь список локальных и remote-tracking веток. В выводе должен быть префикс <code>remotes/origin</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни <code>git fetch origin</code>, затем проверь список локальных и remote-tracking веток. В выводе должен быть префикс <code>remotes/origin</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: fetch vs pull",
+      "taskid": "git_lab5_t6_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между <code>git fetch</code> и <code>git pull</code>?</p>",
+      "options": [
+        {
+          "text": "<code>fetch</code> быстрее",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+fetch</code> только загружает данные с сервера, не изменяя локальные ветки; <code>pull = fetch + merge</code> — сразу интегрирует изменения`",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>pull</code> безопаснее",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Нет разницы",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В чём разница между <code>git fetch</code> и <code>git pull</code>?</p>\n<ul>\n<li><code>fetch</code> быстрее</li>\n<li><code>+fetch</code> только загружает данные с сервера, не изменяя локальные ветки; <code>pull = fetch + merge</code> — сразу интегрирует изменения`</li>\n<li><code>pull</code> безопаснее</li>\n<li>Нет разницы</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "создать новую ветку и запушить",
+      "taskid": "git_lab5_t7_branch_push",
+      "hint": "<p>Используй <code>git switch -c dev</code>, затем <code>git add</code>, <code>git commit</code> и <code>git push -u origin dev</code>. Проверка смотрит, что ветка <code>dev</code> появилась в bare-репозитории и что в ней есть файл <code>dev.txt</code> со строкой <code>dev</code>.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> создай ветку <code>dev</code>, переключись на неё, создай файл <code>dev.txt</code> с содержимым <code>dev</code>, закоммить изменение и запуши ветку <code>dev</code> в origin <code>/srv/git/project.git</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> создай ветку <code>dev</code>, переключись на неё, создай файл <code>dev.txt</code> с содержимым <code>dev</code>, закоммить изменение и запуши ветку <code>dev</code> в origin <code>/srv/git/project.git</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "git log с remote",
+      "taskid": "git_lab5_t8_log",
+      "hint": "<p>Используй <code>git log</code>: добавь режим, который показывает не только текущую ветку, но и remote-tracking ветки.</p>",
+      "question_html": "<p>Посмотри полную историю всех веток, включая remote <code>origin/main</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project log --oneline --graph --all --decorate\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри полную историю всех веток, включая remote <code>origin/main</code>.</p>\n<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">git -C /root/project log --oneline --graph --all --decorate\n</code></pre>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab5/setup.yaml"
+}

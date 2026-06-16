@@ -1,0 +1,229 @@
+{
+  "n": 1,
+  "id": "gym_lstart_lab1",
+  "title": "Тренировка 1: Навигация в терминале",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Как подтвердить текущий каталог?",
+      "taskid": "gym_lstart_lab1_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Какая команда показывает полный путь текущего рабочего каталога?</p>",
+      "options": [
+        {
+          "text": "pwd",
+          "correct": true,
+          "explanation": "Верно! pwd печатает текущий рабочий каталог"
+        },
+        {
+          "text": "ls -la",
+          "correct": false,
+          "explanation": "Нет — показывает содержимое каталога"
+        },
+        {
+          "text": "cd ..",
+          "correct": false,
+          "explanation": "Нет — меняет текущий каталог"
+        },
+        {
+          "text": "mkdir",
+          "correct": false,
+          "explanation": "Нет — создаёт директории"
+        }
+      ],
+      "raw_description": "<p>Какая команда показывает полный путь текущего рабочего каталога?</p><ul>\n<li>+pwd [Верно! pwd печатает текущий рабочий каталог]</li>\n<li>ls -la [Нет — показывает содержимое каталога]</li>\n<li>cd .. [Нет — меняет текущий каталог]</li>\n<li>mkdir [Нет — создаёт директории]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Текущий путь в файл",
+      "taskid": "gym_lstart_lab1_t2_pwd",
+      "hint": "<p>Используй <code>pwd</code>: его вывод нужно направить в файл через <code>&gt;</code>, затем проверь содержимое файла.</p>",
+      "question_html": "<p>Узнай текущий рабочий каталог и запиши его в файл.</p>\n<p>Файл результата: <code>/root/location.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Узнай текущий рабочий каталог и запиши его в файл.</p>\n<p>Файл результата: <code>/root/location.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Список файлов с деталями",
+      "taskid": "gym_lstart_lab1_t3_ls",
+      "hint": "<p>Нужен список файлов через <code>ls</code> в длинном формате и с показом скрытых имён. Флаги можно объединять.</p>",
+      "question_html": "<p>Выведи полный список файлов в директории <code>/opt/devops/lab1</code>, включая скрытые, и сохрани результат в <code>/root/lab1_listing.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи полный список файлов в директории <code>/opt/devops/lab1</code>, включая скрытые, и сохрани результат в <code>/root/lab1_listing.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Абсолютный переход",
+      "taskid": "gym_lstart_lab1_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Что даёт команда <code>cd /opt/devops/lab1/notes</code> по сравнению с переходом относительным путём?</p>",
+      "options": [
+        {
+          "text": "Она сработает из любого текущего каталога, если путь существует",
+          "correct": true,
+          "explanation": "Верно! Абсолютный путь начинается от корня файловой системы"
+        },
+        {
+          "text": "Она создаст каталог <code>notes</code>, если его нет",
+          "correct": false,
+          "explanation": "Нет — <code>cd</code> не создаёт директории"
+        },
+        {
+          "text": "Она удалит предыдущий рабочий каталог",
+          "correct": false,
+          "explanation": "Нет — переход не удаляет файлы"
+        },
+        {
+          "text": "Она покажет список файлов в каталоге",
+          "correct": false,
+          "explanation": "Нет — список показывает <code>ls</code>"
+        }
+      ],
+      "raw_description": "<p>Что даёт команда <code>cd /opt/devops/lab1/notes</code> по сравнению с переходом относительным путём?</p><ul>\n<li>+Она сработает из любого текущего каталога, если путь существует [Верно! Абсолютный путь начинается от корня файловой системы]</li><li>Она создаст каталог <code>notes</code>, если его нет [Нет — <code>cd</code> не создаёт директории]</li><li>Она удалит предыдущий рабочий каталог [Нет — переход не удаляет файлы]</li><li>Она покажет список файлов в каталоге [Нет — список показывает <code>ls</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Скрытые имена в ls",
+      "taskid": "gym_lstart_lab1_t5_ls_count",
+      "hint": "",
+      "question_html": "<p>Какой флаг <code>ls</code> нужен, чтобы увидеть файлы с точкой в начале имени?</p>",
+      "options": [
+        {
+          "text": "<code>-l</code>",
+          "correct": false,
+          "explanation": "Нет — long format сам по себе не показывает скрытые имена"
+        },
+        {
+          "text": "<code>-a</code>",
+          "correct": true,
+          "explanation": "Верно! Этот флаг включает hidden entries"
+        },
+        {
+          "text": "<code>-h</code>",
+          "correct": false,
+          "explanation": "Нет — это human-readable размеры"
+        },
+        {
+          "text": "<code>-r</code>",
+          "correct": false,
+          "explanation": "Нет — это обратный порядок сортировки"
+        }
+      ],
+      "raw_description": "<p>Какой флаг <code>ls</code> нужен, чтобы увидеть файлы с точкой в начале имени?</p>\n<ul>\n<li><code>-l</code> [Нет — long format сам по себе не показывает скрытые имена]</li><li>+<code>-a</code> [Верно! Этот флаг включает hidden entries]</li><li><code>-h</code> [Нет — это human-readable размеры]</li><li><code>-r</code> [Нет — это обратный порядок сортировки]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить переход в каталог",
+      "taskid": "gym_lstart_lab1_t6_cd",
+      "hint": "<p>Используй <code>cd</code> для перехода и <code>pwd</code> для проверки текущего каталога. Вывод команды проверки нужно направить в файл.</p>",
+      "question_html": "<p>Открой каталог с заметками <code>/opt/devops/lab1/notes</code> и убедись, что текущая директория изменилась именно на него.</p>\n<p>Сохрани путь текущей директории в файл <code>/root/notes_path.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой каталог с заметками <code>/opt/devops/lab1/notes</code> и убедись, что текущая директория изменилась именно на него.</p>\n<p>Сохрани путь текущей директории в файл <code>/root/notes_path.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает просто cd?",
+      "taskid": "gym_lstart_lab1_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>cd</code> без аргументов?</p>",
+      "options": [
+        {
+          "text": "Переходит в домашнюю директорию текущего пользователя",
+          "correct": true,
+          "explanation": "Верно! Для root это обычно <code>/root</code>"
+        },
+        {
+          "text": "Переходит в корень файловой системы <code>/</code>",
+          "correct": false,
+          "explanation": "Нет — для этого нужен <code>cd /</code>"
+        },
+        {
+          "text": "Показывает текущий каталог без перехода",
+          "correct": false,
+          "explanation": "Нет — это делает <code>pwd</code>"
+        },
+        {
+          "text": "Создаёт домашнюю директорию заново",
+          "correct": false,
+          "explanation": "Нет — <code>cd</code> ничего не создаёт"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>cd</code> без аргументов?</p><ul>\n<li>+Переходит в домашнюю директорию текущего пользователя [Верно! Для root это обычно <code>/root</code>]</li><li>Переходит в корень файловой системы <code>/</code> [Нет — для этого нужен <code>cd /</code>]</li><li>Показывает текущий каталог без перехода [Нет — это делает <code>pwd</code>]</li><li>Создаёт домашнюю директорию заново [Нет — <code>cd</code> ничего не создаёт]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Скрытый файл",
+      "taskid": "gym_lstart_lab1_t8_secret",
+      "hint": "<p>Используй <code>ls</code> с режимом показа скрытых имён: файл с точкой в начале имени не виден в обычном списке.</p>",
+      "question_html": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему абсолютный путь однозначнее?",
+      "taskid": "gym_lstart_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему путь вида <code>/root/location.txt</code> однозначнее, чем <code>location.txt</code>?</p>",
+      "options": [
+        {
+          "text": "Он начинается от корня файловой системы и не зависит от текущего каталога",
+          "correct": true,
+          "explanation": "Верно! Относительный путь зависит от <code>pwd</code>"
+        },
+        {
+          "text": "Он автоматически делает файл исполняемым",
+          "correct": false,
+          "explanation": "Нет — права не меняются"
+        },
+        {
+          "text": "Он всегда создаёт все промежуточные директории",
+          "correct": false,
+          "explanation": "Нет — путь сам по себе ничего не создаёт"
+        },
+        {
+          "text": "Он запускает команду от другого пользователя",
+          "correct": false,
+          "explanation": "Нет — путь не меняет пользователя"
+        }
+      ],
+      "raw_description": "<p>Почему путь вида <code>/root/location.txt</code> однозначнее, чем <code>location.txt</code>?</p><ul>\n<li>+Он начинается от корня файловой системы и не зависит от текущего каталога [Верно! Относительный путь зависит от <code>pwd</code>]</li>\n<li>Он автоматически делает файл исполняемым [Нет — права не меняются]</li>\n<li>Он всегда создаёт все промежуточные директории [Нет — путь сам по себе ничего не создаёт]</li>\n<li>Он запускает команду от другого пользователя [Нет — путь не меняет пользователя]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что значит ./ в пути?",
+      "taskid": "gym_lstart_lab1_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает префикс <code>./</code> в пути вроде <code>./script.sh</code>?</p>",
+      "options": [
+        {
+          "text": "Искать файл в текущем каталоге",
+          "correct": true,
+          "explanation": "Верно! Точка означает current directory"
+        },
+        {
+          "text": "Искать файл в корне файловой системы",
+          "correct": false,
+          "explanation": "Нет — корень обозначается <code>/</code>"
+        },
+        {
+          "text": "Искать файл в домашней директории root",
+          "correct": false,
+          "explanation": "Нет — это <code>~</code> или <code>/root</code>"
+        },
+        {
+          "text": "Запустить команду от имени другого пользователя",
+          "correct": false,
+          "explanation": "Нет — путь не меняет пользователя"
+        }
+      ],
+      "raw_description": "<p>Что означает префикс <code>./</code> в пути вроде <code>./script.sh</code>?</p><ul>\n<li>+Искать файл в текущем каталоге [Верно! Точка означает current directory]</li><li>Искать файл в корне файловой системы [Нет — корень обозначается <code>/</code>]</li><li>Искать файл в домашней директории root [Нет — это <code>~</code> или <code>/root</code>]</li><li>Запустить команду от имени другого пользователя [Нет — путь не меняет пользователя]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab1/setup.yaml"
+}

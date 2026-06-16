@@ -1,0 +1,121 @@
+{
+  "n": 25,
+  "id": "ch_ckad_lab14_debug_service_config",
+  "title": "Лабораторная 10: Debug Service, ConfigMap и сетевой связности",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Попробуй подключиться к одному из Pod'ов <code>orders-api</code> через <code>kubectl debug</code>. Эта команда не заходит внутрь основного контейнера <code>web</code>, а добавляет временный контейнер рядом с ним в тот же Pod.</p>\n<pre><code>ORDERS_POD=\"$(kubectl get pod -l app=orders-api -o jsonpath='{.items[0].metadata.name}')\"</code></pre>\n<pre><code>kubectl debug -it \"pod/${ORDERS_POD}\" \\\n  --image=busybox:1.28 \\\n  --target=web \\\n  --profile=baseline \\\n  -- sh</code></pre>\n<p>Внутри debug shell выполни несколько проверок:</p>\n<pre><code>hostname</code></pre>\n<pre><code>cat /etc/resolv.conf</code></pre>\n<pre><code>wget -qO- http://127.0.0.1/</code></pre>\n<pre><code>wget -qO- http://orders-svc</code></pre>\n<pre><code>exit</code></pre>\n<p>Обрати внимание: <code>127.0.0.1</code> внутри debug container попадает в тот же Pod network namespace, поэтому запрос доходит до nginx из контейнера <code>web</code>. При этом root filesystem и переменные окружения у debug container свои, потому что это отдельный контейнер.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L27\",null,{}],[\"$\",\"$L28\",nul",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Исследовать первый Service",
+      "taskid": "k8sdbg_lab2_t1_empty_endpoints",
+      "hint": "<p>Для Service всегда проверяй цепочку: selector → endpoints → Pod labels.</p>",
+      "question_html": "<p>Примени <code>/root/debug-routing/app-a.yaml</code> и проверь, проходит ли запрос к приложению через Service.</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-a.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/orders-api --timeout=120s</code></pre>\n<pre><code>kubectl get pods --show-labels</code></pre>\n<pre><code>kubectl get svc,endpoints</code></pre>\n<pre><code>kubectl describe svc orders-svc</code></pre>\n<p>Сравни описание Service, список endpoints и labels у Pod'ов.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-routing/app-a.yaml</code> и проверь, проходит ли запрос к приложению через Service.</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-a.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/orders-api --timeout=120s</code></pre>\n<pre><code>kubectl get pods --show-labels</code></pre>\n<pre><code>kubectl get svc,endpoints</code></pre>\n<pre><code>kubectl describe svc orders-svc</code></pre>\n<p>Сравни описание Service, список endpoints и labels у Pod'ов.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить первый Service",
+      "taskid": "k8sdbg_lab2_t2_fix_selector",
+      "hint": "<p>Сравни <code>kubectl get pods --show-labels</code> и <code>kubectl describe svc orders-svc</code>. Исправить можно через YAML или <code>kubectl patch service</code>.</p>",
+      "question_html": "<p>Исправь найденную проблему в Service <code>orders-svc</code>. После исправления проверь, что запросы через Service могут дойти до приложения.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в Service <code>orders-svc</code>. После исправления проверь, что запросы через Service могут дойти до приложения.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить приложение через debug Pod",
+      "taskid": "k8sdbg_lab2_t3_config_page_before",
+      "hint": "<p>Debug Pod помогает проверить путь так, как его видит другой Pod: DNS Service → ClusterIP → endpoints → Pod.</p>",
+      "question_html": "<p>Создай временный debug Pod <code>debug-client</code> и проверь HTTP-запрос к <code>orders-svc</code> изнутри кластера:</p>\n<pre><code>kubectl run debug-client --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/debug-client --timeout=60s</code></pre>\n<pre><code>kubectl exec debug-client -- nslookup orders-svc</code></pre>\n<pre><code>kubectl exec debug-client -- wget -qO- http://orders-svc</code></pre>\n<p>Сейчас сетевой путь уже должен работать. Обрати внимание на текст, который возвращает само приложение.</p>",
+      "options": [],
+      "raw_description": "<p>Создай временный debug Pod <code>debug-client</code> и проверь HTTP-запрос к <code>orders-svc</code> изнутри кластера:</p>\n<pre><code>kubectl run debug-client --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/debug-client --timeout=60s</code></pre>\n<pre><code>kubectl exec debug-client -- nslookup orders-svc</code></pre>\n<pre><code>kubectl exec debug-client -- wget -qO- http://orders-svc</code></pre>\n<p>Сейчас сетевой путь уже должен работать. Обрати внимание на текст, который возвращает само приложение.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить первый Deployment",
+      "taskid": "k8sdbg_lab2_t4_fix_config_key",
+      "hint": "<p>Посмотри текущий Deployment через <code>kubectl get deployment orders-api -o yaml</code> и сравни его с ConfigMap. Исправить можно через исходный YAML, <code>kubectl edit</code> или <code>kubectl patch</code>.</p>",
+      "question_html": "<p>Исправь найденную проблему в Deployment <code>orders-api</code>. Дождись завершения rollout.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в Deployment <code>orders-api</code>. Дождись завершения rollout.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить первый сервис после исправления",
+      "taskid": "k8sdbg_lab2_t5_config_page_after",
+      "hint": "<p>Если debug Pod был удалён, создай его заново с образом <code>busybox:1.28</code>.</p>",
+      "question_html": "<p>Снова обратись из <code>debug-client</code> к <code>orders-svc</code>. Ответ должен показывать, что приложение получило рабочую конфигурацию.</p>",
+      "options": [],
+      "raw_description": "<p>Снова обратись из <code>debug-client</code> к <code>orders-svc</code>. Ответ должен показывать, что приложение получило рабочую конфигурацию.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать второй Service",
+      "taskid": "k8sdbg_lab2_t6_targetport_diagnosis",
+      "hint": "<p>Если Service видит Pod, но HTTP-запрос не проходит, проверь, куда Service отправляет трафик.</p>",
+      "question_html": "<p>Примени <code>/root/debug-routing/app-b.yaml</code> и проверь связность между Service и приложением.</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-b.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/reports-api --timeout=120s</code></pre>\n<pre><code>kubectl describe svc reports-svc</code></pre>\n<pre><code>kubectl get endpoints reports-svc</code></pre>\n<p>Сравни Service, endpoints и порт, который реально слушает контейнер.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-routing/app-b.yaml</code> и проверь связность между Service и приложением.</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-b.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/reports-api --timeout=120s</code></pre>\n<pre><code>kubectl describe svc reports-svc</code></pre>\n<pre><code>kubectl get endpoints reports-svc</code></pre>\n<p>Сравни Service, endpoints и порт, который реально слушает контейнер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить второй Service",
+      "taskid": "k8sdbg_lab2_t7_fix_targetport",
+      "hint": "<p>Для Service можно использовать <code>kubectl patch service</code> или исправить YAML и применить его заново.</p>",
+      "question_html": "<p>Исправь найденную проблему в Service <code>reports-svc</code>. После исправления сделай HTTP-запрос из <code>debug-client</code> и проверь, что ответ приходит от приложения.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в Service <code>reports-svc</code>. После исправления сделай HTTP-запрос из <code>debug-client</code> и проверь, что ответ приходит от приложения.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать третий Deployment",
+      "taskid": "k8sdbg_lab2_t8_missing_configmap",
+      "hint": "<p>Для ошибок конфигурации контейнера чаще всего помогает <code>kubectl describe pod</code>: смотри Events и ссылки на внешние настройки.</p>",
+      "question_html": "<p>Примени <code>/root/debug-routing/app-c.yaml</code> и разбери состояние Deployment и Pod'а через <code>get</code> и <code>describe</code>:</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-c.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod -l app=profile-api</code></pre>\n<p>Найди в Events причину, по которой контейнер не стартует.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-routing/app-c.yaml</code> и разбери состояние Deployment и Pod'а через <code>get</code> и <code>describe</code>:</p>\n<pre><code>kubectl apply -f /root/debug-routing/app-c.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod -l app=profile-api</code></pre>\n<p>Найди в Events причину, по которой контейнер не стартует.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить ConfigMap и проверить Service",
+      "taskid": "k8sdbg_lab2_t9_fix_missing_configmap",
+      "hint": "<p>Если Pod не стартует сразу, проверь Events ещё раз. В этой задаче не нужно менять selector, Service или Deployment: проблема в имени ConfigMap.</p>",
+      "question_html": "<p>Deployment <code>profile-api</code> менять не нужно: он уже ссылается на нужное имя ConfigMap. Исправь объект конфигурации так, чтобы в namespace появился ConfigMap, который ожидает Deployment. Дождись, что Deployment станет Ready, затем обратись из <code>debug-client</code> к <code>profile-svc</code> и проверь ответ.</p>",
+      "options": [],
+      "raw_description": "<p>Deployment <code>profile-api</code> менять не нужно: он уже ссылается на нужное имя ConfigMap. Исправь объект конфигурации так, чтобы в namespace появился ConfigMap, который ожидает Deployment. Дождись, что Deployment станет Ready, затем обратись из <code>debug-client</code> к <code>profile-svc</code> и проверь ответ.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Подключиться к Pod через kubectl debug",
+      "taskid": "k8sdbg_lab2_t10_ephemeral_debug_start",
+      "hint": "<p>Используй <code>--profile=baseline</code>: такой debug container создаётся без дополнительных привилегий и подходит для обычной диагностики сети, DNS и HTTP.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть, что добавил kubectl debug",
+      "taskid": "k8sdbg_lab2_t11_ephemeral_debug_observe",
+      "hint": "<p>Ephemeral container не добавляется в Deployment-манифест и не становится частью обычного шаблона Pod'а. Это временный инструмент диагностики конкретного уже созданного Pod'а.</p>",
+      "question_html": "<p>После выхода из debug shell посмотри, что изменилось в описании Pod'а:</p>\n<pre><code>ORDERS_POD=\"$(kubectl get pod -l app=orders-api -o jsonpath='{.items[0].metadata.name}')\"</code></pre>\n<pre><code>kubectl get pod \"${ORDERS_POD}\" -o jsonpath='{.status.ephemeralContainerStatuses[*].name}{\"\\n\"}'</code></pre>\n<pre><code>kubectl describe pod \"${ORDERS_POD}\"</code></pre>\n<p>Найди в выводе блок с ephemeral/debug container. Это диагностический контейнер, который Kubernetes добавил к уже существующему Pod'у. Он полезен, когда в основном контейнере нет shell, <code>wget</code>, <code>curl</code> или других инструментов.</p>\n<p>Для сравнения можешь посмотреть переменную окружения уже в основном контейнере:</p>\n<pre><code>kubectl exec \"${ORDERS_POD}\" -c web -- printenv APP_MODE</code></pre>\n<p>Так хорошо видно различие: <code>kubectl exec</code> выполняет команду внутри существующего контейнера <code>web</code>, а <code>kubectl debug</code> добавляет временный контейнер рядом в тот же Pod.</p>",
+      "options": [],
+      "raw_description": "<p>После выхода из debug shell посмотри, что изменилось в описании Pod'а:</p>\n<pre><code>ORDERS_POD=\"$(kubectl get pod -l app=orders-api -o jsonpath='{.items[0].metadata.name}')\"</code></pre>\n<pre><code>kubectl get pod \"${ORDERS_POD}\" -o jsonpath='{.status.ephemeralContainerStatuses[*].name}{\"\\n\"}'</code></pre>\n<pre><code>kubectl describe pod \"${ORDERS_POD}\"</code></pre>\n<p>Найди в выводе блок с ephemeral/debug container. Это диагностический контейнер, который Kubernetes добавил к уже существующему Pod'у. Он полезен, когда в основном контейнере нет shell, <code>wget</code>, <code>curl</code> или других инструментов.</p>\n<p>Для сравнения можешь посмотреть переменную окружения уже в основном контейнере:</p>\n<pre><code>kubectl exec \"${ORDERS_POD}\" -c web -- printenv APP_MODE</code></pre>\n<p>Так хорошо видно различие: <code>kubectl exec</code> выполняет команду внутри существующего контейнера <code>web</code>, а <code>kubectl debug</code> добавляет временный контейнер рядом в тот же Pod.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить debug-ресурсы",
+      "taskid": "k8sdbg_lab2_t10_cleanup",
+      "hint": "<p>Удаляй только ресурсы этой лабораторной. Для безопасного cleanup можно использовать <code>--ignore-not-found</code>.</p>",
+      "question_html": "<p>Удали все ресурсы этой лабораторной: Deployment'ы, Service'ы, ConfigMap'ы и Pod <code>debug-client</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали все ресурсы этой лабораторной: Deployment'ы, Service'ы, ConfigMap'ы и Pod <code>debug-client</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/debug_lab2/setup.yaml"
+}

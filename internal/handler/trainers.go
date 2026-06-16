@@ -2,7 +2,25 @@ package handler
 
 import "net/http"
 
-// TrainersPage lists the interactive tools (real runtimes) in one place.
+type TrainersData struct {
+	PageTitle string
+	Gyms      []CourseCard
+}
+
+// TrainersPage lists interactive tools (real runtimes) and practice gyms.
 func (h *Handler) TrainersPage(w http.ResponseWriter, r *http.Request) {
-	h.render(w, "trainers", &struct{ PageTitle string }{PageTitle: "Тренажёры — TOT"})
+	ctx := r.Context()
+	modules, _ := h.moduleRepo.GetAll(ctx)
+	prog, _ := h.progressRepo.GetAll(ctx)
+	pmap := make(map[int]string)
+	for _, p := range prog {
+		pmap[p.LessonID] = p.Status
+	}
+	var gyms []CourseCard
+	for _, m := range modules {
+		if m.Track == "gym" {
+			gyms = append(gyms, h.buildCard(ctx, m, pmap))
+		}
+	}
+	h.render(w, "trainers", &TrainersData{PageTitle: "Тренажёры — TOT", Gyms: gyms})
 }

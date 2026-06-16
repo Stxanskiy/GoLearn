@@ -1,0 +1,103 @@
+{
+  "n": 5,
+  "id": "ch_dkc_lab2",
+  "title": "Лабораторная 2: Многосервисное приложение",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить стек веб-приложения",
+      "taskid": "dkc_lab2_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/webapp</code> подготовлено многосервисное приложение: nginx как reverse proxy, отдельный nginx как backend-приложение и Redis. Посмотри его конфигурацию:</p>\n<pre><code>cat /root/webapp/docker-compose.yml</code></pre>\n<p>Обрати внимание на секции <code>depends_on</code>, <code>networks</code> и публикацию порта <code>80</code>. После запуска стек можно открыть через <code>Web Preview</code>: если reverse proxy работает, ты увидишь страницу backend-сервиса со схемой <code>Browser/Web Preview -&gt; Nginx web -&gt; app service</code>; если backend недоступен, nginx покажет понятную страницу ошибки.</p>\n<p>Если хочешь увидеть итоговую конфигурацию без запуска контейнеров, используй <code>docker compose config</code> из каталога проекта.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/webapp</code> подготовлено многосервисное приложение: nginx как reverse proxy, отдельный nginx как backend-приложение и Redis. Посмотри его конфигурацию:</p>\n<pre><code>cat /root/webapp/docker-compose.yml</code></pre>\n<p>Обрати внимание на секции <code>depends_on</code>, <code>networks</code> и публикацию порта <code>80</code>. После запуска стек можно открыть через <code>Web Preview</code>: если reverse proxy работает, ты увидишь страницу backend-сервиса со схемой <code>Browser/Web Preview -&gt; Nginx web -&gt; app service</code>; если backend недоступен, nginx покажет понятную страницу ошибки.</p>\n<p>Если хочешь увидеть итоговую конфигурацию без запуска контейнеров, используй <code>docker compose config</code> из каталога проекта.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить многосервисный стек",
+      "taskid": "dkc_lab2_t2_up",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>",
+      "question_html": "<p>Запусти все сервисы приложения из директории <code>/root/webapp</code>.</p><p>Compose запустит сервисы <code>web</code>, <code>app</code> и <code>redis</code> в правильном порядке с учётом <code>depends_on</code>.</p>\n<p>Когда стек запущен, открой <code>Web Preview</code>. На странице будет схема со стрелками: запрос приходит в публичный <code>Nginx web</code>, а затем по compose DNS уходит в backend-сервис <code>app</code>.</p>\n<p>Это браузерный вид того же HTTP-сервиса, который в терминале можно быстро проверить командой <code>curl http://localhost/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти все сервисы приложения из директории <code>/root/webapp</code>.</p><p>Compose запустит сервисы <code>web</code>, <code>app</code> и <code>redis</code> в правильном порядке с учётом <code>depends_on</code>.</p>\n<p>Когда стек запущен, открой <code>Web Preview</code>. На странице будет схема со стрелками: запрос приходит в публичный <code>Nginx web</code>, а затем по compose DNS уходит в backend-сервис <code>app</code>.</p>\n<p>Это браузерный вид того же HTTP-сервиса, который в терминале можно быстро проверить командой <code>curl http://localhost/</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить связь между сервисами",
+      "taskid": "dkc_lab2_t3_ping",
+      "hint": "<p>Используй <code>docker compose exec</code>: он принимает имя сервиса из compose-файла. Если команда не интерактивная, проверь режим без TTY.</p>",
+      "question_html": "<p>Проверь, что сервис <code>web</code> (nginx) может обратиться к сервису <code>app</code> по DNS-имени, и определи IP адрес сервиса <code>app</code> внутри compose-сети.</p><p>Сохрани только IP адрес в <code>/root/app_dns_ip.txt</code>.</p><p>Compose создаёт DNS-запись для каждого сервиса — имя сервиса работает как hostname внутри сети.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что сервис <code>web</code> (nginx) может обратиться к сервису <code>app</code> по DNS-имени, и определи IP адрес сервиса <code>app</code> внутри compose-сети.</p><p>Сохрани только IP адрес в <code>/root/app_dns_ip.txt</code>.</p><p>Compose создаёт DNS-запись для каждого сервиса — имя сервиса работает как hostname внутри сети.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить HTTP ответ приложения",
+      "taskid": "dkc_lab2_t4_curl",
+      "hint": "<p>Работай из каталога с compose-файлом и выбирай подкоманду <code>docker compose</code> по цели: <code>up</code>, <code>ps</code>, <code>exec</code>, <code>config</code> или <code>down</code>.</p>",
+      "question_html": "<p>Сделай HTTP-запрос к приложению через nginx и сохрани только тело ответа.</p><p>Сохрани результат в <code>/root/app_response.txt</code>.</p><p>Nginx работает как reverse proxy и перенаправляет запросы к backend-сервису <code>app</code>.</p>\n<p>В <code>Web Preview</code> ты увидишь эту же страницу как в браузере: она визуально показывает путь <code>Browser -&gt; Nginx web -&gt; app service</code>. В терминале <code>curl</code> показывает тот же HTML без интерфейса браузера, поэтому им удобно быстро проверять связность <code>web -&gt; app</code>. В корректном ответе должен быть текст <code>Hello from the app service</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай HTTP-запрос к приложению через nginx и сохрани только тело ответа.</p><p>Сохрани результат в <code>/root/app_response.txt</code>.</p><p>Nginx работает как reverse proxy и перенаправляет запросы к backend-сервису <code>app</code>.</p>\n<p>В <code>Web Preview</code> ты увидишь эту же страницу как в браузере: она визуально показывает путь <code>Browser -&gt; Nginx web -&gt; app service</code>. В терминале <code>curl</code> показывает тот же HTML без интерфейса браузера, поэтому им удобно быстро проверять связность <code>web -&gt; app</code>. В корректном ответе должен быть текст <code>Hello from the app service</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть сети проекта",
+      "taskid": "dkc_lab2_t5_networks",
+      "hint": "<p>Используй <code>docker compose ps</code>/<code>docker inspect</code>: проверь, в какой сети находятся сервисы, и обращайся к соседнему сервису по имени из compose-файла.</p>",
+      "question_html": "<p>Найди имя сети, которую Compose создал для проекта <code>webapp</code>, и сохрани только это имя в <code>/root/compose_network.txt</code>.</p><p>Compose собирает имя сети из имени проекта и имени сети в compose-файле. В этой лаборатории фактическое имя сети должно быть <code>webapp_frontend</code>. Возьми его из вывода Docker/Compose, а не имя отдельного контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Найди имя сети, которую Compose создал для проекта <code>webapp</code>, и сохрани только это имя в <code>/root/compose_network.txt</code>.</p><p>Compose собирает имя сети из имени проекта и имени сети в compose-файле. В этой лаборатории фактическое имя сети должно быть <code>webapp_frontend</code>. Возьми его из вывода Docker/Compose, а не имя отдельного контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Масштабировать сервис",
+      "taskid": "dkc_lab2_t6_scale",
+      "hint": "<p>Используй <code>docker compose up</code> с масштабированием сервиса: задай нужное число реплик и затем проверь статус проекта из каталога с compose-файлом.</p>",
+      "question_html": "<p>Запусти 2 экземпляра сервиса <code>app</code> с помощью параметра <code>--scale</code>.</p><p>Compose создаст два контейнера для сервиса <code>app</code>; их имена можно посмотреть через <code>docker compose ps</code>. Обрати внимание: для масштабирования нельзя указывать фиксированный <code>container_name</code> и <code>ports</code> (конфликт портов).</p>",
+      "options": [],
+      "raw_description": "<p>Запусти 2 экземпляра сервиса <code>app</code> с помощью параметра <code>--scale</code>.</p><p>Compose создаст два контейнера для сервиса <code>app</code>; их имена можно посмотреть через <code>docker compose ps</code>. Обрати внимание: для масштабирования нельзя указывать фиксированный <code>container_name</code> и <code>ports</code> (конфликт портов).</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть статус масштабированных сервисов",
+      "taskid": "dkc_lab2_t7_ps_scale",
+      "hint": "<p>Используй <code>docker compose ps</code> из каталога проекта. Для состояния сервисов нужен Compose-статус, а не общий список всех контейнеров Docker.</p>",
+      "question_html": "<p>Проверь, что после масштабирования запущено 2 экземпляра сервиса <code>app</code>. Считай именно контейнеры сервиса <code>app</code> в текущем Compose-проекте, а не все контейнеры Docker на VM.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что после масштабирования запущено 2 экземпляра сервиса <code>app</code>. Считай именно контейнеры сервиса <code>app</code> в текущем Compose-проекте, а не все контейнеры Docker на VM.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Перезапустить один сервис",
+      "taskid": "dkc_lab2_t8_restart",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>",
+      "question_html": "<p>Верни количество экземпляров <code>app</code> к 1 и перезапусти сервис <code>web</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Верни количество экземпляров <code>app</code> к 1 и перезапусти сервис <code>web</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть логи всех сервисов",
+      "taskid": "dkc_lab2_t9_logs_all",
+      "hint": "",
+      "question_html": "<p>Посмотри последние строки логов всех сервисов:</p>\n<pre><code>cd /root/webapp</code></pre>\n<pre><code>docker compose logs --tail=20</code></pre>\n<p>Без указания сервиса <code>docker compose logs</code> выводит логи всех сервисов с префиксом имени сервиса.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри последние строки логов всех сервисов:</p>\n<pre><code>cd /root/webapp</code></pre>\n<pre><code>docker compose logs --tail=20</code></pre>\n<p>Без указания сервиса <code>docker compose logs</code> выводит логи всех сервисов с префиксом имени сервиса.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить стек",
+      "taskid": "dkc_lab2_t10_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови и удали весь стек.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали весь стек.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab2/setup.yaml"
+}

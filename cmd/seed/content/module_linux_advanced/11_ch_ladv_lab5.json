@@ -1,0 +1,187 @@
+{
+  "n": 11,
+  "id": "ch_ladv_lab5",
+  "title": "Лабораторная 5: Bash basics — переменные и условия",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "создать скрипт с shebang",
+      "taskid": "ladv_lab5_t1_shebang",
+      "hint": "<p>Первая строка скрипта должна явно указывать bash, а запуск <code>/root/hello.sh</code> должен вывести нужную строку.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/hello.sh</code> с shebang <code>#!/bin/bash</code>, который выводит <code>Hello, DevOps!</code>. Сделай скрипт исполняемым.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/hello.sh</code> с shebang <code>#!/bin/bash</code>, который выводит <code>Hello, DevOps!</code>. Сделай скрипт исполняемым.</p>"
+    },
+    {
+      "type": "check",
+      "title": "переменные в скрипте",
+      "taskid": "ladv_lab5_t2_vars",
+      "hint": "<p>Внутри скрипта сначала присвой значение переменной, а затем используй эту переменную в строке вывода. После создания файла не забудь сделать его исполняемым и проверить запуск.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/version.sh</code>, который задаёт переменную <code>VERSION=1.0.0</code> и выводит строку <code>App version: 1.0.0</code>, используя значение этой переменной. Запусти скрипт и проверь вывод в терминале.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/version.sh</code>, который задаёт переменную <code>VERSION=1.0.0</code> и выводит строку <code>App version: 1.0.0</code>, используя значение этой переменной. Запусти скрипт и проверь вывод в терминале.</p>"
+    },
+    {
+      "type": "check",
+      "title": "подстановка команды $()",
+      "taskid": "ladv_lab5_t3_subst",
+      "hint": "<p>Используй <code>date +%Y-%m-%d</code> внутри <code>$()</code>.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/dated.sh</code>, который через подстановку команды <code>$()</code> сохраняет текущую дату в переменную и выводит строку <code>Today: &lt;дата&gt;</code> в формате <code>YYYY-MM-DD</code>. Сделай скрипт исполняемым.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/dated.sh</code>, который через подстановку команды <code>$()</code> сохраняет текущую дату в переменную и выводит строку <code>Today: &lt;дата&gt;</code> в формате <code>YYYY-MM-DD</code>. Сделай скрипт исполняемым.</p>"
+    },
+    {
+      "type": "check",
+      "title": "if: проверить файл",
+      "taskid": "ladv_lab5_t4_if",
+      "hint": "<p>Используй условие <code>if</code> и проверку файла через <code>test</code> или <code>[ -f ... ]</code>.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/check_file.sh</code>, проверяющий существование файла <code>/opt/devops/lab5/config.txt</code>. Если файл существует — выводит <code>found</code>, иначе <code>not found</code>. Сделай скрипт исполняемым.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/check_file.sh</code>, проверяющий существование файла <code>/opt/devops/lab5/config.txt</code>. Если файл существует — выводит <code>found</code>, иначе <code>not found</code>. Сделай скрипт исполняемым.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: $() vs ``",
+      "taskid": "ladv_lab5_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Какой способ подстановки команды предпочтительнее в современном bash?</p>",
+      "options": [
+        {
+          "text": "Обратные кавычки <code>`команда`</code> — старый и надёжный способ",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Оба одинаково хороши, выбор произвольный",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+$(команда) — современный синтаксис, лучше читается и поддерживает вложенность</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Только через eval",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Какой способ подстановки команды предпочтительнее в современном bash?</p>\n<ul>\n<li>Обратные кавычки <code>`команда`</code> — старый и надёжный способ</li>\n<li>Оба одинаково хороши, выбор произвольный</li>\n<li><code>+$(команда) — современный синтаксис, лучше читается и поддерживает вложенность</code></li>\n<li>Только через eval</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "аргументы скрипта $1, $2",
+      "taskid": "ladv_lab5_t6_args",
+      "hint": "<p>Используй <code>$1</code>, чтобы взять первый аргумент командной строки. Аргумент передаётся при запуске после имени скрипта: <code>/root/greet.sh World</code>. Внутри скрипта <code>$1</code> в этот момент будет равен <code>World</code>.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/greet.sh</code>, принимающий имя как первый аргумент и выводящий <code>Hello, &lt;имя&gt;!</code>. Сделай скрипт исполняемым.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/greet.sh</code>, принимающий имя как первый аргумент и выводящий <code>Hello, &lt;имя&gt;!</code>. Сделай скрипт исполняемым.</p>"
+    },
+    {
+      "type": "check",
+      "title": "скрипт healthcheck",
+      "taskid": "ladv_lab5_t7_health",
+      "hint": "<p><code>pgrep</code> ищет процессы по имени, поэтому <code>pgrep sshd</code> проверяет, есть ли запущенный процесс <code>sshd</code>. Используй <code>if pgrep sshd &gt;/dev/null; then ... else ... fi</code>. Квадратные скобки здесь не нужны: <code>if</code> проверяет exit code самой команды <code>pgrep</code>. <code>&gt;/dev/null</code> убирает PID из вывода, чтобы скрипт печатал только <code>OK</code> или <code>FAIL</code>.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/healthcheck.sh</code>, который проверяет, работает ли сервис <code>sshd</code> через <code>pgrep sshd</code>, и выводит <code>OK</code> или <code>FAIL</code>. Сделай скрипт исполняемым.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/healthcheck.sh</code>, который проверяет, работает ли сервис <code>sshd</code> через <code>pgrep sshd</code>, и выводит <code>OK</code> или <code>FAIL</code>. Сделай скрипт исполняемым.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: зачем shebang",
+      "taskid": "ladv_lab5_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем в начале скрипта строка <code>#!/bin/bash</code>?</p>",
+      "options": [
+        {
+          "text": "<code>Чтобы скрипт работал только у root</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы включить режим отладки</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы запретить переменные окружения</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Чтобы явно указать интерпретатор, которым выполнять файл</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем в начале скрипта строка <code>#!/bin/bash</code>?</p>\n<ul>\n<li><code>Чтобы скрипт работал только у root</code></li>\n<li><code>Чтобы включить режим отладки</code></li>\n<li><code>Чтобы запретить переменные окружения</code></li>\n<li><code>+Чтобы явно указать интерпретатор, которым выполнять файл</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: quoting переменных",
+      "taskid": "ladv_lab5_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему в bash часто пишут <code>\\\"$VAR\\\"</code>, а не <code>$VAR</code>?</p>",
+      "options": [
+        {
+          "text": "<code>+Чтобы корректно обработать пробелы и специальные символы в значении</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Так скрипт работает быстрее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы переменная стала глобальной</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы отключить подстановку команд</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему в bash часто пишут <code>\\\"$VAR\\\"</code>, а не <code>$VAR</code>?</p>\n<ul>\n<li><code>+Чтобы корректно обработать пробелы и специальные символы в значении</code></li>\n<li><code>Так скрипт работает быстрее</code></li>\n<li><code>Чтобы переменная стала глобальной</code></li>\n<li><code>Чтобы отключить подстановку команд</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: проверка скрипта после правок",
+      "taskid": "ladv_lab5_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Какой рабочий подход после изменения скрипта?</p>",
+      "options": [
+        {
+          "text": "<code>Сразу запускать в проде</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Сначала прогнать на простом тестовом кейсе и проверить ожидаемый вывод</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Пропустить chmod +x</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Всегда запускать только через source</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Какой рабочий подход после изменения скрипта?</p>\n<ul>\n<li><code>Сразу запускать в проде</code></li>\n<li><code>+Сначала прогнать на простом тестовом кейсе и проверить ожидаемый вывод</code></li>\n<li><code>Пропустить chmod +x</code></li>\n<li><code>Всегда запускать только через source</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_advanced/linux_adv/lab5/setup.yaml"
+}

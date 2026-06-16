@@ -1,0 +1,208 @@
+{
+  "n": 7,
+  "id": "gym_lstart_lab7",
+  "title": "Тренировка 7: Wildcards и glob-паттерны",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Почему * не видит hidden-файлы?",
+      "taskid": "gym_lstart_lab7_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Почему шаблон <code>*</code> обычно не показывает файлы, имя которых начинается с точки?</p>",
+      "options": [
+        {
+          "text": "Shell специально не включает hidden-имена в обычное glob-совпадение",
+          "correct": true,
+          "explanation": "Верно! Для них нужен явный шаблон вроде <code>.*</code> или флаг просмотра"
+        },
+        {
+          "text": "Потому что скрытые файлы не существуют в Linux",
+          "correct": false,
+          "explanation": "Нет — они существуют, но скрыты из обычного списка"
+        },
+        {
+          "text": "Потому что <code>*</code> ищет только директории",
+          "correct": false,
+          "explanation": "Нет — он подставляет подходящие имена"
+        },
+        {
+          "text": "Потому что <code>ls</code> всегда удаляет hidden-файлы",
+          "correct": false,
+          "explanation": "Нет — просмотр ничего не удаляет"
+        }
+      ],
+      "raw_description": "<p>Почему шаблон <code>*</code> обычно не показывает файлы, имя которых начинается с точки?</p><ul>\n<li>+Shell специально не включает hidden-имена в обычное glob-совпадение [Верно! Для них нужен явный шаблон вроде <code>.*</code> или флаг просмотра]</li><li>Потому что скрытые файлы не существуют в Linux [Нет — они существуют, но скрыты из обычного списка]</li><li>Потому что <code>*</code> ищет только директории [Нет — он подставляет подходящие имена]</li><li>Потому что <code>ls</code> всегда удаляет hidden-файлы [Нет — просмотр ничего не удаляет]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Список всех логов",
+      "taskid": "gym_lstart_lab7_t2_star",
+      "hint": "<p>Используй <code>ls</code> с wildcard: <code>*</code> подставляет любое количество символов, поэтому подойдёт шаблон для всех имён с расширением <code>.log</code>.</p>",
+      "question_html": "<p>Получи список всех файлов с расширением <code>.log</code> в директории <code>/opt/devops/lab7</code> и запиши его в <code>/root/log_list.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи список всех файлов с расширением <code>.log</code> в директории <code>/opt/devops/lab7</code> и запиши его в <code>/root/log_list.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Скопировать конфиги",
+      "taskid": "gym_lstart_lab7_t3_copy",
+      "hint": "<p>Сначала используй <code>mkdir</code> для директории назначения. Затем используй <code>cp</code> с wildcard для всех файлов с расширением <code>.conf</code>.</p>",
+      "question_html": "<p>Скопируй все файлы с расширением <code>.conf</code> из директории <code>/opt/devops/lab7</code> в <code>/root/configs/</code>.</p>\n<p>Директорию нужно создать самостоятельно перед копированием.</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй все файлы с расширением <code>.conf</code> из директории <code>/opt/devops/lab7</code> в <code>/root/configs/</code>.</p>\n<p>Директорию нужно создать самостоятельно перед копированием.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Паттерн с ?",
+      "taskid": "gym_lstart_lab7_t4_question",
+      "hint": "<p>Используй <code>ls</code> или другую файловую команду с wildcard: <code>?</code> заменяет ровно один символ, в отличие от <code>*</code>.</p>",
+      "question_html": "<p>В директории <code>/opt/devops/lab7</code> есть файлы вида <code>data1.txt</code>, <code>data2.txt</code>, <code>data3.txt</code>.</p>\n<p>Используй паттерн с <code>?</code>, чтобы получить список только этих файлов (не других .txt файлов), и запиши в <code>/root/data_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/opt/devops/lab7</code> есть файлы вида <code>data1.txt</code>, <code>data2.txt</code>, <code>data3.txt</code>.</p>\n<p>Используй паттерн с <code>?</code>, чтобы получить список только этих файлов (не других .txt файлов), и запиши в <code>/root/data_files.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти все .txt файлы",
+      "taskid": "gym_lstart_lab7_t5_find",
+      "hint": "<p>Для рекурсивного поиска нужен <code>find</code>; фильтруй по имени с расширением <code>.txt</code>.</p>",
+      "question_html": "<p>Найди все файлы с расширением <code>.txt</code> в директории <code>/opt/devops/lab7</code> (включая поддиректории) и запиши список путей в <code>/root/txt_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы с расширением <code>.txt</code> в директории <code>/opt/devops/lab7</code> (включая поддиректории) и запиши список путей в <code>/root/txt_files.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переместить конфиги",
+      "taskid": "gym_lstart_lab7_t6_mv",
+      "hint": "<p>Используй <code>mkdir</code> для директории назначения, затем <code>mv</code> с wildcard для группы <code>.conf</code>-файлов.</p>",
+      "question_html": "<p>Перемести все <code>.conf</code> файлы из <code>/root/configs/</code> в новую директорию <code>/root/old_configs/</code>.</p>\n<p>Создай целевую директорию и используй wildcard при перемещении.</p>",
+      "options": [],
+      "raw_description": "<p>Перемести все <code>.conf</code> файлы из <code>/root/configs/</code> в новую директорию <code>/root/old_configs/</code>.</p>\n<p>Создай целевую директорию и используй wildcard при перемещении.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что уточняет [0-9]?",
+      "taskid": "gym_lstart_lab7_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Чем паттерн <code>app[0-9].log</code> строже, чем <code>app?.log</code>?</p>",
+      "options": [
+        {
+          "text": "Он требует ровно одну цифру в указанной позиции",
+          "correct": true,
+          "explanation": "Верно! <code>?</code> допускает любой один символ"
+        },
+        {
+          "text": "Он допускает любое количество символов после <code>app</code>",
+          "correct": false,
+          "explanation": "Нет — для этого нужен <code>*</code>"
+        },
+        {
+          "text": "Он ищет только скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — скрытость не связана с диапазоном"
+        },
+        {
+          "text": "Он рекурсивно проходит все поддиректории",
+          "correct": false,
+          "explanation": "Нет — обычный glob этого не делает"
+        }
+      ],
+      "raw_description": "<p>Чем паттерн <code>app[0-9].log</code> строже, чем <code>app?.log</code>?</p><ul>\n<li>+Он требует ровно одну цифру в указанной позиции [Верно! <code>?</code> допускает любой один символ]</li>\n<li>Он допускает любое количество символов после <code>app</code> [Нет — для этого нужен <code>*</code>]</li>\n<li>Он ищет только скрытые файлы [Нет — скрытость не связана с диапазоном]</li>\n<li>Он рекурсивно проходит все поддиректории [Нет — обычный glob этого не делает]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что изменит nullglob?",
+      "taskid": "gym_lstart_lab7_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что меняет опция shell <code>nullglob</code> при отсутствии совпадений для шаблона вроде <code>*.log</code>?</p>",
+      "options": [
+        {
+          "text": "Шаблон раскрывается в пустой список вместо передачи буквального <code>*.log</code> команде",
+          "correct": true,
+          "explanation": "Верно! Это меняет поведение no-match"
+        },
+        {
+          "text": "Все файлы становятся скрытыми",
+          "correct": false,
+          "explanation": "Нет — опция не меняет файлы"
+        },
+        {
+          "text": "Команда автоматически создаёт подходящий файл",
+          "correct": false,
+          "explanation": "Нет — glob не создаёт файлы"
+        },
+        {
+          "text": "Поиск становится рекурсивным по всем поддиректориям",
+          "correct": false,
+          "explanation": "Нет — это другая настройка"
+        }
+      ],
+      "raw_description": "<p>Что меняет опция shell <code>nullglob</code> при отсутствии совпадений для шаблона вроде <code>*.log</code>?</p><ul>\n<li>+Шаблон раскрывается в пустой список вместо передачи буквального <code>*.log</code> команде [Верно! Это меняет поведение no-match]</li><li>Все файлы становятся скрытыми [Нет — опция не меняет файлы]</li><li>Команда автоматически создаёт подходящий файл [Нет — glob не создаёт файлы]</li><li>Поиск становится рекурсивным по всем поддиректориям [Нет — это другая настройка]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Отрицание в [] glob",
+      "taskid": "gym_lstart_lab7_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает паттерн <code>file[!0-9].txt</code> в glob?</p>",
+      "options": [
+        {
+          "text": "Один символ не из диапазона цифр 0-9 в указанной позиции",
+          "correct": true,
+          "explanation": "Верно! <code>!</code> внутри скобок инвертирует набор"
+        },
+        {
+          "text": "Любое количество цифр после <code>file</code>",
+          "correct": false,
+          "explanation": "Нет — скобки задают один символ"
+        },
+        {
+          "text": "Только файл <code>file9.txt</code>",
+          "correct": false,
+          "explanation": "Нет — диапазон здесь исключается"
+        },
+        {
+          "text": "Все скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — паттерн начинается с <code>file</code>"
+        }
+      ],
+      "raw_description": "<p>Что означает паттерн <code>file[!0-9].txt</code> в glob?</p><ul>\n<li>+Один символ не из диапазона цифр 0-9 в указанной позиции [Верно! <code>!</code> внутри скобок инвертирует набор]</li><li>Любое количество цифр после <code>file</code> [Нет — скобки задают один символ]</li><li>Только файл <code>file9.txt</code> [Нет — диапазон здесь исключается]</li><li>Все скрытые файлы [Нет — паттерн начинается с <code>file</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему find возвращает пути из поддиректорий?",
+      "taskid": "gym_lstart_lab7_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему команда <code>find /opt/devops/lab7 -name \"*.txt\"</code> может вывести файлы из вложенных директорий?</p>",
+      "options": [
+        {
+          "text": "<code>find</code> обходит дерево каталогов рекурсивно от указанной стартовой точки",
+          "correct": true,
+          "explanation": "Верно! Поэтому результат содержит полные или относительные пути"
+        },
+        {
+          "text": "Потому что <code>*.txt</code> всегда является абсолютным путём",
+          "correct": false,
+          "explanation": "Нет — это шаблон имени"
+        },
+        {
+          "text": "Потому что <code>find</code> копирует файлы перед выводом",
+          "correct": false,
+          "explanation": "Нет — он только ищет"
+        },
+        {
+          "text": "Потому что hidden-файлы автоматически становятся обычными",
+          "correct": false,
+          "explanation": "Нет — тип файлов не меняется"
+        }
+      ],
+      "raw_description": "<p>Почему команда <code>find /opt/devops/lab7 -name \"*.txt\"</code> может вывести файлы из вложенных директорий?</p><ul>\n<li>+<code>find</code> обходит дерево каталогов рекурсивно от указанной стартовой точки [Верно! Поэтому результат содержит полные или относительные пути]</li><li>Потому что <code>*.txt</code> всегда является абсолютным путём [Нет — это шаблон имени]</li><li>Потому что <code>find</code> копирует файлы перед выводом [Нет — он только ищет]</li><li>Потому что hidden-файлы автоматически становятся обычными [Нет — тип файлов не меняется]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab7/setup.yaml"
+}

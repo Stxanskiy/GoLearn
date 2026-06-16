@@ -1,0 +1,187 @@
+{
+  "n": 4,
+  "id": "ch_k8si_lab1",
+  "title": "Лабораторная 1: Первый Pod",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Посмотреть контекст и namespace",
+      "taskid": "k8si_lab1_t1_ctx",
+      "hint": "",
+      "question_html": "<p>Посмотри текущий контекст kubectl и свой namespace — это изолированное рабочее пространство в кластере.</p>\n<pre><code>kubectl config current-context</code></pre>\n<pre><code>kubectl config view --minify -o jsonpath='{.contexts[0].context.namespace}'</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<p>Ты работаешь в собственном namespace — другие пользователи тебя не видят.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри текущий контекст kubectl и свой namespace — это изолированное рабочее пространство в кластере.</p>\n<pre><code>kubectl config current-context</code></pre>\n<pre><code>kubectl config view --minify -o jsonpath='{.contexts[0].context.namespace}'</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<p>Ты работаешь в собственном namespace — другие пользователи тебя не видят.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать первый Pod",
+      "taskid": "k8si_lab1_t2_pod",
+      "hint": "<p>Используй <code>kubectl run</code> или YAML-манифест Pod. Для проверки подойдут <code>kubectl get pod</code> и <code>kubectl describe pod</code>.</p>\n<p>Если после создания Pod'а увидишь предупреждение <code>Warning: would violate PodSecurity \"restricted:latest\"</code>, это не ошибка. Команда успешна, если есть строка <code>pod/nginx-pod created</code>, а <code>kubectl get pods</code> показывает статус <code>Running</code>.</p>\n<p>Проверка убедится, что Pod существует и перешёл в рабочее состояние.</p>",
+      "question_html": "<p>Создай Pod с именем <code>nginx-pod</code> на основе образа <code>nginx:alpine</code>. У Pod должен быть label <code>run=nginx-pod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod с именем <code>nginx-pod</code> на основе образа <code>nginx:alpine</code>. У Pod должен быть label <code>run=nginx-pod</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть статус Pod'а",
+      "taskid": "k8si_lab1_t3_get",
+      "hint": "<p>Используй <code>kubectl get</code> и <code>kubectl describe</code>: проверь kind Pod, namespace, labels и состояние контейнера. Изменения применяй через YAML, когда задача просит правку ресурса.</p>",
+      "question_html": "<p>Дождись пока Pod <code>nginx-pod</code> перейдёт в статус <code>Running</code>:</p><p>Если Pod в статусе <code>Pending</code> — он ещё ожидает планирования на Node.</p>",
+      "options": [],
+      "raw_description": "<p>Дождись пока Pod <code>nginx-pod</code> перейдёт в статус <code>Running</code>:</p><p>Если Pod в статусе <code>Pending</code> — он ещё ожидает планирования на Node.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Описать Pod",
+      "taskid": "k8si_lab1_t4_describe",
+      "hint": "",
+      "question_html": "<p>Посмотри детальное описание Pod'а <code>nginx-pod</code>:</p>\n<pre><code>kubectl describe pod nginx-pod</code></pre>\n<p>В выводе найдёшь IP Pod'а, Node, образ, события (Events). Раздел <code>Events</code> особенно полезен при диагностике проблем.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри детальное описание Pod'а <code>nginx-pod</code>:</p>\n<pre><code>kubectl describe pod nginx-pod</code></pre>\n<p>В выводе найдёшь IP Pod'а, Node, образ, события (Events). Раздел <code>Events</code> особенно полезен при диагностике проблем.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Посмотреть логи Pod'а",
+      "taskid": "k8si_lab1_t5_logs",
+      "hint": "",
+      "question_html": "<p>Посмотри логи контейнера <code>nginx-pod</code>:</p>\n<pre><code>kubectl logs nginx-pod</code></pre>\n<p>Что обычно логирует <code>nginx</code> в стандартный вывод по умолчанию?</p>",
+      "options": [
+        {
+          "text": "HTTP-запросы к серверу (access log)",
+          "correct": true,
+          "explanation": "Верно! nginx пишет access.log в stdout — каждый HTTP-запрос отдельной строкой"
+        },
+        {
+          "text": "Системные сообщения при запуске контейнера",
+          "correct": false,
+          "explanation": "Нет — это вывод entrypoint, а не nginx logs"
+        },
+        {
+          "text": "Ничего — nginx пишет логи только в файлы внутри контейнера",
+          "correct": false,
+          "explanation": "Нет — в docker/k8s образах nginx перенаправляет логи в stdout/stderr"
+        },
+        {
+          "text": "Ошибки конфигурации при каждом запросе",
+          "correct": false,
+          "explanation": "Нет — ошибки конфигурации пишутся в stderr отдельно"
+        }
+      ],
+      "raw_description": "<p>Посмотри логи контейнера <code>nginx-pod</code>:</p>\n<pre><code>kubectl logs nginx-pod</code></pre>\n<p>Что обычно логирует <code>nginx</code> в стандартный вывод по умолчанию?</p><ul>\n<li>+HTTP-запросы к серверу (access log) [Верно! nginx пишет access.log в stdout — каждый HTTP-запрос отдельной строкой]</li>\n<li>Системные сообщения при запуске контейнера [Нет — это вывод entrypoint, а не nginx logs]</li>\n<li>Ничего — nginx пишет логи только в файлы внутри контейнера [Нет — в docker/k8s образах nginx перенаправляет логи в stdout/stderr]</li>\n<li>Ошибки конфигурации при каждом запросе [Нет — ошибки конфигурации пишутся в stderr отдельно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое Pod?",
+      "taskid": "k8si_lab1_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Что является минимальной единицей развёртывания в Kubernetes?</p>",
+      "options": [
+        {
+          "text": "Container — каждый контейнер отдельно",
+          "correct": false,
+          "explanation": "Нет — контейнеры группируются в Pod'ы"
+        },
+        {
+          "text": "Pod — один или несколько контейнеров с общим сетевым namespace",
+          "correct": true,
+          "explanation": "Верно! Pod может содержать несколько контейнеров, которые видят друг друга как localhost"
+        },
+        {
+          "text": "Deployment — единица запуска приложения",
+          "correct": false,
+          "explanation": "Нет — Deployment управляет Pod'ами, но Pod — базовая единица"
+        },
+        {
+          "text": "Node — рабочий узел кластера",
+          "correct": false,
+          "explanation": "Нет — Node это сервер, не единица приложения"
+        }
+      ],
+      "raw_description": "<p>Что является минимальной единицей развёртывания в Kubernetes?</p><ul>\n<li>Container — каждый контейнер отдельно [Нет — контейнеры группируются в Pod'ы]</li>\n<li>+Pod — один или несколько контейнеров с общим сетевым namespace [Верно! Pod может содержать несколько контейнеров, которые видят друг друга как localhost]</li>\n<li>Deployment — единица запуска приложения [Нет — Deployment управляет Pod'ами, но Pod — базовая единица]</li>\n<li>Node — рабочий узел кластера [Нет — Node это сервер, не единица приложения]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Выполнить команду внутри Pod'а",
+      "taskid": "k8si_lab1_t7_exec",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>kubectl exec nginx-pod -- hostname</code>?</p>",
+      "options": [
+        {
+          "text": "Показывает hostname учебной VM, где открыт терминал",
+          "correct": false,
+          "explanation": "Нет — после <code>--</code> команда выполняется внутри контейнера Pod'а"
+        },
+        {
+          "text": "Выполняет команду <code>hostname</code> внутри контейнера Pod'а <code>nginx-pod</code>",
+          "correct": true,
+          "explanation": "Верно! <code>kubectl exec</code> запускает команду внутри уже работающего Pod'а"
+        },
+        {
+          "text": "Создаёт новый Pod с именем <code>hostname</code>",
+          "correct": false,
+          "explanation": "Нет — Pod создают команды вроде <code>kubectl run</code> или <code>kubectl apply</code>"
+        },
+        {
+          "text": "Подключается напрямую к worker node по SSH",
+          "correct": false,
+          "explanation": "Нет — <code>kubectl</code> идёт через Kubernetes API Server"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>kubectl exec nginx-pod -- hostname</code>?</p><ul>\n<li>Показывает hostname учебной VM, где открыт терминал [Нет — после <code>--</code> команда выполняется внутри контейнера Pod'а]</li>\n<li>+Выполняет команду <code>hostname</code> внутри контейнера Pod'а <code>nginx-pod</code> [Верно! <code>kubectl exec</code> запускает команду внутри уже работающего Pod'а]</li>\n<li>Создаёт новый Pod с именем <code>hostname</code> [Нет — Pod создают команды вроде <code>kubectl run</code> или <code>kubectl apply</code>]</li>\n<li>Подключается напрямую к worker node по SSH [Нет — <code>kubectl</code> идёт через Kubernetes API Server]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Получить IP Pod'а",
+      "taskid": "k8si_lab1_t8_ip",
+      "hint": "<p>Используй <code>kubectl get</code> и <code>kubectl describe</code>: проверь kind Pod, namespace, labels и состояние контейнера. Изменения применяй через YAML, когда задача просит правку ресурса.</p>\n<p>Проверка смотрит файл <code>/root/nginx_pod_ip.txt</code>, поэтому запиши туда только IP-адрес.</p>",
+      "question_html": "<p>Получи IP-адрес Pod'а <code>nginx-pod</code> и сохрани его в <code>/root/nginx_pod_ip.txt</code>.</p><p>Этот IP используется для прямого обращения к Pod внутри кластера.</p>",
+      "options": [],
+      "raw_description": "<p>Получи IP-адрес Pod'а <code>nginx-pod</code> и сохрани его в <code>/root/nginx_pod_ip.txt</code>.</p><p>Этот IP используется для прямого обращения к Pod внутри кластера.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Манифест Pod'а",
+      "taskid": "k8si_lab1_t9_yaml",
+      "hint": "",
+      "question_html": "<p>Посмотри YAML-манифест Pod'а:</p>\n<pre><code>kubectl get pod nginx-pod -o yaml | grep -E \"image:|name:|status:\" | head -10</code></pre>\n<p>В каком поле YAML-манифеста указывается Docker-образ контейнера?</p>",
+      "options": [
+        {
+          "text": "metadata.image",
+          "correct": false,
+          "explanation": "Нет — metadata содержит имя, метки, аннотации — не образ"
+        },
+        {
+          "text": "status.containerStatuses",
+          "correct": false,
+          "explanation": "].image [Нет — status это факт, а не конфигурация; для чтения ОК, но не для задания образа"
+        },
+        {
+          "text": "spec.template.containers",
+          "correct": false,
+          "explanation": "].image [Нет — template используется в Deployment/ReplicaSet, не в самом Pod"
+        },
+        {
+          "text": "spec.containers",
+          "correct": true,
+          "explanation": "].image [Верно! spec описывает желаемое состояние; containers[].image — образ конкретного контейнера"
+        }
+      ],
+      "raw_description": "<p>Посмотри YAML-манифест Pod'а:</p>\n<pre><code>kubectl get pod nginx-pod -o yaml | grep -E \"image:|name:|status:\" | head -10</code></pre>\n<p>В каком поле YAML-манифеста указывается Docker-образ контейнера?</p><ul>\n<li>metadata.image [Нет — metadata содержит имя, метки, аннотации — не образ]</li>\n<li>status.containerStatuses[].image [Нет — status это факт, а не конфигурация; для чтения ОК, но не для задания образа]</li>\n<li>spec.template.containers[].image [Нет — template используется в Deployment/ReplicaSet, не в самом Pod]</li>\n<li>+spec.containers[].image [Верно! spec описывает желаемое состояние; containers[].image — образ конкретного контейнера]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Pod",
+      "taskid": "k8si_lab1_t10_del",
+      "hint": "<p>Используй <code>kubectl delete pod</code>, затем проверь результат через <code>kubectl get pod</code>.</p>",
+      "question_html": "<p>Удали Pod <code>nginx-pod</code> и убедись что он удалён.</p><p>Pod без Deployment'а после удаления не восстановится — это эфемерный объект.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Pod <code>nginx-pod</code> и убедись что он удалён.</p><p>Pod без Deployment'а после удаления не восстановится — это эфемерный объект.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab1/setup.yaml"
+}

@@ -1,0 +1,103 @@
+{
+  "n": 14,
+  "id": "ch_dkc_lab6",
+  "title": "Лабораторная 6: Healthcheck и depends_on",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Проблема с depends_on",
+      "taskid": "dkc_lab6_t1_problem",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/healthapp</code> есть стек где <code>app</code> зависит от <code>db</code>. Посмотри файл:</p>\n<pre><code>cat /root/healthapp/docker-compose.yml</code></pre>\n<p><code>depends_on</code> гарантирует только <em>порядок запуска</em> контейнеров, но не готовность сервиса. PostgreSQL стартует несколько секунд — приложение может подключиться до того, как база готова.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/healthapp</code> есть стек где <code>app</code> зависит от <code>db</code>. Посмотри файл:</p>\n<pre><code>cat /root/healthapp/docker-compose.yml</code></pre>\n<p><code>depends_on</code> гарантирует только <em>порядок запуска</em> контейнеров, но не готовность сервиса. PostgreSQL стартует несколько секунд — приложение может подключиться до того, как база готова.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Запустить стек без healthcheck",
+      "taskid": "dkc_lab6_t2_up_no_health",
+      "hint": "",
+      "question_html": "<p>Запусти стек без healthcheck и посмотри статус сервисов:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>docker compose up -d</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>На этом шаге Compose ещё не знает, когда PostgreSQL действительно готов принимать подключения.</p>\n<p>Сервис <code>web</code> уже опубликован на порт VM <code>80</code>: можно открыть <code>Web Preview</code> или быстрее проверить тот же HTML через <code>curl http://localhost/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти стек без healthcheck и посмотри статус сервисов:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>docker compose up -d</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>На этом шаге Compose ещё не знает, когда PostgreSQL действительно готов принимать подключения.</p>\n<p>Сервис <code>web</code> уже опубликован на порт VM <code>80</code>: можно открыть <code>Web Preview</code> или быстрее проверить тот же HTML через <code>curl http://localhost/</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить healthcheck к PostgreSQL",
+      "taskid": "dkc_lab6_t3_add_health",
+      "hint": "<p>Сначала останови текущий стек из каталога <code>/root/healthapp</code>, затем отредактируй <code>/root/healthapp/docker-compose.yml</code>.</p>\n<p>В сервисе <code>db</code> должна появиться секция <code>healthcheck</code> с проверкой <code>test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]</code>. Добавь рядом параметры <code>interval: 5s</code>, <code>timeout: 3s</code> и <code>retries: 10</code>.</p>\n<p>У сервиса <code>app</code> замени короткую зависимость <code>depends_on: - db</code> на расширенную форму: внутри <code>depends_on</code> должен быть сервис <code>db</code> с условием <code>condition: service_healthy</code>.</p>\n<p>Остальные поля сервисов оставь как были: <code>image</code>, <code>environment</code>, <code>command</code>, <code>ports</code> и <code>restart</code> не нужно удалять.</p>\n<p>После правки проверь синтаксис командой <code>cd /root/healthapp &amp;&amp; docker compose config</code>.</p>",
+      "question_html": "<p>Останови стек и добавь healthcheck к сервису <code>db</code>, чтобы Compose знал когда база готова.</p><p>В файле <code>/root/healthapp/docker-compose.yml</code> у сервиса <code>db</code> должна появиться проверка готовности PostgreSQL, а зависимость сервиса <code>app</code> должна ждать состояние <code>service_healthy</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови стек и добавь healthcheck к сервису <code>db</code>, чтобы Compose знал когда база готова.</p><p>В файле <code>/root/healthapp/docker-compose.yml</code> у сервиса <code>db</code> должна появиться проверка готовности PostgreSQL, а зависимость сервиса <code>app</code> должна ждать состояние <code>service_healthy</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить стек с healthcheck",
+      "taskid": "dkc_lab6_t4_up_with_health",
+      "hint": "<p>Используй <code>docker compose ps</code> и <code>docker inspect</code>: статус здоровья виден в выводе Compose/Docker, детали — в inspect.</p>",
+      "question_html": "<p>Запусти стек из директории <code>/root/healthapp</code> — теперь <code>app</code> стартует только после того как Compose-сервис <code>db</code> с PostgreSQL пройдёт проверку здоровья.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти стек из директории <code>/root/healthapp</code> — теперь <code>app</code> стартует только после того как Compose-сервис <code>db</code> с PostgreSQL пройдёт проверку здоровья.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить статус healthcheck",
+      "taskid": "dkc_lab6_t5_health_status",
+      "hint": "<p>Используй <code>docker compose ps</code> из каталога проекта. Для состояния сервисов нужен Compose-статус, а не общий список всех контейнеров Docker.</p>",
+      "question_html": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно.</p><p>Проверь, что Compose-сервис <code>db</code> имеет health status <code>healthy</code>; сохранять статус в файл не нужно.</p>",
+      "options": [],
+      "raw_description": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно.</p><p>Проверь, что Compose-сервис <code>db</code> имеет health status <code>healthy</code>; сохранять статус в файл не нужно.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть события healthcheck",
+      "taskid": "dkc_lab6_t6_inspect_health",
+      "hint": "",
+      "question_html": "<p>Посмотри детали healthcheck через <code>docker inspect</code>:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>cid=$(docker compose ps -q db)</code></pre>\n<pre><code>docker inspect \"$cid\" --format '{{json .State.Health}}'</code></pre>\n<p>В этом выводе видны статус healthcheck, количество попыток и последние проверки.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри детали healthcheck через <code>docker inspect</code>:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>cid=$(docker compose ps -q db)</code></pre>\n<pre><code>docker inspect \"$cid\" --format '{{json .State.Health}}'</code></pre>\n<p>В этом выводе видны статус healthcheck, количество попыток и последние проверки.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить healthcheck для nginx",
+      "taskid": "dkc_lab6_t7_nginx_health",
+      "hint": "<p>Добавь секцию <code>healthcheck</code> к сервису <code>web</code>. Проверяй синтаксис через <code>docker compose config</code>, а состояние после запуска — через <code>docker compose ps</code> или <code>docker inspect</code>.</p>",
+      "question_html": "<p>В файле <code>/root/healthapp/docker-compose.yml</code> добавь healthcheck к сервису <code>web</code> (nginx) — проверяй, что nginx отвечает на HTTP-запрос. Для проверки используй команду <code>wget -qO- http://localhost/</code> внутри контейнера.</p>\n<p>Опиши проверку в секции сервиса <code>web</code>, затем перезапусти стек и убедись, что контейнер получил статус <code>healthy</code>.</p>\n<p>Открой <code>Web Preview</code> или выполни <code>curl http://localhost/</code>: это тот же HTTP-путь, который healthcheck проверяет изнутри контейнера через localhost.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/root/healthapp/docker-compose.yml</code> добавь healthcheck к сервису <code>web</code> (nginx) — проверяй, что nginx отвечает на HTTP-запрос. Для проверки используй команду <code>wget -qO- http://localhost/</code> внутри контейнера.</p>\n<p>Опиши проверку в секции сервиса <code>web</code>, затем перезапусти стек и убедись, что контейнер получил статус <code>healthy</code>.</p>\n<p>Открой <code>Web Preview</code> или выполни <code>curl http://localhost/</code>: это тот же HTTP-путь, который healthcheck проверяет изнутри контейнера через localhost.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть конфигурацию со всеми healthcheck",
+      "taskid": "dkc_lab6_t8_config_health",
+      "hint": "",
+      "question_html": "<p>Посмотри итоговую конфигурацию со всеми healthcheck:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>docker compose config</code></pre>\n<p>Убедись, что в итоговом config видны healthcheck для <code>db</code> и <code>web</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри итоговую конфигурацию со всеми healthcheck:</p>\n<pre><code>cd /root/healthapp</code></pre>\n<pre><code>docker compose config</code></pre>\n<p>Убедись, что в итоговом config видны healthcheck для <code>db</code> и <code>web</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить все сервисы healthy",
+      "taskid": "dkc_lab6_t9_all_healthy",
+      "hint": "<p>Используй <code>docker compose ps</code> и <code>docker inspect</code>: статус здоровья виден в выводе Compose/Docker, детали — в inspect.</p>",
+      "question_html": "<p>Подожди несколько секунд и проверь, что оба контейнера текущего Compose-проекта со healthcheck перешли в статус <code>healthy</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Подожди несколько секунд и проверь, что оба контейнера текущего Compose-проекта со healthcheck перешли в статус <code>healthy</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить стек",
+      "taskid": "dkc_lab6_t10_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови стек.</p>",
+      "options": [],
+      "raw_description": "<p>Останови стек.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab6/setup.yaml"
+}

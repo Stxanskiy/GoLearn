@@ -2,19 +2,34 @@ package handler
 
 import (
 	"net/http"
+	"time"
+
+	"github.com/backendraz/golearn/internal/model"
 )
 
 type DashboardData struct {
-	PageTitle        string
-	SharedModules    []ModuleWithProgress
-	BackendModules   []ModuleWithProgress
-	DevopsModules    []ModuleWithProgress
-	SecurityModules  []ModuleWithProgress
-	TotalLessons     int
-	CompletedCount   int
-	InProgressCount  int
-	AvgQuizScore     float64
-	UserName         string
+	PageTitle       string
+	UserName        string
+	IsAdmin         bool
+	Overview        *model.ProgressOverview
+	Weeks           [][]HeatCell
+	MonthLabels     []MonthLabel
+	GolangModules   []ModuleWithProgress
+	DevopsModules   []ModuleWithProgress
+	DatabaseModules []ModuleWithProgress
+	SecurityModules []ModuleWithProgress
+}
+
+type HeatCell struct {
+	Date  string
+	Count int
+	Level int
+	Empty bool
+}
+
+type MonthLabel struct {
+	Col  int
+	Name string
 }
 
 type ModuleWithProgress struct {
@@ -38,8 +53,77 @@ type LessonWithProgress struct {
 	Status   string // "not_started", "in_progress", "completed"
 }
 
+var ruMonths = []string{"Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"}
+
+// buildHeatmap turns a date->count map into ~53 week columns (Mon..Sun rows).
+func buildHeatmap(activity map[string]int) ([][]HeatCell, []MonthLabel) {
+	end := time.Now()
+	start := end.AddDate(0, 0, -363)
+	// rewind start to Monday
+	for int(start.Weekday()) != int(time.Monday) {
+		start = start.AddDate(0, 0, -1)
+	}
+
+	var weeks [][]HeatCell
+	var labels []MonthLabel
+	cur := start
+	lastMonth := -1
+	for !cur.After(end) {
+		week := make([]HeatCell, 0, 7)
+		for d := 0; d < 7; d++ {
+			if cur.After(end) {
+				week = append(week, HeatCell{Empty: true})
+			} else {
+				key := cur.Format("2006-01-02")
+				c := activity[key]
+				week = append(week, HeatCell{Date: key, Count: c, Level: heatLevel(c)})
+			}
+			cur = cur.AddDate(0, 0, 1)
+		}
+		// month label when the first (Monday) of the week starts a new month
+		mon := start.AddDate(0, 0, len(weeks)*7)
+		if int(mon.Month())-1 != lastMonth {
+			lastMonth = int(mon.Month()) - 1
+			labels = append(labels, MonthLabel{Col: len(weeks), Name: ruMonths[lastMonth]})
+		}
+		weeks = append(weeks, week)
+	}
+	return weeks, labels
+}
+
+func heatLevel(c int) int {
+	switch {
+	case c <= 0:
+		return 0
+	case c <= 2:
+		return 1
+	case c <= 5:
+		return 2
+	case c <= 9:
+		return 3
+	default:
+		return 4
+	}
+}
+
 func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	var data DashboardData
+	data.PageTitle = "Мой прогресс — TOT"
+	if u := GetUser(ctx); u != nil {
+		data.UserName = u.Name
+		data.IsAdmin = u.IsAdmin()
+	}
+
+	overview, err := h.progressRepo.Overview(ctx)
+	if err != nil {
+		h.log.Error("overview", "error", err)
+		overview = &model.ProgressOverview{Activity: map[string]int{}, SimulatorsTot: 4, TrainersTot: 3}
+	}
+	overview.SimulatorsTot = len(scenarios())
+	data.Overview = overview
+	data.Weeks, data.MonthLabels = buildHeatmap(overview.Activity)
 
 	modules, err := h.moduleRepo.GetAll(ctx)
 	if err != nil {
@@ -48,52 +132,29 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allProgress, err := h.progressRepo.GetAll(ctx)
-	if err != nil {
-		h.log.Error("get progress", "error", err)
-		// Continue without progress data
-	}
-
+	allProgress, _ := h.progressRepo.GetAll(ctx)
 	progressMap := make(map[int]string)
 	for _, p := range allProgress {
 		progressMap[p.LessonID] = p.Status
 	}
 
-	stats, err := h.progressRepo.GetStats(ctx)
-	if err != nil {
-		h.log.Error("get stats", "error", err)
-	}
-
-	var data DashboardData
-	data.PageTitle = "TOT — Dashboard"
-	if u := GetUser(ctx); u != nil {
-		data.UserName = u.Name
-	}
-	if stats != nil {
-		data.TotalLessons = stats.TotalLessons
-		data.CompletedCount = stats.CompletedCount
-		data.InProgressCount = stats.InProgressCount
-		data.AvgQuizScore = stats.AvgQuizScore
-	}
-
 	for _, mod := range modules {
+		if mod.Track == "gym" {
+			continue // trainers are shown on /trainers, not the dashboard
+		}
 		lessons, err := h.lessonRepo.GetByModule(ctx, mod.ID)
 		if err != nil {
-			h.log.Error("get lessons for module", "module", mod.Slug, "error", err)
 			continue
 		}
-
 		mwp := ModuleWithProgress{
-			ID:          mod.ID,
-			Slug:        mod.Slug,
-			Title:       mod.Title,
-			Description: mod.Description,
-			Track:       mod.Track,
-			Total:       len(lessons),
+			ID: mod.ID, Slug: mod.Slug, Title: mod.Title, Description: mod.Description,
+			Track: mod.Track, Total: len(lessons),
 		}
-		mwp.Category = categorize(mod.Track, mod.Title, mod.Slug)
+		mwp.Category = mod.Category
+		if mwp.Category == "" {
+			mwp.Category = categorize(mod.Track, mod.Title, mod.Slug)
+		}
 		mwp.Icon = categoryIcon(mwp.Category)
-
 		for _, l := range lessons {
 			status := "not_started"
 			if s, ok := progressMap[l.ID]; ok {
@@ -103,25 +164,18 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 				mwp.Completed++
 			}
 			mwp.Lessons = append(mwp.Lessons, LessonWithProgress{
-				ID:       l.ID,
-				Slug:     l.Slug,
-				Title:    l.Title,
-				OrderNum: l.OrderNum,
-				Status:   status,
+				ID: l.ID, Slug: l.Slug, Title: l.Title, OrderNum: l.OrderNum, Status: status,
 			})
 		}
-
 		switch mod.Track {
-		case "shared":
-			data.SharedModules = append(data.SharedModules, mwp)
-		case "backend":
-			data.BackendModules = append(data.BackendModules, mwp)
 		case "devops":
 			data.DevopsModules = append(data.DevopsModules, mwp)
-		case "security-offense", "security-defense":
+		case "database":
+			data.DatabaseModules = append(data.DatabaseModules, mwp)
+		case "security", "security-offense", "security-defense":
 			data.SecurityModules = append(data.SecurityModules, mwp)
 		default:
-			data.SharedModules = append(data.SharedModules, mwp)
+			data.GolangModules = append(data.GolangModules, mwp)
 		}
 	}
 

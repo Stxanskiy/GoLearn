@@ -1,0 +1,12 @@
+{
+  "n": 36,
+  "id": "ch_devops_sim_sre",
+  "title": "Симулятор: Senior SRE, GitOps и безопасность",
+  "type": "simulator",
+  "isFree": false,
+  "kind": "other",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

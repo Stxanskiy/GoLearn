@@ -16,18 +16,20 @@ type Handler struct {
 	progressRepo   *repository.ProgressRepo
 	submissionRepo *repository.SubmissionRepo
 	userRepo       *repository.UserRepo
+	specRepo       *repository.SpecRepo
 	runner         *runner.Runner
 	shell          *runner.ShellRunner
 	log            *slog.Logger
 }
 
-func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, log *slog.Logger) *Handler {
+func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, log *slog.Logger) *Handler {
 	return &Handler{
 		moduleRepo:     mr,
 		lessonRepo:     lr,
 		progressRepo:   pr,
 		submissionRepo: sr,
 		userRepo:       ur,
+		specRepo:       spr,
 		runner:         runner.New(),
 		shell:          runner.NewShellRunner(),
 		log:            log,
@@ -47,7 +49,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Use(h.AuthMiddleware)
 		r.Get("/", h.Dashboard)
 		r.Get("/courses", h.CoursesPage)
+		r.Get("/courses/{track}", h.SectionPage)
+		r.Get("/api/courses/{slug}/cover", h.CourseCover)
 		r.Get("/trainers", h.TrainersPage)
+		r.Get("/simulators", h.SimulatorsPage)
+		r.Get("/simulator/{slug}", h.SimulatorPage)
 		r.Get("/roadmap", h.RoadmapPage)
 		r.Get("/module/{moduleSlug}", h.ModulePage)
 		r.Get("/module/{moduleSlug}/lesson/{lessonSlug}", h.LessonPage)
@@ -66,6 +72,37 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/api/git/exec", h.GitExec)
 		r.Post("/api/git/reset", h.GitReset)
 		r.Get("/api/term", h.TermWS)
+
+		// Admin (role=admin only)
+		r.Group(func(r chi.Router) {
+			r.Use(h.AdminMiddleware)
+			r.Get("/admin", h.AdminDashboard)
+			r.Get("/admin/specs", h.AdminSpecs)
+			r.Post("/admin/spec", h.AdminSpecSave)
+			r.Post("/admin/spec/{slug}/delete", h.AdminSpecDelete)
+			r.Get("/admin/module/new", h.AdminModuleNew)
+			r.Post("/admin/module", h.AdminModuleSave)
+			r.Get("/admin/module/{id}", h.AdminModuleEdit)
+			r.Post("/admin/module/{id}", h.AdminModuleSave)
+			r.Post("/admin/module/{id}/delete", h.AdminModuleDelete)
+			r.Get("/admin/module/{id}/lesson/new", h.AdminLessonNew)
+			r.Post("/admin/lesson", h.AdminLessonSave)
+			r.Get("/admin/lesson/{id}", h.AdminLessonEdit)
+			r.Post("/admin/lesson/{id}", h.AdminLessonSave)
+			r.Post("/admin/lesson/{id}/delete", h.AdminLessonDelete)
+			// Quiz questions
+			r.Get("/admin/lesson/{id}/question/new", h.AdminQuestionNew)
+			r.Post("/admin/question", h.AdminQuestionSave)
+			r.Get("/admin/question/{id}", h.AdminQuestionEdit)
+			r.Post("/admin/question/{id}", h.AdminQuestionSave)
+			r.Post("/admin/question/{id}/delete", h.AdminQuestionDelete)
+			// Tasks
+			r.Get("/admin/lesson/{id}/task/new", h.AdminTaskNew)
+			r.Post("/admin/task", h.AdminTaskSave)
+			r.Get("/admin/task/{id}", h.AdminTaskEdit)
+			r.Post("/admin/task/{id}", h.AdminTaskSave)
+			r.Post("/admin/task/{id}/delete", h.AdminTaskDelete)
+		})
 	})
 }
 
@@ -74,6 +111,7 @@ func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
 	tmpl, err := template.New("").Funcs(template.FuncMap{
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
+		"mul": func(a, b int) int { return a * b },
 		"pct": func(a, b int) int {
 			if b == 0 {
 				return 0

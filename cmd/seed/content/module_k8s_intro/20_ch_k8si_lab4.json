@@ -1,0 +1,124 @@
+{
+  "n": 20,
+  "id": "ch_k8si_lab4",
+  "title": "Лабораторная 5: ConfigMap и Secret",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать ConfigMap",
+      "taskid": "k8si_lab4_t1_cm",
+      "hint": "<p>Используй <code>kubectl create configmap</code> или YAML. Проверь имена ключей: они потом используются в env или volume mount.</p>",
+      "question_html": "<p>Создай ConfigMap <code>app-config</code> с ключами <code>APP_ENV=production</code>, <code>LOG_LEVEL=info</code> и <code>PORT=8080</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай ConfigMap <code>app-config</code> с ключами <code>APP_ENV=production</code>, <code>LOG_LEVEL=info</code> и <code>PORT=8080</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть ConfigMap",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри содержимое ConfigMap'а — убедись, что все три ключа на месте.</p>\n<pre><code>kubectl get configmap app-config -o yaml</code></pre>\n</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри содержимое ConfigMap'а — убедись, что все три ключа на месте.</p>\n<pre><code>kubectl get configmap app-config -o yaml</code></pre>\n</p>"
+    },
+    {
+      "type": "check",
+      "title": "Подключить ConfigMap к Pod",
+      "taskid": "k8si_lab4_t3_pod_cm",
+      "hint": "<p>Здесь не нужно придумывать приложение внутри контейнера: команда уже есть в заготовке. Добавь только блок <code>envFrom</code> под контейнером <code>cm-pod</code> и проверь отступы YAML.</p>",
+      "question_html": "<p>В файле <code>/root/cm-pod.yaml</code> уже лежит заготовка Pod <code>cm-pod</code>. В ней готово имя Pod, label <code>run=cm-pod</code>, image и команда контейнера, которая выводит <code>APP_ENV</code> в лог.</p>\n<p>Твоя задача — добавить к контейнеру подключение ConfigMap <code>app-config</code> через <code>envFrom.configMapRef</code>, сохранить файл и применить manifest в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/root/cm-pod.yaml</code> уже лежит заготовка Pod <code>cm-pod</code>. В ней готово имя Pod, label <code>run=cm-pod</code>, image и команда контейнера, которая выводит <code>APP_ENV</code> в лог.</p>\n<p>Твоя задача — добавить к контейнеру подключение ConfigMap <code>app-config</code> через <code>envFrom.configMapRef</code>, сохранить файл и применить manifest в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить переменные из ConfigMap в Pod'е",
+      "taskid": "k8si_lab4_t4_env_cm",
+      "hint": "<p>В логах <code>cm-pod</code> должно быть значение <code>production</code>.</p>",
+      "question_html": "<p>Проверь, что переменная <code>APP_ENV</code> попала в Pod <code>cm-pod</code> с label <code>run=cm-pod</code> из ConfigMap <code>app-config</code>.</p>\n<pre><code>kubectl logs cm-pod</code></pre>",
+      "options": [],
+      "raw_description": "<p>Проверь, что переменная <code>APP_ENV</code> попала в Pod <code>cm-pod</code> с label <code>run=cm-pod</code> из ConfigMap <code>app-config</code>.</p>\n<pre><code>kubectl logs cm-pod</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Создать Secret",
+      "taskid": "k8si_lab4_t5_secret",
+      "hint": "<p>Для Secret используй <code>kubectl create secret generic</code>. Значения можно передать через <code>--from-literal</code>, как в ConfigMap.</p>",
+      "question_html": "<p>Создай Secret <code>db-secret</code> с учётными данными базы данных: <code>DB_USER=admin</code> и <code>DB_PASSWORD=supersecret123</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Secret <code>db-secret</code> с учётными данными базы данных: <code>DB_USER=admin</code> и <code>DB_PASSWORD=supersecret123</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть Secret",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри Secret — данные хранятся в base64.</p>\n<pre><code>kubectl get secret db-secret -o yaml</code></pre>\n<p>Обрати внимание: значения Base64-encoded, но НЕ зашифрованы. Secret не обеспечивает шифрование по умолчанию — для этого нужен EncryptionConfiguration или Vault.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри Secret — данные хранятся в base64.</p>\n<pre><code>kubectl get secret db-secret -o yaml</code></pre>\n<p>Обрати внимание: значения Base64-encoded, но НЕ зашифрованы. Secret не обеспечивает шифрование по умолчанию — для этого нужен EncryptionConfiguration или Vault.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Декодировать Secret",
+      "taskid": "k8si_lab4_t7_decode",
+      "hint": "<p>После декодирования должно получиться <code>supersecret123</code>.</p>",
+      "question_html": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и проверь открытое значение.</p>\n<pre><code>kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d</code></pre>",
+      "options": [],
+      "raw_description": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и проверь открытое значение.</p>\n<pre><code>kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем Secret, если данные в base64?",
+      "taskid": "k8si_lab4_t8_quiz",
+      "hint": "",
+      "question_html": "<p>В чём смысл Secret если данные хранятся в открытом base64?</p>",
+      "options": [
+        {
+          "text": "RBAC позволяет ограничить доступ к Secret, в отличие от ConfigMap",
+          "correct": true,
+          "explanation": "Верно! Secret можно скрыть от разработчиков через RBAC; плюс они не отображаются в kubectl describe pod как переменные"
+        },
+        {
+          "text": "Secret шифрует данные AES-256 по умолчанию",
+          "correct": false,
+          "explanation": "Нет — по умолчанию данные только base64. Для шифрования нужна дополнительная настройка"
+        },
+        {
+          "text": "Secret быстрее читается чем ConfigMap",
+          "correct": false,
+          "explanation": "Нет — производительность одинакова"
+        },
+        {
+          "text": "Смысла нет — лучше использовать ConfigMap",
+          "correct": false,
+          "explanation": "Нет — разделение конфига и секретов — хорошая практика"
+        }
+      ],
+      "raw_description": "<p>В чём смысл Secret если данные хранятся в открытом base64?</p><ul>\n<li>+RBAC позволяет ограничить доступ к Secret, в отличие от ConfigMap [Верно! Secret можно скрыть от разработчиков через RBAC; плюс они не отображаются в kubectl describe pod как переменные]</li>\n<li>Secret шифрует данные AES-256 по умолчанию [Нет — по умолчанию данные только base64. Для шифрования нужна дополнительная настройка]</li>\n<li>Secret быстрее читается чем ConfigMap [Нет — производительность одинакова]</li>\n<li>Смысла нет — лучше использовать ConfigMap [Нет — разделение конфига и секретов — хорошая практика]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать ConfigMap из файла",
+      "taskid": "k8si_lab4_t9_cm_file",
+      "hint": "<p>Для создания ConfigMap из файла у <code>kubectl create configmap</code> есть флаг <code>--from-file</code>. Здесь важно явно задать ключ <code>app.conf</code>, чтобы файл внутри ConfigMap назывался именно так.</p>",
+      "question_html": "<p>Создай файл конфигурации <code>/root/app.conf</code> со строками <code>server.port=8080</code>, <code>log.level=debug</code> и <code>db.pool.size=10</code>. Затем создай из него ConfigMap <code>file-config</code> с ключом <code>app.conf</code>.</p><p>Сохрани файл в <code>/root/app.conf</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл конфигурации <code>/root/app.conf</code> со строками <code>server.port=8080</code>, <code>log.level=debug</code> и <code>db.pool.size=10</code>. Затем создай из него ConfigMap <code>file-config</code> с ключом <code>app.conf</code>.</p><p>Сохрани файл в <code>/root/app.conf</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ConfigMap и Secret",
+      "taskid": "k8si_lab4_t10_del",
+      "hint": "<p>Используй <code>kubectl delete configmap</code>, <code>kubectl delete secret</code> и <code>kubectl delete pod</code>.</p>",
+      "question_html": "<p>Удали ConfigMap'ы <code>app-config</code> и <code>file-config</code>, Secret <code>db-secret</code> и Pod <code>cm-pod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали ConfigMap'ы <code>app-config</code> и <code>file-config</code>, Secret <code>db-secret</code> и Pod <code>cm-pod</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab4/setup.yaml"
+}

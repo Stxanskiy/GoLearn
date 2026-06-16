@@ -1,0 +1,27 @@
+{{define "simulators"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="page-head">
+    <h1>Симуляторы</h1>
+    <p class="muted">Прими роль инженера и проживи сценарий: решения влияют на бюджет, команду и метрики.</p>
+</div>
+
+<div class="courses-grid">
+    {{range .Scenarios}}
+    <a class="course-card" href="/simulator/{{.Slug}}">
+        <div class="course-cover" data-cat="DevOps"><span class="course-icon">{{.Icon}}</span></div>
+        <div class="course-body">
+            <h3 class="course-title">{{.Title}}</h3>
+            <div class="course-meta muted">Роль: {{.Role}} · {{len .Turns}} решений</div>
+        </div>
+    </a>
+    {{end}}
+</div>
+
+<style>
+.courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+.course-body { padding:16px; } .course-title { font-size:1.05em; font-weight:700; margin-bottom:6px; } .course-meta { font-size:.8em; }
+</style>
+{{end}}

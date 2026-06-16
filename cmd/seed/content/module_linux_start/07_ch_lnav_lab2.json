@@ -1,0 +1,166 @@
+{
+  "n": 7,
+  "id": "ch_lnav_lab2",
+  "title": "Лабораторная 2: Работа с файлами и папками",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать директорию",
+      "taskid": "lnav_lab2_t1_mkdir",
+      "hint": "<p>Используй <code>mkdir</code> и укажи полный путь новой директории.</p>",
+      "question_html": "<p>Создай директорию <code>/root/myproject</code> для нового проекта.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/myproject</code> для нового проекта.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать файл с текстом",
+      "taskid": "lnav_lab2_t2_touch",
+      "hint": "<p>Используй <code>printf</code> или <code>echo</code> с перенаправлением <code>&gt;</code>: создай файл и запиши строку с точным регистром.</p>",
+      "question_html": "<p>Создай файл <code>/root/myproject/README.md</code> и запиши в него строку <code>Hello DevOps</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/myproject/README.md</code> и запиши в него строку <code>Hello DevOps</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Скопировать файл",
+      "taskid": "lnav_lab2_t3_cp",
+      "hint": "<p>У <code>cp</code> первый аргумент — источник, второй — назначение.</p>",
+      "question_html": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в директорию <code>/root/myproject/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в директорию <code>/root/myproject/</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переименовать файл",
+      "taskid": "lnav_lab2_t4_mv",
+      "hint": "<p>Используй <code>mv</code>: укажи старый путь и новый путь в той же директории, затем проверь, что старого имени больше нет.</p>",
+      "question_html": "<p>Переименуй <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>",
+      "options": [],
+      "raw_description": "<p>Переименуй <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Разница cp и mv",
+      "taskid": "lnav_lab2_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Чем принципиально отличается <code>cp</code> от <code>mv</code>?</p>",
+      "options": [
+        {
+          "text": "cp работает только с файлами, mv — с директориями",
+          "correct": false,
+          "explanation": "Нет — обе команды работают и с файлами, и с директориями"
+        },
+        {
+          "text": "mv быстрее cp",
+          "correct": false,
+          "explanation": "Нет — скорость не является принципиальным отличием"
+        },
+        {
+          "text": "cp оставляет оригинал на месте, mv удаляет оригинал",
+          "correct": true,
+          "explanation": "Верно! cp — это копирование, mv — перемещение. После mv оригинала нет"
+        },
+        {
+          "text": "Разницы нет — это одно и то же",
+          "correct": false,
+          "explanation": "Нет — cp копирует, mv перемещает/переименовывает"
+        }
+      ],
+      "raw_description": "<p>Чем принципиально отличается <code>cp</code> от <code>mv</code>?</p><ul>\n<li>cp работает только с файлами, mv — с директориями [Нет — обе команды работают и с файлами, и с директориями]</li>\n<li>mv быстрее cp [Нет — скорость не является принципиальным отличием]</li>\n<li>+cp оставляет оригинал на месте, mv удаляет оригинал [Верно! cp — это копирование, mv — перемещение. После mv оригинала нет]</li>\n<li>Разницы нет — это одно и то же [Нет — cp копирует, mv перемещает/переименовывает]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать вложенную структуру",
+      "taskid": "lnav_lab2_t6_mkdirp",
+      "hint": "<p>Сначала используй <code>mkdir</code> для вложенной директории, затем <code>cp</code> для копирования файла в конечный каталог.</p>\n<p>У <code>mkdir</code> есть флаг <code>-p</code>: он создаёт все промежуточные директории автоматически.</p>",
+      "question_html": "<p>Создай директорию <code>/root/backup/configs</code> (сразу всю вложенную структуру) и скопируй в неё <code>/root/myproject/myconfig.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/backup/configs</code> (сразу всю вложенную структуру) и скопируй в неё <code>/root/myproject/myconfig.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить файл",
+      "taskid": "lnav_lab2_t7_rm",
+      "hint": "<p>Используй <code>rm</code> и внимательно проверь путь перед запуском.</p>",
+      "question_html": "<p>Удали файл <code>/root/myproject/README.md</code>.</p>\n<p>В Linux нет корзины — <code>rm</code> удаляет сразу и навсегда.</p>",
+      "options": [],
+      "raw_description": "<p>Удали файл <code>/root/myproject/README.md</code>.</p>\n<p>В Linux нет корзины — <code>rm</code> удаляет сразу и навсегда.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить директорию",
+      "taskid": "lnav_lab2_t8_rmdir",
+      "hint": "<p>Используй <code>rm</code> с рекурсивным режимом для непустой директории; сначала убедись, что указан правильный путь.</p>\n<p>Флаг <code>-r</code> (recursive) позволяет удалить непустую директорию.</p>",
+      "question_html": "<p>Удали директорию <code>/root/myproject</code> со всем содержимым.</p>",
+      "options": [],
+      "raw_description": "<p>Удали директорию <code>/root/myproject</code> со всем содержимым.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему осторожно с rm -r?",
+      "taskid": "lnav_lab2_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему команды удаления с рекурсией требуют особой осторожности?</p>",
+      "options": [
+        {
+          "text": "Потому что rm -r работает только на пустых директориях",
+          "correct": false,
+          "explanation": "Нет — наоборот, для непустых и нужен -r"
+        },
+        {
+          "text": "Потому что rm автоматически делает backup",
+          "correct": false,
+          "explanation": "Нет — по умолчанию backup нет"
+        },
+        {
+          "text": "Потому что rm не удаляет файлы, только папки",
+          "correct": false,
+          "explanation": "Нет — удаляет и файлы, и папки"
+        },
+        {
+          "text": "Они удаляют дерево файлов без корзины, ошибка в пути может быть критичной",
+          "correct": true,
+          "explanation": "Верно! Особенно опасно запускать от root"
+        }
+      ],
+      "raw_description": "<p>Почему команды удаления с рекурсией требуют особой осторожности?</p><ul>\n<li>Потому что rm -r работает только на пустых директориях [Нет — наоборот, для непустых и нужен -r]</li>\n<li>Потому что rm автоматически делает backup [Нет — по умолчанию backup нет]</li>\n<li>Потому что rm не удаляет файлы, только папки [Нет — удаляет и файлы, и папки]</li>\n<li>+Они удаляют дерево файлов без корзины, ошибка в пути может быть критичной [Верно! Особенно опасно запускать от root]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда использовать mkdir -p?",
+      "taskid": "lnav_lab2_t10_quiz",
+      "hint": "",
+      "question_html": "<p>В каком случае <code>mkdir -p</code> особенно полезен?</p>",
+      "options": [
+        {
+          "text": "Когда нужно создать вложенный путь и не падать, если часть директорий уже есть",
+          "correct": true,
+          "explanation": "Верно! Это удобно в скриптах"
+        },
+        {
+          "text": "Когда нужно удалить пустую директорию",
+          "correct": false,
+          "explanation": "Нет — для этого rmdir"
+        },
+        {
+          "text": "Когда нужно переименовать файл",
+          "correct": false,
+          "explanation": "Нет — для этого mv"
+        },
+        {
+          "text": "Когда нужно посчитать файлы в директории",
+          "correct": false,
+          "explanation": "Нет — для этого ls/find/wc"
+        }
+      ],
+      "raw_description": "<p>В каком случае <code>mkdir -p</code> особенно полезен?</p><ul>\n<li>+Когда нужно создать вложенный путь и не падать, если часть директорий уже есть [Верно! Это удобно в скриптах]</li>\n<li>Когда нужно удалить пустую директорию [Нет — для этого rmdir]</li>\n<li>Когда нужно переименовать файл [Нет — для этого mv]</li>\n<li>Когда нужно посчитать файлы в директории [Нет — для этого ls/find/wc]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_start/linux_nav/lab2/setup.yaml"
+}

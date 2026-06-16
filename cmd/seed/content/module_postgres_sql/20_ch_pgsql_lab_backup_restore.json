@@ -1,0 +1,67 @@
+{
+  "n": 20,
+  "id": "ch_pgsql_lab_backup_restore",
+  "title": "Лабораторная 7: dump и restore базы",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Осмотреть исходную базу shop",
+      "taskid": "pgsql_backup_t1_inspect_source",
+      "hint": "<p>Если приглашение выглядит как <code>shop=&gt;</code>, ты уже внутри <code>psql</code> и можешь вводить команды PostgreSQL.</p>\n<p>Сначала psql-команда для списка таблиц:</p>\n<pre><code>\\dt</code></pre>\n<p>Затем обычные SQL-запросы:</p>\n<pre><code>SELECT count(*) FROM customers;\nSELECT count(*) FROM orders;</code></pre>",
+      "question_html": "<p>Открой учебную базу <code>shop</code> и быстро проверь, какие данные в ней есть.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>После входа посмотри список таблиц, посчитай клиентов и заказы.</p>\n<p>Перед дампом полезно понимать, что именно ты собираешься сохранить.</p>",
+      "options": [],
+      "raw_description": "<p>Открой учебную базу <code>shop</code> и быстро проверь, какие данные в ней есть.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>После входа посмотри список таблиц, посчитай клиентов и заказы.</p>\n<p>Перед дампом полезно понимать, что именно ты собираешься сохранить.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Сделать SQL-дамп",
+      "taskid": "pgsql_backup_t2_dump",
+      "hint": "<p>Перенаправление <code>&gt;</code> сохраняет вывод команды в файл на учебной VM.</p>\n<p>Если ты внутри <code>psql</code>, сначала выйди в shell:</p>\n<pre><code>\\q</code></pre>\n<p>Затем выполни shell-команды:</p>\n<pre><code>mkdir -p /root/backups\npg_dump -U student -d shop &gt; /root/backups/shop_dump.sql\nls -lh /root/backups/shop_dump.sql</code></pre>",
+      "question_html": "<p>Если ты внутри <code>psql</code>, выйди в shell. Затем создай папку для бэкапов и сохрани SQL-дамп базы <code>shop</code> в файл <code>/root/backups/shop_dump.sql</code>.</p>\n<p>После дампа проверь, что файл появился и у него ненулевой размер.</p>",
+      "options": [],
+      "raw_description": "<p>Если ты внутри <code>psql</code>, выйди в shell. Затем создай папку для бэкапов и сохрани SQL-дамп базы <code>shop</code> в файл <code>/root/backups/shop_dump.sql</code>.</p>\n<p>После дампа проверь, что файл появился и у него ненулевой размер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить содержимое дампа",
+      "taskid": "pgsql_backup_t3_check_dump",
+      "hint": "<p>Обычный SQL-дамп читаемый: в нём должны встречаться команды создания таблиц и строки с данными.</p>\n<pre><code>head -n 20 /root/backups/shop_dump.sql\ngrep -n \"CREATE TABLE public.customers\" /root/backups/shop_dump.sql\ngrep -n \"Alex\" /root/backups/shop_dump.sql</code></pre>",
+      "question_html": "<p>Посмотри начало дампа и найди в нём таблицу клиентов и тестовые данные.</p>\n<p>Проверь начало файла, команду создания таблицы <code>public.customers</code> и строку с клиентом <code>Alex</code>.</p>\n<p>Если файл пустой или в нём нет ожидаемых объектов, такой backup нельзя считать проверенным.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри начало дампа и найди в нём таблицу клиентов и тестовые данные.</p>\n<p>Проверь начало файла, команду создания таблицы <code>public.customers</code> и строку с клиентом <code>Alex</code>.</p>\n<p>Если файл пустой или в нём нет ожидаемых объектов, такой backup нельзя считать проверенным.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Создать отдельную базу для восстановления",
+      "taskid": "pgsql_backup_t4_create_restore_db",
+      "hint": "<p>Для учебной проверки безопаснее восстанавливать копию рядом с исходной базой.</p>\n<pre><code>dropdb -U student --if-exists shop_restored\ncreatedb -U student shop_restored</code></pre>",
+      "question_html": "<p>Создай чистую базу <code>shop_restored</code>. Если она уже есть после прошлой попытки, сначала удали её.</p>\n<p>Мы восстанавливаем дамп в отдельную базу, чтобы не трогать исходную <code>shop</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай чистую базу <code>shop_restored</code>. Если она уже есть после прошлой попытки, сначала удали её.</p>\n<p>Мы восстанавливаем дамп в отдельную базу, чтобы не трогать исходную <code>shop</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Восстановить дамп через psql",
+      "taskid": "pgsql_backup_t5_restore",
+      "hint": "<p>SQL-дамп восстанавливается через <code>psql</code>: он просто выполняет команды из файла.</p>\n<pre><code>psql -U student -d shop_restored -f /root/backups/shop_dump.sql</code></pre>",
+      "question_html": "<p>Восстанови SQL-дамп в базу <code>shop_restored</code>.</p>\n<p>Если команда завершилась без ошибок, структура и данные загрузились в новую базу.</p>",
+      "options": [],
+      "raw_description": "<p>Восстанови SQL-дамп в базу <code>shop_restored</code>.</p>\n<p>Если команда завершилась без ошибок, структура и данные загрузились в новую базу.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Сравнить исходную и восстановленную базы",
+      "taskid": "pgsql_backup_t6_compare",
+      "hint": "<p>Главная проверка restore - совпадающее количество строк и читаемые данные в восстановленной базе.</p>\n<pre><code>psql -U student -d shop -tAc \"SELECT 'source', count(*) FROM customers;\"\npsql -U student -d shop_restored -tAc \"SELECT 'restored', count(*) FROM customers;\"\npsql -U student -d shop_restored -c \"SELECT full_name, email FROM customers ORDER BY id LIMIT 3;\"</code></pre>",
+      "question_html": "<p>Сравни количество строк в ключевых таблицах исходной и восстановленной базы.</p>\n<p>Посчитай клиентов в исходной базе и в восстановленной базе. Затем проверь первые строки таблицы <code>customers</code> в <code>shop_restored</code>.</p>\n<p>Ожидаемо: количество клиентов совпадает, а в восстановленной базе видны те же первые строки.</p>",
+      "options": [],
+      "raw_description": "<p>Сравни количество строк в ключевых таблицах исходной и восстановленной базы.</p>\n<p>Посчитай клиентов в исходной базе и в восстановленной базе. Затем проверь первые строки таблицы <code>customers</code> в <code>shop_restored</code>.</p>\n<p>Ожидаемо: количество клиентов совпадает, а в восстановленной базе видны те же первые строки.</p>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab1/setup.yaml"
+}

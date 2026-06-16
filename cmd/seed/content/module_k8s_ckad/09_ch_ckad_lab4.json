@@ -1,0 +1,106 @@
+{
+  "n": 9,
+  "id": "ch_ckad_lab4",
+  "title": "Лабораторная 5: Probes",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Pod с livenessProbe",
+      "taskid": "ckad_lab4_t1_liveness",
+      "hint": "<p>Используй YAML-манифест Pod с образом <code>nginx:alpine</code> и блоком <code>livenessProbe</code>. Применяй через <code>kubectl apply</code>, проверяй через <code>kubectl describe pod</code>.</p>",
+      "question_html": "<p>Создай Pod <code>liveness-pod</code> на образе <code>nginx:alpine</code> с <code>livenessProbe</code> через HTTP: path <code>/</code>, port <code>80</code>.</p><p>Сохрани манифест в <code>/root/liveness-pod.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>liveness-pod</code> на образе <code>nginx:alpine</code> с <code>livenessProbe</code> через HTTP: path <code>/</code>, port <code>80</code>.</p><p>Сохрани манифест в <code>/root/liveness-pod.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Pod с readinessProbe",
+      "taskid": "ckad_lab4_t2_readiness",
+      "hint": "<p>Используй YAML-манифест Pod с образом <code>nginx:alpine</code>. Чтобы path <code>/ready</code> отвечал 200, контейнер должен создать файл <code>/usr/share/nginx/html/ready</code> перед запуском nginx.</p>",
+      "question_html": "<p>Создай Pod <code>readiness-pod</code> на образе <code>nginx:alpine</code> с <code>readinessProbe</code>. Pod станет Ready только когда HTTP path <code>/ready</code> на port <code>80</code> вернёт 200.</p><p>Сохрани манифест в <code>/root/readiness-pod.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>readiness-pod</code> на образе <code>nginx:alpine</code> с <code>readinessProbe</code>. Pod станет Ready только когда HTTP path <code>/ready</code> на port <code>80</code> вернёт 200.</p><p>Сохрани манифест в <code>/root/readiness-pod.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть статус Probes",
+      "taskid": "ckad_lab4_t3_status",
+      "hint": "",
+      "question_html": "<p>Посмотри описание Pod'ов — там видна конфигурация Probes:</p>\n<pre><code>kubectl describe pod liveness-pod | grep -A5 \"Liveness\"</code></pre>\n<pre><code>kubectl describe pod readiness-pod | grep -A5 \"Readiness\"</code></pre>\n<p>Убедись что в секции Probes указаны initialDelaySeconds и periodSeconds как настроено в манифесте.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри описание Pod'ов — там видна конфигурация Probes:</p>\n<pre><code>kubectl describe pod liveness-pod | grep -A5 \"Liveness\"</code></pre>\n<pre><code>kubectl describe pod readiness-pod | grep -A5 \"Readiness\"</code></pre>\n<p>Убедись что в секции Probes указаны initialDelaySeconds и periodSeconds как настроено в манифесте.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Pod с exec probe",
+      "taskid": "ckad_lab4_t4_exec_probe",
+      "hint": "<p>Используй образ <code>nginx:alpine</code>. Команда контейнера должна создать файл <code>/tmp/healthy</code> и оставить процесс запущенным, а probe проверяет этот файл.</p>",
+      "question_html": "<p>Создай Pod <code>exec-probe</code> на образе <code>nginx:alpine</code> с <code>livenessProbe</code> через exec-команду <code>cat /tmp/healthy</code>.</p><p>Сохрани манифест в <code>/root/exec-probe.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>exec-probe</code> на образе <code>nginx:alpine</code> с <code>livenessProbe</code> через exec-команду <code>cat /tmp/healthy</code>.</p><p>Сохрани манифест в <code>/root/exec-probe.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Pod с TCP probe",
+      "taskid": "ckad_lab4_t5_tcp_probe",
+      "hint": "<p>Используй образ <code>redis:alpine</code>: Redis слушает TCP port <code>6379</code>, поэтому он подходит для TCP probe.</p>",
+      "question_html": "<p>Создай Pod <code>tcp-probe</code> на образе <code>redis:alpine</code> с <code>livenessProbe</code> через TCP socket на port <code>6379</code>.</p><p>Сохрани манифест в <code>/root/tcp-probe.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>tcp-probe</code> на образе <code>redis:alpine</code> с <code>livenessProbe</code> через TCP socket на port <code>6379</code>.</p><p>Сохрани манифест в <code>/root/tcp-probe.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть события перезапуска",
+      "taskid": "ckad_lab4_t6_events",
+      "hint": "",
+      "question_html": "<p>Посмотри Pod'ы и события в namespace:</p>\n<pre><code>kubectl get pods -o wide</code></pre>\n<pre><code>kubectl get events --sort-by=.lastTimestamp | tail -20</code></pre>\n<p>Обрати внимание на столбец RESTARTS у Pod'ов и на события Liveness/Readiness в логе событий.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри Pod'ы и события в namespace:</p>\n<pre><code>kubectl get pods -o wide</code></pre>\n<pre><code>kubectl get events --sort-by=.lastTimestamp | tail -20</code></pre>\n<p>Обрати внимание на столбец RESTARTS у Pod'ов и на события Liveness/Readiness в логе событий.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем readiness отличается от liveness?",
+      "taskid": "ckad_lab4_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Pod успешно запустился но загружает данные в кэш (5 минут). Какой probe нужен чтобы трафик не шёл на него в это время?</p>",
+      "options": [
+        {
+          "text": "livenessProbe — перезапустит Pod пока данные грузятся",
+          "correct": false,
+          "explanation": "Нет — перезапуск сбросит загрузку; нужно убрать из балансировки, а не перезапускать"
+        },
+        {
+          "text": "startupProbe — самый подходящий для прогрева",
+          "correct": false,
+          "explanation": "Нет — startupProbe одноразовый при старте; readiness — постоянный"
+        },
+        {
+          "text": "readinessProbe — при провале убирает Pod из Endpoints Service",
+          "correct": true,
+          "explanation": "Верно! readiness контролирует попадание в балансировку; liveness — жизнь контейнера"
+        },
+        {
+          "text": "Probe не нужен — трафик не пойдёт пока Pod не в Running",
+          "correct": false,
+          "explanation": "Нет — Running означает что контейнер запущен, но не обязательно готов"
+        }
+      ],
+      "raw_description": "<p>Pod успешно запустился но загружает данные в кэш (5 минут). Какой probe нужен чтобы трафик не шёл на него в это время?</p><ul>\n<li>livenessProbe — перезапустит Pod пока данные грузятся [Нет — перезапуск сбросит загрузку; нужно убрать из балансировки, а не перезапускать]</li>\n<li>startupProbe — самый подходящий для прогрева [Нет — startupProbe одноразовый при старте; readiness — постоянный]</li>\n<li>+readinessProbe — при провале убирает Pod из Endpoints Service [Верно! readiness контролирует попадание в балансировку; liveness — жизнь контейнера]</li>\n<li>Probe не нужен — трафик не пойдёт пока Pod не в Running [Нет — Running означает что контейнер запущен, но не обязательно готов]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Pod'ы",
+      "taskid": "ckad_lab4_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code>, затем проверь очистку через <code>kubectl get pods</code>.</p>",
+      "question_html": "<p>Удали тестовые Pod'ы <code>liveness-pod</code>, <code>readiness-pod</code>, <code>exec-probe</code> и <code>tcp-probe</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали тестовые Pod'ы <code>liveness-pod</code>, <code>readiness-pod</code>, <code>exec-probe</code> и <code>tcp-probe</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab4/setup.yaml"
+}

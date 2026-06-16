@@ -1,0 +1,12 @@
+{
+  "n": 13,
+  "id": "ch_devops_sim_junior",
+  "title": "Симулятор: Junior DevOps, первый год",
+  "type": "simulator",
+  "isFree": false,
+  "kind": "other",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

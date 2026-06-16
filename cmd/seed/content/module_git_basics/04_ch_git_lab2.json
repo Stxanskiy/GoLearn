@@ -1,0 +1,97 @@
+{
+  "n": 4,
+  "id": "ch_git_lab2",
+  "title": "Лабораторная 2: diff, restore, rm, mv",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "git diff: посмотреть изменения",
+      "taskid": "git_lab2_t1_diff",
+      "hint": "<p>Сравни нужные состояния через <code>git diff</code>: рабочую директорию, индекс или две ветки. Сначала уточни, между чем именно просит сравнить задача.</p>",
+      "question_html": "<p>Добавь строку <code>version = \"1.0\"</code> в файл <code>/root/project/app.py</code> и посмотри изменение через <code>git diff</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь строку <code>version = \"1.0\"</code> в файл <code>/root/project/app.py</code> и посмотри изменение через <code>git diff</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git restore: отменить изменение",
+      "taskid": "git_lab2_t2_restore",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> отмени изменение в <code>app.py</code> (верни к версии из последнего коммита).</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> отмени изменение в <code>app.py</code> (верни к версии из последнего коммита).</p>"
+    },
+    {
+      "type": "check",
+      "title": "git add + git diff --staged",
+      "taskid": "git_lab2_t3_staged",
+      "hint": "<p>Используй <code>git add</code> для staging, а затем <code>git diff</code> в режиме сравнения индекса. Сначала проверь, что файл действительно staged.</p>",
+      "question_html": "<p>Добавь строку <code>author = \"student\"</code> в <code>app.py</code>, затем добавь файл в staging и посмотри staged diff.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь строку <code>author = \"student\"</code> в <code>app.py</code>, затем добавь файл в staging и посмотри staged diff.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git restore --staged: убрать из staging",
+      "taskid": "git_lab2_t4_unstage",
+      "hint": "<p>Используй <code>git restore</code> для работы со staging area. Нужно убрать файл из индекса, не откатывая правки в рабочем дереве.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> убери <code>app.py</code> из staging (не удаляя изменения в файле).</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> убери <code>app.py</code> из staging (не удаляя изменения в файле).</p>"
+    },
+    {
+      "type": "check",
+      "title": "git mv: переименовать файл",
+      "taskid": "git_lab2_t5_mv",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Переименуй <code>README.md</code> в <code>readme.md</code> через git.</p>",
+      "options": [],
+      "raw_description": "<p>Переименуй <code>README.md</code> в <code>readme.md</code> через git.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: git restore",
+      "taskid": "git_lab2_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает <code>git restore --staged &lt;file&gt;</code>?</p>",
+      "options": [
+        {
+          "text": "Удаляет файл из репозитория",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Возвращает файл к версии из последнего коммита",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Убирает файл из staging area, но оставляет изменения в рабочей директории</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Создаёт новый коммит с отменой изменений",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что делает <code>git restore --staged &lt;file&gt;</code>?</p>\n<ul>\n<li>Удаляет файл из репозитория</li>\n<li>Возвращает файл к версии из последнего коммита</li>\n<li><code>+Убирает файл из staging area, но оставляет изменения в рабочей директории</code></li>\n<li>Создаёт новый коммит с отменой изменений</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "git rm: удалить файл",
+      "taskid": "git_lab2_t7_rm",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> удали файл <code>old_config.txt</code> из репозитория и рабочей директории через <code>git rm</code>, затем закоммить.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> удали файл <code>old_config.txt</code> из репозитория и рабочей директории через <code>git rm</code>, затем закоммить.</p>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab2/setup.yaml"
+}

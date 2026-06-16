@@ -1,0 +1,124 @@
+{
+  "n": 10,
+  "id": "ch_helm_lab_templates",
+  "title": "Лабораторная 4: Go template в Helm",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Посмотреть исходный chart",
+      "taskid": "helm_tpl_t1_inspect",
+      "hint": "<p>Начинай с <code>helm template</code>: он показывает итоговый YAML без установки в Kubernetes.</p>",
+      "question_html": "<p>Посмотри файлы подготовленного chart <code>/root/template-lab/webchart</code> и первый render.</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart\n</code></pre>\n<p>Обрати внимание, какие поля уже берутся из <code>values.yaml</code>, а где в templates пока есть повторяющиеся строки.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри файлы подготовленного chart <code>/root/template-lab/webchart</code> и первый render.</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart\n</code></pre>\n<p>Обрати внимание, какие поля уже берутся из <code>values.yaml</code>, а где в templates пока есть повторяющиеся строки.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Добавить helpers",
+      "taskid": "helm_tpl_t2_helpers",
+      "hint": "<p><code>webchart.fullname</code> собирает имя из release и chart, а <code>webchart.labels</code> отдаёт общий набор labels.</p>",
+      "question_html": "<p>В chart уже подготовлен файл <code>/root/template-lab/webchart/templates/_helpers.tpl</code> с named templates <code>webchart.fullname</code> и <code>webchart.labels</code>.</p>\n<p>Посмотри его:</p>\n<pre><code class=\"language-bash\">cat /root/template-lab/webchart/templates/_helpers.tpl\n</code></pre>\n<p>Затем срендерь chart:</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart\n</code></pre>\n<p>Обрати внимание: <code>_helpers.tpl</code> сам не создаёт Kubernetes-ресурс. В нём только объявлены reusable-фрагменты через <code>define</code>. Пока эти helpers не вызваны через <code>include</code> в обычном template, они почти не влияют на render. В следующей задаче ты подключишь их в <code>deployment.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В chart уже подготовлен файл <code>/root/template-lab/webchart/templates/_helpers.tpl</code> с named templates <code>webchart.fullname</code> и <code>webchart.labels</code>.</p>\n<p>Посмотри его:</p>\n<pre><code class=\"language-bash\">cat /root/template-lab/webchart/templates/_helpers.tpl\n</code></pre>\n<p>Затем срендерь chart:</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart\n</code></pre>\n<p>Обрати внимание: <code>_helpers.tpl</code> сам не создаёт Kubernetes-ресурс. В нём только объявлены reusable-фрагменты через <code>define</code>. Пока эти helpers не вызваны через <code>include</code> в обычном template, они почти не влияют на render. В следующей задаче ты подключишь их в <code>deployment.yaml</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Использовать helpers в Deployment",
+      "taskid": "helm_tpl_t3_include_helpers",
+      "hint": "<p>После изменения проверь render через <code>helm template</code>.</p>",
+      "question_html": "<p>Обнови <code>/root/template-lab/webchart/templates/deployment.yaml</code>: в <code>metadata.name</code> используй <code>include \"webchart.fullname\" .</code>, а в <code>metadata.labels</code> подключи <code>include \"webchart.labels\" . | nindent 4</code>.</p>\n<p>Selector и labels Pod template пока не меняй: сейчас задача только про подключение helpers в metadata самого Deployment.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови <code>/root/template-lab/webchart/templates/deployment.yaml</code>: в <code>metadata.name</code> используй <code>include \"webchart.fullname\" .</code>, а в <code>metadata.labels</code> подключи <code>include \"webchart.labels\" . | nindent 4</code>.</p>\n<p>Selector и labels Pod template пока не меняй: сейчас задача только про подключение helpers в metadata самого Deployment.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить container ports через range",
+      "taskid": "helm_tpl_t4_range_ports",
+      "hint": "<p>Внутри <code>range .Values.containerPorts</code> текущая точка — один элемент списка, поэтому используются <code>.name</code> и <code>.port</code>.</p>",
+      "question_html": "<p>Добавь в <code>values.yaml</code> список портов контейнера и отрендери его в Deployment через <code>range</code>.</p>\n<p>Ожидаемые values:</p>\n<pre><code class=\"language-yaml\">containerPorts:\n  - name: http\n    port: 80\n  - name: metrics\n    port: 9090\n</code></pre>\n<p>В <code>deployment.yaml</code> замени статический блок <code>ports</code> у контейнера на цикл:</p>\n<pre><code class=\"language-yaml\">ports:\n{{- range .Values.containerPorts }}\n  - name: {{ .name }}\n    containerPort: {{ .port }}\n{{- end }}\n</code></pre>\n<p>После render в контейнере должны появиться два порта: <code>http: 80</code> и <code>metrics: 9090</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь в <code>values.yaml</code> список портов контейнера и отрендери его в Deployment через <code>range</code>.</p>\n<p>Ожидаемые values:</p>\n<pre><code class=\"language-yaml\">containerPorts:\n  - name: http\n    port: 80\n  - name: metrics\n    port: 9090\n</code></pre>\n<p>В <code>deployment.yaml</code> замени статический блок <code>ports</code> у контейнера на цикл:</p>\n<pre><code class=\"language-yaml\">ports:\n{{- range .Values.containerPorts }}\n  - name: {{ .name }}\n    containerPort: {{ .port }}\n{{- end }}\n</code></pre>\n<p>После render в контейнере должны появиться два порта: <code>http: 80</code> и <code>metrics: 9090</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить resources через toYaml и nindent",
+      "taskid": "helm_tpl_t5_resources",
+      "hint": "<p>Отступ важен: <code>resources:</code> находится внутри контейнера, а вложенные <code>limits</code>/<code>requests</code> должны оказаться глубже.</p>",
+      "question_html": "<p>Добавь в <code>values.yaml</code> блок <code>resources</code> и вставь его в контейнер через <code>toYaml .Values.resources | nindent 12</code>.</p>\n<p>В values должны быть ресурсы с CPU <code>200m</code> и memory <code>128Mi</code> в <code>limits</code> и <code>requests</code>, чтобы render явно показывал одинаковые лимиты и запросы для контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь в <code>values.yaml</code> блок <code>resources</code> и вставь его в контейнер через <code>toYaml .Values.resources | nindent 12</code>.</p>\n<p>В values должны быть ресурсы с CPU <code>200m</code> и memory <code>128Mi</code> в <code>limits</code> и <code>requests</code>, чтобы render явно показывал одинаковые лимиты и запросы для контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Использовать default для replicas",
+      "taskid": "helm_tpl_t6_default",
+      "hint": "<p>Проверяй через <code>helm template</code> с override через <code>--set</code>.</p>",
+      "question_html": "<p>Обнови Deployment template так, чтобы replicas задавались через <code>{{ .Values.replicaCount | default 1 }}</code>. Проверь, что override <code>--set replicaCount=3</code> меняет итоговый YAML.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови Deployment template так, чтобы replicas задавались через <code>{{ .Values.replicaCount | default 1 }}</code>. Проверь, что override <code>--set replicaCount=3</code> меняет итоговый YAML.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Условный ServiceAccount",
+      "taskid": "helm_tpl_t7_if_serviceaccount",
+      "hint": "<p>Оберни весь ресурс в <code>{{- if .Values.serviceAccount.enabled }}</code> и <code>{{- end }}</code>.</p>",
+      "question_html": "<p>Добавь <code>serviceAccount.enabled: true</code> в <code>values.yaml</code> и создай template <code>/root/template-lab/webchart/templates/serviceaccount.yaml</code>.</p>\n<p>ServiceAccount должен рендериться только когда <code>serviceAccount.enabled=true</code>; при <code>--set serviceAccount.enabled=false</code> он должен исчезать из render.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь <code>serviceAccount.enabled: true</code> в <code>values.yaml</code> и создай template <code>/root/template-lab/webchart/templates/serviceaccount.yaml</code>.</p>\n<p>ServiceAccount должен рендериться только когда <code>serviceAccount.enabled=true</code>; при <code>--set serviceAccount.enabled=false</code> он должен исчезать из render.</p>"
+    },
+    {
+      "type": "check",
+      "title": "required для image.repository",
+      "taskid": "helm_tpl_t8_required",
+      "hint": "<p>Используй <code>{{ required \"image.repository is required\" .Values.image.repository }}</code> рядом с image.</p>",
+      "question_html": "<p>Сделай <code>image.repository</code> обязательным через функцию <code>required</code>. Если передать <code>--set image.repository=</code>, <code>helm template</code> должен падать с понятной ошибкой <code>image.repository is required</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай <code>image.repository</code> обязательным через функцию <code>required</code>. Если передать <code>--set image.repository=</code>, <code>helm template</code> должен падать с понятной ошибкой <code>image.repository is required</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm lint и сохранённый render",
+      "taskid": "helm_tpl_t9_lint_render",
+      "hint": "<p><code>helm lint</code> ловит часть ошибок chart, а <code>helm template</code> показывает итоговый YAML.</p>",
+      "question_html": "<p>Проверь chart через <code>helm lint</code>, затем посмотри итоговый render.</p>\n<pre><code class=\"language-bash\">helm lint /root/template-lab/webchart\nhelm template demo /root/template-lab/webchart\n</code></pre>\n<p>Если вывод большой, сохрани render в файл:</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart &gt; /root/template-lab/rendered.yaml\n</code></pre>\n<p>Обрати внимание, что после предыдущих задач в render должны быть <code>Deployment</code>, <code>Service</code> и условный <code>ServiceAccount</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь chart через <code>helm lint</code>, затем посмотри итоговый render.</p>\n<pre><code class=\"language-bash\">helm lint /root/template-lab/webchart\nhelm template demo /root/template-lab/webchart\n</code></pre>\n<p>Если вывод большой, сохрани render в файл:</p>\n<pre><code class=\"language-bash\">helm template demo /root/template-lab/webchart &gt; /root/template-lab/rendered.yaml\n</code></pre>\n<p>Обрати внимание, что после предыдущих задач в render должны быть <code>Deployment</code>, <code>Service</code> и условный <code>ServiceAccount</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему include передают точку?",
+      "taskid": "helm_tpl_t10_quiz_context",
+      "hint": "",
+      "question_html": "<p>Почему в Helm templates обычно пишут <code>{{ include \"webchart.fullname\" . }}</code>, а не просто <code>{{ include \"webchart.fullname\" }}</code>?</p>",
+      "options": [
+        {
+          "text": "Helper сам найдёт глобальный контекст по имени chart",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Точка передаёт helper текущий контекст, чтобы внутри были доступны .Release, .Chart и .Values [Верно! Без контекста helper не сможет читать нужные поля]</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Это нужно только для Service, но не для Deployment",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Так Helm автоматически устанавливает release в namespace",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему в Helm templates обычно пишут <code>{{ include \"webchart.fullname\" . }}</code>, а не просто <code>{{ include \"webchart.fullname\" }}</code>?</p>\n<ul>\n<li>Helper сам найдёт глобальный контекст по имени chart</li>\n<li><code>+Точка передаёт helper текущий контекст, чтобы внутри были доступны .Release, .Chart и .Values [Верно! Без контекста helper не сможет читать нужные поля]</code></li>\n<li>Это нужно только для Service, но не для Deployment</li>\n<li>Так Helm автоматически устанавливает release в namespace</li>\n</ul>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab_templates/setup.yaml"
+}

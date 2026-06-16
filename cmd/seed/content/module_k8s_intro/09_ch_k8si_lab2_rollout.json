@@ -1,0 +1,106 @@
+{
+  "n": 9,
+  "id": "ch_k8si_lab2_rollout",
+  "title": "Лабораторная: Rolling Update и Rollback",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Deployment v1",
+      "taskid": "k8si_rollout_t1_v1",
+      "hint": "<p>Используй <code>kubectl create deployment</code> или YAML, аннотацию добавь через metadata или <code>kubectl annotate</code>. Готовность проверяй через <code>kubectl rollout status</code>.</p>",
+      "question_html": "<p>Создай Deployment <code>rollout-app</code> с 3 репликами образа <code>nginx:alpine</code> и аннотацией <code>kubernetes.io/change-cause=Initial deployment</code> для записи изменений в историю.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Deployment <code>rollout-app</code> с 3 репликами образа <code>nginx:alpine</code> и аннотацией <code>kubernetes.io/change-cause=Initial deployment</code> для записи изменений в историю.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Настроить стратегию Rolling Update",
+      "taskid": "k8si_rollout_t2_strategy",
+      "hint": "<p>Используй <code>kubectl patch</code> или YAML-правку поля <code>spec.strategy</code>. Внутри <code>spec.strategy.rollingUpdate</code> должны быть значения <code>maxSurge: 1</code> и <code>maxUnavailable: 0</code>.</p>",
+      "question_html": "<p>Настрой стратегию Rolling Update для Deployment <code>rollout-app</code> через patch: <code>type: RollingUpdate</code>, <code>maxSurge: 1</code>, <code>maxUnavailable: 0</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Настрой стратегию Rolling Update для Deployment <code>rollout-app</code> через patch: <code>type: RollingUpdate</code>, <code>maxSurge: 1</code>, <code>maxUnavailable: 0</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить образ",
+      "taskid": "k8si_rollout_t3_update",
+      "hint": "<p>Сначала используй <code>kubectl set image</code> и <code>kubectl rollout status</code>, потом <code>kubectl annotate ... --overwrite</code>. Если поменять <code>change-cause</code> до обновления image, старая ревизия тоже может получить новую подпись.</p>",
+      "question_html": "<p>Обнови образ Deployment <code>rollout-app</code> на <code>nginx:1.25-alpine</code>, дождись завершения Rolling Update, а затем подпиши текущую ревизию аннотацией <code>kubernetes.io/change-cause=Update nginx to 1.25-alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови образ Deployment <code>rollout-app</code> на <code>nginx:1.25-alpine</code>, дождись завершения Rolling Update, а затем подпиши текущую ревизию аннотацией <code>kubernetes.io/change-cause=Update nginx to 1.25-alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть историю",
+      "taskid": "k8si_rollout_t4_history",
+      "hint": "<p>После обновления образа должна быть минимум начальная ревизия с <code>Initial deployment</code> и ревизия обновления с <code>Update nginx to 1.25-alpine</code>.</p>",
+      "question_html": "<p>Сохрани историю rollout'ов в файл <code>/root/rollout_history.txt</code>:</p>\n<pre><code>kubectl rollout history deployment/rollout-app &gt; /root/rollout_history.txt</code></pre>\n<p>Потом посмотри файл и убедись, что там есть таблица с ревизиями:</p>\n<pre><code>cat /root/rollout_history.txt</code></pre>",
+      "options": [],
+      "raw_description": "<p>Сохрани историю rollout'ов в файл <code>/root/rollout_history.txt</code>:</p>\n<pre><code>kubectl rollout history deployment/rollout-app &gt; /root/rollout_history.txt</code></pre>\n<p>Потом посмотри файл и убедись, что там есть таблица с ревизиями:</p>\n<pre><code>cat /root/rollout_history.txt</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Откатиться на предыдущую версию",
+      "taskid": "k8si_rollout_t5_rollback",
+      "hint": "<p>Сначала используй <code>kubectl rollout undo</code> и <code>kubectl rollout status</code>, потом <code>kubectl annotate ... --overwrite</code>.</p>",
+      "question_html": "<p>Откатись на предыдущую версию Deployment <code>rollout-app</code> с образом <code>nginx:alpine</code>, дождись завершения rollout, а затем подпиши текущую ревизию аннотацией <code>kubernetes.io/change-cause=Rollback to nginx:alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Откатись на предыдущую версию Deployment <code>rollout-app</code> с образом <code>nginx:alpine</code>, дождись завершения rollout, а затем подпиши текущую ревизию аннотацией <code>kubernetes.io/change-cause=Rollback to nginx:alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "История после отката",
+      "taskid": "k8si_rollout_t6_revision",
+      "hint": "<p>Rollback тоже создаёт новый номер ревизии: Kubernetes возвращает Pod template к предыдущему состоянию, но история продолжает идти вперёд. Ревизия <code>1</code> может исчезнуть как отдельная строка, потому что старый ReplicaSet стал текущей ревизией <code>3</code>. В истории должна быть отдельная причина отката: <code>Rollback to nginx:alpine</code>.</p>",
+      "question_html": "<p>После rollback сохрани текущую историю rollout в <code>/root/revision1.txt</code> и убедись, что Deployment готов:</p>\n<pre><code>kubectl rollout history deployment/rollout-app &gt; /root/revision1.txt</code></pre>\n<pre><code>cat /root/revision1.txt</code></pre>\n<pre><code>kubectl rollout status deployment/rollout-app --timeout=90s</code></pre>\n<p>Старые ревизии Deployment хранятся через старые ReplicaSet. Их количество ограничивает поле <code>spec.revisionHistoryLimit</code> у Deployment; по умолчанию обычно хранится до 10 старых ReplicaSet.</p>\n<p>После rollback в истории может быть только две строки: ревизия обновления и новая ревизия отката. Это нормально: Kubernetes может переиспользовать старый ReplicaSet с начальным Pod template и обновить ему номер ревизии.</p>",
+      "options": [],
+      "raw_description": "<p>После rollback сохрани текущую историю rollout в <code>/root/revision1.txt</code> и убедись, что Deployment готов:</p>\n<pre><code>kubectl rollout history deployment/rollout-app &gt; /root/revision1.txt</code></pre>\n<pre><code>cat /root/revision1.txt</code></pre>\n<pre><code>kubectl rollout status deployment/rollout-app --timeout=90s</code></pre>\n<p>Старые ревизии Deployment хранятся через старые ReplicaSet. Их количество ограничивает поле <code>spec.revisionHistoryLimit</code> у Deployment; по умолчанию обычно хранится до 10 старых ReplicaSet.</p>\n<p>После rollback в истории может быть только две строки: ревизия обновления и новая ревизия отката. Это нормально: Kubernetes может переиспользовать старый ReplicaSet с начальным Pod template и обновить ему номер ревизии.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Recreate vs RollingUpdate",
+      "taskid": "k8si_rollout_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Когда использовать стратегию Recreate вместо RollingUpdate?</p>",
+      "options": [
+        {
+          "text": "Recreate всегда быстрее Rolling Update",
+          "correct": false,
+          "explanation": "Нет — Recreate быстрее деплоится, но вызывает даунтайм"
+        },
+        {
+          "text": "Когда новая версия несовместима со старой и не может работать одновременно (например: миграция БД меняет схему)",
+          "correct": true,
+          "explanation": "Верно! Recreate: сначала все старые Pod'ы удаляются, затем создаются новые. Есть даунтайм"
+        },
+        {
+          "text": "Recreate нужен для stateful приложений",
+          "correct": false,
+          "explanation": "Нет — для stateful используют StatefulSet с собственной стратегией"
+        },
+        {
+          "text": "Recreate используется по умолчанию",
+          "correct": false,
+          "explanation": "Нет — RollingUpdate является стратегией по умолчанию"
+        }
+      ],
+      "raw_description": "<p>Когда использовать стратегию Recreate вместо RollingUpdate?</p><ul>\n<li>Recreate всегда быстрее Rolling Update [Нет — Recreate быстрее деплоится, но вызывает даунтайм]</li>\n<li>+Когда новая версия несовместима со старой и не может работать одновременно (например: миграция БД меняет схему) [Верно! Recreate: сначала все старые Pod'ы удаляются, затем создаются новые. Есть даунтайм]</li>\n<li>Recreate нужен для stateful приложений [Нет — для stateful используют StatefulSet с собственной стратегией]</li>\n<li>Recreate используется по умолчанию [Нет — RollingUpdate является стратегией по умолчанию]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Deployment",
+      "taskid": "k8si_rollout_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete deployment</code>, затем проверь удаление через <code>kubectl get deployment</code>.</p>",
+      "question_html": "<p>Удали Deployment <code>rollout-app</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Deployment <code>rollout-app</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/rollout_lab/setup.yaml"
+}

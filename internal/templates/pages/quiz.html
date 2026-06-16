@@ -4,30 +4,140 @@
 
 {{define "content"}}
 <div class="breadcrumb">
-    <a href="/">Dashboard</a> /
+    <a href="/">Дашборд</a> /
     <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
     <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> /
-    <span>Quiz</span>
+    <span>Квиз</span>
 </div>
 
-<h1 style="margin-bottom: 24px;">{{.Quiz.Title}}</h1>
+<script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>
 
-<form method="POST" action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz">
-    {{range $i, $q := .Questions}}
-    <div class="quiz-question">
-        <h3>Question {{add $i 1}}</h3>
-        <p style="margin-bottom: 12px;">{{$q.Question}}</p>
-        {{range $j, $opt := $q.Options}}
-        <label class="quiz-option">
-            <input type="radio" name="q{{$i}}" value="{{$j}}" required>
-            {{$opt}}
-        </label>
-        {{end}}
+<div class="quiz-wrap">
+    <h1 class="quiz-h1">{{.Quiz.Title}}</h1>
+    <div id="quiz-pills" class="quiz-pills"></div>
+    <div class="quiz-pos"><span id="quiz-topic"></span></div>
+    <div class="quiz-nav-top">
+        <button class="btn btn-outline" id="q-prev" onclick="quizGo(-1)">← Назад</button>
+        <button class="btn btn-outline" id="q-next" onclick="quizGo(1)">Вперёд →</button>
     </div>
-    {{end}}
 
-    <button type="submit" class="btn btn-primary" style="margin-top: 16px; font-size: 1.1em; padding: 12px 32px;">
-        Submit Answers
-    </button>
-</form>
+    <div id="quiz-card" class="quiz-card"></div>
+
+    <div class="quiz-foot">
+        <div id="quiz-progress" class="muted"></div>
+        <form id="quiz-form" method="POST" action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz">
+            <div id="quiz-hidden"></div>
+            <button type="submit" class="btn btn-success" id="q-finish" disabled>Завершить и сохранить</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.quiz-wrap { max-width:760px; margin:0 auto; }
+.quiz-h1 { text-align:center; font-size:1.5em; font-weight:800; margin-bottom:18px; }
+.quiz-pills { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:10px; }
+.quiz-pill { width:36px; height:36px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; transition:all .15s; }
+.quiz-pill.current { outline:2px solid var(--accent); }
+.quiz-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.quiz-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.quiz-pos { text-align:center; color:var(--text-muted); font-size:.85em; margin-bottom:14px; min-height:1em; }
+.quiz-nav-top { display:flex; justify-content:center; gap:10px; margin-bottom:18px; }
+.quiz-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.quiz-q { font-size:1.1em; font-weight:700; margin-bottom:18px; line-height:1.45; }
+.quiz-opt {
+    display:block; width:100%; text-align:left; margin-bottom:10px; padding:14px 16px; border-radius:12px;
+    border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.96em; cursor:pointer; transition:all .15s;
+}
+.quiz-opt:hover:not(:disabled) { border-color:var(--accent); transform:translateX(2px); }
+.quiz-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
+.quiz-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.quiz-opt:disabled { cursor:default; }
+.quiz-expl { margin-top:14px; padding:14px 16px; border-radius:12px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.92em; line-height:1.55; animation:fadeIn .25s ease; }
+.quiz-expl.ok { border-color:rgba(63,185,80,.4); }
+.quiz-expl.no { border-color:rgba(248,81,73,.4); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:none;} }
+.quiz-foot { display:flex; justify-content:space-between; align-items:center; margin-top:20px; flex-wrap:wrap; gap:12px; }
+</style>
+
+<script>
+(function () {
+    var DATA = JSON.parse(document.getElementById('quiz-data').textContent);
+    var answers = new Array(DATA.length).fill(null); // selected index per question
+    var cur = 0;
+
+    var pillsEl = document.getElementById('quiz-pills');
+    var cardEl = document.getElementById('quiz-card');
+    var hiddenEl = document.getElementById('quiz-hidden');
+    var progEl = document.getElementById('quiz-progress');
+    var finishBtn = document.getElementById('q-finish');
+
+    DATA.forEach(function (_, i) {
+        var b = document.createElement('button');
+        b.className = 'quiz-pill'; b.textContent = i + 1;
+        b.onclick = function () { cur = i; render(); };
+        pillsEl.appendChild(b);
+    });
+
+    window.quizGo = function (d) { cur = Math.max(0, Math.min(DATA.length - 1, cur + d)); render(); };
+
+    function choose(i) {
+        if (answers[cur] !== null) return; // lock after first answer
+        answers[cur] = i;
+        render();
+        updateProgress();
+    }
+
+    function updateProgress() {
+        var done = answers.filter(function (a) { return a !== null; }).length;
+        var correct = answers.filter(function (a, i) { return a === DATA[i].c; }).length;
+        progEl.textContent = 'Отвечено ' + done + ' из ' + DATA.length + ' · верно ' + correct;
+        finishBtn.disabled = done < DATA.length;
+        hiddenEl.innerHTML = '';
+        answers.forEach(function (a, i) {
+            if (a !== null) {
+                var inp = document.createElement('input');
+                inp.type = 'hidden'; inp.name = 'q' + i; inp.value = a;
+                hiddenEl.appendChild(inp);
+            }
+        });
+    }
+
+    function render() {
+        var q = DATA[cur];
+        var ans = answers[cur];
+        document.getElementById('q-prev').disabled = cur === 0;
+        document.getElementById('q-next').disabled = cur === DATA.length - 1;
+
+        var html = '<div class="quiz-q">' + q.q + '</div>';
+        q.o.forEach(function (opt, i) {
+            var cls = 'quiz-opt';
+            if (ans !== null) {
+                if (i === q.c) cls += ' correct';
+                else if (i === ans) cls += ' wrong';
+            }
+            html += '<button class="' + cls + '" data-i="' + i + '"' + (ans !== null ? ' disabled' : '') + '>' + opt + '</button>';
+        });
+        if (ans !== null) {
+            var ok = ans === q.c;
+            var expl = (q.e || '').replace(/^\s*верно[!,.\s]*/i, '');
+            html += '<div class="quiz-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + expl + '</div>';
+        }
+        cardEl.innerHTML = html;
+        cardEl.querySelectorAll('.quiz-opt').forEach(function (b) {
+            b.onclick = function () { choose(parseInt(b.dataset.i, 10)); };
+        });
+
+        Array.prototype.forEach.call(pillsEl.children, function (p, i) {
+            p.classList.remove('current', 'correct', 'wrong');
+            if (i === cur) p.classList.add('current');
+            if (answers[i] !== null) p.classList.add(answers[i] === DATA[i].c ? 'correct' : 'wrong');
+        });
+    }
+
+    function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    render();
+    updateProgress();
+})();
+</script>
 {{end}}

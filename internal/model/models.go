@@ -12,6 +12,13 @@ type Module struct {
 	Track         string    `json:"track" db:"track"`               // backend | devops | shared
 	Difficulty    string    `json:"difficulty" db:"difficulty"`       // beginner | intermediate | advanced | expert
 	Prerequisites []string  `json:"prerequisites" db:"prerequisites"` // module slugs
+	Category      string    `json:"category" db:"category"`           // explicit catalog tag; empty -> derived
+	Label         string    `json:"label" db:"label"`                 // Старт | Практика | Вызов; empty -> derived
+	Tags          []string  `json:"tags"`                             // topic chips (JSON array in DB)
+	CoverImage    string    `json:"cover_image" db:"cover_image"`     // real photo; empty -> generated SVG
+	Accent        string    `json:"accent" db:"accent"`               // gradient key; empty -> by category
+	EstMinutes    int       `json:"est_minutes" db:"est_minutes"`     // 0 -> derived from lesson count
+	Source        string    `json:"source" db:"source"`               // seed | admin
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 }
 
@@ -25,7 +32,20 @@ type Lesson struct {
 	OrderNum   int       `json:"order_num" db:"order_num"`
 	Difficulty string    `json:"difficulty" db:"difficulty"` // beginner | intermediate | advanced | expert
 	Track      string    `json:"track" db:"track"`           // backend | devops | shared
+	Kind       string    `json:"kind" db:"kind"`             // theory | quiz | lab | sim
+	VMImage    string    `json:"vm_image" db:"vm_image"`     // lab terminal image
+	VMInit     string    `json:"vm_init" db:"vm_init"`       // lab setup reference/script
+	Source     string    `json:"source" db:"source"`         // seed | admin
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+}
+
+// Specialization is a top-level section (admin-managed).
+type Specialization struct {
+	Slug        string `json:"slug" db:"slug"`
+	Name        string `json:"name" db:"name"`
+	Icon        string `json:"icon" db:"icon"`
+	Description string `json:"description" db:"description"`
+	OrderNum    int    `json:"order_num" db:"order_num"`
 }
 
 // Quiz represents a quiz attached to a lesson.
@@ -107,4 +127,21 @@ type DashboardStats struct {
 	InProgressCount int     `json:"in_progress_count"`
 	AvgQuizScore    float64 `json:"avg_quiz_score"`
 	CurrentStreak   int     `json:"current_streak"`
+}
+
+// ProgressOverview powers the "Мой прогресс" dashboard (devops404 style).
+type ProgressOverview struct {
+	Streak        int
+	ActiveDays    int
+	TasksSolved   int
+	LabsDone      int
+	LabsTotal     int
+	ArticlesRead  int
+	ArticlesTotal int
+	TestsPassed   int
+	Simulators    int
+	SimulatorsTot int
+	Trainers      int
+	TrainersTot   int
+	Activity      map[string]int // "YYYY-MM-DD" -> activity count
 }

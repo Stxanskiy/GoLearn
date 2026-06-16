@@ -1,0 +1,135 @@
+{
+  "n": 18,
+  "id": "ch_helm_lab_helmfile",
+  "title": "Лабораторная 8: Helmfile",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Проверить helmfile",
+      "taskid": "helmfile_t1_version",
+      "hint": "<p>В этой лаборатории Helmfile установлен отдельно, потому что в базовой VM его нет.</p>",
+      "question_html": "<p>Setup лаборатории положил Helmfile binary в <code>/usr/local/bin/helmfile</code>. Проверь версию и help:</p>\n<pre><code class=\"language-bash\">helmfile --version\nhelmfile --help | head -30\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Setup лаборатории положил Helmfile binary в <code>/usr/local/bin/helmfile</code>. Проверь версию и help:</p>\n<pre><code class=\"language-bash\">helmfile --version\nhelmfile --help | head -30\n</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Values для dev и staging",
+      "taskid": "helmfile_t2_values",
+      "hint": "<p>Чем ближе values-файл к структуре chart, тем проще Helmfile. Тогда в Helmfile не нужно вручную перекладывать <code>imageTag</code> в <code>image.tag</code> или <code>servicePort</code> в <code>service.port</code>.</p>",
+      "question_html": "<p>Создай values-файлы:</p>\n\n<p>Эти файлы должны быть сразу в формате values, который ожидает chart: <code>replicaCount</code>, <code>environment</code>, <code>image.repository</code>, <code>image.tag</code>, <code>service.type</code>, <code>service.port</code>, <code>service.targetPort</code>.</p>\n<p>Для <code>dev</code> задай 1 реплику, environment <code>dev</code>, образ <code>nginx:alpine</code>, service port <code>8080</code>, targetPort <code>80</code>.</p>\n<p>Для <code>staging</code> задай 2 реплики, environment <code>staging</code>, образ <code>nginx:alpine</code>, service port <code>8081</code>, targetPort <code>80</code>.</p>",
+      "options": [
+        {
+          "text": "<code>/root/helmfile-lab/values/dev.yaml</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>/root/helmfile-lab/values/staging.yaml</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Создай values-файлы:</p>\n<ul>\n<li><code>/root/helmfile-lab/values/dev.yaml</code></li>\n<li><code>/root/helmfile-lab/values/staging.yaml</code></li>\n</ul>\n<p>Эти файлы должны быть сразу в формате values, который ожидает chart: <code>replicaCount</code>, <code>environment</code>, <code>image.repository</code>, <code>image.tag</code>, <code>service.type</code>, <code>service.port</code>, <code>service.targetPort</code>.</p>\n<p>Для <code>dev</code> задай 1 реплику, environment <code>dev</code>, образ <code>nginx:alpine</code>, service port <code>8080</code>, targetPort <code>80</code>.</p>\n<p>Для <code>staging</code> задай 2 реплики, environment <code>staging</code>, образ <code>nginx:alpine</code>, service port <code>8081</code>, targetPort <code>80</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать helmfile.yaml.gotmpl",
+      "taskid": "helmfile_t3_state",
+      "hint": "<p>В Helmfile <code>1.5.x</code> <code>environments</code> и <code>releases</code> должны быть в разных YAML-documents: сначала environments, потом строка <code>---</code>, потом releases. Работай из директории <code>/root/helmfile-lab</code>, чтобы относительный путь <code>./charts/webapp</code> был понятен Helmfile. Namespace уже подготовлен platform-слоем, поэтому <code>createNamespace: false</code> отключает попытку Helm управлять объектом Namespace.</p>",
+      "question_html": "<p>Создай <code>/root/helmfile-lab/helmfile.yaml.gotmpl</code>. В нём должны быть environments <code>dev</code> и <code>staging</code>, затем разделитель <code>---</code>, а ниже release <code>web-{{ .Environment.Name }}</code> с chart <code>./charts/webapp</code> и <code>createNamespace: false</code>.</p>\n<p>Values для chart подключи напрямую из файла выбранного environment:</p>\n<pre><code class=\"language-yaml\">values:\n  - values/{{ .Environment.Name }}.yaml\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай <code>/root/helmfile-lab/helmfile.yaml.gotmpl</code>. В нём должны быть environments <code>dev</code> и <code>staging</code>, затем разделитель <code>---</code>, а ниже release <code>web-{{ .Environment.Name }}</code> с chart <code>./charts/webapp</code> и <code>createNamespace: false</code>.</p>\n<p>Values для chart подключи напрямую из файла выбранного environment:</p>\n<pre><code class=\"language-yaml\">values:\n  - values/{{ .Environment.Name }}.yaml\n</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Render dev",
+      "taskid": "helmfile_t4_template_dev",
+      "hint": "<p>Используй <code>helmfile template</code> для нужного environment и проверь в render имя release, replicas и image.</p>",
+      "question_html": "<p>Выполни render для <code>dev</code>. Команда ниже сохраняет YAML в файл, чтобы его было удобно открыть и сравнить:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev template &gt; /root/helmfile-lab/render-dev.yaml\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Выполни render для <code>dev</code>. Команда ниже сохраняет YAML в файл, чтобы его было удобно открыть и сравнить:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev template &gt; /root/helmfile-lab/render-dev.yaml\n</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Render staging",
+      "taskid": "helmfile_t5_template_staging",
+      "hint": "<p>В staging render должны отличаться replicas, environment label и service port.</p>",
+      "question_html": "<p>Выполни render для <code>staging</code>. Команда ниже сохраняет YAML в файл, чтобы его было удобно открыть и сравнить:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e staging template &gt; /root/helmfile-lab/render-staging.yaml\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Выполни render для <code>staging</code>. Команда ниже сохраняет YAML в файл, чтобы его было удобно открыть и сравнить:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e staging template &gt; /root/helmfile-lab/render-staging.yaml\n</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Sync dev",
+      "taskid": "helmfile_t6_sync_dev",
+      "hint": "<p>После sync проверь release через <code>helm status</code> и созданный Deployment через <code>kubectl get deploy</code>.</p>",
+      "question_html": "<p>Примени dev environment:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev sync\n</code></pre>\n<p>Release <code>web-dev</code> должен перейти в статус <code>deployed</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Примени dev environment:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev sync\n</code></pre>\n<p>Release <code>web-dev</code> должен перейти в статус <code>deployed</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Sync staging",
+      "taskid": "helmfile_t7_sync_staging",
+      "hint": "<p>Это тот же chart, но другое environment и другие values.</p>",
+      "question_html": "<p>Примени staging environment:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e staging sync\n</code></pre>\n<p>Release <code>web-staging</code> должен перейти в статус <code>deployed</code>, а Deployment должен иметь 2 реплики.</p>",
+      "options": [],
+      "raw_description": "<p>Примени staging environment:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e staging sync\n</code></pre>\n<p>Release <code>web-staging</code> должен перейти в статус <code>deployed</code>, а Deployment должен иметь 2 реплики.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Изменить dev values и повторить sync",
+      "taskid": "helmfile_t8_update_dev",
+      "hint": "<p>Helmfile повторно запускает Helm upgrade для release из выбранного environment.</p>",
+      "question_html": "<p>Обнови <code>/root/helmfile-lab/values/dev.yaml</code>: поставь <code>replicaCount: 2</code>. Образ оставь <code>nginx:alpine</code>, чтобы задача оставалась про Helmfile и values, а не про загрузку новых images. Затем снова выполни:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev sync\n</code></pre>\n<p>Deployment <code>web-dev-webapp</code> должен обновиться.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови <code>/root/helmfile-lab/values/dev.yaml</code>: поставь <code>replicaCount: 2</code>. Образ оставь <code>nginx:alpine</code>, чтобы задача оставалась про Helmfile и values, а не про загрузку новых images. Затем снова выполни:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev sync\n</code></pre>\n<p>Deployment <code>web-dev-webapp</code> должен обновиться.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "template vs sync",
+      "taskid": "helmfile_t9_quiz_template_sync",
+      "hint": "",
+      "question_html": "<p>В чём практическая разница между <code>helmfile template</code> и <code>helmfile sync</code>?</p>",
+      "options": [
+        {
+          "text": "<code>template</code> удаляет releases, а <code>sync</code> только показывает YAML и сохраняет локальный план изменений для следующего запуска",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+template рендерит YAML без изменения кластера, sync устанавливает или обновляет releases [Верно! Поэтому перед sync полезно смотреть template]</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>template</code> работает только с dev, а <code>sync</code> только с prod",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>sync</code> нужен только для скачивания Helmfile binary",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В чём практическая разница между <code>helmfile template</code> и <code>helmfile sync</code>?</p>\n<ul>\n<li><code>template</code> удаляет releases, а <code>sync</code> только показывает YAML и сохраняет локальный план изменений для следующего запуска</li>\n<li><code>+template рендерит YAML без изменения кластера, sync устанавливает или обновляет releases [Верно! Поэтому перед sync полезно смотреть template]</code></li>\n<li><code>template</code> работает только с dev, а <code>sync</code> только с prod</li>\n<li><code>sync</code> нужен только для скачивания Helmfile binary</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Cleanup через destroy",
+      "taskid": "helmfile_t10_destroy",
+      "hint": "<p><code>destroy</code> удаляет releases из state-файла для выбранного environment.</p>",
+      "question_html": "<p>Удали releases обоих окружений:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev destroy\nhelmfile -f helmfile.yaml.gotmpl -e staging destroy\n</code></pre>\n<p>Проверь, что <code>web-dev</code> и <code>web-staging</code> больше не отображаются как Helm releases.</p>",
+      "options": [],
+      "raw_description": "<p>Удали releases обоих окружений:</p>\n<pre><code class=\"language-bash\">cd /root/helmfile-lab\nhelmfile -f helmfile.yaml.gotmpl -e dev destroy\nhelmfile -f helmfile.yaml.gotmpl -e staging destroy\n</code></pre>\n<p>Проверь, что <code>web-dev</code> и <code>web-staging</code> больше не отображаются как Helm releases.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab_helmfile/setup.yaml"
+}

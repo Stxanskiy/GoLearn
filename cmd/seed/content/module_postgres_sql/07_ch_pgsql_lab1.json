@@ -1,0 +1,106 @@
+{
+  "n": 7,
+  "id": "ch_pgsql_lab1",
+  "title": "Лабораторная 2: psql, SELECT и сортировка",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Войти в psql",
+      "taskid": "pgsql_lab1_t1_enter_psql",
+      "hint": "<p>Для выхода из <code>psql</code> используй <code>\\q</code>.</p>",
+      "question_html": "<p>Открой интерактивный режим PostgreSQL через <code>psql</code>. В этой лабораторной мы тренируем работу в терминале и чтение результата SQL-запросов.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>Если видишь приглашение <code>shop=&gt;</code>, ты внутри базы и можешь писать SQL.</p>",
+      "options": [],
+      "raw_description": "<p>Открой интерактивный режим PostgreSQL через <code>psql</code>. В этой лабораторной мы тренируем работу в терминале и чтение результата SQL-запросов.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>Если видишь приглашение <code>shop=&gt;</code>, ты внутри базы и можешь писать SQL.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть список таблиц",
+      "taskid": "pgsql_lab1_t2_dt",
+      "hint": "<p><code>\\dt</code> — внутренняя команда <code>psql</code>, это не SQL-запрос. Точку с запятой после неё ставить не нужно.</p>\n<pre><code>\\dt</code></pre>",
+      "question_html": "<p>Продолжай в той же сессии <code>psql</code>. Посмотри список таблиц.</p>\n<p>В учебной базе должны быть таблицы <code>customers</code>, <code>products</code>, <code>orders</code>, <code>order_items</code> и <code>support_tickets</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Продолжай в той же сессии <code>psql</code>. Посмотри список таблиц.</p>\n<p>В учебной базе должны быть таблицы <code>customers</code>, <code>products</code>, <code>orders</code>, <code>order_items</code> и <code>support_tickets</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть структуру customers",
+      "taskid": "pgsql_lab1_t3_describe_customers",
+      "hint": "<p>Если ты вышел из <code>psql</code>, снова войди: <code>psql -U student -d shop</code>.</p>\n<pre><code>\\d customers</code></pre>",
+      "question_html": "<p>Посмотри структуру таблицы клиентов <code>customers</code>.</p>\n<p>Найди колонки <code>id</code>, <code>full_name</code>, <code>email</code>, <code>city</code>, <code>registered_at</code> и <code>is_vip</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри структуру таблицы клиентов <code>customers</code>.</p>\n<p>Найди колонки <code>id</code>, <code>full_name</code>, <code>email</code>, <code>city</code>, <code>registered_at</code> и <code>is_vip</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Первый SELECT",
+      "taskid": "pgsql_lab1_t4_first_select",
+      "hint": "<p>Нужны ровно четыре колонки: <code>id</code>, <code>full_name</code>, <code>email</code>, <code>city</code>. Сортировка по <code>id</code> делает первые пять строк предсказуемыми.</p>\n<pre><code>SELECT id, full_name, email, city\nFROM customers\nORDER BY id\nLIMIT 5;</code></pre>",
+      "question_html": "<p><code>psql</code> показывает обычную таблицу. Выведи первых пять клиентов из таблицы <code>customers</code>.</p>\n<p>Нужны колонки <code>id</code>, <code>full_name</code>, <code>email</code> и <code>city</code>. Отсортируй строки по <code>id</code> и ограничь вывод пятью строками.</p>\n<p>Обрати внимание на порядок строк, email клиентов и значение города. У одного клиента город не заполнен — так ты увидишь, как в выводе выглядит <code>NULL</code>.</p>",
+      "options": [],
+      "raw_description": "<p><code>psql</code> показывает обычную таблицу. Выведи первых пять клиентов из таблицы <code>customers</code>.</p>\n<p>Нужны колонки <code>id</code>, <code>full_name</code>, <code>email</code> и <code>city</code>. Отсортируй строки по <code>id</code> и ограничь вывод пятью строками.</p>\n<p>Обрати внимание на порядок строк, email клиентов и значение города. У одного клиента город не заполнен — так ты увидишь, как в выводе выглядит <code>NULL</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Выбрать конкретные колонки товаров",
+      "taskid": "pgsql_lab1_t5_products_columns",
+      "hint": "<p>Если случайно выберешь <code>SELECT *</code>, колонок будет больше, чем нужно. В этой задаче тренируем явный список колонок.</p>\n<pre><code>SELECT name, category, price, in_stock\nFROM products\nORDER BY id;</code></pre>",
+      "question_html": "<p>Выведи товары. Нужны только колонки <code>name</code>, <code>category</code>, <code>price</code> и <code>in_stock</code>, порядок строк — по <code>id</code>.</p>\n<p>Посмотри, какие товары уже есть в базе: среди них есть железо, книги, курсы и мерч. Вывод должен содержать только четыре выбранные колонки.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи товары. Нужны только колонки <code>name</code>, <code>category</code>, <code>price</code> и <code>in_stock</code>, порядок строк — по <code>id</code>.</p>\n<p>Посмотри, какие товары уже есть в базе: среди них есть железо, книги, курсы и мерч. Вывод должен содержать только четыре выбранные колонки.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посчитать выражение в SELECT",
+      "taskid": "pgsql_lab1_t6_expression",
+      "hint": "<p>Колонка <code>line_total</code> вычисляется выражением <code>quantity * unit_price</code>. Не забудь alias <code>AS line_total</code> и точный порядок сортировки.</p>\n<pre><code>SELECT order_id, product_id, quantity, unit_price,\n       quantity * unit_price AS line_total\nFROM order_items\nORDER BY order_id, product_id;</code></pre>",
+      "question_html": "<p>Посчитай сумму каждой строки заказа прямо в <code>SELECT</code>.</p>\n<p>Нужные колонки: <code>order_id</code>, <code>product_id</code>, <code>quantity</code>, <code>unit_price</code>, <code>line_total</code>. Порядок — <code>ORDER BY order_id, product_id</code>.</p>\n<p>Посмотри на колонку <code>line_total</code>: в ней PostgreSQL умножает количество на цену за единицу для каждой строки заказа.</p>",
+      "options": [],
+      "raw_description": "<p>Посчитай сумму каждой строки заказа прямо в <code>SELECT</code>.</p>\n<p>Нужные колонки: <code>order_id</code>, <code>product_id</code>, <code>quantity</code>, <code>unit_price</code>, <code>line_total</code>. Порядок — <code>ORDER BY order_id, product_id</code>.</p>\n<p>Посмотри на колонку <code>line_total</code>: в ней PostgreSQL умножает количество на цену за единицу для каждой строки заказа.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Уникальные значения",
+      "taskid": "pgsql_lab1_t7_distinct",
+      "hint": "<p><code>DISTINCT</code> убирает повторы. <code>NULLS LAST</code> относится к сортировке: оно отправляет строки без значения города в конец списка.</p>\n<pre><code>SELECT DISTINCT city\nFROM customers\nORDER BY city NULLS LAST;</code></pre>",
+      "question_html": "<p>Выведи уникальные города клиентов из таблицы <code>customers</code>. Значение <code>NULL</code> должно быть видно как <code>[NULL]</code>.</p>\n<p>Отсортируй города по алфавиту, а пустое значение отправь в конец списка.</p>\n<p>Посмотри, какие города встречаются в таблице клиентов. Повторы исчезнут, а пустое значение города окажется в конце списка.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи уникальные города клиентов из таблицы <code>customers</code>. Значение <code>NULL</code> должно быть видно как <code>[NULL]</code>.</p>\n<p>Отсортируй города по алфавиту, а пустое значение отправь в конец списка.</p>\n<p>Посмотри, какие города встречаются в таблице клиентов. Повторы исчезнут, а пустое значение города окажется в конце списка.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Одноразовый запрос из shell",
+      "taskid": "pgsql_lab1_t8_one_shot",
+      "hint": "<p><code>-tAc</code> удобен для скриптов: без заголовков, без рамки таблицы, только результат. Здесь файл сохранять не нужно — выбери вариант, который вернул запрос.</p>\n<pre><code>psql -U student -d shop -tAc \"SELECT count(*) FROM customers;\"</code></pre>",
+      "question_html": "<p>Посмотри сколько клиентов лежит в таблице <code>customers</code>.</p>\n<p>Какой результат вернул запрос?</p>",
+      "options": [
+        {
+          "text": "6",
+          "correct": false,
+          "explanation": "Нет — проверь запрос к таблице customers"
+        },
+        {
+          "text": "7",
+          "correct": false,
+          "explanation": "Нет — в таблице больше строк"
+        },
+        {
+          "text": "8",
+          "correct": true,
+          "explanation": "Верно! В учебной таблице customers восемь клиентов"
+        },
+        {
+          "text": "10",
+          "correct": false,
+          "explanation": "Нет — это не количество клиентов"
+        }
+      ],
+      "raw_description": "<p>Посмотри сколько клиентов лежит в таблице <code>customers</code>.</p>\n<p>Какой результат вернул запрос?</p>\n<ul>\n<li>6 [Нет — проверь запрос к таблице customers]</li>\n<li>7 [Нет — в таблице больше строк]</li>\n<li>+8 [Верно! В учебной таблице customers восемь клиентов]</li>\n<li>10 [Нет — это не количество клиентов]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab1/setup.yaml"
+}

@@ -1,0 +1,313 @@
+{
+  "n": 14,
+  "id": "ch_git_8_quiz",
+  "title": "Квиз: Git основы",
+  "type": "quiz",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "staging area",
+      "taskid": "git_quiz8_t1",
+      "hint": "",
+      "question_html": "<p>Ты изменил 5 файлов, но хочешь закоммитить только 2 из них. Какая команда позволяет это сделать?</p>",
+      "options": [
+        {
+          "text": "git add --partial file1 file2",
+          "correct": false,
+          "explanation": "Нет — для частичного добавления используют git add -p (patch mode)"
+        },
+        {
+          "text": "git commit --only file1 file2",
+          "correct": false,
+          "explanation": "Нет — такого флага нет"
+        },
+        {
+          "text": "git select file1 file2 && git commit",
+          "correct": false,
+          "explanation": "Нет — команды git select не существует"
+        },
+        {
+          "text": "git add file1 file2, затем git commit",
+          "correct": true,
+          "explanation": "Верно! staging area (индекс) именно для этого: git add позволяет точно выбрать что войдёт в коммит"
+        }
+      ],
+      "raw_description": "<p>Ты изменил 5 файлов, но хочешь закоммитить только 2 из них. Какая команда позволяет это сделать?</p><ul>\n<li>git add --partial file1 file2 [Нет — для частичного добавления используют git add -p (patch mode)]</li>\n<li>git commit --only file1 file2 [Нет — такого флага нет]</li>\n<li>git select file1 file2 && git commit [Нет — команды git select не существует]</li>\n<li>+git add file1 file2, затем git commit [Верно! staging area (индекс) именно для этого: git add позволяет точно выбрать что войдёт в коммит]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем ветки",
+      "taskid": "git_quiz8_t2",
+      "hint": "",
+      "question_html": "<p>Зачем создавать ветку для новой функциональности вместо работы напрямую в <code>main</code>?</p>",
+      "options": [
+        {
+          "text": "В main нельзя делать коммиты",
+          "correct": false,
+          "explanation": "Нет — технически можно, но это плохая практика в командной работе"
+        },
+        {
+          "text": "Ветки работают быстрее",
+          "correct": false,
+          "explanation": "Нет — скорость не причина использования веток"
+        },
+        {
+          "text": "Так требует GitHub",
+          "correct": false,
+          "explanation": "Нет — GitHub не обязывает, это лучшая практика"
+        },
+        {
+          "text": "Ветка изолирует изменения — можно работать не ломая main, легко откатить, создать PR для ревью",
+          "correct": true,
+          "explanation": "Верно! Это основа Git Flow и trunk-based development. main всегда должен быть стабильным"
+        }
+      ],
+      "raw_description": "<p>Зачем создавать ветку для новой функциональности вместо работы напрямую в <code>main</code>?</p><ul>\n<li>В main нельзя делать коммиты [Нет — технически можно, но это плохая практика в командной работе]</li>\n<li>Ветки работают быстрее [Нет — скорость не причина использования веток]</li>\n<li>Так требует GitHub [Нет — GitHub не обязывает, это лучшая практика]</li>\n<li>+Ветка изолирует изменения — можно работать не ломая main, легко откатить, создать PR для ревью [Верно! Это основа Git Flow и trunk-based development. main всегда должен быть стабильным]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "fetch vs pull",
+      "taskid": "git_quiz8_t3",
+      "hint": "",
+      "question_html": "<p>Команда <code>git fetch</code> в отличие от <code>git pull</code>:</p>",
+      "options": [
+        {
+          "text": "Создаёт новый коммит",
+          "correct": false,
+          "explanation": "Нет — fetch не создаёт коммитов"
+        },
+        {
+          "text": "Синхронизирует только теги",
+          "correct": false,
+          "explanation": "Нет — fetch синхронизирует ветки и теги"
+        },
+        {
+          "text": "Только загружает данные с сервера, не меняя рабочую директорию и текущую ветку",
+          "correct": true,
+          "explanation": "Верно! fetch безопасен — ты видишь что изменилось (git log origin/main), и потом сам решаешь как merge/rebase. pull = fetch + merge"
+        },
+        {
+          "text": "Удаляет локальные ветки",
+          "correct": false,
+          "explanation": "Нет — fetch только скачивает изменения"
+        }
+      ],
+      "raw_description": "<p>Команда <code>git fetch</code> в отличие от <code>git pull</code>:</p><ul>\n<li>Создаёт новый коммит [Нет — fetch не создаёт коммитов]</li>\n<li>Синхронизирует только теги [Нет — fetch синхронизирует ветки и теги]</li>\n<li>+Только загружает данные с сервера, не меняя рабочую директорию и текущую ветку [Верно! fetch безопасен — ты видишь что изменилось (git log origin/main), и потом сам решаешь как merge/rebase. pull = fetch + merge]</li>\n<li>Удаляет локальные ветки [Нет — fetch только скачивает изменения]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Маркеры конфликта",
+      "taskid": "git_quiz8_t4",
+      "hint": "",
+      "question_html": "<p>В файле с конфликтом ты видишь <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>. Что означает часть между <code>=======</code> и <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>?</p>",
+      "options": [
+        {
+          "text": "Версия из текущей ветки",
+          "correct": false,
+          "explanation": "Нет — текущая ветка (HEAD) — между <<< и ==="
+        },
+        {
+          "text": "Версия файла до любых изменений",
+          "correct": false,
+          "explanation": "Нет — это была бы «base» версия, её можно увидеть через git checkout --conflict=diff3"
+        },
+        {
+          "text": "Автоматически выбранное разрешение",
+          "correct": false,
+          "explanation": "Нет — Git не выбирает автоматически при конфликте"
+        },
+        {
+          "text": "Версия из ветки, которую ты сливаешь (incoming change)",
+          "correct": true,
+          "explanation": "Верно! Между <<< и === — твоя версия (HEAD). Между === и >>> — входящая версия (ветка, которую merge'ишь). Нужно убрать маркеры и оставить нужное"
+        }
+      ],
+      "raw_description": "<p>В файле с конфликтом ты видишь <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>. Что означает часть между <code>=======</code> и <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>?</p><ul>\n<li>Версия из текущей ветки [Нет — текущая ветка (HEAD) — между <<< и ===]</li>\n<li>Версия файла до любых изменений [Нет — это была бы «base» версия, её можно увидеть через git checkout --conflict=diff3]</li>\n<li>Автоматически выбранное разрешение [Нет — Git не выбирает автоматически при конфликте]</li>\n<li>+Версия из ветки, которую ты сливаешь (incoming change) [Верно! Между <<< и === — твоя версия (HEAD). Между === и >>> — входящая версия (ветка, которую merge'ишь). Нужно убрать маркеры и оставить нужное]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "git log форматы",
+      "taskid": "git_quiz8_t5",
+      "hint": "",
+      "question_html": "<p>Что показывает команда <code>git log --oneline --graph --all</code>?</p>",
+      "options": [
+        {
+          "text": "Только коммиты с конфликтами",
+          "correct": false,
+          "explanation": "Нет — нет такой опции у git log"
+        },
+        {
+          "text": "Список файлов изменённых в каждом коммите",
+          "correct": false,
+          "explanation": "Нет — для этого нужен git log --stat или git log -p"
+        },
+        {
+          "text": "Граф всех веток с кратким описанием коммитов (хеш + сообщение) в одну строку",
+          "correct": true,
+          "explanation": "Верно! --oneline = хеш+заголовок в одну строку, --graph = ASCII-граф веток и слияний, --all = включая все удалённые ветки"
+        },
+        {
+          "text": "Только последние коммиты текущей ветки",
+          "correct": false,
+          "explanation": "Нет — --all показывает все ветки"
+        }
+      ],
+      "raw_description": "<p>Что показывает команда <code>git log --oneline --graph --all</code>?</p><ul>\n<li>Только коммиты с конфликтами [Нет — нет такой опции у git log]</li>\n<li>Список файлов изменённых в каждом коммите [Нет — для этого нужен git log --stat или git log -p]</li>\n<li>+Граф всех веток с кратким описанием коммитов (хеш + сообщение) в одну строку [Верно! --oneline = хеш+заголовок в одну строку, --graph = ASCII-граф веток и слияний, --all = включая все удалённые ветки]</li>\n<li>Только последние коммиты текущей ветки [Нет — --all показывает все ветки]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "git reset",
+      "taskid": "git_quiz8_t6",
+      "hint": "",
+      "question_html": "<p>Ты сделал коммит с ошибкой. Какая команда отменит последний коммит, оставив изменения в рабочей директории?</p>",
+      "options": [
+        {
+          "text": "git delete HEAD",
+          "correct": false,
+          "explanation": "Нет — такой команды нет"
+        },
+        {
+          "text": "git commit --undo",
+          "correct": false,
+          "explanation": "Нет — такого флага нет"
+        },
+        {
+          "text": "git reset HEAD~1 (или git reset --mixed HEAD~1)",
+          "correct": true,
+          "explanation": "Верно! --mixed (по умолчанию) убирает коммит, возвращает изменения в working directory. --soft сохраняет в staging, --hard полностью удаляет изменения"
+        },
+        {
+          "text": "git revert HEAD",
+          "correct": false,
+          "explanation": "Нет — revert создаёт новый коммит, отменяющий изменения (безопасно для shared branches)"
+        }
+      ],
+      "raw_description": "<p>Ты сделал коммит с ошибкой. Какая команда отменит последний коммит, оставив изменения в рабочей директории?</p><ul>\n<li>git delete HEAD [Нет — такой команды нет]</li>\n<li>git commit --undo [Нет — такого флага нет]</li>\n<li>+git reset HEAD~1 (или git reset --mixed HEAD~1) [Верно! --mixed (по умолчанию) убирает коммит, возвращает изменения в working directory. --soft сохраняет в staging, --hard полностью удаляет изменения]</li>\n<li>git revert HEAD [Нет — revert создаёт новый коммит, отменяющий изменения (безопасно для shared branches)]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "git add -p",
+      "taskid": "git_quiz8_t7",
+      "hint": "",
+      "question_html": "<p>Для чего используется <code>git add -p</code> (patch mode)?</p>",
+      "options": [
+        {
+          "text": "Добавить скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — -p это patch, не «print hidden»"
+        },
+        {
+          "text": "Интерактивно выбирать какие «куски» (hunks) изменений добавить в staging, не файл целиком",
+          "correct": true,
+          "explanation": "Верно! -p позволяет добавлять в один коммит только часть изменений файла. Это важно для чистой истории: каждый коммит должен делать одну вещь"
+        },
+        {
+          "text": "Применить патч-файл",
+          "correct": false,
+          "explanation": "Нет — для применения патча используют git apply"
+        },
+        {
+          "text": "Добавить все файлы включая неотслеживаемые",
+          "correct": false,
+          "explanation": "Нет — это делает git add -A или git add ."
+        }
+      ],
+      "raw_description": "<p>Для чего используется <code>git add -p</code> (patch mode)?</p><ul>\n<li>Добавить скрытые файлы [Нет — -p это patch, не «print hidden»]</li>\n<li>+Интерактивно выбирать какие «куски» (hunks) изменений добавить в staging, не файл целиком [Верно! -p позволяет добавлять в один коммит только часть изменений файла. Это важно для чистой истории: каждый коммит должен делать одну вещь]</li>\n<li>Применить патч-файл [Нет — для применения патча используют git apply]</li>\n<li>Добавить все файлы включая неотслеживаемые [Нет — это делает git add -A или git add .]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": ".gitignore",
+      "taskid": "git_quiz8_t8",
+      "hint": "",
+      "question_html": "<p>Файл уже добавлен в git (отслеживается). Ты добавляешь его в <code>.gitignore</code>. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "Ничего — .gitignore игнорирует только неотслеживаемые файлы. Нужно удалить из индекса: git rm --cached file",
+          "correct": true,
+          "explanation": "Верно! git rm --cached убирает файл из tracking'а без удаления с диска. После этого .gitignore начнёт работать"
+        },
+        {
+          "text": "Git перестанет отслеживать изменения в файле",
+          "correct": false,
+          "explanation": "Нет — отслеживаемые файлы .gitignore не затрагивает"
+        },
+        {
+          "text": "Git выдаст ошибку",
+          "correct": false,
+          "explanation": "Нет — Git просто проигнорирует запись в .gitignore для уже отслеживаемого файла"
+        },
+        {
+          "text": "Файл будет удалён из репозитория при следующем коммите",
+          "correct": false,
+          "explanation": "Нет — он останется в истории и продолжит отслеживаться"
+        }
+      ],
+      "raw_description": "<p>Файл уже добавлен в git (отслеживается). Ты добавляешь его в <code>.gitignore</code>. Что произойдёт?</p><ul>\n<li>+Ничего — .gitignore игнорирует только неотслеживаемые файлы. Нужно удалить из индекса: git rm --cached file [Верно! git rm --cached убирает файл из tracking'а без удаления с диска. После этого .gitignore начнёт работать]</li>\n<li>Git перестанет отслеживать изменения в файле [Нет — отслеживаемые файлы .gitignore не затрагивает]</li>\n<li>Git выдаст ошибку [Нет — Git просто проигнорирует запись в .gitignore для уже отслеживаемого файла]</li>\n<li>Файл будет удалён из репозитория при следующем коммите [Нет — он останется в истории и продолжит отслеживаться]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Detached HEAD",
+      "taskid": "git_quiz8_t9",
+      "hint": "",
+      "question_html": "<p>Git показывает сообщение \"detached HEAD\". Что это означает?</p>",
+      "options": [
+        {
+          "text": "Репозиторий не имеет коммитов",
+          "correct": false,
+          "explanation": "Нет — наоборот, detached HEAD часто возникает при переходе на старый коммит"
+        },
+        {
+          "text": "HEAD указывает на конкретный коммит, а не на ветку. Коммиты в этом состоянии могут быть потеряны",
+          "correct": true,
+          "explanation": "Верно! В нормальном состоянии HEAD указывает на ветку (которая указывает на коммит). В detached HEAD — прямо на коммит. Чтобы сохранить работу: git switch -c new-branch"
+        },
+        {
+          "text": "SSH-соединение с сервером потеряно",
+          "correct": false,
+          "explanation": "Нет — detached HEAD — состояние локального репозитория"
+        },
+        {
+          "text": "HEAD-файл повреждён",
+          "correct": false,
+          "explanation": "Нет — detached HEAD — нормальное временное состояние, не ошибка"
+        }
+      ],
+      "raw_description": "<p>Git показывает сообщение \"detached HEAD\". Что это означает?</p><ul>\n<li>Репозиторий не имеет коммитов [Нет — наоборот, detached HEAD часто возникает при переходе на старый коммит]</li>\n<li>+HEAD указывает на конкретный коммит, а не на ветку. Коммиты в этом состоянии могут быть потеряны [Верно! В нормальном состоянии HEAD указывает на ветку (которая указывает на коммит). В detached HEAD — прямо на коммит. Чтобы сохранить работу: git switch -c new-branch]</li>\n<li>SSH-соединение с сервером потеряно [Нет — detached HEAD — состояние локального репозитория]</li>\n<li>HEAD-файл повреждён [Нет — detached HEAD — нормальное временное состояние, не ошибка]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "git stash",
+      "taskid": "git_quiz8_t10",
+      "hint": "",
+      "question_html": "<p>Когда предпочтительнее использовать <code>git stash</code> вместо временного коммита?</p>",
+      "options": [
+        {
+          "text": "Для синхронизации с удалённым репозиторием",
+          "correct": false,
+          "explanation": "Нет — stash только для локальных изменений, не связан с remote"
+        },
+        {
+          "text": "Когда нужно быстро переключиться на другую ветку с незакоммиченными изменениями, не создавая «мусорных» коммитов",
+          "correct": true,
+          "explanation": "Верно! stash сохраняет изменения во временное хранилище. Типично: stash → switch → hotfix → switch back → stash pop"
+        },
+        {
+          "text": "Когда файлы слишком большие для коммита",
+          "correct": false,
+          "explanation": "Нет — размер файлов не влияет на выбор между stash и commit"
+        },
+        {
+          "text": "Когда изменения нужно сохранить навсегда",
+          "correct": false,
+          "explanation": "Нет — stash временный. Для постоянного хранения нужен коммит"
+        }
+      ],
+      "raw_description": "<p>Когда предпочтительнее использовать <code>git stash</code> вместо временного коммита?</p><ul>\n<li>Для синхронизации с удалённым репозиторием [Нет — stash только для локальных изменений, не связан с remote]</li>\n<li>+Когда нужно быстро переключиться на другую ветку с незакоммиченными изменениями, не создавая «мусорных» коммитов [Верно! stash сохраняет изменения во временное хранилище. Типично: stash → switch → hotfix → switch back → stash pop]</li>\n<li>Когда файлы слишком большие для коммита [Нет — размер файлов не влияет на выбор между stash и commit]</li>\n<li>Когда изменения нужно сохранить навсегда [Нет — stash временный. Для постоянного хранения нужен коммит]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -1,0 +1,196 @@
+{
+  "n": 21,
+  "id": "ch_lcore_lab10",
+  "title": "Лабораторная 10: systemd и journalctl",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "systemctl status: статус сервиса",
+      "taskid": "lcore_lab10_t1_status",
+      "hint": "<p>У <code>systemctl status</code> есть удобный режим без интерактивного pager (<code>--no-pager</code>). В статусе смотри <code>Loaded</code>, <code>Active</code> и последние строки журнала.</p>",
+      "question_html": "<p>Запроси статус сервиса <code>ssh</code> и посмотри, загружен ли unit и активен ли сервис.</p>",
+      "options": [],
+      "raw_description": "<p>Запроси статус сервиса <code>ssh</code> и посмотри, загружен ли unit и активен ли сервис.</p>"
+    },
+    {
+      "type": "self",
+      "title": "systemctl list-units: все сервисы",
+      "taskid": "lcore_lab10_t2_list",
+      "hint": "<p>Для списка unit можно ограничить тип через <code>--type</code>, состояние через <code>--state</code>, а <code>--no-pager</code> оставит вывод прямо в терминале.</p>",
+      "question_html": "<p>Посмотри список активных systemd-сервисов через список unit.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри список активных systemd-сервисов через список unit.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: enable vs start",
+      "taskid": "lcore_lab10_t3_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между <code>systemctl start nginx</code> и <code>systemctl enable nginx</code>?</p>",
+      "options": [
+        {
+          "text": "<code>+start</code> запускает сервис прямо сейчас, <code>enable</code> включает автозапуск при загрузке системы",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>start</code> запускает в фоновом режиме, <code>enable</code> — на переднем плане и показывает live-логи сервиса",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>start</code> для обычных пользователей, <code>enable</code> требует root",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Нет разницы, это одно и то же",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В чём разница между <code>systemctl start nginx</code> и <code>systemctl enable nginx</code>?</p>\n<ul>\n<li><code>+start</code> запускает сервис прямо сейчас, <code>enable</code> включает автозапуск при загрузке системы</li>\n<li><code>start</code> запускает в фоновом режиме, <code>enable</code> — на переднем плане и показывает live-логи сервиса</li>\n<li><code>start</code> для обычных пользователей, <code>enable</code> требует root</li>\n<li>Нет разницы, это одно и то же</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать unit demo-http.service",
+      "taskid": "lcore_lab10_t4_create_demo_unit",
+      "hint": "<p>В unit нужны секции <code>[Unit]</code>, <code>[Service]</code> и <code>[Install]</code>. Для этой задачи важны <code>WorkingDirectory=/opt/devops/process-demo</code>, <code>ExecStart=/usr/bin/python3 -m http.server 80</code> и <code>WantedBy=multi-user.target</code>.</p>",
+      "question_html": "<p>Создай unit-файл <code>/etc/systemd/system/demo-http.service</code>, который запускает уже знакомый demo HTTP-сервер из <code>/opt/devops/process-demo</code> командой <code>/usr/bin/python3 -m http.server 80</code>. После создания перечитай unit-файлы systemd.</p>",
+      "options": [],
+      "raw_description": "<p>Создай unit-файл <code>/etc/systemd/system/demo-http.service</code>, который запускает уже знакомый demo HTTP-сервер из <code>/opt/devops/process-demo</code> командой <code>/usr/bin/python3 -m http.server 80</code>. После создания перечитай unit-файлы systemd.</p>"
+    },
+    {
+      "type": "check",
+      "title": "systemctl: запустить demo-http",
+      "taskid": "lcore_lab10_t5_start_demo",
+      "hint": "<p>Для запуска нужен подкомандный режим <code>start</code>, а для проверки состояния — отдельная команда просмотра статуса. <code>Web Preview</code> открывает порт <code>80</code> VM, который теперь обслуживает systemd-сервис.</p>",
+      "question_html": "<p>Запусти сервис <code>demo-http</code>, убедись, что он активен, затем открой <code>Web Preview</code> и проверь страницу <code>Process demo</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти сервис <code>demo-http</code>, убедись, что он активен, затем открой <code>Web Preview</code> и проверь страницу <code>Process demo</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "journalctl: логи сервиса",
+      "taskid": "lcore_lab10_t6_journal",
+      "hint": "<p>В <code>journalctl</code> фильтр по unit задаётся флагом <code>-u</code>, количество последних строк — флагом <code>-n</code>, а <code>--no-pager</code> отключает интерактивный просмотр.</p>",
+      "question_html": "<p>Посмотри последние 20 строк логов сервиса <code>ssh</code> из journald.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри последние 20 строк логов сервиса <code>ssh</code> из journald.</p>"
+    },
+    {
+      "type": "self",
+      "title": "journalctl: сообщения об ошибках",
+      "taskid": "lcore_lab10_t7_priority",
+      "hint": "<p>У <code>journalctl</code> уровень сообщений задаётся через <code>-p</code>, а временной диапазон — через <code>--since</code>. Сначала проверь фильтр без лишних пайпов, затем добавляй остальные части.</p>",
+      "question_html": "<p>Посмотри сообщения уровня error и выше из системных логов за сегодня.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри сообщения уровня error и выше из системных логов за сегодня.</p>"
+    },
+    {
+      "type": "check",
+      "title": "systemctl enable: автозапуск",
+      "taskid": "lcore_lab10_t8_enable_demo",
+      "hint": "<p><code>enable</code> отвечает за автозапуск, а не за текущий запуск процесса. Для самопроверки у <code>systemctl</code> есть отдельный режим проверки enabled-состояния.</p>",
+      "question_html": "<p>Включи автозапуск сервиса <code>demo-http</code> при загрузке системы.</p>",
+      "options": [],
+      "raw_description": "<p>Включи автозапуск сервиса <code>demo-http</code> при загрузке системы.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает состояние active?",
+      "taskid": "lcore_lab10_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что обычно означает состояние <code>active (running)</code> у systemd-сервиса?</p>",
+      "options": [
+        {
+          "text": "Unit запущен, и его основной процесс сейчас работает",
+          "correct": true,
+          "explanation": "Верно! Это базовый признак живого сервиса"
+        },
+        {
+          "text": "Unit включён в автозапуск, но сейчас обязательно остановлен",
+          "correct": false,
+          "explanation": "Нет — это про <code>enabled</code>, а не <code>active</code>"
+        },
+        {
+          "text": "Unit-файл удалён из системы",
+          "correct": false,
+          "explanation": "Нет — удалённый unit не будет нормально отображаться как running"
+        },
+        {
+          "text": "Сервис вернул HTTP-код <code>200</code>",
+          "correct": false,
+          "explanation": "Нет — systemd-состояние не равно HTTP-проверке"
+        }
+      ],
+      "raw_description": "<p>Что обычно означает состояние <code>active (running)</code> у systemd-сервиса?</p><ul><li>+Unit запущен, и его основной процесс сейчас работает [Верно! Это базовый признак живого сервиса]</li><li>Unit включён в автозапуск, но сейчас обязательно остановлен [Нет — это про <code>enabled</code>, а не <code>active</code>]</li><li>Unit-файл удалён из системы [Нет — удалённый unit не будет нормально отображаться как running]</li><li>Сервис вернул HTTP-код <code>200</code> [Нет — systemd-состояние не равно HTTP-проверке]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое systemd unit?",
+      "taskid": "lcore_lab10_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Что такое unit в контексте systemd?</p>",
+      "options": [
+        {
+          "text": "Описанная systemd сущность: сервис, timer, socket или другой объект, которым можно управлять",
+          "correct": true,
+          "explanation": "Верно! Service unit — только один из типов unit"
+        },
+        {
+          "text": "Только PID любого процесса",
+          "correct": false,
+          "explanation": "Нет — PID относится к запущенному процессу, а unit описывает управляемую сущность"
+        },
+        {
+          "text": "Файл лога в <code>/var/log</code>",
+          "correct": false,
+          "explanation": "Нет — журналы читают отдельно"
+        },
+        {
+          "text": "HTTP-запрос к приложению",
+          "correct": false,
+          "explanation": "Нет — это действие клиента, а не unit"
+        }
+      ],
+      "raw_description": "<p>Что такое unit в контексте systemd?</p><ul><li>+Описанная systemd сущность: сервис, timer, socket или другой объект, которым можно управлять [Верно! Service unit — только один из типов unit]</li><li>Только PID любого процесса [Нет — PID относится к запущенному процессу, а unit описывает управляемую сущность]</li><li>Файл лога в <code>/var/log</code> [Нет — журналы читают отдельно]</li><li>HTTP-запрос к приложению [Нет — это действие клиента, а не unit]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как точнее читать ошибки сервиса?",
+      "taskid": "lcore_lab10_t11_quiz",
+      "hint": "",
+      "question_html": "<p>Какой вариант точнее всего сузит поиск ошибок конкретного systemd-сервиса?</p>",
+      "options": [
+        {
+          "text": "<code>journalctl -u demo-http -p err --since today --no-pager</code>",
+          "correct": true,
+          "explanation": "Верно! Фильтры по unit, уровню и времени уменьшают шум"
+        },
+        {
+          "text": "<code>cat /etc/passwd</code>",
+          "correct": false,
+          "explanation": "Нет — это не журнал сервиса"
+        },
+        {
+          "text": "<code>ls -la /root</code>",
+          "correct": false,
+          "explanation": "Нет — список файлов не показывает ошибки unit"
+        },
+        {
+          "text": "<code>journalctl</code> без фильтров всегда достаточно",
+          "correct": false,
+          "explanation": "Нет — в общем журнале часто слишком много лишних строк"
+        }
+      ],
+      "raw_description": "<p>Какой вариант точнее всего сузит поиск ошибок конкретного systemd-сервиса?</p><ul><li>+<code>journalctl -u demo-http -p err --since today --no-pager</code> [Верно! Фильтры по unit, уровню и времени уменьшают шум]</li><li><code>cat /etc/passwd</code> [Нет — это не журнал сервиса]</li><li><code>ls -la /root</code> [Нет — список файлов не показывает ошибки unit]</li><li><code>journalctl</code> без фильтров всегда достаточно [Нет — в общем журнале часто слишком много лишних строк]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab10/setup.yaml"
+}

@@ -1,0 +1,187 @@
+{
+  "n": 4,
+  "id": "gym_lstart_lab4",
+  "title": "Тренировка 4: Поиск файлов через find",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Найти файлы по имени",
+      "taskid": "gym_lstart_lab4_t1_name",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>",
+      "question_html": "<p>Найди все файлы с расширением <code>.log</code> в директории <code>/opt/devops/lab4</code> и запиши список путей в <code>/root/logs.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы с расширением <code>.log</code> в директории <code>/opt/devops/lab4</code> и запиши список путей в <code>/root/logs.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти только файлы",
+      "taskid": "gym_lstart_lab4_t2_type",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>\n<p>Флаг <code>-type f</code> означает «только обычные файлы».</p>",
+      "question_html": "<p>Найди все обычные файлы (не директории, не симлинки) в <code>/opt/devops/lab4</code> и запиши список в <code>/root/files_only.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все обычные файлы (не директории, не симлинки) в <code>/opt/devops/lab4</code> и запиши список в <code>/root/files_only.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти директории",
+      "taskid": "gym_lstart_lab4_t3_dirs",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>\n<p>Флаг <code>-type d</code> означает «только директории».</p>",
+      "question_html": "<p>Найди все директории внутри <code>/opt/devops/lab4</code> и запиши список в <code>/root/dirs_only.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все директории внутри <code>/opt/devops/lab4</code> и запиши список в <code>/root/dirs_only.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает {} в find -exec?",
+      "taskid": "gym_lstart_lab4_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает <code>{}</code> в выражении <code>find ... -exec wc -l {} \\;</code>?</p>",
+      "options": [
+        {
+          "text": "Место, куда <code>find</code> подставляет путь очередного найденного файла",
+          "correct": true,
+          "explanation": "Верно! Так внешняя команда получает найденный объект"
+        },
+        {
+          "text": "Начало регулярного выражения",
+          "correct": false,
+          "explanation": "Нет — это не regex"
+        },
+        {
+          "text": "Команду удаления найденного файла",
+          "correct": false,
+          "explanation": "Нет — удаление нужно задавать явно"
+        },
+        {
+          "text": "Имя текущего пользователя",
+          "correct": false,
+          "explanation": "Нет — пользователь здесь не подставляется"
+        }
+      ],
+      "raw_description": "<p>Что означает <code>{}</code> в выражении <code>find ... -exec wc -l {} \\;</code>?</p><ul>\n<li>+Место, куда <code>find</code> подставляет путь очередного найденного файла [Верно! Так внешняя команда получает найденный объект]</li><li>Начало регулярного выражения [Нет — это не regex]</li><li>Команду удаления найденного файла [Нет — удаление нужно задавать явно]</li><li>Имя текущего пользователя [Нет — пользователь здесь не подставляется]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Найти по размеру",
+      "taskid": "gym_lstart_lab4_t5_size",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>\n<p>Флаг <code>-size +1k</code> означает «больше 1 килобайта».</p>",
+      "question_html": "<p>Найди все файлы в <code>/opt/devops/lab4</code> размером больше 1 килобайта и запиши список в <code>/root/large_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы в <code>/opt/devops/lab4</code> размером больше 1 килобайта и запиши список в <code>/root/large_files.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти и посчитать строки",
+      "taskid": "gym_lstart_lab4_t6_exec",
+      "hint": "<p>Начни с поиска файлов по имени через <code>find</code>. Для выполнения счётчика строк на каждом найденном файле у <code>find</code> есть режим <code>-exec</code>.</p>",
+      "question_html": "<p>Найди все файлы <code>.txt</code> в <code>/opt/devops/lab4</code> и посчитай количество строк в каждом из них. Сохрани вывод в <code>/root/line_counts.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы <code>.txt</code> в <code>/opt/devops/lab4</code> и посчитай количество строк в каждом из них. Сохрани вывод в <code>/root/line_counts.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти скрытые файлы",
+      "taskid": "gym_lstart_lab4_t7_hidden",
+      "hint": "<p>Используй <code>find</code> с условием по имени, типу или расположению файла.</p>",
+      "question_html": "<p>Найди все скрытые файлы (имя начинается с точки) в директории <code>/opt/devops/lab4</code> и запиши в <code>/root/hidden_files.txt</code>.</p>\n<p>В шаблоне <code>-name</code> можно использовать <code>.*</code> для поиска файлов начинающихся с точки.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все скрытые файлы (имя начинается с точки) в директории <code>/opt/devops/lab4</code> и запиши в <code>/root/hidden_files.txt</code>.</p>\n<p>В шаблоне <code>-name</code> можно использовать <code>.*</code> для поиска файлов начинающихся с точки.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "-mtime с плюсом и минусом",
+      "taskid": "gym_lstart_lab4_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает условие <code>-mtime -7</code> в команде <code>find</code>?</p>",
+      "options": [
+        {
+          "text": "Файлы, изменённые менее 7 дней назад",
+          "correct": true,
+          "explanation": "Верно! Минус означает «меньше указанного значения»"
+        },
+        {
+          "text": "Файлы, изменённые более 7 дней назад",
+          "correct": false,
+          "explanation": "Нет — для этого используют <code>+7</code>"
+        },
+        {
+          "text": "Файлы размером меньше 7 килобайт",
+          "correct": false,
+          "explanation": "Нет — размер проверяют через <code>-size</code>"
+        },
+        {
+          "text": "Файлы с именем <code>mtime</code>",
+          "correct": false,
+          "explanation": "Нет — это фильтр по времени изменения"
+        }
+      ],
+      "raw_description": "<p>Что означает условие <code>-mtime -7</code> в команде <code>find</code>?</p><ul>\n<li>+Файлы, изменённые менее 7 дней назад [Верно! Минус означает «меньше указанного значения»]</li>\n<li>Файлы, изменённые более 7 дней назад [Нет — для этого используют <code>+7</code>]</li>\n<li>Файлы размером меньше 7 килобайт [Нет — размер проверяют через <code>-size</code>]</li>\n<li>Файлы с именем <code>mtime</code> [Нет — это фильтр по времени изменения]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем сочетать -type и -name?",
+      "taskid": "gym_lstart_lab4_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем в поиске логов писать <code>find /opt/devops/lab4 -type f -name \"*.log\"</code>, а не только <code>-name \"*.log\"</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы явно оставить обычные файлы и не смешивать результат с каталогами или другими типами объектов",
+          "correct": true,
+          "explanation": "Верно! Типовой фильтр уточняет результат"
+        },
+        {
+          "text": "Чтобы <code>find</code> удалил найденные логи",
+          "correct": false,
+          "explanation": "Нет — удаление не задано"
+        },
+        {
+          "text": "Чтобы искать только в текущем каталоге без вложенных директорий",
+          "correct": false,
+          "explanation": "Нет — <code>find</code> рекурсивен"
+        },
+        {
+          "text": "Чтобы превратить все логи в архив",
+          "correct": false,
+          "explanation": "Нет — это не задача <code>find</code>"
+        }
+      ],
+      "raw_description": "<p>Зачем в поиске логов писать <code>find /opt/devops/lab4 -type f -name \"*.log\"</code>, а не только <code>-name \"*.log\"</code>?</p><ul>\n<li>+Чтобы явно оставить обычные файлы и не смешивать результат с каталогами или другими типами объектов [Верно! Типовой фильтр уточняет результат]</li><li>Чтобы <code>find</code> удалил найденные логи [Нет — удаление не задано]</li><li>Чтобы искать только в текущем каталоге без вложенных директорий [Нет — <code>find</code> рекурсивен]</li><li>Чтобы превратить все логи в архив [Нет — это не задача <code>find</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем кавычки в find -name?",
+      "taskid": "gym_lstart_lab4_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему шаблон в <code>find . -name \"*.txt\"</code> обычно берут в кавычки?</p>",
+      "options": [
+        {
+          "text": "Чтобы shell не раскрыл <code>*.txt</code> раньше времени, а передал шаблон самой команде <code>find</code>",
+          "correct": true,
+          "explanation": "Верно! Иначе поиск может стать неверным"
+        },
+        {
+          "text": "Чтобы <code>find</code> искал только скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — кавычки не меняют смысл шаблона"
+        },
+        {
+          "text": "Чтобы найденные файлы стали read-only",
+          "correct": false,
+          "explanation": "Нет — права не меняются"
+        },
+        {
+          "text": "Чтобы команда работала только от root",
+          "correct": false,
+          "explanation": "Нет — кавычки не связаны с пользователем"
+        }
+      ],
+      "raw_description": "<p>Почему шаблон в <code>find . -name \"*.txt\"</code> обычно берут в кавычки?</p><ul>\n<li>+Чтобы shell не раскрыл <code>*.txt</code> раньше времени, а передал шаблон самой команде <code>find</code> [Верно! Иначе поиск может стать неверным]</li><li>Чтобы <code>find</code> искал только скрытые файлы [Нет — кавычки не меняют смысл шаблона]</li><li>Чтобы найденные файлы стали read-only [Нет — права не меняются]</li><li>Чтобы команда работала только от root [Нет — кавычки не связаны с пользователем]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab4/setup.yaml"
+}

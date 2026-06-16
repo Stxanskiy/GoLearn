@@ -1,0 +1,313 @@
+{
+  "n": 10,
+  "id": "ch_ckad_quiz1",
+  "title": "Проверка: продвинутая практика Kubernetes",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Init Containers",
+      "taskid": "ckad_quiz1_t1",
+      "hint": "",
+      "question_html": "<p>Три init containers определены в Pod'е. В каком порядке они выполняются?</p>",
+      "options": [
+        {
+          "text": "Параллельно — все одновременно",
+          "correct": false,
+          "explanation": "Нет — только основные containers могут работать параллельно; init — строго последовательно"
+        },
+        {
+          "text": "В алфавитном порядке по name",
+          "correct": false,
+          "explanation": "Нет — порядок определяется позицией в массиве initContainers"
+        },
+        {
+          "text": "Kubernetes сам выбирает оптимальный порядок",
+          "correct": false,
+          "explanation": "Нет — порядок строго следует объявлению"
+        },
+        {
+          "text": "Последовательно в порядке определения в spec.initContainers",
+          "correct": true,
+          "explanation": "Верно! Init containers выполняются строго последовательно; следующий начинается только после успешного завершения предыдущего"
+        }
+      ],
+      "raw_description": "<p>Три init containers определены в Pod'е. В каком порядке они выполняются?</p><ul>\n<li>Параллельно — все одновременно [Нет — только основные containers могут работать параллельно; init — строго последовательно]</li>\n<li>В алфавитном порядке по name [Нет — порядок определяется позицией в массиве initContainers]</li>\n<li>Kubernetes сам выбирает оптимальный порядок [Нет — порядок строго следует объявлению]</li>\n<li>+Последовательно в порядке определения в spec.initContainers [Верно! Init containers выполняются строго последовательно; следующий начинается только после успешного завершения предыдущего]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "emptyDir",
+      "taskid": "ckad_quiz1_t2",
+      "hint": "",
+      "question_html": "<p>Pod с emptyDir volume перезапустился (контейнер упал). Что произошло с данными в emptyDir?</p>",
+      "options": [
+        {
+          "text": "Зависит от restartPolicy Pod'а",
+          "correct": false,
+          "explanation": "Нет — restartPolicy влияет на перезапуск контейнера, не на данные emptyDir"
+        },
+        {
+          "text": "Данные сохранились — emptyDir живёт столько же сколько Pod, а не контейнер",
+          "correct": true,
+          "explanation": "Верно! emptyDir удаляется только при удалении Pod'а. Перезапуск контейнера ≠ удаление Pod'а"
+        },
+        {
+          "text": "Данные сохранились на Node навсегда",
+          "correct": false,
+          "explanation": "Нет — они исчезнут при удалении Pod'а"
+        },
+        {
+          "text": "Данные удалились — emptyDir сбрасывается при перезапуске",
+          "correct": false,
+          "explanation": "Нет — это поведение tmpfs, а не emptyDir"
+        }
+      ],
+      "raw_description": "<p>Pod с emptyDir volume перезапустился (контейнер упал). Что произошло с данными в emptyDir?</p><ul>\n<li>Зависит от restartPolicy Pod'а [Нет — restartPolicy влияет на перезапуск контейнера, не на данные emptyDir]</li>\n<li>+Данные сохранились — emptyDir живёт столько же сколько Pod, а не контейнер [Верно! emptyDir удаляется только при удалении Pod'а. Перезапуск контейнера ≠ удаление Pod'а]</li>\n<li>Данные сохранились на Node навсегда [Нет — они исчезнут при удалении Pod'а]</li>\n<li>Данные удалились — emptyDir сбрасывается при перезапуске [Нет — это поведение tmpfs, а не emptyDir]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "PVC и StorageClass",
+      "taskid": "ckad_quiz1_t3",
+      "hint": "",
+      "question_html": "<p>PVC создан с storageClassName: fast, но StorageClass fast не существует. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "PVC зависнет в статусе Pending бесконечно",
+          "correct": true,
+          "explanation": "Верно! Без существующего StorageClass PV не создаётся; PVC не может привязаться"
+        },
+        {
+          "text": "Kubernetes создаст StorageClass fast автоматически",
+          "correct": false,
+          "explanation": "Нет — StorageClass создаются администратором или через операторы"
+        },
+        {
+          "text": "PVC автоматически использует default StorageClass",
+          "correct": false,
+          "explanation": "Нет — явное указание имени StorageClass не позволяет использовать default"
+        },
+        {
+          "text": "PVC создастся успешно но без хранилища",
+          "correct": false,
+          "explanation": "Нет — статус будет Pending, а не Bound"
+        }
+      ],
+      "raw_description": "<p>PVC создан с storageClassName: fast, но StorageClass fast не существует. Что произойдёт?</p><ul>\n<li>+PVC зависнет в статусе Pending бесконечно [Верно! Без существующего StorageClass PV не создаётся; PVC не может привязаться]</li>\n<li>Kubernetes создаст StorageClass fast автоматически [Нет — StorageClass создаются администратором или через операторы]</li>\n<li>PVC автоматически использует default StorageClass [Нет — явное указание имени StorageClass не позволяет использовать default]</li>\n<li>PVC создастся успешно но без хранилища [Нет — статус будет Pending, а не Bound]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Liveness Probe",
+      "taskid": "ckad_quiz1_t4",
+      "hint": "",
+      "question_html": "<p>livenessProbe провалилась 3 раза (failureThreshold: 3). Что сделает Kubernetes?</p>",
+      "options": [
+        {
+          "text": "Уменьшит replicas на 1",
+          "correct": false,
+          "explanation": "Нет — Deployment controller не реагирует на liveness probe напрямую"
+        },
+        {
+          "text": "Удалит Pod и создаст новый на другом Node",
+          "correct": false,
+          "explanation": "Нет — это поведение при node failure, не probe failure"
+        },
+        {
+          "text": "Перезапустит контейнер (не Pod)",
+          "correct": true,
+          "explanation": "Верно! kubelet перезапускает контейнер внутри Pod'а, Pod остаётся на том же Node"
+        },
+        {
+          "text": "Пометит Pod как Unhealthy и больше не перезапустит",
+          "correct": false,
+          "explanation": "Нет — перезапуск происходит согласно restartPolicy"
+        }
+      ],
+      "raw_description": "<p>livenessProbe провалилась 3 раза (failureThreshold: 3). Что сделает Kubernetes?</p><ul>\n<li>Уменьшит replicas на 1 [Нет — Deployment controller не реагирует на liveness probe напрямую]</li>\n<li>Удалит Pod и создаст новый на другом Node [Нет — это поведение при node failure, не probe failure]</li>\n<li>+Перезапустит контейнер (не Pod) [Верно! kubelet перезапускает контейнер внутри Pod'а, Pod остаётся на том же Node]</li>\n<li>Пометит Pod как Unhealthy и больше не перезапустит [Нет — перезапуск происходит согласно restartPolicy]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SecurityContext",
+      "taskid": "ckad_quiz1_t5",
+      "hint": "",
+      "question_html": "<p>Pod spec имеет securityContext.runAsUser: 1000. Container spec имеет securityContext.runAsUser: 2000. Под каким UID запустится контейнер?</p>",
+      "options": [
+        {
+          "text": "1000 — Pod-level имеет приоритет",
+          "correct": false,
+          "explanation": "Нет — более специфичные настройки (container) переопределяют более общие (pod)"
+        },
+        {
+          "text": "Ошибка — нельзя задавать одновременно",
+          "correct": false,
+          "explanation": "Нет — это допустимо; container-level просто перекрывает pod-level"
+        },
+        {
+          "text": "2000 — container-level SecurityContext переопределяет pod-level",
+          "correct": true,
+          "explanation": "Верно! Container-level настройки имеют приоритет над Pod-level"
+        },
+        {
+          "text": "Средне: 1500",
+          "correct": false,
+          "explanation": "Нет — UID не усредняются"
+        }
+      ],
+      "raw_description": "<p>Pod spec имеет securityContext.runAsUser: 1000. Container spec имеет securityContext.runAsUser: 2000. Под каким UID запустится контейнер?</p><ul>\n<li>1000 — Pod-level имеет приоритет [Нет — более специфичные настройки (container) переопределяют более общие (pod)]</li>\n<li>Ошибка — нельзя задавать одновременно [Нет — это допустимо; container-level просто перекрывает pod-level]</li>\n<li>+2000 — container-level SecurityContext переопределяет pod-level [Верно! Container-level настройки имеют приоритет над Pod-level]</li>\n<li>Средне: 1500 [Нет — UID не усредняются]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Job restartPolicy",
+      "taskid": "ckad_quiz1_t6",
+      "hint": "",
+      "question_html": "<p>Какой restartPolicy обязателен для Pod в Job?</p>",
+      "options": [
+        {
+          "text": "Always",
+          "correct": false,
+          "explanation": "Нет — Job управляет перезапусками сам через backoffLimit"
+        },
+        {
+          "text": "Never или OnFailure — Always запрещён в Job",
+          "correct": true,
+          "explanation": "Верно! Job предполагает завершение; Always перезапускал бы контейнер бесконечно"
+        },
+        {
+          "text": "OnFailure обязателен, Never нельзя",
+          "correct": false,
+          "explanation": "Нет — оба варианта допустимы"
+        },
+        {
+          "text": "Любой — restartPolicy не важен для Job",
+          "correct": false,
+          "explanation": "Нет — API Server не позволит создать Job с restartPolicy: Always"
+        }
+      ],
+      "raw_description": "<p>Какой restartPolicy обязателен для Pod в Job?</p><ul>\n<li>Always [Нет — Job управляет перезапусками сам через backoffLimit]</li>\n<li>+Never или OnFailure — Always запрещён в Job [Верно! Job предполагает завершение; Always перезапускал бы контейнер бесконечно]</li>\n<li>OnFailure обязателен, Never нельзя [Нет — оба варианта допустимы]</li>\n<li>Любой — restartPolicy не важен для Job [Нет — API Server не позволит создать Job с restartPolicy: Always]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "HPA и metrics",
+      "taskid": "ckad_quiz1_t7",
+      "hint": "",
+      "question_html": "<p>HPA не масштабирует Deployment несмотря на высокую нагрузку. Наиболее вероятная причина?</p>",
+      "options": [
+        {
+          "text": "Нужно вручную одобрить масштабирование",
+          "correct": false,
+          "explanation": "Нет — HPA работает автоматически"
+        },
+        {
+          "text": "HPA работает только с NodePort Service",
+          "correct": false,
+          "explanation": "Нет — тип Service не влияет на HPA"
+        },
+        {
+          "text": "Metrics Server не установлен или Pod'ы не имеют resource requests",
+          "correct": true,
+          "explanation": "Верно! HPA требует metrics-server для CPU/memory метрик и явных requests для расчёта процента"
+        },
+        {
+          "text": "HPA масштабирует только при CPU > 80%",
+          "correct": false,
+          "explanation": "Нет — порог настраивается; проблема не в значении"
+        }
+      ],
+      "raw_description": "<p>HPA не масштабирует Deployment несмотря на высокую нагрузку. Наиболее вероятная причина?</p><ul>\n<li>Нужно вручную одобрить масштабирование [Нет — HPA работает автоматически]</li>\n<li>HPA работает только с NodePort Service [Нет — тип Service не влияет на HPA]</li>\n<li>+Metrics Server не установлен или Pod'ы не имеют resource requests [Верно! HPA требует metrics-server для CPU/memory метрик и явных requests для расчёта процента]</li>\n<li>HPA масштабирует только при CPU > 80% [Нет — порог настраивается; проблема не в значении]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "RBAC verbs",
+      "taskid": "ckad_quiz1_t8",
+      "hint": "",
+      "question_html": "<p>Role имеет verbs: [get, list]. Может ли SubjectRef с этой ролью создать Pod?</p>",
+      "options": [
+        {
+          "text": "Нет",
+          "correct": true,
+          "explanation": "Верно! get и list — только чтение. create — отдельный verb"
+        },
+        {
+          "text": "Да — list включает возможность создания",
+          "correct": false,
+          "explanation": "Нет — list только получает список"
+        },
+        {
+          "text": "Да если у SubjectRef есть ClusterRole",
+          "correct": false,
+          "explanation": "Только если ClusterRole содержит create verb — это отдельный вопрос"
+        },
+        {
+          "text": "Зависит от namespace",
+          "correct": false,
+          "explanation": "Нет — verbs не зависят от namespace"
+        }
+      ],
+      "raw_description": "<p>Role имеет verbs: [get, list]. Может ли SubjectRef с этой ролью создать Pod?</p><ul>\n<li>+Нет [Верно! get и list — только чтение. create — отдельный verb]</li>\n<li>Да — list включает возможность создания [Нет — list только получает список]</li>\n<li>Да если у SubjectRef есть ClusterRole [Только если ClusterRole содержит create verb — это отдельный вопрос]</li>\n<li>Зависит от namespace [Нет — verbs не зависят от namespace]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Sidecar паттерн",
+      "taskid": "ckad_quiz1_t9",
+      "hint": "",
+      "question_html": "<p>Sidecar контейнер отправляет логи в Elasticsearch. Основной контейнер упал. Что происходит с Sidecar?</p>",
+      "options": [
+        {
+          "text": "Sidecar автоматически останавливается",
+          "correct": false,
+          "explanation": "Нет — Kubernetes не останавливает здоровые контейнеры при падении другого"
+        },
+        {
+          "text": "Весь Pod перезапускается",
+          "correct": false,
+          "explanation": "Нет — kubelet перезапускает только упавший контейнер"
+        },
+        {
+          "text": "Sidecar получает сигнал и корректно завершается",
+          "correct": false,
+          "explanation": "Нет — никакой сигнал не отправляется автоматически"
+        },
+        {
+          "text": "Sidecar продолжает работать — контейнеры в Pod'е независимы",
+          "correct": true,
+          "explanation": "Верно! Pod жив пока хоть один контейнер работает; kubelet перезапустит основной контейнер"
+        }
+      ],
+      "raw_description": "<p>Sidecar контейнер отправляет логи в Elasticsearch. Основной контейнер упал. Что происходит с Sidecar?</p><ul>\n<li>Sidecar автоматически останавливается [Нет — Kubernetes не останавливает здоровые контейнеры при падении другого]</li>\n<li>Весь Pod перезапускается [Нет — kubelet перезапускает только упавший контейнер]</li>\n<li>Sidecar получает сигнал и корректно завершается [Нет — никакой сигнал не отправляется автоматически]</li>\n<li>+Sidecar продолжает работать — контейнеры в Pod'е независимы [Верно! Pod жив пока хоть один контейнер работает; kubelet перезапустит основной контейнер]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "CronJob history",
+      "taskid": "ckad_quiz1_t10",
+      "hint": "",
+      "question_html": "<p>CronJob имеет successfulJobsHistoryLimit: 3. После 10 успешных запусков сколько Job объектов останется?</p>",
+      "options": [
+        {
+          "text": "10 — все сохраняются",
+          "correct": false,
+          "explanation": "Нет — successfulJobsHistoryLimit ограничивает количество"
+        },
+        {
+          "text": "0 — CronJob удаляет Job сразу после завершения",
+          "correct": false,
+          "explanation": "Нет — без limit=0 история хранится"
+        },
+        {
+          "text": "3 — старые автоматически удаляются",
+          "correct": true,
+          "explanation": "Верно! Kubernetes хранит только последние N успешных Job; остальные удаляет"
+        },
+        {
+          "text": "1 — только последний",
+          "correct": false,
+          "explanation": "Нет — limit равен 3, не 1"
+        }
+      ],
+      "raw_description": "<p>CronJob имеет successfulJobsHistoryLimit: 3. После 10 успешных запусков сколько Job объектов останется?</p><ul>\n<li>10 — все сохраняются [Нет — successfulJobsHistoryLimit ограничивает количество]</li>\n<li>0 — CronJob удаляет Job сразу после завершения [Нет — без limit=0 история хранится]</li>\n<li>+3 — старые автоматически удаляются [Верно! Kubernetes хранит только последние N успешных Job; остальные удаляет]</li>\n<li>1 — только последний [Нет — limit равен 3, не 1]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -1,0 +1,313 @@
+{
+  "n": 19,
+  "id": "ch_devops_quiz_dora_2",
+  "title": "Квиз: Применение метрик",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Как измерить Deployment Frequency",
+      "taskid": "dora_quiz2_t1_measure",
+      "hint": "",
+      "question_html": "<p>Ты хочешь измерить Deployment Frequency. Откуда брать данные?</p>",
+      "options": [
+        {
+          "text": "Из Jira — количество закрытых тикетов",
+          "correct": false,
+          "explanation": "Нет — тикеты не равны деплоям; один тикет может включать несколько деплоев или ни одного"
+        },
+        {
+          "text": "Считать production deploys из CI/CD логов",
+          "correct": true,
+          "explanation": "Верно! CI/CD платформы (GitLab, GitHub Actions, Spinnaker) хранят историю деплоев"
+        },
+        {
+          "text": "Из git log — количество коммитов в main",
+          "correct": false,
+          "explanation": "Нет — коммиты в main не всегда означают деплой в production"
+        },
+        {
+          "text": "Спросить разработчиков как часто они деплоят",
+          "correct": false,
+          "explanation": "Нет — субъективная оценка неточна; нужны данные из системы"
+        }
+      ],
+      "raw_description": "<p>Ты хочешь измерить Deployment Frequency. Откуда брать данные?</p><ul>\n<li>Из Jira — количество закрытых тикетов [Нет — тикеты не равны деплоям; один тикет может включать несколько деплоев или ни одного]</li>\n<li>+Считать production deploys из CI/CD логов [Верно! CI/CD платформы (GitLab, GitHub Actions, Spinnaker) хранят историю деплоев]</li>\n<li>Из git log — количество коммитов в main [Нет — коммиты в main не всегда означают деплой в production]</li>\n<li>Спросить разработчиков как часто они деплоят [Нет — субъективная оценка неточна; нужны данные из системы]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Change Failure Rate снижение",
+      "taskid": "dora_quiz2_t2_cfr_improve",
+      "hint": "",
+      "question_html": "<p>CFR = 40%. Какое действие наиболее эффективно снизит его?</p>",
+      "options": [
+        {
+          "text": "Автотесты и staging, близкий к production",
+          "correct": true,
+          "explanation": "Верно! Большинство production инцидентов — это ошибки которые можно поймать тестами или staging"
+        },
+        {
+          "text": "Запретить деплои в production по пятницам",
+          "correct": false,
+          "explanation": "Это частичная мера; снижает риск но не устраняет причину высокого CFR"
+        },
+        {
+          "text": "Снизить Deployment Frequency до раза в квартал",
+          "correct": false,
+          "explanation": "Нет — большие редкие релизы обычно дают ВЫШЕ CFR из-за большего объёма изменений"
+        },
+        {
+          "text": "Нанять больше QA инженеров для ручного тестирования",
+          "correct": false,
+          "explanation": "Нет — ручное тестирование плохо масштабируется и медленнее автоматического"
+        }
+      ],
+      "raw_description": "<p>CFR = 40%. Какое действие наиболее эффективно снизит его?</p><ul>\n<li>+Автотесты и staging, близкий к production [Верно! Большинство production инцидентов — это ошибки которые можно поймать тестами или staging]</li>\n<li>Запретить деплои в production по пятницам [Это частичная мера; снижает риск но не устраняет причину высокого CFR]</li>\n<li>Снизить Deployment Frequency до раза в квартал [Нет — большие редкие релизы обычно дают ВЫШЕ CFR из-за большего объёма изменений]</li>\n<li>Нанять больше QA инженеров для ручного тестирования [Нет — ручное тестирование плохо масштабируется и медленнее автоматического]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "MTTR улучшение",
+      "taskid": "dora_quiz2_t3_mttr_improve",
+      "hint": "",
+      "question_html": "<p>MTTR = 4 часа. Что поможет снизить его до 30 минут?</p>",
+      "options": [
+        {
+          "text": "Observability + rollback + runbooks",
+          "correct": true,
+          "explanation": "Верно! 90% MTTR — это обнаружение и диагностика; хорошая observability сокращает это время радикально"
+        },
+        {
+          "text": "Улучшить документацию кода",
+          "correct": false,
+          "explanation": "Нет — code docs не помогают при production инциденте; нужна operational runbook"
+        },
+        {
+          "text": "Нанять больше on-call инженеров",
+          "correct": false,
+          "explanation": "Нет — больше людей не ускоряет диагностику если нет инструментов"
+        },
+        {
+          "text": "Делать деплои только в рабочее время",
+          "correct": false,
+          "explanation": "Нет — инциденты происходят в любое время; это снижает риск но не MTTR"
+        }
+      ],
+      "raw_description": "<p>MTTR = 4 часа. Что поможет снизить его до 30 минут?</p><ul>\n<li>+Observability + rollback + runbooks [Верно! 90% MTTR — это обнаружение и диагностика; хорошая observability сокращает это время радикально]</li>\n<li>Улучшить документацию кода [Нет — code docs не помогают при production инциденте; нужна operational runbook]</li>\n<li>Нанять больше on-call инженеров [Нет — больше людей не ускоряет диагностику если нет инструментов]</li>\n<li>Делать деплои только в рабочее время [Нет — инциденты происходят в любое время; это снижает риск но не MTTR]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Lead Time bottleneck",
+      "taskid": "dora_quiz2_t4_bottleneck",
+      "hint": "",
+      "question_html": "<p>После VSM: коммит→review (2 дня) → CI (20 мин) → deploy (10 мин). Главный bottleneck?</p>",
+      "options": [
+        {
+          "text": "CI pipeline — 20 минут слишком долго",
+          "correct": false,
+          "explanation": "Нет — 20 минут это приемлемо; 2 дня на review намного хуже"
+        },
+        {
+          "text": "Deploy process — 10 минут нужно оптимизировать",
+          "correct": false,
+          "explanation": "Нет — 10 минут деплоя при 2-дневном review не является bottleneck"
+        },
+        {
+          "text": "Нет bottleneck — всё равномерно",
+          "correct": false,
+          "explanation": "Нет — 2 дня ожидания явно доминирует над остальными этапами"
+        },
+        {
+          "text": "Очередь code review на 2 дня",
+          "correct": true,
+          "explanation": "Верно! 2 дня ожидания против 30 минут работы = >98% времени уходит на ожидание code review"
+        }
+      ],
+      "raw_description": "<p>После VSM: коммит→review (2 дня) → CI (20 мин) → deploy (10 мин). Главный bottleneck?</p><ul>\n<li>CI pipeline — 20 минут слишком долго [Нет — 20 минут это приемлемо; 2 дня на review намного хуже]</li>\n<li>Deploy process — 10 минут нужно оптимизировать [Нет — 10 минут деплоя при 2-дневном review не является bottleneck]</li>\n<li>Нет bottleneck — всё равномерно [Нет — 2 дня ожидания явно доминирует над остальными этапами]</li>\n<li>+Очередь code review на 2 дня [Верно! 2 дня ожидания против 30 минут работы = >98% времени уходит на ожидание code review]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Error Budget exhausted",
+      "taskid": "dora_quiz2_t5_budget_exhausted",
+      "hint": "",
+      "question_html": "<p>Error Budget исчерпан до конца квартала. По Error Budget Policy что делать?</p>",
+      "options": [
+        {
+          "text": "Снизить SLO чтобы дать больше Error Budget",
+          "correct": false,
+          "explanation": "Это работает математически, но нельзя просто так понизить обязательства перед клиентами"
+        },
+        {
+          "text": "Повысить SLO чтобы дать больше Error Budget",
+          "correct": false,
+          "explanation": "Нет — повышение SLO уменьшает Error Budget, не увеличивает"
+        },
+        {
+          "text": "Feature freeze; только reliability и bug fixes",
+          "correct": true,
+          "explanation": "Верно! Исчерпанный Error Budget означает что reliability важнее новых фич сейчас"
+        },
+        {
+          "text": "Продолжать деплоить — Error Budget это не обязательный показатель",
+          "correct": false,
+          "explanation": "Нет — Error Budget Policy это договорённость между Dev и SRE/Ops"
+        }
+      ],
+      "raw_description": "<p>Error Budget исчерпан до конца квартала. По Error Budget Policy что делать?</p><ul>\n<li>Снизить SLO чтобы дать больше Error Budget [Это работает математически, но нельзя просто так понизить обязательства перед клиентами]</li>\n<li>Повысить SLO чтобы дать больше Error Budget [Нет — повышение SLO уменьшает Error Budget, не увеличивает]</li>\n<li>+Feature freeze; только reliability и bug fixes [Верно! Исчерпанный Error Budget означает что reliability важнее новых фич сейчас]</li>\n<li>Продолжать деплоить — Error Budget это не обязательный показатель [Нет — Error Budget Policy это договорённость между Dev и SRE/Ops]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Deployment Frequency парадокс",
+      "taskid": "dora_quiz2_t6_paradox",
+      "hint": "",
+      "question_html": "<p>CTO говорит: \"Больше деплоев = больше риска\". По данным DORA это...</p>",
+      "options": [
+        {
+          "text": "DORA не изучала связь frequency и risk",
+          "correct": false,
+          "explanation": "Нет — это один из ключевых выводов DORA"
+        },
+        {
+          "text": "Верно",
+          "correct": false,
+          "explanation": "Нет — DORA опровергла эту интуицию данными 10+ лет исследований"
+        },
+        {
+          "text": "Неверно: частые малые деплои обычно снижают риск",
+          "correct": true,
+          "explanation": "Верно! Маленькие частые изменения безопаснее редких больших; проще найти проблему и откатить"
+        },
+        {
+          "text": "Зависит от индустрии",
+          "correct": false,
+          "explanation": "Нет — исследования охватывали разные индустрии включая финансы"
+        }
+      ],
+      "raw_description": "<p>CTO говорит: \"Больше деплоев = больше риска\". По данным DORA это...</p><ul>\n<li>DORA не изучала связь frequency и risk [Нет — это один из ключевых выводов DORA]</li>\n<li>Верно [Нет — DORA опровергла эту интуицию данными 10+ лет исследований]</li>\n<li>+Неверно: частые малые деплои обычно снижают риск [Верно! Маленькие частые изменения безопаснее редких больших; проще найти проблему и откатить]</li>\n<li>Зависит от индустрии [Нет — исследования охватывали разные индустрии включая финансы]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Reliability и SLO",
+      "taskid": "dora_quiz2_t7_reliability",
+      "hint": "",
+      "question_html": "<p>Почему при ускорении delivery нельзя забывать про reliability?</p>",
+      "options": [
+        {
+          "text": "Потому что reliability измеряется количеством серверов",
+          "correct": false,
+          "explanation": "Нет — лучше смотреть на пользовательские SLI и SLO"
+        },
+        {
+          "text": "Потому что DORA запрещает continuous deployment",
+          "correct": false,
+          "explanation": "Нет — DORA не запрещает, а помогает оценивать баланс"
+        },
+        {
+          "text": "Скорость полезна только при видимой reliability",
+          "correct": true,
+          "explanation": "Верно! Скорость без observability и SLO может просто быстрее доставлять проблемы"
+        },
+        {
+          "text": "Потому что SLO важнее любых продуктовых изменений всегда и без исключений",
+          "correct": false,
+          "explanation": "Нет — нужен баланс скорости и надёжности"
+        }
+      ],
+      "raw_description": "<p>Почему при ускорении delivery нельзя забывать про reliability?</p><ul>\n<li>Потому что reliability измеряется количеством серверов [Нет — лучше смотреть на пользовательские SLI и SLO]</li>\n<li>Потому что DORA запрещает continuous deployment [Нет — DORA не запрещает, а помогает оценивать баланс]</li>\n<li>+Скорость полезна только при видимой reliability [Верно! Скорость без observability и SLO может просто быстрее доставлять проблемы]</li>\n<li>Потому что SLO важнее любых продуктовых изменений всегда и без исключений [Нет — нужен баланс скорости и надёжности]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Низкий CFR высокий MTTR",
+      "taskid": "dora_quiz2_t8_tradeoff",
+      "hint": "",
+      "question_html": "<p>Команда имеет CFR 2% но MTTR 8 часов. Что это означает?</p>",
+      "options": [
+        {
+          "text": "Это отличный результат — CFR низкий значит команда молодцы",
+          "correct": false,
+          "explanation": "Нет — MTTR 8 часов это плохой результат; нужно работать над recovery"
+        },
+        {
+          "text": "Низкий CFR, но очень медленное восстановление",
+          "correct": true,
+          "explanation": "Верно! Хорошая профилактика, но плохой incident response. Нужно улучшить observability и runbooks"
+        },
+        {
+          "text": "Это невозможная комбинация — низкий CFR всегда с низким MTTR",
+          "correct": false,
+          "explanation": "Нет — это независимые метрики; можно иметь любую комбинацию"
+        },
+        {
+          "text": "CFR 2% означает что 98% деплоев вызывают инциденты",
+          "correct": false,
+          "explanation": "Нет — CFR это процент плохих деплоев; 2% = 2 из 100 деплоев вызывают инцидент"
+        }
+      ],
+      "raw_description": "<p>Команда имеет CFR 2% но MTTR 8 часов. Что это означает?</p><ul>\n<li>Это отличный результат — CFR низкий значит команда молодцы [Нет — MTTR 8 часов это плохой результат; нужно работать над recovery]</li>\n<li>+Низкий CFR, но очень медленное восстановление [Верно! Хорошая профилактика, но плохой incident response. Нужно улучшить observability и runbooks]</li>\n<li>Это невозможная комбинация — низкий CFR всегда с низким MTTR [Нет — это независимые метрики; можно иметь любую комбинацию]</li>\n<li>CFR 2% означает что 98% деплоев вызывают инциденты [Нет — CFR это процент плохих деплоев; 2% = 2 из 100 деплоев вызывают инцидент]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Измерение Lead Time автоматически",
+      "taskid": "dora_quiz2_t9_measure_lead",
+      "hint": "",
+      "question_html": "<p>Как автоматически измерять Lead Time for Changes?</p>",
+      "options": [
+        {
+          "text": "Время от создания PR до его merge",
+          "correct": false,
+          "explanation": "Нет — это только часть Lead Time; нужно включить время до production"
+        },
+        {
+          "text": "Длительность sprint'а",
+          "correct": false,
+          "explanation": "Нет — sprint duration это planning unit; Lead Time это фактическое время"
+        },
+        {
+          "text": "Первый commit → production deploy",
+          "correct": true,
+          "explanation": "Верно! Git и CI/CD системы хранят эти timestamps; DORA четборды (например Sleuth, LinearB) автоматизируют это"
+        },
+        {
+          "text": "Спрашивать разработчиков сколько времени заняла задача",
+          "correct": false,
+          "explanation": "Нет — субъективно и неточно; люди помнят только active work time, не wait time"
+        }
+      ],
+      "raw_description": "<p>Как автоматически измерять Lead Time for Changes?</p><ul>\n<li>Время от создания PR до его merge [Нет — это только часть Lead Time; нужно включить время до production]</li>\n<li>Длительность sprint'а [Нет — sprint duration это planning unit; Lead Time это фактическое время]</li>\n<li>+Первый commit → production deploy [Верно! Git и CI/CD системы хранят эти timestamps; DORA четборды (например Sleuth, LinearB) автоматизируют это]</li>\n<li>Спрашивать разработчиков сколько времени заняла задача [Нет — субъективно и неточно; люди помнят только active work time, не wait time]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DORA для небольшой команды",
+      "taskid": "dora_quiz2_t10_small_team",
+      "hint": "",
+      "question_html": "<p>Стартап 5 человек. Нужно ли им измерять DORA метрики?</p>",
+      "options": [
+        {
+          "text": "Только Deployment Frequency нужна для малой команды",
+          "correct": false,
+          "explanation": "Нет — все 4 метрики важны независимо от размера"
+        },
+        {
+          "text": "Да: метрики помогают найти потери и ускорить recovery",
+          "correct": true,
+          "explanation": "Верно! DORA применимы к любому размеру; начинать измерять лучше раньше, до накопления технического долга"
+        },
+        {
+          "text": "Когда вырастут до 50+ человек тогда и измерять",
+          "correct": false,
+          "explanation": "Нет — тогда будет сложнее изменить устоявшиеся привычки"
+        },
+        {
+          "text": "Нет",
+          "correct": false,
+          "explanation": "Нет — DORA исследования охватывали компании всех размеров"
+        }
+      ],
+      "raw_description": "<p>Стартап 5 человек. Нужно ли им измерять DORA метрики?</p><ul>\n<li>Только Deployment Frequency нужна для малой команды [Нет — все 4 метрики важны независимо от размера]</li>\n<li>+Да: метрики помогают найти потери и ускорить recovery [Верно! DORA применимы к любому размеру; начинать измерять лучше раньше, до накопления технического долга]</li>\n<li>Когда вырастут до 50+ человек тогда и измерять [Нет — тогда будет сложнее изменить устоявшиеся привычки]</li>\n<li>Нет [Нет — DORA исследования охватывали компании всех размеров]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

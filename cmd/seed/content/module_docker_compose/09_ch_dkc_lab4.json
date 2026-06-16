@@ -1,0 +1,103 @@
+{
+  "n": 9,
+  "id": "ch_dkc_lab4",
+  "title": "Лабораторная 4: Переменные окружения",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Посмотреть шаблон с переменными",
+      "taskid": "dkc_lab4_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/envapp</code> подготовлен compose-файл, использующий переменные окружения. Посмотри его и файл <code>.env.example</code>:</p>\n<pre><code>cat /root/envapp/docker-compose.yml</code></pre>\n<pre><code>cat /root/envapp/.env.example</code></pre>\n<p>Обрати внимание, какие переменные ожидает compose-файл. Позже ты создашь env-файл и проверишь итог через <code>docker compose config</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/envapp</code> подготовлен compose-файл, использующий переменные окружения. Посмотри его и файл <code>.env.example</code>:</p>\n<pre><code>cat /root/envapp/docker-compose.yml</code></pre>\n<pre><code>cat /root/envapp/.env.example</code></pre>\n<p>Обрати внимание, какие переменные ожидает compose-файл. Позже ты создашь env-файл и проверишь итог через <code>docker compose config</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать .env файл",
+      "taskid": "dkc_lab4_t2_env",
+      "hint": "<p>Можно скопировать пример: <code>cp /root/envapp/.env.example /root/envapp/.env</code>, затем открыть файл и убедиться, что в нём есть <code>APP_PORT</code> и <code>APP_NAME</code>. Используй <code>docker compose config</code>, чтобы проверить, какой env-файл читает Compose.</p>",
+      "question_html": "<p>Создай файл <code>/root/envapp/.env</code> на основе <code>.env.example</code>. В нём должны быть переменные <code>APP_PORT=8080</code>, <code>APP_DEBUG=true</code>, <code>REDIS_HOST=cache</code>, <code>REDIS_PORT=6379</code> и <code>APP_NAME=myapp</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/envapp/.env</code> на основе <code>.env.example</code>. В нём должны быть переменные <code>APP_PORT=8080</code>, <code>APP_DEBUG=true</code>, <code>REDIS_HOST=cache</code>, <code>REDIS_PORT=6379</code> и <code>APP_NAME=myapp</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить стек с .env",
+      "taskid": "dkc_lab4_t3_up",
+      "hint": "<p>Используй <code>docker compose config</code>, чтобы проверить, какой env-файл читает Compose. Файл рядом с compose-файлом подхватывается автоматически, остальные указываются явно.</p>",
+      "question_html": "<p>Запусти стек из директории <code>/root/envapp</code>. Compose автоматически прочитает файл <code>.env</code> из текущей директории и запустит сервис <code>app</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти стек из директории <code>/root/envapp</code>. Compose автоматически прочитает файл <code>.env</code> из текущей директории и запустит сервис <code>app</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить переменные в контейнере",
+      "taskid": "dkc_lab4_t4_env_check",
+      "hint": "<p><code>printenv APP_NAME</code> показывает только одну переменную, а <code>env | sort | grep '^APP_'</code> помогает быстро увидеть все переменные приложения.</p>",
+      "question_html": "<p>Проверь, что переменные из <code>.env</code> попали в контейнер сервиса <code>app</code>, и сам посмотри значение <code>APP_NAME</code>:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose exec -T app printenv APP_NAME</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep '^APP_'</code></pre>\n<p>Файл сохранять не нужно: цель шага — увидеть, какие переменные реально доступны процессу внутри контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что переменные из <code>.env</code> попали в контейнер сервиса <code>app</code>, и сам посмотри значение <code>APP_NAME</code>:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose exec -T app printenv APP_NAME</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep '^APP_'</code></pre>\n<p>Файл сохранять не нужно: цель шага — увидеть, какие переменные реально доступны процессу внутри контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переопределить переменную из командной строки",
+      "taskid": "dkc_lab4_t5_override",
+      "hint": "<p>Используй <code>docker compose config</code>, чтобы проверить, какой env-файл читает Compose. Файл рядом с compose-файлом подхватывается автоматически, остальные указываются явно.</p>",
+      "question_html": "<p>Перезапусти сервис <code>app</code> с переопределённой переменной <code>APP_DEBUG=false</code> прямо из командной строки.</p><p>Переменная из командной строки имеет приоритет над <code>.env</code> файлом.</p>",
+      "options": [],
+      "raw_description": "<p>Перезапусти сервис <code>app</code> с переопределённой переменной <code>APP_DEBUG=false</code> прямо из командной строки.</p><p>Переменная из командной строки имеет приоритет над <code>.env</code> файлом.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить значение переопределённой переменной",
+      "taskid": "dkc_lab4_t6_check_override",
+      "hint": "<p><code>printenv APP_DEBUG</code> показывает только проверяемую переменную, а список <code>APP_</code>-переменных помогает увидеть её рядом с остальными настройками приложения.</p>",
+      "question_html": "<p>Убедись, что после переопределения из командной строки <code>APP_DEBUG</code> внутри контейнера теперь равен <code>false</code>:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose exec -T app printenv APP_DEBUG</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep '^APP_'</code></pre>\n<p>Файл сохранять не нужно: здесь важно увидеть фактическое runtime-значение переменной внутри контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Убедись, что после переопределения из командной строки <code>APP_DEBUG</code> внутри контейнера теперь равен <code>false</code>:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose exec -T app printenv APP_DEBUG</code></pre>\n<pre><code>docker compose exec -T app env | sort | grep '^APP_'</code></pre>\n<p>Файл сохранять не нужно: здесь важно увидеть фактическое runtime-значение переменной внутри контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Использовать значения по умолчанию",
+      "taskid": "dkc_lab4_t7_default",
+      "hint": "<p>Используй <code>docker compose up</code> из каталога с compose-файлом: <code>up</code> применяет описание проекта и создаёт недостающие контейнеры; detached-режим нужен для фонового запуска.</p>",
+      "question_html": "<p>В docker-compose.yml можно задавать значения по умолчанию через синтаксис <code>${VAR:-default}</code>. Добавь новый сервис <code>monitor</code> с дефолтным значением порта и запусти стек:</p><p>Сохрани результат в <code>/root/envapp/docker-compose.yml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В docker-compose.yml можно задавать значения по умолчанию через синтаксис <code>${VAR:-default}</code>. Добавь новый сервис <code>monitor</code> с дефолтным значением порта и запусти стек:</p><p>Сохрани результат в <code>/root/envapp/docker-compose.yml</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть итоговую конфигурацию",
+      "taskid": "dkc_lab4_t8_config",
+      "hint": "",
+      "question_html": "<p>Посмотри итоговый Compose-файл с уже подставленными переменными:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose config</code></pre>\n<p>Такой вывод помогает отладить подстановку переменных — видно, что именно получит Docker.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри итоговый Compose-файл с уже подставленными переменными:</p>\n<pre><code>cd /root/envapp</code></pre>\n<pre><code>docker compose config</code></pre>\n<p>Такой вывод помогает отладить подстановку переменных — видно, что именно получит Docker.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать .env.prod файл",
+      "taskid": "dkc_lab4_t9_env_prod",
+      "hint": "<p>Создай env-файл обычной записью текста. Для проверки можно использовать <code>docker compose config</code>, чтобы увидеть подставленные значения без запуска контейнеров.</p>",
+      "question_html": "<p>Создай <code>/root/envapp/.env.prod</code> для production-конфигурации. В файле должны быть строки <code>APP_DEBUG=false</code> и <code>APP_PORT=80</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай <code>/root/envapp/.env.prod</code> для production-конфигурации. В файле должны быть строки <code>APP_DEBUG=false</code> и <code>APP_PORT=80</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить стек",
+      "taskid": "dkc_lab4_t10_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови стек.</p>",
+      "options": [],
+      "raw_description": "<p>Останови стек.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab4/setup.yaml"
+}

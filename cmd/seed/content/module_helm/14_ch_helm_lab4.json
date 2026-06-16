@@ -1,0 +1,103 @@
+{
+  "n": 14,
+  "id": "ch_helm_lab4",
+  "title": "Лабораторная 6: Upgrade и Rollback",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Установить начальную версию",
+      "taskid": "helm_lab4_t1_install_v1",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>webapp</code> с версией образа <code>nginx:1.25-alpine</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install webapp /root/charts/nginx-chart --set image.tag=1.25-alpine</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>webapp</code> с версией образа <code>nginx:1.25-alpine</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install webapp /root/charts/nginx-chart --set image.tag=1.25-alpine</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть историю",
+      "taskid": "helm_lab4_t2_history_v1",
+      "hint": "<p>Используй <code>helm history</code> и <code>helm rollback</code>: history показывает ревизии release, rollback возвращает release к выбранной ревизии.</p>",
+      "question_html": "<p>Посмотри историю ревизий релиза и убедись, что у <code>webapp</code> есть первая ревизия.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри историю ревизий релиза и убедись, что у <code>webapp</code> есть первая ревизия.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Upgrade на новую версию",
+      "taskid": "helm_lab4_t3_upgrade",
+      "hint": "<p>Используй <code>helm upgrade</code>: проверь имя release, chart и values, затем посмотри <code>helm status</code> или <code>helm history</code>.</p>",
+      "question_html": "<p>Обнови release <code>webapp</code> из chart <code>/root/charts/nginx-chart</code> на новую версию образа <code>nginx:alpine</code> и убедись, что release остался в статусе <code>deployed</code>.</p>\n<pre><code>helm upgrade webapp /root/charts/nginx-chart --set image.tag=alpine</code></pre>",
+      "options": [],
+      "raw_description": "<p>Обнови release <code>webapp</code> из chart <code>/root/charts/nginx-chart</code> на новую версию образа <code>nginx:alpine</code> и убедись, что release остался в статусе <code>deployed</code>.</p>\n<pre><code>helm upgrade webapp /root/charts/nginx-chart --set image.tag=alpine</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить revision 2",
+      "taskid": "helm_lab4_t4_check_revision",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Посмотри values для первой и второй ревизии и убедись, что в них отличаются image tags.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри values для первой и второй ревизии и убедись, что в них отличаются image tags.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Rollback на предыдущую версию",
+      "taskid": "helm_lab4_t5_rollback",
+      "hint": "<p>Используй <code>helm history</code> и <code>helm rollback</code>: history показывает ревизии release, rollback возвращает release к выбранной ревизии.</p>",
+      "question_html": "<p>Откати release <code>webapp</code> на предыдущую ревизию и убедись, что release снова использует образ <code>nginx:1.25-alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Откати release <code>webapp</code> на предыдущую ревизию и убедись, что release снова использует образ <code>nginx:1.25-alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить что rollback сработал",
+      "taskid": "helm_lab4_t6_verify_rollback",
+      "hint": "<p>Используй <code>helm history</code> и <code>helm rollback</code>: history показывает ревизии release, rollback возвращает release к выбранной ревизии.</p>",
+      "question_html": "<p>Убедись, что после rollback вернулись values из revision 1.</p>",
+      "options": [],
+      "raw_description": "<p>Убедись, что после rollback вернулись values из revision 1.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Upgrade --install флаг",
+      "taskid": "helm_lab4_t7_upgrade_install",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Используй флаг <code>--install</code>, чтобы создать или обновить release <code>new-webapp</code> из chart <code>/root/charts/nginx-chart</code>, и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm upgrade --install new-webapp /root/charts/nginx-chart</code></pre>",
+      "options": [],
+      "raw_description": "<p>Используй флаг <code>--install</code>, чтобы создать или обновить release <code>new-webapp</code> из chart <code>/root/charts/nginx-chart</code>, и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm upgrade --install new-webapp /root/charts/nginx-chart</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Upgrade с --wait",
+      "taskid": "helm_lab4_t8_wait",
+      "hint": "<p>Задача отличается от первого upgrade: здесь мы проверяем не только смену версии, но и ожидание готовности rolling update через <code>--wait</code>.</p>",
+      "question_html": "<p>После rollback снова обнови release <code>webapp</code>, но теперь одновременно измени image tag на <code>alpine</code> и увеличь количество реплик до <code>2</code>. Используй <code>--wait</code>, чтобы Helm дождался готовности обоих Pod'ов.</p>\n<pre><code>helm upgrade webapp /root/charts/nginx-chart --set image.tag=alpine --set replicaCount=2 --wait --timeout=120s</code></pre>",
+      "options": [],
+      "raw_description": "<p>После rollback снова обнови release <code>webapp</code>, но теперь одновременно измени image tag на <code>alpine</code> и увеличь количество реплик до <code>2</code>. Используй <code>--wait</code>, чтобы Helm дождался готовности обоих Pod'ов.</p>\n<pre><code>helm upgrade webapp /root/charts/nginx-chart --set image.tag=alpine --set replicaCount=2 --wait --timeout=120s</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть историю после rollback",
+      "taskid": "helm_lab4_t9_diff",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Посмотри все ревизии в истории финального состояния и убедись, что rollback сохранился в истории.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри все ревизии в истории финального состояния и убедись, что rollback сохранился в истории.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить все релизы",
+      "taskid": "helm_lab4_t10_cleanup",
+      "hint": "<p>Используй <code>helm uninstall</code>: release удалится, но внешние данные могут остаться. После удаления проверь список release в нужном namespace.</p>",
+      "question_html": "<p>Удали helm releases <code>webapp</code> и <code>new-webapp</code> и проверь, что они больше не отображаются в списке releases.</p>",
+      "options": [],
+      "raw_description": "<p>Удали helm releases <code>webapp</code> и <code>new-webapp</code> и проверь, что они больше не отображаются в списке releases.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab4/setup.yaml"
+}

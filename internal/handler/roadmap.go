@@ -103,21 +103,21 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 		level := difficultyToLevel[mod.Difficulty]
 
 		switch mod.Track {
-		case "shared":
-			if level <= 1 && level < len(sharedLevels) {
+		case "golang", "shared", "backend":
+			if level >= 0 && level < len(sharedLevels) {
 				sharedLevels[level].Modules = append(sharedLevels[level].Modules, rm)
+			} else {
+				sharedLevels[len(sharedLevels)-1].Modules = append(sharedLevels[len(sharedLevels)-1].Modules, rm)
 			}
-		case "backend":
-			// Map: intermediate→0, advanced→1, expert→2
+		case "devops", "database":
 			idx := level - 1
-			if idx >= 0 && idx < len(backendLevels) {
-				backendLevels[idx].Modules = append(backendLevels[idx].Modules, rm)
+			if idx < 0 {
+				idx = 0
 			}
-		case "devops":
-			idx := level - 1
-			if idx >= 0 && idx < len(devopsLevels) {
-				devopsLevels[idx].Modules = append(devopsLevels[idx].Modules, rm)
+			if idx >= len(devopsLevels) {
+				idx = len(devopsLevels) - 1
 			}
+			devopsLevels[idx].Modules = append(devopsLevels[idx].Modules, rm)
 		}
 	}
 

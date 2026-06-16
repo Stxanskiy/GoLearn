@@ -1,0 +1,208 @@
+{
+  "n": 12,
+  "id": "ch_lcore_lab6",
+  "title": "Лабораторная 6: chmod, chown, umask",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "chmod +x: сделать скрипт исполняемым",
+      "taskid": "lcore_lab6_t1_chmod_x",
+      "hint": "<p>У <code>chmod</code> можно задавать права символически: кому добавить право и какое именно право. После изменения проверь атрибуты файла.</p>",
+      "question_html": "<p>Файл <code>/opt/devops/lab6/deploy.sh</code> существует, но не исполняемый. Добавь право выполнения для владельца.</p>",
+      "options": [],
+      "raw_description": "<p>Файл <code>/opt/devops/lab6/deploy.sh</code> существует, но не исполняемый. Добавь право выполнения для владельца.</p>"
+    },
+    {
+      "type": "check",
+      "title": "chmod 600: ограничить доступ",
+      "taskid": "lcore_lab6_t2_chmod_600",
+      "hint": "<p>Для числового режима вспомни соответствие: read = 4, write = 2, execute = 1. После изменения проверь атрибуты файла.</p>",
+      "question_html": "<p>Файл <code>/opt/devops/lab6/secrets.env</code> должен быть доступен только владельцу (чтение и запись). Установи права <code>600</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Файл <code>/opt/devops/lab6/secrets.env</code> должен быть доступен только владельцу (чтение и запись). Установи права <code>600</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "chmod 755: публичная директория",
+      "taskid": "lcore_lab6_t3_chmod_755",
+      "hint": "<p>Для директории важно не только чтение, но и право заходить внутрь (<code>x</code>). Числовой режим складывается из read/write/execute для владельца, группы и остальных.</p>",
+      "question_html": "<p>Установи права <code>755</code> на директорию <code>/opt/devops/lab6/public/</code> (владелец: все права, остальные: читать и заходить).</p>",
+      "options": [],
+      "raw_description": "<p>Установи права <code>755</code> на директорию <code>/opt/devops/lab6/public/</code> (владелец: все права, остальные: читать и заходить).</p>"
+    },
+    {
+      "type": "check",
+      "title": "chmod -R: рекурсивно",
+      "taskid": "lcore_lab6_t4_recursive",
+      "hint": "<p>Для применения прав ко всему дереву у <code>chmod</code> есть рекурсивный режим. Используй его только на точно указанном каталоге.</p>",
+      "question_html": "<p>Установи права <code>644</code> рекурсивно на все файлы в <code>/opt/devops/lab6/configs/</code>, включая <code>/opt/devops/lab6/configs/app.conf</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Установи права <code>644</code> рекурсивно на все файлы в <code>/opt/devops/lab6/configs/</code>, включая <code>/opt/devops/lab6/configs/app.conf</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: umask",
+      "taskid": "lcore_lab6_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Если umask установлен в <code>022</code>, то права нового файла при создании (базовые права файла <code>666</code>) будут:</p>",
+      "options": [
+        {
+          "text": "<code>755</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>664</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+644</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>600</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Если umask установлен в <code>022</code>, то права нового файла при создании (базовые права файла <code>666</code>) будут:</p>\n<ul>\n<li><code>755</code></li>\n<li><code>664</code></li>\n<li><code>+644</code></li>\n<li><code>600</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "stat: проверить права",
+      "taskid": "lcore_lab6_t6_stat",
+      "hint": "",
+      "question_html": "<p>Проверь числовые права файла <code>/opt/devops/lab6/secrets.env</code>. Какое значение получилось?</p>",
+      "options": [
+        {
+          "text": "<code>644</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>755</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>400</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+600</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Проверь числовые права файла <code>/opt/devops/lab6/secrets.env</code>. Какое значение получилось?</p>\n<ul>\n<li><code>644</code></li>\n<li><code>755</code></li>\n<li><code>400</code></li>\n<li><code>+600</code></li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "chmod: исправить SSH ключ",
+      "taskid": "lcore_lab6_t7_ssh_key",
+      "hint": "<p>SSH-ключу не нужно право выполнения; важнее убрать доступ для группы и остальных. Проверь итоговый числовой режим после изменения.</p>",
+      "question_html": "<p>Файл <code>/opt/devops/lab6/id_rsa</code> имеет слишком широкие права. SSH требует права <code>400</code> или <code>600</code>. Установи права <code>600</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Файл <code>/opt/devops/lab6/id_rsa</code> имеет слишком широкие права. SSH требует права <code>400</code> или <code>600</code>. Установи права <code>600</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает chmod 600?",
+      "taskid": "lcore_lab6_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает режим <code>600</code> для обычного файла?</p>",
+      "options": [
+        {
+          "text": "Владелец может читать и писать, группа и остальные не имеют прав",
+          "correct": true,
+          "explanation": "Верно! 6 = read+write, 0 = нет прав"
+        },
+        {
+          "text": "Все пользователи могут читать и выполнять файл",
+          "correct": false,
+          "explanation": "Нет — это ближе к <code>755</code>"
+        },
+        {
+          "text": "Только группа может изменять файл",
+          "correct": false,
+          "explanation": "Нет — права группы здесь равны 0"
+        },
+        {
+          "text": "Файл становится директорией",
+          "correct": false,
+          "explanation": "Нет — <code>chmod</code> не меняет тип объекта"
+        }
+      ],
+      "raw_description": "<p>Что означает режим <code>600</code> для обычного файла?</p><ul><li>+Владелец может читать и писать, группа и остальные не имеют прав [Верно! 6 = read+write, 0 = нет прав]</li><li>Все пользователи могут читать и выполнять файл [Нет — это ближе к <code>755</code>]</li><li>Только группа может изменять файл [Нет — права группы здесь равны 0]</li><li>Файл становится директорией [Нет — <code>chmod</code> не меняет тип объекта]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем опасен chmod -R?",
+      "taskid": "lcore_lab6_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему рекурсивный <code>chmod -R</code> нужно применять только к точно выбранному каталогу?</p>",
+      "options": [
+        {
+          "text": "Он меняет права сразу у всего дерева файлов, и ошибка в пути может открыть или сломать лишние файлы",
+          "correct": true,
+          "explanation": "Верно! Рекурсия увеличивает область воздействия"
+        },
+        {
+          "text": "Он работает только для пустых директорий",
+          "correct": false,
+          "explanation": "Нет — как раз проходит по содержимому"
+        },
+        {
+          "text": "Он автоматически меняет владельца на root",
+          "correct": false,
+          "explanation": "Нет — владельца меняет <code>chown</code>"
+        },
+        {
+          "text": "Он всегда делает резервную копию прав",
+          "correct": false,
+          "explanation": "Нет — резервной копии нет"
+        }
+      ],
+      "raw_description": "<p>Почему рекурсивный <code>chmod -R</code> нужно применять только к точно выбранному каталогу?</p><ul><li>+Он меняет права сразу у всего дерева файлов, и ошибка в пути может открыть или сломать лишние файлы [Верно! Рекурсия увеличивает область воздействия]</li><li>Он работает только для пустых директорий [Нет — как раз проходит по содержимому]</li><li>Он автоматически меняет владельца на root [Нет — владельца меняет <code>chown</code>]</li><li>Он всегда делает резервную копию прав [Нет — резервной копии нет]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему SSH требует строгие права ключа?",
+      "taskid": "lcore_lab6_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему приватный SSH-ключ обычно должен иметь права вроде <code>600</code> или <code>400</code>?</p>",
+      "options": [
+        {
+          "text": "Ключ не должен быть доступен другим пользователям, иначе SSH может отказаться его использовать",
+          "correct": true,
+          "explanation": "Верно! Приватный ключ должен оставаться приватным"
+        },
+        {
+          "text": "Потому что SSH читает только исполняемые файлы",
+          "correct": false,
+          "explanation": "Нет — ключу не нужно право выполнения"
+        },
+        {
+          "text": "Потому что права <code>777</code> ускоряют подключение",
+          "correct": false,
+          "explanation": "Нет — это небезопасно и часто блокируется"
+        },
+        {
+          "text": "Потому что группа файла всегда должна быть <code>sudo</code>",
+          "correct": false,
+          "explanation": "Нет — группа не является главным требованием"
+        }
+      ],
+      "raw_description": "<p>Почему приватный SSH-ключ обычно должен иметь права вроде <code>600</code> или <code>400</code>?</p><ul><li>+Ключ не должен быть доступен другим пользователям, иначе SSH может отказаться его использовать [Верно! Приватный ключ должен оставаться приватным]</li><li>Потому что SSH читает только исполняемые файлы [Нет — ключу не нужно право выполнения]</li><li>Потому что права <code>777</code> ускоряют подключение [Нет — это небезопасно и часто блокируется]</li><li>Потому что группа файла всегда должна быть <code>sudo</code> [Нет — группа не является главным требованием]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab6/setup.yaml"
+}

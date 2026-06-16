@@ -1,0 +1,145 @@
+{
+  "n": 5,
+  "id": "ch_helm_lab_repos",
+  "title": "Лабораторная 2: Bitnami charts через Nexus",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Установи remote chart <code>bitnami/nginx</code> как release <code>bitnami-nginx</code>, но переопредели image на привычный <code>nginx:alpine</code>.</p>\n<pre><code>helm install bitnami-nginx bitnami/nginx \\\n  --set image.registry=docker.io \\\n  --set image.repository=nginx \\\n  --set image.tag=alpine \\\n  --set service.type=ClusterIP \\\n  --set containerPorts.http=80 \\\n  --set podSecurityContext.enabled=false \\\n  --set containerSecurityContext.enabled=false \\\n  --set enableDefaultInitContainers=false \\\n  --set pdb.create=false \\\n  --set networkPolicy.enabled=false \\\n  --wait \\\n  --timeout=120s</code></pre>\n<pre><code>kubectl get deploy,svc,pods -l app.kubernetes.io/instance=bitnami-nginx</code></pre>\n<pre><code>kubectl get deploy bitnami-nginx -o jsonpath='{.spec.template.spec.containers[0].image}{\"\\n\"}'</code></pre>\n<p>Что получилось: chart взят из Helm repository, но конкретный container image и часть настроек пришли из наших <code>--set</code>. То есть мы не писали Kubernetes Deployment руками, а настроили готовый chart под свой кластер и получили обычные Kubernetes-ресурсы: <code>Deployment</code>, <code>Service</code> и <code>Pod</code>.</p>27:T6b6,<p>Срендерь parent chart. Values для dependency передаются через имя dependency: <code>nginx.image.*</code>. Переопредели dependency image на repository <code>ngin",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Найти Bitnami repo",
+      "taskid": "helm_repos_t1_quiz_repo",
+      "hint": "",
+      "question_html": "<p>Выполни <code>helm repo list</code> и посмотри, куда указывает репозиторий <code>bitnami</code>. Почему URL ведёт на внутренний адрес, а не напрямую на <code>charts.bitnami.com</code>?</p>",
+      "options": [
+        {
+          "text": "bitnami — это Kubernetes namespace, куда Helm ставит релизы",
+          "correct": false,
+          "explanation": "Нет — namespace задаётся отдельно, а bitnami здесь имя Helm repo"
+        },
+        {
+          "text": "Helm всегда скачивает charts только из локальной папки /root/charts",
+          "correct": false,
+          "explanation": "Нет — Helm умеет работать и с удалёнными repositories"
+        },
+        {
+          "text": "bitnami — это имя репозитория, а URL указывает на Nexus mirror внутри VM",
+          "correct": true,
+          "explanation": "Верно! Helm получает charts через внутренний mirror"
+        },
+        {
+          "text": "Внутренний URL означает, что repo сломан и его нужно удалить",
+          "correct": false,
+          "explanation": "Нет — это нормальная схема для локального или корпоративного mirror"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>helm repo list</code> и посмотри, куда указывает репозиторий <code>bitnami</code>. Почему URL ведёт на внутренний адрес, а не напрямую на <code>charts.bitnami.com</code>?</p><ul>\n<li>bitnami — это Kubernetes namespace, куда Helm ставит релизы [Нет — namespace задаётся отдельно, а bitnami здесь имя Helm repo]</li>\n<li>Helm всегда скачивает charts только из локальной папки /root/charts [Нет — Helm умеет работать и с удалёнными repositories]</li>\n<li>+bitnami — это имя репозитория, а URL указывает на Nexus mirror внутри VM [Верно! Helm получает charts через внутренний mirror]</li>\n<li>Внутренний URL означает, что repo сломан и его нужно удалить [Нет — это нормальная схема для локального или корпоративного mirror]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить индекс repo",
+      "taskid": "helm_repos_t2_update",
+      "hint": "<p>Используй <code>helm repo</code>, <code>helm dependency</code> или <code>helm package</code> по цели задачи. Проверь Chart.yaml, lock-файл и локальный cache repo перед финальной командой.</p>",
+      "question_html": "<p>Обнови локальный индекс Bitnami repo. Helm скачает <code>index.yaml</code> через Nexus и сохранит cache-файл <code>/root/.cache/helm/repository/bitnami-index.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови локальный индекс Bitnami repo. Helm скачает <code>index.yaml</code> через Nexus и сохранит cache-файл <code>/root/.cache/helm/repository/bitnami-index.yaml</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Найти nginx chart",
+      "taskid": "helm_repos_t3_search",
+      "hint": "<p>Используй <code>helm search repo</code>. Сохранять вывод в файл не нужно.</p>",
+      "question_html": "<p>Найди chart <code>bitnami/nginx</code> в репозитории и посмотри найденную строку в терминале.</p>\n<pre><code>helm search repo bitnami/nginx</code></pre>",
+      "options": [],
+      "raw_description": "<p>Найди chart <code>bitnami/nginx</code> в репозитории и посмотри найденную строку в терминале.</p>\n<pre><code>helm search repo bitnami/nginx</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Прочитать metadata chart",
+      "taskid": "helm_repos_t4_quiz_chart",
+      "hint": "",
+      "question_html": "<p>Выполни <code>helm show chart bitnami/nginx</code>. Что означает поле <code>name</code> в выводе?</p>",
+      "options": [
+        {
+          "text": "name — это имя Helm release, который уже установлен в кластер",
+          "correct": false,
+          "explanation": "Нет — release появляется только после helm install"
+        },
+        {
+          "text": "name — это Docker image, который Kubernetes обязательно скачает",
+          "correct": false,
+          "explanation": "Нет — image задаётся в values/templates"
+        },
+        {
+          "text": "name всегда совпадает с namespace установки",
+          "correct": false,
+          "explanation": "Нет — namespace не часть metadata chart"
+        },
+        {
+          "text": "name: nginx — это имя chart, а version — версия самого chart",
+          "correct": true,
+          "explanation": "Верно! appVersion отдельно описывает версию приложения"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>helm show chart bitnami/nginx</code>. Что означает поле <code>name</code> в выводе?</p><ul>\n<li>name — это имя Helm release, который уже установлен в кластер [Нет — release появляется только после helm install]</li>\n<li>name — это Docker image, который Kubernetes обязательно скачает [Нет — image задаётся в values/templates]</li>\n<li>name всегда совпадает с namespace установки [Нет — namespace не часть metadata chart]</li>\n<li>+name: nginx — это имя chart, а version — версия самого chart [Верно! appVersion отдельно описывает версию приложения]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть values Bitnami chart",
+      "taskid": "helm_repos_t5_values",
+      "hint": "<p>Используй <code>helm template</code> или <code>helm get values</code>: уточни, откуда должны прийти values — файл, inline-параметр или дефолт chart.</p>",
+      "question_html": "<p>Посмотри values по умолчанию для <code>bitnami/nginx</code>. Найди секцию <code>image</code>: через неё можно переопределить container image.</p>\n<pre><code>helm show values bitnami/nginx | grep -A20 '^image:'</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри values по умолчанию для <code>bitnami/nginx</code>. Найди секцию <code>image</code>: через неё можно переопределить container image.</p>\n<pre><code>helm show values bitnami/nginx | grep -A20 '^image:'</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Скачать chart архивом",
+      "taskid": "helm_repos_t6_pull",
+      "hint": "<p>Используй <code>helm pull</code>: укажи chart из репозитория и каталог назначения. Имя скачанного архива будет начинаться с <code>nginx-</code>.</p>",
+      "question_html": "<p>Скачай chart <code>bitnami/nginx</code> как <code>.tgz</code> архив в каталог <code>/root/bitnami-charts/</code>. Имя скачанного архива должно начинаться с <code>nginx-</code>. Это тот же формат, который используют Helm repositories.</p>",
+      "options": [],
+      "raw_description": "<p>Скачай chart <code>bitnami/nginx</code> как <code>.tgz</code> архив в каталог <code>/root/bitnami-charts/</code>. Имя скачанного архива должно начинаться с <code>nginx-</code>. Это тот же формат, который используют Helm repositories.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Скачать и распаковать chart",
+      "taskid": "helm_repos_t7_untar",
+      "hint": "<p>Используй <code>helm repo</code>, <code>helm dependency</code> или <code>helm package</code> по цели задачи. Проверь Chart.yaml, lock-файл и локальный cache repo перед финальной командой.</p>",
+      "question_html": "<p>Скачай Bitnami chart <code>bitnami/nginx</code> и сразу распакуй его, чтобы посмотреть структуру файлов.</p><p>Сохрани результат в <code>/root/bitnami-unpacked/nginx/Chart.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Скачай Bitnami chart <code>bitnami/nginx</code> и сразу распакуй его, чтобы посмотреть структуру файлов.</p><p>Сохрани результат в <code>/root/bitnami-unpacked/nginx/Chart.yaml</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Установить remote chart с понятным image",
+      "taskid": "helm_repos_t8_template",
+      "hint": "<p>Короткая запись <code>nginx:alpine</code> в values chart раскладывается на registry, repository и tag. Для этой задачи image задаётся через <code>image.registry=docker.io</code>, <code>image.repository=nginx</code>, <code>image.tag=alpine</code>.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "self",
+      "title": "Создать chart dependency",
+      "taskid": "helm_repos_t9_dependency_update",
+      "hint": "<p>Parent chart сам не содержит nginx templates. Он описывает зависимость, а Helm скачивает дочерний chart в директорию <code>charts/</code>.</p>",
+      "question_html": "<p>Создай parent chart, который зависит от <code>bitnami/nginx</code>, и скачай dependency в директорию <code>charts/</code> этого chart.</p>\n<pre><code>mkdir -p /root/bitnami-parent\ncat &gt; /root/bitnami-parent/Chart.yaml &lt;&lt;'EOF'\napiVersion: v2\nname: nginx-parent\ntype: application\nversion: 0.1.0\ndependencies:\n  - name: nginx\n    version: \"*\"\n    repository: \"@bitnami\"\nEOF</code></pre>\n<pre><code>helm dependency update /root/bitnami-parent</code></pre>\n<pre><code>ls -l /root/bitnami-parent/charts/</code></pre>\n<pre><code>cat /root/bitnami-parent/Chart.lock</code></pre>\n<p>Что получилось: <code>nginx-parent</code> — это свой chart-обёртка. В <code>Chart.yaml</code> мы описали, что он зависит от <code>bitnami/nginx</code>, команда <code>helm dependency update</code> скачала архив dependency в <code>charts/</code>, а <code>Chart.lock</code> зафиксировал конкретную версию и digest скачанного chart.</p>",
+      "options": [],
+      "raw_description": "<p>Создай parent chart, который зависит от <code>bitnami/nginx</code>, и скачай dependency в директорию <code>charts/</code> этого chart.</p>\n<pre><code>mkdir -p /root/bitnami-parent\ncat &gt; /root/bitnami-parent/Chart.yaml &lt;&lt;'EOF'\napiVersion: v2\nname: nginx-parent\ntype: application\nversion: 0.1.0\ndependencies:\n  - name: nginx\n    version: \"*\"\n    repository: \"@bitnami\"\nEOF</code></pre>\n<pre><code>helm dependency update /root/bitnami-parent</code></pre>\n<pre><code>ls -l /root/bitnami-parent/charts/</code></pre>\n<pre><code>cat /root/bitnami-parent/Chart.lock</code></pre>\n<p>Что получилось: <code>nginx-parent</code> — это свой chart-обёртка. В <code>Chart.yaml</code> мы описали, что он зависит от <code>bitnami/nginx</code>, команда <code>helm dependency update</code> скачала архив dependency в <code>charts/</code>, а <code>Chart.lock</code> зафиксировал конкретную версию и digest скачанного chart.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Срендерить chart с dependency",
+      "taskid": "helm_repos_t10_dependency_template",
+      "hint": "<p>Когда chart подключён как dependency, его values лежат под ключом с именем dependency.</p>",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab_repos/setup.yaml"
+}

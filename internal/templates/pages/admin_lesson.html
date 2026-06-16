@@ -1,0 +1,98 @@
+{{define "admin_lesson"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/module/{{.ModuleID}}">Курс</a> / <span>{{if .IsNew}}Новая глава{{else}}{{.Lesson.Title}}{{end}}</span></div>
+
+<h1 style="margin-bottom:18px;">{{if .IsNew}}Новая глава{{else}}Глава: {{.Lesson.Title}}{{end}}</h1>
+
+<form class="adm-form" method="POST" action="{{if .IsNew}}/admin/lesson{{else}}/admin/lesson/{{.Lesson.ID}}{{end}}">
+    <input type="hidden" name="module_id" value="{{.ModuleID}}">
+    <div class="adm-grid">
+        <label>Название<input name="title" value="{{.Lesson.Title}}" required></label>
+        <label>Slug (URL)<input name="slug" value="{{.Lesson.Slug}}" required></label>
+        <label>Тип
+            <select name="kind">
+                {{$k := .Lesson.Kind}}
+                <option value="theory"{{if eq $k "theory"}} selected{{end}}>Урок (теория)</option>
+                <option value="quiz"{{if eq $k "quiz"}} selected{{end}}>Тест (квиз)</option>
+                <option value="lab"{{if eq $k "lab"}} selected{{end}}>Лаб. работа</option>
+                <option value="sim"{{if eq $k "sim"}} selected{{end}}>Симулятор</option>
+            </select>
+        </label>
+        <label>Сложность
+            <select name="difficulty">
+                {{$d := .Lesson.Difficulty}}
+                <option value="beginner"{{if eq $d "beginner"}} selected{{end}}>beginner</option>
+                <option value="intermediate"{{if eq $d "intermediate"}} selected{{end}}>intermediate</option>
+                <option value="advanced"{{if eq $d "advanced"}} selected{{end}}>advanced</option>
+                <option value="expert"{{if eq $d "expert"}} selected{{end}}>expert</option>
+            </select>
+        </label>
+        <label>Порядок<input name="order_num" type="number" value="{{.Lesson.OrderNum}}"></label>
+        <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="ubuntu:24.04"></label>
+        <label class="full">Контент (HTML)<textarea name="content" rows="18" style="font-family:'SF Mono',monospace;font-size:.85em;">{{.Lesson.Content}}</textarea></label>
+    </div>
+    <div class="row" style="margin-top:16px;">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a href="/admin/module/{{.ModuleID}}" class="btn btn-ghost">Отмена</a>
+    </div>
+</form>
+
+{{if not .IsNew}}
+<div class="section-title" style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
+    <span>💬 Вопросы теста ({{len .Questions}})</span>
+    <a href="/admin/lesson/{{.Lesson.ID}}/question/new" class="btn btn-outline btn-xs">+ Вопрос</a>
+</div>
+<div class="admin-table">
+    {{range $i, $q := .Questions}}
+    <div class="admin-row" style="grid-template-columns:40px 1fr 90px;">
+        <span class="muted">{{add $i 1}}</span>
+        <a href="/admin/question/{{$q.ID}}" class="admin-name">{{safeHTML $q.Question}}</a>
+        <span class="admin-actions">
+            <a href="/admin/question/{{$q.ID}}" class="btn btn-outline btn-xs">✎</a>
+            <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить вопрос?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+        </span>
+    </div>
+    {{else}}<div class="admin-row muted">Вопросов пока нет.</div>{{end}}
+</div>
+
+<div class="section-title" style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;">
+    <span>🧪 Задания / лаба ({{len .Tasks}})</span>
+    <a href="/admin/lesson/{{.Lesson.ID}}/task/new" class="btn btn-outline btn-xs">+ Задание</a>
+</div>
+<div class="admin-table">
+    {{range $i, $t := .Tasks}}
+    <div class="admin-row" style="grid-template-columns:40px 1fr 90px 90px;">
+        <span class="muted">{{add $i 1}}</span>
+        <a href="/admin/task/{{$t.ID}}" class="admin-name">{{$t.Title}}</a>
+        <span><span class="kind-badge">{{$t.Kind}}</span></span>
+        <span class="admin-actions">
+            <a href="/admin/task/{{$t.ID}}" class="btn btn-outline btn-xs">✎</a>
+            <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить задание?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+        </span>
+    </div>
+    {{else}}<div class="admin-row muted">Заданий пока нет.</div>{{end}}
+</div>
+
+<style>
+.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-top:6px; }
+.admin-row { display:grid; gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
+.admin-row:last-child { border-bottom:none; }
+.admin-name { font-weight:600; color:var(--text); text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .admin-name:hover { color:var(--accent); }
+.admin-actions { display:flex; gap:6px; justify-content:flex-end; }
+.btn-xs { padding:3px 9px; font-size:.8em; }
+.kind-badge { font-size:.72em; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--bg-elevated); color:var(--text-muted); }
+</style>
+{{end}}
+
+<style>
+.adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
+.adm-form label.full { grid-column:1 / -1; }
+.adm-form input, .adm-form select, .adm-form textarea { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
+.adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { border-color:var(--accent); }
+@media (max-width:680px){ .adm-form .adm-grid { grid-template-columns:1fr; } }
+</style>
+{{end}}

@@ -1,0 +1,85 @@
+{
+  "n": 8,
+  "id": "ch_k8si_lab2_manifests",
+  "title": "Лабораторная: Deployment из готового манифеста",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить готовый Deployment manifest",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/manifest-deploy</code> уже подготовлены Kubernetes-манифесты. Начни с чтения Deployment: посмотри <code>apiVersion</code>, <code>kind</code>, <code>metadata.name</code>, <code>spec.replicas</code>, <code>selector</code> и <code>template</code>.</p>\n<pre><code>cd /root/manifest-deploy</code></pre>\n<pre><code>cat deployment.yaml</code></pre>\n<p>Обрати внимание: selector Deployment должен совпадать с labels в <code>spec.template.metadata.labels</code>. Именно по этому шаблону ReplicaSet будет создавать Pod'ы.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/manifest-deploy</code> уже подготовлены Kubernetes-манифесты. Начни с чтения Deployment: посмотри <code>apiVersion</code>, <code>kind</code>, <code>metadata.name</code>, <code>spec.replicas</code>, <code>selector</code> и <code>template</code>.</p>\n<pre><code>cd /root/manifest-deploy</code></pre>\n<pre><code>cat deployment.yaml</code></pre>\n<p>Обрати внимание: selector Deployment должен совпадать с labels в <code>spec.template.metadata.labels</code>. Именно по этому шаблону ReplicaSet будет создавать Pod'ы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Применить Deployment manifest",
+      "taskid": "k8si_manifest1_t2_apply",
+      "hint": "<p>Используй <code>kubectl apply -f</code> для YAML-файла, затем <code>kubectl rollout status deployment/manifest-web</code> и <code>kubectl get deploy,pods</code>.</p>",
+      "question_html": "<p>Примени готовый файл <code>/root/manifest-deploy/deployment.yaml</code> и дождись, когда Deployment <code>manifest-web</code> поднимет 2 Ready реплики.</p>",
+      "options": [],
+      "raw_description": "<p>Примени готовый файл <code>/root/manifest-deploy/deployment.yaml</code> и дождись, когда Deployment <code>manifest-web</code> поднимет 2 Ready реплики.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Разобрать объект после apply",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри, что Kubernetes создал из манифеста: Deployment, ReplicaSet и Pod'ы.</p>\n<pre><code>kubectl get deployment manifest-web -o wide</code></pre>\n<pre><code>kubectl get rs</code></pre>\n<pre><code>kubectl get pods -l app=manifest-web --show-labels</code></pre>\n<p>Здесь важно увидеть связь: ты применил один YAML-файл Deployment, а ReplicaSet и Pod'ы появились автоматически как более низкие объекты.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри, что Kubernetes создал из манифеста: Deployment, ReplicaSet и Pod'ы.</p>\n<pre><code>kubectl get deployment manifest-web -o wide</code></pre>\n<pre><code>kubectl get rs</code></pre>\n<pre><code>kubectl get pods -l app=manifest-web --show-labels</code></pre>\n<p>Здесь важно увидеть связь: ты применил один YAML-файл Deployment, а ReplicaSet и Pod'ы появились автоматически как более низкие объекты.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Изменить replicas в YAML",
+      "taskid": "k8si_manifest1_t4_replicas",
+      "hint": "<p>После правки файла снова выполни <code>kubectl apply -f /root/manifest-deploy/deployment.yaml</code>. Для проверки используй <code>kubectl get deployment manifest-web</code> и <code>kubectl get pods -l app=manifest-web</code>.</p>",
+      "question_html": "<p>Открой <code>/root/manifest-deploy/deployment.yaml</code>, измени <code>spec.replicas</code> с <code>2</code> на <code>3</code>, снова примени manifest и дождись rollout.</p>\n<p>Здесь мы тренируем декларативный подход: меняем желаемое состояние в YAML, затем отдаём его Kubernetes.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>/root/manifest-deploy/deployment.yaml</code>, измени <code>spec.replicas</code> с <code>2</code> на <code>3</code>, снова примени manifest и дождись rollout.</p>\n<p>Здесь мы тренируем декларативный подход: меняем желаемое состояние в YAML, затем отдаём его Kubernetes.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить image через manifest",
+      "taskid": "k8si_manifest1_t5_image",
+      "hint": "<p>Ищи поле <code>spec.template.spec.containers[].image</code>. После <code>apply</code> проверь rollout и текущий image через <code>kubectl get deployment manifest-web -o jsonpath=...</code>.</p>",
+      "question_html": "<p>В том же файле <code>deployment.yaml</code> обнови image контейнера с <code>nginx:alpine</code> на <code>nginx:1.25-alpine</code>, примени manifest и дождись завершения rollout.</p>",
+      "options": [],
+      "raw_description": "<p>В том же файле <code>deployment.yaml</code> обнови image контейнера с <code>nginx:alpine</code> на <code>nginx:1.25-alpine</code>, примени manifest и дождись завершения rollout.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть diff перед применением",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Перед применением YAML в реальной работе часто смотрят, что именно изменится. Попробуй команду diff для текущего файла:</p>\n<pre><code>kubectl diff -f /root/manifest-deploy/deployment.yaml || true</code></pre>\n<p>Если manifest уже применён и в кластере нет отличий, diff может ничего не вывести. Это нормальная ситуация: желаемое состояние в файле уже совпадает с состоянием в кластере.</p>",
+      "options": [],
+      "raw_description": "<p>Перед применением YAML в реальной работе часто смотрят, что именно изменится. Попробуй команду diff для текущего файла:</p>\n<pre><code>kubectl diff -f /root/manifest-deploy/deployment.yaml || true</code></pre>\n<p>Если manifest уже применён и в кластере нет отличий, diff может ничего не вывести. Это нормальная ситуация: желаемое состояние в файле уже совпадает с состоянием в кластере.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Починить сломанный Deployment manifest",
+      "taskid": "k8si_manifest1_t7_fix_selector",
+      "hint": "<p>Сравни <code>spec.selector.matchLabels</code> и <code>spec.template.metadata.labels</code>. Для Deployment эти блоки должны выбирать одни и те же будущие Pod'ы.</p>",
+      "question_html": "<p>В файле <code>/root/manifest-deploy/broken-deployment.yaml</code> есть ошибки.</p>\n<p>Попробуй задеплоить его. Исправь ошибки чтобы деплой прошел корректно.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/root/manifest-deploy/broken-deployment.yaml</code> есть ошибки.</p>\n<p>Попробуй задеплоить его. Исправь ошибки чтобы деплой прошел корректно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Deployment'ы из лабораторной",
+      "taskid": "k8si_manifest1_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete deployment</code>, затем проверь, что эти имена больше не выводятся в <code>kubectl get deploy</code>.</p>",
+      "question_html": "<p>Удали Deployment'ы <code>manifest-web</code> и <code>broken-web</code>, которые создавались в этой лабораторной.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Deployment'ы <code>manifest-web</code> и <code>broken-web</code>, которые создавались в этой лабораторной.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/manifest_lab1/setup.yaml"
+}

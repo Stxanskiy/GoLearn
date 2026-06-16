@@ -1,0 +1,103 @@
+{
+  "n": 15,
+  "id": "ch_helm_lab5",
+  "title": "Лабораторная 7: Helm Hooks",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Что такое Helm Hooks",
+      "taskid": "helm_lab5_t1_hooks_intro",
+      "hint": "",
+      "question_html": "<p>Посмотри существующие ресурсы chart с аннотациями hooks.</p>\n<pre><code>ls /root/hooks-chart/templates/</code></pre>\n<pre><code>cat /root/hooks-chart/templates/ 2>/dev/null || ls /root/hooks-chart/</code></pre>\n<p>Обрати внимание на annotations: через них задаются hook type и weight.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри существующие ресурсы chart с аннотациями hooks.</p>\n<pre><code>ls /root/hooks-chart/templates/</code></pre>\n<pre><code>cat /root/hooks-chart/templates/ 2>/dev/null || ls /root/hooks-chart/</code></pre>\n<p>Обрати внимание на annotations: через них задаются hook type и weight.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать pre-install Hook",
+      "taskid": "helm_lab5_t2_preinstall",
+      "hint": "<p>Hook описывается YAML-ресурсом Job с annotations <code>helm.sh/hook</code>. Для контейнера используй образ <code>nginx:alpine</code>, команду <code>echo pre-install hook</code>, а для Job укажи <code>restartPolicy: Never</code>. Delete policy добавим в реальных chart, но здесь Job должен остаться для просмотра.</p>",
+      "question_html": "<p>Создай pre-install Job на образе <code>nginx:alpine</code>, который выполнится до установки chart. Сохрани manifest hook в <code>/root/hooks-chart/templates/pre-install-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo pre-install hook\"]</code></pre>\n<p>Пока не добавляй <code>helm.sh/hook-delete-policy: hook-succeeded</code>: в следующей задаче нужно будет увидеть созданный Job и прочитать его logs.</p>",
+      "options": [],
+      "raw_description": "<p>Создай pre-install Job на образе <code>nginx:alpine</code>, который выполнится до установки chart. Сохрани manifest hook в <code>/root/hooks-chart/templates/pre-install-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo pre-install hook\"]</code></pre>\n<p>Пока не добавляй <code>helm.sh/hook-delete-policy: hook-succeeded</code>: в следующей задаче нужно будет увидеть созданный Job и прочитать его logs.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Установить chart с hook",
+      "taskid": "helm_lab5_t3_install_hook",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Установи chart <code>/root/hooks-chart</code> как release <code>hooked-app</code> и убедись, что pre-install hook выполнился как Kubernetes Job.</p>\n<pre><code>helm install hooked-app /root/hooks-chart</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart <code>/root/hooks-chart</code> как release <code>hooked-app</code> и убедись, что pre-install hook выполнился как Kubernetes Job.</p>\n<pre><code>helm install hooked-app /root/hooks-chart</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть логи hook Job",
+      "taskid": "helm_lab5_t4_hook_logs",
+      "hint": "<p>Используй <code>helm template</code> или <code>helm get hooks</code>: hooks задаются annotations в шаблонах chart. Проверь hook type и weight.</p>",
+      "question_html": "<p>Посмотри логи выполненного pre-install Job.</p>\n<pre><code>kubectl get jobs</code></pre>\n<pre><code>kubectl logs job/hooked-app-pre-install</code></pre>\n<p>Если Job не найден, значит в hook manifest была добавлена delete policy <code>hook-succeeded</code>. Убери её из первого hook, переустанови release и снова проверь logs.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри логи выполненного pre-install Job.</p>\n<pre><code>kubectl get jobs</code></pre>\n<pre><code>kubectl logs job/hooked-app-pre-install</code></pre>\n<p>Если Job не найден, значит в hook manifest была добавлена delete policy <code>hook-succeeded</code>. Убери её из первого hook, переустанови release и снова проверь logs.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать post-upgrade Hook",
+      "taskid": "helm_lab5_t5_postupgrade",
+      "hint": "<p>Опиши hook как Kubernetes Job с аннотацией <code>helm.sh/hook: post-upgrade</code>, образом <code>nginx:alpine</code>, командой <code>echo post-upgrade hook</code> и <code>restartPolicy: Never</code>. Затем проверь render через <code>helm template</code>.</p>",
+      "question_html": "<p>Добавь post-upgrade hook на образе <code>nginx:alpine</code>, который запустится после обновления. Сохрани manifest hook в <code>/root/hooks-chart/templates/post-upgrade-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo post-upgrade hook\"]</code></pre>\n<p>В этой лаборатории также не удаляй hook Job автоматически: после upgrade полезно увидеть его через <code>kubectl get jobs</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь post-upgrade hook на образе <code>nginx:alpine</code>, который запустится после обновления. Сохрани manifest hook в <code>/root/hooks-chart/templates/post-upgrade-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo post-upgrade hook\"]</code></pre>\n<p>В этой лаборатории также не удаляй hook Job автоматически: после upgrade полезно увидеть его через <code>kubectl get jobs</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Upgrade с hook",
+      "taskid": "helm_lab5_t6_upgrade_hook",
+      "hint": "<p>Используй <code>helm upgrade</code>: проверь имя release, chart и values, затем посмотри <code>helm status</code> или <code>helm history</code>.</p>",
+      "question_html": "<p>Обнови release <code>hooked-app</code> из chart <code>/root/hooks-chart</code> и убедись, что post-upgrade hook описан в chart.</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart</code></pre>",
+      "options": [],
+      "raw_description": "<p>Обнови release <code>hooked-app</code> из chart <code>/root/hooks-chart</code> и убедись, что post-upgrade hook описан в chart.</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Hook weights: порядок выполнения",
+      "taskid": "helm_lab5_t7_weights",
+      "hint": "<p>Оба hook должны быть Kubernetes Job с <code>restartPolicy: Never</code>. Отличаются они именем, сообщением в command и значением <code>helm.sh/hook-weight</code>.</p>",
+      "question_html": "<p>Добавь два <code>pre-upgrade</code> hook Job, чтобы увидеть смысл <code>helm.sh/hook-weight</code> на практике.</p>\n<p>Создай <code>/root/hooks-chart/templates/pre-upgrade-early-job.yaml</code>: Job должен называться <code>{{ .Release.Name }}-pre-upgrade-early</code>, иметь hook <code>pre-upgrade</code>, weight <code>\"-10\"</code> и выводить строку <code>early hook</code>.</p>\n<p>Создай <code>/root/hooks-chart/templates/pre-upgrade-late-job.yaml</code>: Job должен называться <code>{{ .Release.Name }}-pre-upgrade-late</code>, иметь hook <code>pre-upgrade</code>, weight <code>\"10\"</code> и выводить строку <code>late hook</code>.</p>\n<p>После этого обнови release и посмотри созданные Jobs:</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart\nkubectl get jobs --sort-by=.metadata.creationTimestamp</code></pre>\n<p>Меньший weight выполняется раньше: hook с <code>-10</code> должен запускаться раньше hook с <code>10</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь два <code>pre-upgrade</code> hook Job, чтобы увидеть смысл <code>helm.sh/hook-weight</code> на практике.</p>\n<p>Создай <code>/root/hooks-chart/templates/pre-upgrade-early-job.yaml</code>: Job должен называться <code>{{ .Release.Name }}-pre-upgrade-early</code>, иметь hook <code>pre-upgrade</code>, weight <code>\"-10\"</code> и выводить строку <code>early hook</code>.</p>\n<p>Создай <code>/root/hooks-chart/templates/pre-upgrade-late-job.yaml</code>: Job должен называться <code>{{ .Release.Name }}-pre-upgrade-late</code>, иметь hook <code>pre-upgrade</code>, weight <code>\"10\"</code> и выводить строку <code>late hook</code>.</p>\n<p>После этого обнови release и посмотри созданные Jobs:</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart\nkubectl get jobs --sort-by=.metadata.creationTimestamp</code></pre>\n<p>Меньший weight выполняется раньше: hook с <code>-10</code> должен запускаться раньше hook с <code>10</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm get hooks",
+      "taskid": "helm_lab5_t8_get_hooks",
+      "hint": "<p>Используй <code>helm template</code> или <code>helm get hooks</code>: hooks задаются annotations в шаблонах chart. Проверь hook type и weight.</p>",
+      "question_html": "<p>Посмотри hooks, которые были применены к релизу.</p>\n<pre><code>helm get hooks hooked-app</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри hooks, которые были применены к релизу.</p>\n<pre><code>helm get hooks hooked-app</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "pre-delete Hook",
+      "taskid": "helm_lab5_t9_predelete",
+      "hint": "<p>Опиши hook как Kubernetes Job с аннотацией <code>helm.sh/hook: pre-delete</code>, образом <code>nginx:alpine</code>, командой <code>echo pre-delete hook</code> и <code>restartPolicy: Never</code>. Затем выполни <code>helm upgrade</code>, чтобы release получил новую версию chart с этим hook.</p>",
+      "question_html": "<p>Создай pre-delete hook на образе <code>nginx:alpine</code> для очистки данных перед удалением. Сохрани manifest hook в <code>/root/hooks-chart/templates/pre-delete-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo pre-delete hook\"]</code></pre>\n<p>Не добавляй <code>hook-succeeded</code>, чтобы после удаления release можно было увидеть Job и его logs.</p>\n<p>После добавления нового hook обнови release, чтобы Helm записал hook в новую revision. Иначе файл будет лежать в chart, но установленный release ещё не будет о нём знать.</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart\nhelm get hooks hooked-app</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай pre-delete hook на образе <code>nginx:alpine</code> для очистки данных перед удалением. Сохрани manifest hook в <code>/root/hooks-chart/templates/pre-delete-job.yaml</code>.</p>\n<p>В контейнере hook Job задай завершающуюся команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo pre-delete hook\"]</code></pre>\n<p>Не добавляй <code>hook-succeeded</code>, чтобы после удаления release можно было увидеть Job и его logs.</p>\n<p>После добавления нового hook обнови release, чтобы Helm записал hook в новую revision. Иначе файл будет лежать в chart, но установленный release ещё не будет о нём знать.</p>\n<pre><code>helm upgrade hooked-app /root/hooks-chart\nhelm get hooks hooked-app</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить релиз с hook",
+      "taskid": "helm_lab5_t10_uninstall_hook",
+      "hint": "<p>Используй <code>helm uninstall</code>; pre-delete hook можно проверить через Kubernetes Job и logs.</p>",
+      "question_html": "<p>Удали релиз <code>hooked-app</code> и убедись что pre-delete hook выполнился.</p>\n<pre><code>helm uninstall hooked-app\nkubectl get jobs\nkubectl logs job/hooked-app-pre-delete</code></pre>",
+      "options": [],
+      "raw_description": "<p>Удали релиз <code>hooked-app</code> и убедись что pre-delete hook выполнился.</p>\n<pre><code>helm uninstall hooked-app\nkubectl get jobs\nkubectl logs job/hooked-app-pre-delete</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab5/setup.yaml"
+}

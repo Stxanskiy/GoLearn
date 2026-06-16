@@ -1,0 +1,12 @@
+{
+  "n": 26,
+  "id": "ch_devops_sim_middle",
+  "title": "Симулятор: Middle DevOps, observability и SLO",
+  "type": "simulator",
+  "isFree": false,
+  "kind": "other",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

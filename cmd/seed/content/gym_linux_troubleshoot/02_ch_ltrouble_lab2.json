@@ -1,0 +1,49 @@
+{
+  "n": 2,
+  "id": "ch_ltrouble_lab2",
+  "title": "Блок 2: Файлы и права",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "SSH-логин по ключу не проходит",
+      "taskid": "ltrouble_lab2_t01",
+      "hint": "<ul>\n<li>Проверь права в <code>/root/.ssh</code>.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Ключ root добавлен на сервер, но sshd всё равно отказывается принимать вход по ключу. В логах нет проблемы с самим ключом, отказ связан с безопасностью файла.</p>\n<p><strong>Твоя цель:</strong> Вернуть рабочую key-based аутентификацию.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Ключ root добавлен на сервер, но sshd всё равно отказывается принимать вход по ключу. В логах нет проблемы с самим ключом, отказ связан с безопасностью файла.</p>\n<p><strong>Твоя цель:</strong> Вернуть рабочую key-based аутентификацию.</p>"
+    },
+    {
+      "type": "check",
+      "title": "config-app падает при старте",
+      "taskid": "ltrouble_lab2_t02",
+      "hint": "<ul>\n<li>Запусти runner вручную и прочитай ошибку.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> <code>config-app</code> запускают через <code>/opt/app/run-config-app.sh</code>, но приложение сразу завершается. Конфиг на месте, проблема проявляется только при запуске от сервисного пользователя.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного запуска <code>config-app</code> не выдавая полные права на файл.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> <code>config-app</code> запускают через <code>/opt/app/run-config-app.sh</code>, но приложение сразу завершается. Конфиг на месте, проблема проявляется только при запуске от сервисного пользователя.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного запуска <code>config-app</code> не выдавая полные права на файл.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Приложение не читает db.conf",
+      "taskid": "ltrouble_lab2_t03",
+      "hint": "<ul>\n<li>Посмотри метаданные файла.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Приложение работает от пользователя <code>appuser</code> и жалуется на недоступный <code>/opt/app/db.conf</code>. Сам файл существует и не пустой.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы приложение смогло прочитать свой <code>db.conf</code>.</p>\n<p>Важно: числовые права доступа на файл менять нельзя. Не используй <code>chmod 777</code>, <code>chmod 644</code>, <code>chmod 660</code> и похожие варианты; задачу нужно решить без изменения mode файла.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Приложение работает от пользователя <code>appuser</code> и жалуется на недоступный <code>/opt/app/db.conf</code>. Сам файл существует и не пустой.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы приложение смогло прочитать свой <code>db.conf</code>.</p>\n<p>Важно: числовые права доступа на файл менять нельзя. Не используй <code>chmod 777</code>, <code>chmod 644</code>, <code>chmod 660</code> и похожие варианты; задачу нужно решить без изменения mode файла.</p>"
+    },
+    {
+      "type": "check",
+      "title": "report-app не может сохранить отчёт",
+      "taskid": "ltrouble_lab2_t04",
+      "hint": "<ul>\n<li>Запусти приложение вручную и посмотри путь, на котором оно падает.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> <code>report-app</code> стартует через <code>/opt/app/run-report-app.sh</code>, читает входные данные, но падает в момент сохранения отчёта. Каталог для отчётов уже создан.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы <code>report-app</code> успешно записал отчёт.</p>\n<p>Важно: числовые права доступа на каталог менять нельзя. Не используй <code>chmod 777</code>, <code>chmod 755</code>, <code>chmod 775</code> и похожие варианты; задачу нужно решить без изменения mode каталога.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> <code>report-app</code> стартует через <code>/opt/app/run-report-app.sh</code>, читает входные данные, но падает в момент сохранения отчёта. Каталог для отчётов уже создан.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы <code>report-app</code> успешно записал отчёт.</p>\n<p>Важно: числовые права доступа на каталог менять нельзя. Не используй <code>chmod 777</code>, <code>chmod 755</code>, <code>chmod 775</code> и похожие варианты; задачу нужно решить без изменения mode каталога.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "gym_linux_troubleshoot/linux_troubleshoot/lab2/setup.yaml"
+}

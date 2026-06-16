@@ -1,0 +1,5 @@
+-- 007 down
+ALTER TABLE users DROP COLUMN IF EXISTS role;
+ALTER TABLE modules DROP COLUMN IF EXISTS source;
+ALTER TABLE lessons DROP COLUMN IF EXISTS source;
+DROP TABLE IF EXISTS specializations;

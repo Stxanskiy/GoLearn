@@ -1,0 +1,166 @@
+{
+  "n": 13,
+  "id": "ch_dock_lab4",
+  "title": "Лабораторная 6: Multi-stage и cache",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить Dockerfile.multistage",
+      "taskid": "dock_lab4_t1_view",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/goapp/</code> подготовлен Dockerfile для multi-stage сборки Go-приложения. Изучи файлы.</p>\n<pre><code>cat /root/goapp/Dockerfile.multistage</code></pre>\n<pre><code>cat /root/goapp/app.go</code></pre>\n<p>Найди два этапа: <strong>builder</strong>, где приложение компилируется, и финальный runtime-stage, куда попадает только готовый бинарь.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/goapp/</code> подготовлен Dockerfile для multi-stage сборки Go-приложения. Изучи файлы.</p>\n<pre><code>cat /root/goapp/Dockerfile.multistage</code></pre>\n<pre><code>cat /root/goapp/app.go</code></pre>\n<p>Найди два этапа: <strong>builder</strong>, где приложение компилируется, и финальный runtime-stage, куда попадает только готовый бинарь.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Собрать multi-stage образ",
+      "taskid": "dock_lab4_t2_build",
+      "hint": "<p>Используй <code>docker build</code>: отдельно укажи Dockerfile, тег образа и контекст сборки. После сборки проверь тег через <code>docker images</code>.</p>\n<p>Флаг <code>-f</code> указывает путь к Dockerfile; по умолчанию Docker ищет файл с именем <code>Dockerfile</code>.</p>\n<p>Сборка займёт время: сначала компилируется Go-код.</p>",
+      "question_html": "<p>Собери образ с помощью <code>Dockerfile.multistage</code> и назови его <code>goapp:multi</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Собери образ с помощью <code>Dockerfile.multistage</code> и назови его <code>goapp:multi</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить Go-приложение",
+      "taskid": "dock_lab4_t3_run",
+      "hint": "<p>Используй <code>docker run</code> для публикации порта и <code>docker ps</code>/<code>docker port</code> для проверки. Сравни порт на хосте и порт внутри контейнера.</p>",
+      "question_html": "<p>Запусти контейнер из образа <code>goapp:multi</code> с именем <code>goapp</code> и проброской порта 8080.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер из образа <code>goapp:multi</code> с именем <code>goapp</code> и проброской порта 8080.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить ответ Go-сервера",
+      "taskid": "dock_lab4_t4_curl",
+      "hint": "<p>Используй <code>docker run</code> для публикации порта и <code>docker ps</code>/<code>docker port</code> для проверки. Сравни порт на хосте и порт внутри контейнера.</p>\n<p>Проверь ответ командой <code>curl http://localhost:8080</code>.</p>",
+      "question_html": "<p>Отправь запрос к Go-серверу на порту <code>8080</code>. Корректный ответ должен содержать текст <code>Hello from Go</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Отправь запрос к Go-серверу на порту <code>8080</code>. Корректный ответ должен содержать текст <code>Hello from Go</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем multi-stage?",
+      "taskid": "dock_lab4_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Для чего используется multi-stage build в Docker?</p>",
+      "options": [
+        {
+          "text": "Запустить несколько приложений в одном контейнере",
+          "correct": false,
+          "explanation": "Нет — один контейнер = один процесс"
+        },
+        {
+          "text": "Ускорить сборку за счёт параллельного выполнения",
+          "correct": false,
+          "explanation": "Нет — этапы выполняются последовательно"
+        },
+        {
+          "text": "Уменьшить итоговый образ: инструменты сборки не попадают в production-образ",
+          "correct": true,
+          "explanation": "Верно! golang:alpine ~350 МБ, alpine ~5 МБ + бинарь ~10 МБ = ~15 МБ итогового образа"
+        },
+        {
+          "text": "Использовать разные операционные системы одновременно",
+          "correct": false,
+          "explanation": "Нет — все контейнеры работают на ядре хоста"
+        }
+      ],
+      "raw_description": "<p>Для чего используется multi-stage build в Docker?</p><ul>\n<li>Запустить несколько приложений в одном контейнере [Нет — один контейнер = один процесс]</li>\n<li>Ускорить сборку за счёт параллельного выполнения [Нет — этапы выполняются последовательно]</li>\n<li>+Уменьшить итоговый образ: инструменты сборки не попадают в production-образ [Верно! golang:alpine ~350 МБ, alpine ~5 МБ + бинарь ~10 МБ = ~15 МБ итогового образа]</li>\n<li>Использовать разные операционные системы одновременно [Нет — все контейнеры работают на ядре хоста]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Посмотреть размер образа",
+      "taskid": "dock_lab4_t6_size",
+      "hint": "",
+      "question_html": "<p>Сравни размер <code>goapp:multi</code> с <code>golang:1.21-alpine</code>. Какой вывод из сравнения правильный?</p>\n<pre><code>docker image inspect goapp:multi --format '{{.Size}}'</code></pre>\n<pre><code>docker images golang:1.21-alpine</code></pre>",
+      "options": [
+        {
+          "text": "goapp:multi больше, потому что содержит оба stage внутри себя",
+          "correct": false,
+          "explanation": "Нет — промежуточный stage не попадает в финальный образ"
+        },
+        {
+          "text": "Оба образа всегда имеют одинаковый размер",
+          "correct": false,
+          "explanation": "Нет — базовые слои и содержимое отличаются"
+        },
+        {
+          "text": "Размер невозможно посмотреть через Docker CLI",
+          "correct": false,
+          "explanation": "Нет — размер виден через docker images или docker image inspect"
+        },
+        {
+          "text": "goapp:multi значительно меньше, потому что Go toolchain не попал в итоговый образ",
+          "correct": true,
+          "explanation": "Верно! Multi-stage оставляет в финальном образе только runtime и собранный бинарь"
+        }
+      ],
+      "raw_description": "<p>Сравни размер <code>goapp:multi</code> с <code>golang:1.21-alpine</code>. Какой вывод из сравнения правильный?</p>\n<pre><code>docker image inspect goapp:multi --format '{{.Size}}'</code></pre>\n<pre><code>docker images golang:1.21-alpine</code></pre>\n<ul>\n<li>goapp:multi больше, потому что содержит оба stage внутри себя [Нет — промежуточный stage не попадает в финальный образ]</li>\n<li>Оба образа всегда имеют одинаковый размер [Нет — базовые слои и содержимое отличаются]</li>\n<li>Размер невозможно посмотреть через Docker CLI [Нет — размер виден через docker images или docker image inspect]</li>\n<li>+goapp:multi значительно меньше, потому что Go toolchain не попал в итоговый образ [Верно! Multi-stage оставляет в финальном образе только runtime и собранный бинарь]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Пересобрать без кэша",
+      "taskid": "dock_lab4_t7_nocache",
+      "hint": "<p>Используй <code>docker build</code> с режимом без кэша. Не забудь тот же Dockerfile и новый тег из условия.</p>\n<p>Флаг <code>--no-cache</code> заставляет Docker пересобирать все слои заново, игнорируя кэш.</p>",
+      "question_html": "<p>Пересобери образ с флагом <code>--no-cache</code> и назови его <code>goapp:nocache</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Пересобери образ с флагом <code>--no-cache</code> и назови его <code>goapp:nocache</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает --no-cache?",
+      "taskid": "dock_lab4_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что происходит при сборке образа с флагом <code>--no-cache</code>?</p>",
+      "options": [
+        {
+          "text": "Все слои пересобираются заново, кэш не используется",
+          "correct": true,
+          "explanation": "Верно! Это полезно когда базовый образ обновился или нужна воспроизводимая сборка"
+        },
+        {
+          "text": "Образ не сохраняется в локальный кэш",
+          "correct": false,
+          "explanation": "Нет — образ сохраняется как обычно"
+        },
+        {
+          "text": "Сборка ускоряется",
+          "correct": false,
+          "explanation": "Нет — наоборот, сборка медленнее без кэша"
+        },
+        {
+          "text": "Не используются volumes при сборке",
+          "correct": false,
+          "explanation": "Нет — volumes не участвуют в сборке образа"
+        }
+      ],
+      "raw_description": "<p>Что происходит при сборке образа с флагом <code>--no-cache</code>?</p><ul>\n<li>+Все слои пересобираются заново, кэш не используется [Верно! Это полезно когда базовый образ обновился или нужна воспроизводимая сборка]</li>\n<li>Образ не сохраняется в локальный кэш [Нет — образ сохраняется как обычно]</li>\n<li>Сборка ускоряется [Нет — наоборот, сборка медленнее без кэша]</li>\n<li>Не используются volumes при сборке [Нет — volumes не участвуют в сборке образа]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить контейнер",
+      "taskid": "dock_lab4_t9_cleanup",
+      "hint": "<p>Перед удалением выбери нужную Docker-команду: <code>docker rm</code>, <code>docker rmi</code>, <code>docker network rm</code> или <code>docker volume rm</code>. Остановленные контейнеры и неиспользуемые объекты чистятся разными действиями.</p>",
+      "question_html": "<p>Останови и удали контейнер <code>goapp</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнер <code>goapp</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить итог лабораторной",
+      "taskid": "dock_lab4_t10_done",
+      "hint": "<p>Проверь контейнеры через <code>docker ps -a</code>, а образы через <code>docker images</code>. Контейнер должен исчезнуть, образ с новым тегом — остаться.</p>",
+      "question_html": "<p>Проверь итог: контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь итог: контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab4/setup.yaml"
+}

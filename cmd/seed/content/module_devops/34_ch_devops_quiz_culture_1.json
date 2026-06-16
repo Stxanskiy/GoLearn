@@ -1,0 +1,313 @@
+{
+  "n": 34,
+  "id": "ch_devops_quiz_culture_1",
+  "title": "Квиз: основы DevOps и культура",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Git в DevOps",
+      "taskid": "dvc_quiz1_t1_git",
+      "hint": "",
+      "question_html": "<p>Зачем Git важен не только разработчикам, но и DevOps-процессу?</p>",
+      "options": [
+        {
+          "text": "Git автоматически делает production надёжным",
+          "correct": false,
+          "explanation": "Нет — Git даёт основу, но нужны проверки, деплой и observability"
+        },
+        {
+          "text": "Git нужен только для хранения исходного кода приложения",
+          "correct": false,
+          "explanation": "Нет — в Git часто живут pipeline, IaC, конфиги, runbooks и история решений"
+        },
+        {
+          "text": "История, review и связь commit → deploy → rollback",
+          "correct": true,
+          "explanation": "Верно! Git становится источником фактов о том, что и зачем менялось"
+        },
+        {
+          "text": "Git заменяет CI/CD pipeline",
+          "correct": false,
+          "explanation": "Нет — pipeline использует Git как источник изменений, но не заменяется им"
+        }
+      ],
+      "raw_description": "<p>Зачем Git важен не только разработчикам, но и DevOps-процессу?</p><ul>\n<li>Git автоматически делает production надёжным [Нет — Git даёт основу, но нужны проверки, деплой и observability]</li>\n<li>Git нужен только для хранения исходного кода приложения [Нет — в Git часто живут pipeline, IaC, конфиги, runbooks и история решений]</li>\n<li>+История, review и связь commit → deploy → rollback [Верно! Git становится источником фактов о том, что и зачем менялось]</li>\n<li>Git заменяет CI/CD pipeline [Нет — pipeline использует Git как источник изменений, но не заменяется им]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Wall of Confusion",
+      "taskid": "dvc_quiz1_t2_wall",
+      "hint": "",
+      "question_html": "<p>Что такое \"wall of confusion\" в контексте Dev vs Ops?</p>",
+      "options": [
+        {
+          "text": "Техническая стена: разные инструменты у Dev и Ops",
+          "correct": false,
+          "explanation": "Нет — инструменты это симптом, не причина конфликта"
+        },
+        {
+          "text": "Физическая стена между офисами Dev и Ops в крупных компаниях",
+          "correct": false,
+          "explanation": "Нет — \"стена\" это метафора культурного барьера"
+        },
+        {
+          "text": "Dev хочет менять, Ops хочет стабильности",
+          "correct": true,
+          "explanation": "Верно! Разные KPI создавали структурный конфликт между командами"
+        },
+        {
+          "text": "Проблема с документацией — разработчики не документируют код",
+          "correct": false,
+          "explanation": "Нет — wall of confusion о разных целях, не о документации"
+        }
+      ],
+      "raw_description": "<p>Что такое \"wall of confusion\" в контексте Dev vs Ops?</p><ul>\n<li>Техническая стена: разные инструменты у Dev и Ops [Нет — инструменты это симптом, не причина конфликта]</li>\n<li>Физическая стена между офисами Dev и Ops в крупных компаниях [Нет — \"стена\" это метафора культурного барьера]</li>\n<li>+Dev хочет менять, Ops хочет стабильности [Верно! Разные KPI создавали структурный конфликт между командами]</li>\n<li>Проблема с документацией — разработчики не документируют код [Нет — wall of confusion о разных целях, не о документации]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "CALMS расшифровка",
+      "taskid": "dvc_quiz1_t3_calms",
+      "hint": "",
+      "question_html": "<p>Что означает аббревиатура CALMS в DevOps?</p>",
+      "options": [
+        {
+          "text": "Culture, Automation, Lean, Measurement, Sharing",
+          "correct": true,
+          "explanation": "Верно! CALMS описывает пять ключевых столпов DevOps практики"
+        },
+        {
+          "text": "Cloud, API, Linux, Microservices, Security",
+          "correct": false,
+          "explanation": "Нет — CALMS о культуре и практиках, не о технологиях"
+        },
+        {
+          "text": "Collaboration, Agility, Learning, Monitoring, Speed",
+          "correct": false,
+          "explanation": "Нет — это не расшифровка CALMS"
+        },
+        {
+          "text": "Continuous, Automated, Linear, Managed, Systematic",
+          "correct": false,
+          "explanation": "Нет — C в CALMS это Culture, основа всего"
+        }
+      ],
+      "raw_description": "<p>Что означает аббревиатура CALMS в DevOps?</p><ul>\n<li>+Culture, Automation, Lean, Measurement, Sharing [Верно! CALMS описывает пять ключевых столпов DevOps практики]</li>\n<li>Cloud, API, Linux, Microservices, Security [Нет — CALMS о культуре и практиках, не о технологиях]</li>\n<li>Collaboration, Agility, Learning, Monitoring, Speed [Нет — это не расшифровка CALMS]</li>\n<li>Continuous, Automated, Linear, Managed, Systematic [Нет — C в CALMS это Culture, основа всего]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "The Three Ways",
+      "taskid": "dvc_quiz1_t4_three_ways",
+      "hint": "",
+      "question_html": "<p>Первый Way в \"The Phoenix Project\" — это...</p>",
+      "options": [
+        {
+          "text": "Внедрить Agile во всех командах",
+          "correct": false,
+          "explanation": "Нет — Agile и DevOps связаны, но The Three Ways специфичны для DevOps"
+        },
+        {
+          "text": "Автоматизировать всё ручное",
+          "correct": false,
+          "explanation": "Нет — это важно, но автоматизация — это скорее часть первого Way, не сам принцип"
+        },
+        {
+          "text": "Systems Thinking всего потока",
+          "correct": true,
+          "explanation": "Верно! Локальная оптимизация одного звена без учёта системы в целом часто вредна"
+        },
+        {
+          "text": "Измерять всё и строить dashboards",
+          "correct": false,
+          "explanation": "Нет — измерения ближе ко второму Way (feedback loops)"
+        }
+      ],
+      "raw_description": "<p>Первый Way в \"The Phoenix Project\" — это...</p><ul>\n<li>Внедрить Agile во всех командах [Нет — Agile и DevOps связаны, но The Three Ways специфичны для DevOps]</li>\n<li>Автоматизировать всё ручное [Нет — это важно, но автоматизация — это скорее часть первого Way, не сам принцип]</li>\n<li>+Systems Thinking всего потока [Верно! Локальная оптимизация одного звена без учёта системы в целом часто вредна]</li>\n<li>Измерять всё и строить dashboards [Нет — измерения ближе ко второму Way (feedback loops)]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Conway's Law",
+      "taskid": "dvc_quiz1_t5_conway",
+      "hint": "",
+      "question_html": "<p>Conway's Law гласит что архитектура системы отражает... что?</p>",
+      "options": [
+        {
+          "text": "Бюджет выделенный на проект",
+          "correct": false,
+          "explanation": "Нет — хотя бюджет влияет на команды, закон Конвея о коммуникациях"
+        },
+        {
+          "text": "Технические возможности инструментов разработки",
+          "correct": false,
+          "explanation": "Нет — Conway's Law об организациях, не об инструментах"
+        },
+        {
+          "text": "Опыт архитектора принимавшего решения",
+          "correct": false,
+          "explanation": "Нет — индивидуальный опыт менее важен чем структура коммуникаций"
+        },
+        {
+          "text": "Коммуникационную структуру организации",
+          "correct": true,
+          "explanation": "Верно! Команды создают интерфейсы там где есть границы между людьми"
+        }
+      ],
+      "raw_description": "<p>Conway's Law гласит что архитектура системы отражает... что?</p><ul>\n<li>Бюджет выделенный на проект [Нет — хотя бюджет влияет на команды, закон Конвея о коммуникациях]</li>\n<li>Технические возможности инструментов разработки [Нет — Conway's Law об организациях, не об инструментах]</li>\n<li>Опыт архитектора принимавшего решения [Нет — индивидуальный опыт менее важен чем структура коммуникаций]</li>\n<li>+Коммуникационную структуру организации [Верно! Команды создают интерфейсы там где есть границы между людьми]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Feedback Loops",
+      "taskid": "dvc_quiz1_t6_feedback",
+      "hint": "",
+      "question_html": "<p>Второй Way \"Amplify Feedback Loops\" — зачем усиливать обратную связь?</p>",
+      "options": [
+        {
+          "text": "Раннее обнаружение и исправление проблем",
+          "correct": true,
+          "explanation": "Верно! Баг найденный в production стоит в 100 раз дороже бага найденного при написании кода"
+        },
+        {
+          "text": "Для соответствия требованиям аудита",
+          "correct": false,
+          "explanation": "Нет — хотя аудит может использовать артефакты CI/CD, это не цель второго Way"
+        },
+        {
+          "text": "Для ускорения выдачи зарплаты разработчикам",
+          "correct": false,
+          "explanation": "Нет — feedback loops о скорости обнаружения и исправления проблем"
+        },
+        {
+          "text": "Чтобы менеджеры получали больше отчётов",
+          "correct": false,
+          "explanation": "Нет — цель — инженерное качество, не управленческая отчётность"
+        }
+      ],
+      "raw_description": "<p>Второй Way \"Amplify Feedback Loops\" — зачем усиливать обратную связь?</p><ul>\n<li>+Раннее обнаружение и исправление проблем [Верно! Баг найденный в production стоит в 100 раз дороже бага найденного при написании кода]</li>\n<li>Для соответствия требованиям аудита [Нет — хотя аудит может использовать артефакты CI/CD, это не цель второго Way]</li>\n<li>Для ускорения выдачи зарплаты разработчикам [Нет — feedback loops о скорости обнаружения и исправления проблем]</li>\n<li>Чтобы менеджеры получали больше отчётов [Нет — цель — инженерное качество, не управленческая отчётность]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SemVer",
+      "taskid": "dvc_quiz1_t7_semver",
+      "hint": "",
+      "question_html": "<p>Что означает SemVer версия 2.4.1?</p>",
+      "options": [
+        {
+          "text": "2=MAJOR, 4=MINOR, 1=PATCH",
+          "correct": true,
+          "explanation": "Верно! SemVer помогает понимать характер изменения"
+        },
+        {
+          "text": "Это только дата релиза в короткой форме",
+          "correct": false,
+          "explanation": "Нет — для дат есть другие схемы версионирования"
+        },
+        {
+          "text": "Это номер sprint, задачи и commit",
+          "correct": false,
+          "explanation": "Нет — SemVer описывает версию продукта или API"
+        },
+        {
+          "text": "Это случайный тег без смысловой нагрузки",
+          "correct": false,
+          "explanation": "Нет — в SemVer каждая часть версии имеет смысл"
+        }
+      ],
+      "raw_description": "<p>Что означает SemVer версия 2.4.1?</p><ul>\n<li>+2=MAJOR, 4=MINOR, 1=PATCH [Верно! SemVer помогает понимать характер изменения]</li>\n<li>Это только дата релиза в короткой форме [Нет — для дат есть другие схемы версионирования]</li>\n<li>Это номер sprint, задачи и commit [Нет — SemVer описывает версию продукта или API]</li>\n<li>Это случайный тег без смысловой нагрузки [Нет — в SemVer каждая часть версии имеет смысл]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Platform team роль",
+      "taskid": "dvc_quiz1_t8_platform",
+      "hint": "",
+      "question_html": "<p>Главная цель Platform team в Team Topologies?</p>",
+      "options": [
+        {
+          "text": "Контролировать все деплои в production",
+          "correct": false,
+          "explanation": "Нет — это антипаттерн; platform team не должна быть gatekeep'ером"
+        },
+        {
+          "text": "Оценивать работу разработчиков для HR",
+          "correct": false,
+          "explanation": "Нет — это не техническая роль platform team"
+        },
+        {
+          "text": "Снизить cognitive load stream-aligned teams",
+          "correct": true,
+          "explanation": "Верно! Platform team создаёт \"дорогу\" — stream teams едут по ней не думая об асфальте"
+        },
+        {
+          "text": "Писать код вместо stream teams когда те не успевают",
+          "correct": false,
+          "explanation": "Нет — у каждой команды своя зона ответственности"
+        }
+      ],
+      "raw_description": "<p>Главная цель Platform team в Team Topologies?</p><ul>\n<li>Контролировать все деплои в production [Нет — это антипаттерн; platform team не должна быть gatekeep'ером]</li>\n<li>Оценивать работу разработчиков для HR [Нет — это не техническая роль platform team]</li>\n<li>+Снизить cognitive load stream-aligned teams [Верно! Platform team создаёт \"дорогу\" — stream teams едут по ней не думая об асфальте]</li>\n<li>Писать код вместо stream teams когда те не успевают [Нет — у каждой команды своя зона ответственности]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Blameless postmortem цель",
+      "taskid": "dvc_quiz1_t9_postmortem",
+      "hint": "",
+      "question_html": "<p>Главная цель blameless postmortem?</p>",
+      "options": [
+        {
+          "text": "Отчитаться перед клиентами о причинах инцидента",
+          "correct": false,
+          "explanation": "Нет — постмортем внутренний процесс; статус-пейдж для клиентов отдельно"
+        },
+        {
+          "text": "Найти кто виноват и занести в личное дело",
+          "correct": false,
+          "explanation": "Нет — это антипаттерн, убивающий психологическую безопасность"
+        },
+        {
+          "text": "Улучшить систему, чтобы инцидент не повторился",
+          "correct": true,
+          "explanation": "Верно! Blameless = без обвинений конкретных людей; цель — системные улучшения"
+        },
+        {
+          "text": "Документировать инцидент для юридической защиты компании",
+          "correct": false,
+          "explanation": "Нет — хотя документация важна, это не главная цель postmortem"
+        }
+      ],
+      "raw_description": "<p>Главная цель blameless postmortem?</p><ul>\n<li>Отчитаться перед клиентами о причинах инцидента [Нет — постмортем внутренний процесс; статус-пейдж для клиентов отдельно]</li>\n<li>Найти кто виноват и занести в личное дело [Нет — это антипаттерн, убивающий психологическую безопасность]</li>\n<li>+Улучшить систему, чтобы инцидент не повторился [Верно! Blameless = без обвинений конкретных людей; цель — системные улучшения]</li>\n<li>Документировать инцидент для юридической защиты компании [Нет — хотя документация важна, это не главная цель postmortem]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DevOps anti-pattern",
+      "taskid": "dvc_quiz1_t10_antipattern",
+      "hint": "",
+      "question_html": "<p>Компания создала отдельную команду \"DevOps Engineers\" которая делает деплои за все остальные команды. Это...</p>",
+      "options": [
+        {
+          "text": "Правильный подход — центры экспертизы эффективны",
+          "correct": false,
+          "explanation": "Нет — центр экспертизы DevOps противоречит идее shared ownership"
+        },
+        {
+          "text": "Нормально для начала, потом можно распределить",
+          "correct": false,
+          "explanation": "Нет — плохие паттерны закрепляются; лучше начать правильно"
+        },
+        {
+          "text": "Зависит от размера компании",
+          "correct": false,
+          "explanation": "Нет — в любой компании отдельная DevOps команда создаёт проблемы"
+        },
+        {
+          "text": "Новый silo вместо DevOps-практик в командах",
+          "correct": true,
+          "explanation": "Верно! DevOps — это культура и практики, а не отдельная команда. Новый silo воссоздаёт ту же wall of confusion"
+        }
+      ],
+      "raw_description": "<p>Компания создала отдельную команду \"DevOps Engineers\" которая делает деплои за все остальные команды. Это...</p><ul>\n<li>Правильный подход — центры экспертизы эффективны [Нет — центр экспертизы DevOps противоречит идее shared ownership]</li>\n<li>Нормально для начала, потом можно распределить [Нет — плохие паттерны закрепляются; лучше начать правильно]</li>\n<li>Зависит от размера компании [Нет — в любой компании отдельная DevOps команда создаёт проблемы]</li>\n<li>+Новый silo вместо DevOps-практик в командах [Верно! DevOps — это культура и практики, а не отдельная команда. Новый silo воссоздаёт ту же wall of confusion]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -1,0 +1,103 @@
+{
+  "n": 7,
+  "id": "ch_dkc_lab3",
+  "title": "Лабораторная 3: Volumes и постоянные данные",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить стек с базой данных",
+      "taskid": "dkc_lab3_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/dbapp</code> подготовлен compose-файл с PostgreSQL. Посмотри его:</p>\n<pre><code>cat /root/dbapp/docker-compose.yml</code></pre>\n<p>Обрати внимание на имя сервиса и секцию <code>volumes</code>: PostgreSQL использует именованный volume для хранения данных.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/dbapp</code> подготовлен compose-файл с PostgreSQL. Посмотри его:</p>\n<pre><code>cat /root/dbapp/docker-compose.yml</code></pre>\n<p>Обрати внимание на имя сервиса и секцию <code>volumes</code>: PostgreSQL использует именованный volume для хранения данных.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить PostgreSQL",
+      "taskid": "dkc_lab3_t2_up",
+      "hint": "<p>Перейди в каталог проекта <code>/root/dbapp</code> и запусти стек командой <code>docker compose up -d</code>.</p>",
+      "question_html": "<p>Запусти Compose-сервис <code>db</code> с PostgreSQL.</p><p>Compose создаст именованный volume <code>dbapp_db_data</code> для хранения данных PostgreSQL.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти Compose-сервис <code>db</code> с PostgreSQL.</p><p>Compose создаст именованный volume <code>dbapp_db_data</code> для хранения данных PostgreSQL.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать таблицу в базе данных",
+      "taskid": "dkc_lab3_t3_create_table",
+      "hint": "<p>Работай из каталога <code>/root/dbapp</code>. Для каждой SQL-команды используй форму <code>docker compose exec -T db psql -U postgres -c \"SQL\"</code>.</p>\n<p>Нужно выполнить три SQL-действия: создать таблицу <code>CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100));</code>, очистить старые строки через <code>TRUNCATE TABLE users RESTART IDENTITY;</code> и добавить данные через <code>INSERT INTO users (name) VALUES ('Alice'), ('Bob');</code>.</p>\n<p><code>psql -U postgres -c</code> выполняет одну SQL-команду внутри контейнера сервиса <code>db</code>.</p>",
+      "question_html": "<p>Подключись к PostgreSQL в Compose-сервисе <code>db</code> и создай таблицу <code>users</code>.</p>\n<p>В таблице должны быть колонки <code>id SERIAL PRIMARY KEY</code> и <code>name VARCHAR(100)</code>. Добавь ровно две тестовые строки с именами <code>Alice</code> и <code>Bob</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Подключись к PostgreSQL в Compose-сервисе <code>db</code> и создай таблицу <code>users</code>.</p>\n<p>В таблице должны быть колонки <code>id SERIAL PRIMARY KEY</code> и <code>name VARCHAR(100)</code>. Добавь ровно две тестовые строки с именами <code>Alice</code> и <code>Bob</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить данные",
+      "taskid": "dkc_lab3_t4_select",
+      "hint": "<p>Работай из каталога <code>/root/dbapp</code>. Сделай SQL-запрос через <code>docker compose exec -T db psql</code> и перенаправь результат в <code>/root/users_count_before.txt</code>.</p>\n<p>Флаги <code>-tAc</code> убирают табличное оформление и оставляют только результат запроса.</p>",
+      "question_html": "<p>Сделай SQL-запрос <code>select count(*) from users</code> через Compose-сервис <code>db</code> и посчитай строки в таблице <code>users</code>. После предыдущей задачи в таблице должны быть строки <code>Alice</code> и <code>Bob</code>.</p><p>Сохрани только результат SQL-запроса в <code>/root/users_count_before.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай SQL-запрос <code>select count(*) from users</code> через Compose-сервис <code>db</code> и посчитай строки в таблице <code>users</code>. После предыдущей задачи в таблице должны быть строки <code>Alice</code> и <code>Bob</code>.</p><p>Сохрани только результат SQL-запроса в <code>/root/users_count_before.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Пересоздать контейнер",
+      "taskid": "dkc_lab3_t5_recreate",
+      "hint": "<p>Из каталога <code>/root/dbapp</code> выполни <code>docker compose down</code>, затем <code>docker compose up -d</code>, а после старта снова посчитай строки через <code>docker compose exec -T db psql -U postgres -tAc 'select count(*) from users'</code>.</p>\n<p>Результат запроса нужно сохранить в <code>/root/users_count_after.txt</code>.</p>\n<p>Не используй <code>down -v</code> на этом шаге: флаг <code>-v</code> удалит volume с данными.</p>",
+      "question_html": "<p>Пересоздай стек без удаления volumes: выполни <code>docker compose down</code>, затем <code>docker compose up -d</code>.</p><p>После повторного запуска выполни SQL-запрос <code>select count(*) from users</code> и сохрани только результат в <code>/root/users_count_after.txt</code>.</p><p>Данные должны остаться, потому что они хранятся в именованном volume, который не удаляется при <code>down</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Пересоздай стек без удаления volumes: выполни <code>docker compose down</code>, затем <code>docker compose up -d</code>.</p><p>После повторного запуска выполни SQL-запрос <code>select count(*) from users</code> и сохрани только результат в <code>/root/users_count_after.txt</code>.</p><p>Данные должны остаться, потому что они хранятся в именованном volume, который не удаляется при <code>down</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть список volumes",
+      "taskid": "dkc_lab3_t6_volumes",
+      "hint": "<p>Используй <code>docker volume ls</code> или <code>docker volume inspect dbapp_db_data</code>.</p>",
+      "question_html": "<p>Найди имя volume, который Compose создал для PostgreSQL, и сохрани только это имя в <code>/root/db_volume_name.txt</code>.</p><p>Compose собирает имя volume из имени проекта и имени volume в compose-файле. Возьми его из Docker, без лишних колонок и описания.</p>",
+      "options": [],
+      "raw_description": "<p>Найди имя volume, который Compose создал для PostgreSQL, и сохрани только это имя в <code>/root/db_volume_name.txt</code>.</p><p>Compose собирает имя volume из имени проекта и имени volume в compose-файле. Возьми его из Docker, без лишних колонок и описания.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Сделать дамп базы",
+      "taskid": "dkc_lab3_t7_backup",
+      "hint": "<p>Сначала создай директорию <code>/root/backups</code>, затем из каталога <code>/root/dbapp</code> запусти <code>pg_dump</code> внутри Compose-сервиса <code>db</code>: <code>docker compose exec -T db pg_dump -U postgres postgres</code>.</p>\n<p>Вывод команды нужно перенаправить в <code>/root/backups/dump.sql</code>.</p>\n<p>Последний аргумент <code>postgres</code> — имя базы данных. <code>pg_dump</code> пишет SQL-дамп, а перенаправление <code>&gt;</code> сохраняет его в файл на хосте. После сохранения быстро проверь дамп через <code>grep</code>: там должны встречаться <code>users</code>, <code>Alice</code> и <code>Bob</code>.</p>",
+      "question_html": "<p>Сделай дамп базы <code>postgres</code> из Compose-сервиса <code>db</code>. В дамп должна попасть структура таблицы <code>users</code> и тестовые строки <code>Alice</code> и <code>Bob</code>, которые ты добавлял раньше.</p><p>Сохрани результат в <code>/root/backups/dump.sql</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай дамп базы <code>postgres</code> из Compose-сервиса <code>db</code>. В дамп должна попасть структура таблицы <code>users</code> и тестовые строки <code>Alice</code> и <code>Bob</code>, которые ты добавлял раньше.</p><p>Сохрани результат в <code>/root/backups/dump.sql</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить бэкап",
+      "taskid": "dkc_lab3_t8_check_backup",
+      "hint": "<p>Для быстрой проверки достаточно найти в дампе имя таблицы <code>users</code> и значения <code>Alice</code>/<code>Bob</code>.</p>",
+      "question_html": "<p>Проверь, что дамп <code>/root/backups/dump.sql</code> содержит структуру таблицы <code>users</code> и строки с данными <code>Alice</code> и <code>Bob</code>.</p>\n<pre><code>grep -n \"users\" /root/backups/dump.sql | head</code></pre>\n<pre><code>grep -n \"Alice\\|Bob\" /root/backups/dump.sql</code></pre>\n<p>Если обе команды находят совпадения, значит дамп содержит таблицу <code>users</code> и тестовые данные. Отдельный файл с результатом проверки создавать не нужно.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что дамп <code>/root/backups/dump.sql</code> содержит структуру таблицы <code>users</code> и строки с данными <code>Alice</code> и <code>Bob</code>.</p>\n<pre><code>grep -n \"users\" /root/backups/dump.sql | head</code></pre>\n<pre><code>grep -n \"Alice\\|Bob\" /root/backups/dump.sql</code></pre>\n<p>Если обе команды находят совпадения, значит дамп содержит таблицу <code>users</code> и тестовые данные. Отдельный файл с результатом проверки создавать не нужно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Инспектировать volume",
+      "taskid": "dkc_lab3_t9_inspect",
+      "hint": "<p>Используй <code>docker volume inspect dbapp_db_data</code> с форматированием поля <code>{{.Mountpoint}}</code> и перенаправь результат в <code>/root/volume_mountpoint.txt</code>.</p>\n<p>В файл должен попасть только путь на хосте, без JSON, кавычек и лишнего текста.</p>",
+      "question_html": "<p>Найди <code>Mountpoint</code> volume <code>dbapp_db_data</code> и сохрани только этот путь в <code>/root/volume_mountpoint.txt</code>.</p><p>Это путь на хосте, куда Docker сохраняет данные volume.</p>",
+      "options": [],
+      "raw_description": "<p>Найди <code>Mountpoint</code> volume <code>dbapp_db_data</code> и сохрани только этот путь в <code>/root/volume_mountpoint.txt</code>.</p><p>Это путь на хосте, куда Docker сохраняет данные volume.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить стек вместе с данными",
+      "taskid": "dkc_lab3_t10_down_v",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>\n<p>Флаг <code>-v</code> удаляет и контейнеры, и именованные volumes, объявленные в compose-файле. После этого данные базы будут безвозвратно удалены.</p>",
+      "question_html": "<p>Останови стек и удали volumes флагом <code>-v</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови стек и удали volumes флагом <code>-v</code>.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab3/setup.yaml"
+}

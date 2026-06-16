@@ -1,0 +1,229 @@
+{
+  "n": 13,
+  "id": "ch_ladv_lab7",
+  "title": "Лабораторная 7: Скрипт резервного копирования",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "tar: создать архив",
+      "taskid": "ladv_lab7_t1_tar",
+      "hint": "<p>Для tar-архива выбери режим по действию: создать, посмотреть список или распаковать. Флаги gzip нужны только для <code>.tar.gz</code>.</p>",
+      "question_html": "<p>Создай tar.gz архив директории <code>/opt/data/</code> и сохрани в <code>/root/data_backup.tar.gz</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай tar.gz архив директории <code>/opt/data/</code> и сохрани в <code>/root/data_backup.tar.gz</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "tar: проверить архив",
+      "taskid": "ladv_lab7_t2_list",
+      "hint": "<p>Для tar-архива выбери режим по действию: создать, посмотреть список или распаковать. Флаги gzip нужны только для <code>.tar.gz</code>.</p>",
+      "question_html": "<p>Выполни команду <code>tar -tzf /root/data_backup.tar.gz</code>, чтобы вывести содержимое архива и убедиться, что в нём есть файлы из <code>/opt/data/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>tar -tzf /root/data_backup.tar.gz</code>, чтобы вывести содержимое архива и убедиться, что в нём есть файлы из <code>/opt/data/</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "скрипт бэкапа с датой",
+      "taskid": "ladv_lab7_t3_script",
+      "hint": "<p>В скрипте используй <code>date</code> для имени архива и <code>tar</code> для создания <code>.tar.gz</code>. После сохранения сделай файл исполняемым через <code>chmod</code>.</p>",
+      "question_html": "<p>Создай скрипт <code>/root/backup.sh</code>, который создаёт архив <code>/opt/data/</code> с именем <code>backup_ГГГГ-ММ-ДД.tar.gz</code> в <code>/root/backups/</code>. Запусти скрипт.</p>",
+      "options": [],
+      "raw_description": "<p>Создай скрипт <code>/root/backup.sh</code>, который создаёт архив <code>/opt/data/</code> с именем <code>backup_ГГГГ-ММ-ДД.tar.gz</code> в <code>/root/backups/</code>. Запусти скрипт.</p>"
+    },
+    {
+      "type": "check",
+      "title": "find: список backup-архивов",
+      "taskid": "ladv_lab7_t4_cleanup",
+      "hint": "<p>Используй <code>find</code> с условием по имени файла: нужны архивы, которые заканчиваются на <code>.tar.gz</code>. Сначала проверь вывод команды на экран, затем сохрани его в <code>/root/old_backups.txt</code>.</p>",
+      "question_html": "<p>Найди все backup-архивы <code>.tar.gz</code> в директории <code>/root/backups/</code> и выведи их список в <code>/root/old_backups.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все backup-архивы <code>.tar.gz</code> в директории <code>/root/backups/</code> и выведи их список в <code>/root/old_backups.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: tar флаги",
+      "taskid": "ladv_lab7_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает <code>z</code> в команде <code>tar -czf archive.tar.gz /path</code>?</p>",
+      "options": [
+        {
+          "text": "Сжать с максимальным уровнем компрессии",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Создать архив без сжатия",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Сжать с помощью gzip (создать .gz архив)</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Зашифровать архив",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что означает <code>z</code> в команде <code>tar -czf archive.tar.gz /path</code>?</p>\n<ul>\n<li>Сжать с максимальным уровнем компрессии</li>\n<li>Создать архив без сжатия</li>\n<li><code>+Сжать с помощью gzip (создать .gz архив)</code></li>\n<li>Зашифровать архив</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: проверка архива",
+      "taskid": "ladv_lab7_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Как безопасно проверить содержимое архива перед восстановлением?</p>",
+      "options": [
+        {
+          "text": "<code>Сразу распаковать в /</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Переименовать архив в .txt</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Запускать только через sudo</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Посмотреть список через tar -tzf и убедиться, что внутри ожидаемые пути</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Как безопасно проверить содержимое архива перед восстановлением?</p>\n<ul>\n<li><code>Сразу распаковать в /</code></li>\n<li><code>Переименовать архив в .txt</code></li>\n<li><code>Запускать только через sudo</code></li>\n<li><code>+Посмотреть список через tar -tzf и убедиться, что внутри ожидаемые пути</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: зачем дата в имени backup",
+      "taskid": "ladv_lab7_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Почему в имени backup полезен timestamp?</p>",
+      "options": [
+        {
+          "text": "<code>+Проще хранить несколько версий и быстро понимать, какой архив новее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Иначе tar не работает</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы уменьшить размер архива</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Это нужно только для Windows</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему в имени backup полезен timestamp?</p>\n<ul>\n<li><code>+Проще хранить несколько версий и быстро понимать, какой архив новее</code></li>\n<li><code>Иначе tar не работает</code></li>\n<li><code>Чтобы уменьшить размер архива</code></li>\n<li><code>Это нужно только для Windows</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: restore-проверка",
+      "taskid": "ladv_lab7_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что стоит сделать после восстановления из backup?</p>",
+      "options": [
+        {
+          "text": "<code>Удалить исходные данные</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Проверить, что нужные файлы реально восстановились и читаются</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу перезагрузить сервер</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Отключить логирование</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что стоит сделать после восстановления из backup?</p>\n<ul>\n<li><code>Удалить исходные данные</code></li>\n<li><code>+Проверить, что нужные файлы реально восстановились и читаются</code></li>\n<li><code>Сразу перезагрузить сервер</code></li>\n<li><code>Отключить логирование</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: полный диск и backup",
+      "taskid": "ladv_lab7_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что делать, если бэкап не создаётся из-за нехватки места?</p>",
+      "options": [
+        {
+          "text": "<code>Игнорировать ошибку и продолжать</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сразу удалить /var/log целиком</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Проверить свободное место, очистить ненужное и повторить с контролем результата</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Отключить set -e</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что делать, если бэкап не создаётся из-за нехватки места?</p>\n<ul>\n<li><code>Игнорировать ошибку и продолжать</code></li>\n<li><code>Сразу удалить /var/log целиком</code></li>\n<li><code>+Проверить свободное место, очистить ненужное и повторить с контролем результата</code></li>\n<li><code>Отключить set -e</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: политика хранения",
+      "taskid": "ladv_lab7_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем в backup-скриптах вводят retention policy (удаление старых копий)?</p>",
+      "options": [
+        {
+          "text": "<code>Чтобы архивы были быстрее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы отключить сжатие</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы каждый раз делать только одну копию</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Чтобы не переполнить диск и сохранить предсказуемый объём хранения</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем в backup-скриптах вводят retention policy (удаление старых копий)?</p>\n<ul>\n<li><code>Чтобы архивы были быстрее</code></li>\n<li><code>Чтобы отключить сжатие</code></li>\n<li><code>Чтобы каждый раз делать только одну копию</code></li>\n<li><code>+Чтобы не переполнить диск и сохранить предсказуемый объём хранения</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_advanced/linux_adv/lab7/setup.yaml"
+}

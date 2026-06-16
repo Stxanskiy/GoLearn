@@ -1,0 +1,187 @@
+{
+  "n": 4,
+  "id": "ch_lcore_lab2",
+  "title": "Лабораторная 2: grep, флаги и регулярные выражения",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Строки с ошибками",
+      "taskid": "lcore_lab2_t1_grep",
+      "hint": "<p>Используй <code>grep</code> по нужному слову. Для сохранения найденных строк в файл используй <code>&gt;</code>.</p>",
+      "question_html": "<p>Найди все строки с <code>ERROR</code> в файле <code>/opt/devops/lab2/app.log</code> и сохрани в <code>/root/errors.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все строки с <code>ERROR</code> в файле <code>/opt/devops/lab2/app.log</code> и сохрани в <code>/root/errors.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Количество предупреждений",
+      "taskid": "lcore_lab2_t2_count",
+      "hint": "",
+      "question_html": "<p>Подсчитай количество строк с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>",
+      "options": [
+        {
+          "text": "<code>0</code>",
+          "correct": false,
+          "explanation": "Нет — предупреждение в логе есть"
+        },
+        {
+          "text": "<code>+1</code>",
+          "correct": false,
+          "explanation": "Верно! В файле одна строка с WARNING"
+        },
+        {
+          "text": "<code>2</code>",
+          "correct": false,
+          "explanation": "Нет — это количество ERROR"
+        },
+        {
+          "text": "<code>6</code>",
+          "correct": false,
+          "explanation": "Нет — это общее количество строк"
+        }
+      ],
+      "raw_description": "<p>Подсчитай количество строк с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>\n<ul>\n<li><code>0</code> [Нет — предупреждение в логе есть]</li>\n<li><code>+1</code> [Верно! В файле одна строка с WARNING]</li>\n<li><code>2</code> [Нет — это количество ERROR]</li>\n<li><code>6</code> [Нет — это общее количество строк]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Поиск без учёта регистра",
+      "taskid": "lcore_lab2_t3_case",
+      "hint": "<p>У <code>grep</code> есть флаг для поиска без учёта регистра.</p>",
+      "question_html": "<p>Найди все строки со словом <code>error</code> (в любом регистре: ERROR, Error, error) в <code>/opt/devops/lab2/mixed.log</code> и сохрани в <code>/root/all_errors.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все строки со словом <code>error</code> (в любом регистре: ERROR, Error, error) в <code>/opt/devops/lab2/mixed.log</code> и сохрани в <code>/root/all_errors.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исключить INFO",
+      "taskid": "lcore_lab2_t4_invert",
+      "hint": "<p>Используй инвертированный поиск <code>grep</code>, чтобы оставить строки без указанного шаблона.</p>",
+      "question_html": "<p>Получи все строки из <code>/opt/devops/lab2/app.log</code>, которые НЕ содержат <code>INFO</code>, и сохрани в <code>/root/no_info.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи все строки из <code>/opt/devops/lab2/app.log</code>, которые НЕ содержат <code>INFO</code>, и сохрани в <code>/root/no_info.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Поиск по конфигам",
+      "taskid": "lcore_lab2_t5_recursive",
+      "hint": "<p>Нужен рекурсивный <code>grep</code>, который выводит имена файлов с совпадением.</p>",
+      "question_html": "<p>Найди рекурсивно все файлы в <code>/opt/devops/lab2/configs/</code>, которые содержат строку <code>password</code>, и сохрани список в <code>/root/has_password.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди рекурсивно все файлы в <code>/opt/devops/lab2/configs/</code>, которые содержат строку <code>password</code>, и сохрани список в <code>/root/has_password.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "ERROR или CRITICAL",
+      "taskid": "lcore_lab2_t6_regex",
+      "hint": "<p>Для альтернативы <code>ERROR</code> или <code>CRITICAL</code> используй расширенный режим <code>grep</code> и оператор <code>|</code>.</p>",
+      "question_html": "<p>Используя расширенные регулярные выражения, найди строки из <code>/opt/devops/lab2/app.log</code>, которые содержат <code>ERROR</code> ИЛИ <code>CRITICAL</code>, и сохрани в <code>/root/critical_errors.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Используя расширенные регулярные выражения, найди строки из <code>/opt/devops/lab2/app.log</code>, которые содержат <code>ERROR</code> ИЛИ <code>CRITICAL</code>, и сохрани в <code>/root/critical_errors.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: grep -n",
+      "taskid": "lcore_lab2_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Флаг <code>-n</code> у команды <code>grep</code> означает:</p>",
+      "options": [
+        {
+          "text": "Искать только в числовых строках",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Показать только количество совпадений",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Показать номера строк, в которых найдено совпадение</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Не чувствительный к регистру поиск",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Флаг <code>-n</code> у команды <code>grep</code> означает:</p>\n<ul>\n<li>Искать только в числовых строках</li>\n<li>Показать только количество совпадений</li>\n<li><code>+Показать номера строк, в которых найдено совпадение</code></li>\n<li>Не чувствительный к регистру поиск</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Уникальные HTTP-коды",
+      "taskid": "lcore_lab2_t8_pipe",
+      "hint": "<p>Используй <code>awk</code> или похожий фильтр, чтобы взять HTTP-код из каждой строки, затем отсортируй и убери повторы через <code>sort</code>/<code>uniq</code>.</p>",
+      "question_html": "<p>Найди все уникальные HTTP-коды ответов в <code>/opt/devops/lab2/access.log</code> и сохрани в <code>/root/status_codes.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все уникальные HTTP-коды ответов в <code>/opt/devops/lab2/access.log</code> и сохрани в <code>/root/status_codes.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему grep -i полезен в инцидентах?",
+      "taskid": "lcore_lab2_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему флаг <code>-i</code> у <code>grep</code> часто помогает при быстрой диагностике?</p>",
+      "options": [
+        {
+          "text": "<code>Он автоматически исправляет регистр в файле</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Он включает рекурсивный поиск</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Он считает количество строк</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Он ищет без учёта регистра и снижает риск пропустить важные строки</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему флаг <code>-i</code> у <code>grep</code> часто помогает при быстрой диагностике?</p>\n<ul>\n<li><code>Он автоматически исправляет регистр в файле</code></li>\n<li><code>Он включает рекурсивный поиск</code></li>\n<li><code>Он считает количество строк</code></li>\n<li><code>+Он ищет без учёта регистра и снижает риск пропустить важные строки</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда использовать grep -v?",
+      "taskid": "lcore_lab2_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Для чего обычно применяют <code>grep -v</code>?</p>",
+      "options": [
+        {
+          "text": "<code>+Чтобы исключить строки по шаблону и оставить остальное</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы подсветить совпадения цветом</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы вывести только номера строк</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы сортировать строки по алфавиту</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Для чего обычно применяют <code>grep -v</code>?</p>\n<ul>\n<li><code>+Чтобы исключить строки по шаблону и оставить остальное</code></li>\n<li><code>Чтобы подсветить совпадения цветом</code></li>\n<li><code>Чтобы вывести только номера строк</code></li>\n<li><code>Чтобы сортировать строки по алфавиту</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab2/setup.yaml"
+}

@@ -1,0 +1,65 @@
+{{define "admin_specs"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/admin">Админка</a> / <span>Разделы</span></div>
+<h1 style="margin-bottom:18px;">Разделы (специализации)</h1>
+
+<div class="admin-table" style="margin-bottom:28px;">
+    <div class="admin-row admin-head"><span>Иконка</span><span>Название</span><span>Slug</span><span>Порядок</span><span></span></div>
+    {{range .Specs}}
+    <div class="admin-row">
+        <span style="font-size:1.3em;">{{.Icon}}</span>
+        <span class="admin-name">{{.Name}}<div class="muted" style="font-size:.82em;font-weight:400;">{{.Description}}</div></span>
+        <span class="muted">{{.Slug}}</span>
+        <span>{{.OrderNum}}</span>
+        <span class="admin-actions">
+            <button class="btn btn-outline btn-xs" onclick='editSpec({{printf "%q" .Slug}},{{printf "%q" .Name}},{{printf "%q" .Icon}},{{printf "%q" .Description}},{{.OrderNum}})'>✎</button>
+            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+        </span>
+    </div>
+    {{end}}
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:14px;" id="spec-form-title">Добавить раздел</h3>
+    <form class="adm-form" method="POST" action="/admin/spec">
+        <div class="adm-grid">
+            <label>Slug<input id="sp-slug" name="slug" required placeholder="cloud"></label>
+            <label>Название<input id="sp-name" name="name" required placeholder="Облака"></label>
+            <label>Иконка (эмодзи)<input id="sp-icon" name="icon" placeholder="☁️"></label>
+            <label>Порядок<input id="sp-order" name="order_num" type="number" value="0"></label>
+            <label class="full">Описание<input id="sp-desc" name="description"></label>
+        </div>
+        <div class="row" style="margin-top:14px;">
+            <button class="btn btn-primary" type="submit">Сохранить</button>
+            <button class="btn btn-ghost" type="reset" onclick="document.getElementById('sp-slug').readOnly=false;document.getElementById('spec-form-title').textContent='Добавить раздел';">Очистить</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.admin-row { display:grid; grid-template-columns:60px 1fr 120px 80px 90px; gap:10px; align-items:center; padding:11px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
+.admin-row:last-child { border-bottom:none; }
+.admin-head { background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.8em; text-transform:uppercase; }
+.admin-name { font-weight:600; color:var(--text); }
+.admin-actions { display:flex; gap:6px; justify-content:flex-end; }
+.btn-xs { padding:3px 9px; font-size:.8em; }
+.adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
+.adm-form label.full { grid-column:1 / -1; }
+.adm-form input { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; outline:none; }
+.adm-form input:focus { border-color:var(--accent); }
+</style>
+<script>
+function editSpec(slug,name,icon,desc,order){
+    document.getElementById('sp-slug').value=slug; document.getElementById('sp-slug').readOnly=true;
+    document.getElementById('sp-name').value=name; document.getElementById('sp-icon').value=icon;
+    document.getElementById('sp-desc').value=desc; document.getElementById('sp-order').value=order;
+    document.getElementById('spec-form-title').textContent='Редактировать раздел';
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+</script>
+{{end}}

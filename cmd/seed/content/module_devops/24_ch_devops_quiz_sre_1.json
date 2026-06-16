@@ -1,0 +1,313 @@
+{
+  "n": 24,
+  "id": "ch_devops_quiz_sre_1",
+  "title": "Квиз: SRE принципы",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "SLI определение",
+      "taskid": "sre_quiz1_t1_sli",
+      "hint": "",
+      "question_html": "<p>Хороший SLI для web сервиса — это...</p>",
+      "options": [
+        {
+          "text": "Использование CPU на серверах",
+          "correct": false,
+          "explanation": "Нет — CPU это resource metric; пользователь не знает про CPU, но замечает медленные ответы"
+        },
+        {
+          "text": "Количество серверов в кластере",
+          "correct": false,
+          "explanation": "Нет — количество серверов это capacity метрика, не пользовательский опыт"
+        },
+        {
+          "text": "HTTP success rate за окно",
+          "correct": true,
+          "explanation": "Верно! SLI должен измерять что важно для пользователя; success rate — основной SLI для большинства сервисов"
+        },
+        {
+          "text": "Количество деплоев за месяц",
+          "correct": false,
+          "explanation": "Нет — deployment frequency это DORA метрика, не SLI для надёжности"
+        }
+      ],
+      "raw_description": "<p>Хороший SLI для web сервиса — это...</p><ul>\n<li>Использование CPU на серверах [Нет — CPU это resource metric; пользователь не знает про CPU, но замечает медленные ответы]</li>\n<li>Количество серверов в кластере [Нет — количество серверов это capacity метрика, не пользовательский опыт]</li>\n<li>+HTTP success rate за окно [Верно! SLI должен измерять что важно для пользователя; success rate — основной SLI для большинства сервисов]</li>\n<li>Количество деплоев за месяц [Нет — deployment frequency это DORA метрика, не SLI для надёжности]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SLO 99.99%",
+      "taskid": "sre_quiz1_t2_slo",
+      "hint": "",
+      "question_html": "<p>SLO 99.99% (\"four nines\") — сколько минут downtime допускается в год?</p>",
+      "options": [
+        {
+          "text": "52.6 мин/год",
+          "correct": true,
+          "explanation": "Верно! Каждая \"девятка\" SLO уменьшает допустимый downtime на порядок"
+        },
+        {
+          "text": "1 день в год",
+          "correct": false,
+          "explanation": "Нет — 1 день это примерно 99.726% (две с половиной девятки)"
+        },
+        {
+          "text": "1 час в год",
+          "correct": false,
+          "explanation": "Нет — 1 час = 99.9886% (три с половиной девятки), не четыре"
+        },
+        {
+          "text": "5 минут в год",
+          "correct": false,
+          "explanation": "Нет — 5 минут это примерно 99.999% (пять девяток)"
+        }
+      ],
+      "raw_description": "<p>SLO 99.99% (\"four nines\") — сколько минут downtime допускается в год?</p><ul>\n<li>+52.6 мин/год [Верно! Каждая \"девятка\" SLO уменьшает допустимый downtime на порядок]</li>\n<li>1 день в год [Нет — 1 день это примерно 99.726% (две с половиной девятки)]</li>\n<li>1 час в год [Нет — 1 час = 99.9886% (три с половиной девятки), не четыре]</li>\n<li>5 минут в год [Нет — 5 минут это примерно 99.999% (пять девяток)]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Toil определение",
+      "taskid": "sre_quiz1_t3_toil",
+      "hint": "",
+      "question_html": "<p>Какая из задач является Toil по определению Google SRE?</p>",
+      "options": [
+        {
+          "text": "Разработка системы авто-масштабирования",
+          "correct": false,
+          "explanation": "Нет — это elimination of toil; engineering работа"
+        },
+        {
+          "text": "Написание runbook для нового типа инцидента",
+          "correct": false,
+          "explanation": "Нет — это engineering work; создаёт ценность долгосрочно"
+        },
+        {
+          "text": "Участие в postmortem обсуждении",
+          "correct": false,
+          "explanation": "Нет — postmortem это learning и improvement work, не toil"
+        },
+        {
+          "text": "Ручной weekly restart из-за memory leak",
+          "correct": true,
+          "explanation": "Верно! Ручная, повторяющаяся, автоматизируемая, не улучшает сервис = Toil"
+        }
+      ],
+      "raw_description": "<p>Какая из задач является Toil по определению Google SRE?</p><ul>\n<li>Разработка системы авто-масштабирования [Нет — это elimination of toil; engineering работа]</li>\n<li>Написание runbook для нового типа инцидента [Нет — это engineering work; создаёт ценность долгосрочно]</li>\n<li>Участие в postmortem обсуждении [Нет — postmortem это learning и improvement work, не toil]</li>\n<li>+Ручной weekly restart из-за memory leak [Верно! Ручная, повторяющаяся, автоматизируемая, не улучшает сервис = Toil]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Error Budget использование",
+      "taskid": "sre_quiz1_t4_error_budget",
+      "hint": "",
+      "question_html": "<p>Команда исчерпала Error Budget за 2 недели до конца квартала. Что должно произойти?</p>",
+      "options": [
+        {
+          "text": "Повысить SLO чтобы дать больше error budget",
+          "correct": false,
+          "explanation": "Нет — повышение SLO уменьшает budget (меньше допустимых ошибок)"
+        },
+        {
+          "text": "Продолжать деплоить фичи но с большей осторожностью",
+          "correct": false,
+          "explanation": "Нет — error budget policy должна соблюдаться; \"осторожность\" субъективна"
+        },
+        {
+          "text": "Feature freeze и фокус на reliability",
+          "correct": true,
+          "explanation": "Верно! Error Budget Policy — договорённость заранее; исчерпание = автоматический freeze без споров"
+        },
+        {
+          "text": "Уволить SRE команду — они не справляются",
+          "correct": false,
+          "explanation": "Нет — исчерпание budget = системная проблема, не вина людей"
+        }
+      ],
+      "raw_description": "<p>Команда исчерпала Error Budget за 2 недели до конца квартала. Что должно произойти?</p><ul>\n<li>Повысить SLO чтобы дать больше error budget [Нет — повышение SLO уменьшает budget (меньше допустимых ошибок)]</li>\n<li>Продолжать деплоить фичи но с большей осторожностью [Нет — error budget policy должна соблюдаться; \"осторожность\" субъективна]</li>\n<li>+Feature freeze и фокус на reliability [Верно! Error Budget Policy — договорённость заранее; исчерпание = автоматический freeze без споров]</li>\n<li>Уволить SRE команду — они не справляются [Нет — исчерпание budget = системная проблема, не вина людей]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Toil 50% правило",
+      "taskid": "sre_quiz1_t5_toil_50",
+      "hint": "",
+      "question_html": "<p>Google SRE тратят не более 50% времени на операционный toil. Что происходит если toil > 50%?</p>",
+      "options": [
+        {
+          "text": "SRE получают повышение зарплаты за дополнительную работу",
+          "correct": false,
+          "explanation": "Нет — 50% правило о качестве работы, не о компенсации"
+        },
+        {
+          "text": "Команда переходит на 24/7 on-call режим",
+          "correct": false,
+          "explanation": "Нет — 24/7 on-call это отдельная тема; toil это дневная операционная работа"
+        },
+        {
+          "text": "Автоматически нанимается больше SRE",
+          "correct": false,
+          "explanation": "Нет — масштаб команды не решает проблему toil; нужна автоматизация"
+        },
+        {
+          "text": "Нет времени на engineering, toil растёт",
+          "correct": true,
+          "explanation": "Верно! Toil самовоспроизводится если нет времени его автоматизировать"
+        }
+      ],
+      "raw_description": "<p>Google SRE тратят не более 50% времени на операционный toil. Что происходит если toil > 50%?</p><ul>\n<li>SRE получают повышение зарплаты за дополнительную работу [Нет — 50% правило о качестве работы, не о компенсации]</li>\n<li>Команда переходит на 24/7 on-call режим [Нет — 24/7 on-call это отдельная тема; toil это дневная операционная работа]</li>\n<li>Автоматически нанимается больше SRE [Нет — масштаб команды не решает проблему toil; нужна автоматизация]</li>\n<li>+Нет времени на engineering, toil растёт [Верно! Toil самовоспроизводится если нет времени его автоматизировать]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SLA vs SLO",
+      "taskid": "sre_quiz1_t6_sla_slo",
+      "hint": "",
+      "question_html": "<p>Почему SLA всегда устанавливают ниже SLO?</p>",
+      "options": [
+        {
+          "text": "Клиенты не верят высоким цифрам — нужно занижать",
+          "correct": false,
+          "explanation": "Нет — клиенты хотят максимального uptime; буфер для защиты от штрафов"
+        },
+        {
+          "text": "SLA измеряется точнее поэтому цифра меньше",
+          "correct": false,
+          "explanation": "Нет — точность измерения не влияет на соотношение SLA и SLO"
+        },
+        {
+          "text": "Регуляторы требуют SLA ниже SLO",
+          "correct": false,
+          "explanation": "Нет — это практика, а не регуляторное требование"
+        },
+        {
+          "text": "SLO выше SLA, чтобы был штрафной буфер",
+          "correct": true,
+          "explanation": "Верно! SLO 99.9%, SLA 99.5% — буфер 0.4% на случай инцидентов"
+        }
+      ],
+      "raw_description": "<p>Почему SLA всегда устанавливают ниже SLO?</p><ul>\n<li>Клиенты не верят высоким цифрам — нужно занижать [Нет — клиенты хотят максимального uptime; буфер для защиты от штрафов]</li>\n<li>SLA измеряется точнее поэтому цифра меньше [Нет — точность измерения не влияет на соотношение SLA и SLO]</li>\n<li>Регуляторы требуют SLA ниже SLO [Нет — это практика, а не регуляторное требование]</li>\n<li>+SLO выше SLA, чтобы был штрафной буфер [Верно! SLO 99.9%, SLA 99.5% — буфер 0.4% на случай инцидентов]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Liveness vs Readiness",
+      "taskid": "sre_quiz1_t7_probes",
+      "hint": "",
+      "question_html": "<p>Liveness probe падает. Что делает Kubernetes?</p>",
+      "options": [
+        {
+          "text": "Убирает Pod из Service Endpoints",
+          "correct": false,
+          "explanation": "Нет — это делает Readiness probe"
+        },
+        {
+          "text": "Перезапускает контейнер",
+          "correct": true,
+          "explanation": "Верно! Liveness = \"жив ли контейнер\"; если нет — restart. Readiness = \"готов ли принимать трафик\"; если нет — убрать из endpoints"
+        },
+        {
+          "text": "Удаляет Pod и не пересоздаёт",
+          "correct": false,
+          "explanation": "Нет — при restart policy Always/OnFailure контейнер перезапускается, не удаляется"
+        },
+        {
+          "text": "Уведомляет команду через PagerDuty",
+          "correct": false,
+          "explanation": "Нет — Kubernetes не интегрируется с PagerDuty напрямую по probe failures"
+        }
+      ],
+      "raw_description": "<p>Liveness probe падает. Что делает Kubernetes?</p><ul>\n<li>Убирает Pod из Service Endpoints [Нет — это делает Readiness probe]</li>\n<li>+Перезапускает контейнер [Верно! Liveness = \"жив ли контейнер\"; если нет — restart. Readiness = \"готов ли принимать трафик\"; если нет — убрать из endpoints]</li>\n<li>Удаляет Pod и не пересоздаёт [Нет — при restart policy Always/OnFailure контейнер перезапускается, не удаляется]</li>\n<li>Уведомляет команду через PagerDuty [Нет — Kubernetes не интегрируется с PagerDuty напрямую по probe failures]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "MTTR компоненты",
+      "taskid": "sre_quiz1_t8_mttr",
+      "hint": "",
+      "question_html": "<p>Команда улучшила мониторинг — время обнаружения инцидента упало с 30 мин до 2 мин. Как это влияет на MTTR?</p>",
+      "options": [
+        {
+          "text": "MTTR вырастет — раньше обнаруживаем = больше incidents считаем",
+          "correct": false,
+          "explanation": "Нет — количество инцидентов не влияет на MTTR по определению"
+        },
+        {
+          "text": "Снижает MTTR, потому что MTTD входит в него",
+          "correct": true,
+          "explanation": "Верно! MTTR = MTTD + время диагностики + время исправления + время восстановления"
+        },
+        {
+          "text": "MTTR не изменится — зависит только от скорости исправления",
+          "correct": false,
+          "explanation": "Нет — обнаружение это первый компонент MTTR"
+        },
+        {
+          "text": "Влияние незначительное — 28 минут из часового MTTR",
+          "correct": false,
+          "explanation": "Нет — 28 минут это почти половина MTTR; очень значительно"
+        }
+      ],
+      "raw_description": "<p>Команда улучшила мониторинг — время обнаружения инцидента упало с 30 мин до 2 мин. Как это влияет на MTTR?</p><ul>\n<li>MTTR вырастет — раньше обнаруживаем = больше incidents считаем [Нет — количество инцидентов не влияет на MTTR по определению]</li>\n<li>+Снижает MTTR, потому что MTTD входит в него [Верно! MTTR = MTTD + время диагностики + время исправления + время восстановления]</li>\n<li>MTTR не изменится — зависит только от скорости исправления [Нет — обнаружение это первый компонент MTTR]</li>\n<li>Влияние незначительное — 28 минут из часового MTTR [Нет — 28 минут это почти половина MTTR; очень значительно]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "On-Call rotation",
+      "taskid": "sre_quiz1_t9_oncall",
+      "hint": "",
+      "question_html": "<p>Признак нездоровой on-call культуры?</p>",
+      "options": [
+        {
+          "text": "Rotation каждую неделю между 5 инженерами",
+          "correct": false,
+          "explanation": "Нет — это здоровая практика ротации"
+        },
+        {
+          "text": "Компенсация за on-call дежурство",
+          "correct": false,
+          "explanation": "Нет — компенсация это признак уважения к работе, а не проблема"
+        },
+        {
+          "text": "Backup дежурный для случаев недоступности основного",
+          "correct": false,
+          "explanation": "Нет — backup это best practice"
+        },
+        {
+          "text": "Один человек всегда on-call из-за уникальных знаний",
+          "correct": true,
+          "explanation": "Верно! Это hero culture + bus factor; один человек выгорит; нет обмена знаниями"
+        }
+      ],
+      "raw_description": "<p>Признак нездоровой on-call культуры?</p><ul>\n<li>Rotation каждую неделю между 5 инженерами [Нет — это здоровая практика ротации]</li>\n<li>Компенсация за on-call дежурство [Нет — компенсация это признак уважения к работе, а не проблема]</li>\n<li>Backup дежурный для случаев недоступности основного [Нет — backup это best practice]</li>\n<li>+Один человек всегда on-call из-за уникальных знаний [Верно! Это hero culture + bus factor; один человек выгорит; нет обмена знаниями]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Chaos Engineering цель",
+      "taskid": "sre_quiz1_t10_chaos",
+      "hint": "",
+      "question_html": "<p>Основная цель Chaos Engineering?</p>",
+      "options": [
+        {
+          "text": "Демонстрировать клиентам надёжность системы",
+          "correct": false,
+          "explanation": "Нет — chaos experiments обычно проводятся непублично"
+        },
+        {
+          "text": "Найти слабые места до production-инцидента",
+          "correct": true,
+          "explanation": "Верно! Контролируемый хаос в рабочее время лучше неожиданного хаоса ночью"
+        },
+        {
+          "text": "Тренировать on-call команду реагировать на инциденты",
+          "correct": false,
+          "explanation": "Chaos engineering включает и это, но не является главной целью"
+        },
+        {
+          "text": "Проверить что разработчики умеют восстанавливать сервисы",
+          "correct": false,
+          "explanation": "Нет — chaos engineering о системе, не о проверке навыков людей"
+        }
+      ],
+      "raw_description": "<p>Основная цель Chaos Engineering?</p><ul>\n<li>Демонстрировать клиентам надёжность системы [Нет — chaos experiments обычно проводятся непублично]</li>\n<li>+Найти слабые места до production-инцидента [Верно! Контролируемый хаос в рабочее время лучше неожиданного хаоса ночью]</li>\n<li>Тренировать on-call команду реагировать на инциденты [Chaos engineering включает и это, но не является главной целью]</li>\n<li>Проверить что разработчики умеют восстанавливать сервисы [Нет — chaos engineering о системе, не о проверке навыков людей]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

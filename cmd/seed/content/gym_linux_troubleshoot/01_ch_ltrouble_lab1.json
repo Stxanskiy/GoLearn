@@ -1,0 +1,49 @@
+{
+  "n": 1,
+  "id": "ch_ltrouble_lab1",
+  "title": "Блок 1: Сервисы и конфиги",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Новые zsh-сессии не находят команды",
+      "taskid": "ltrouble_lab1_t01",
+      "hint": "<ul>\n<li>Смотри конфигурационные файлы zsh в домашнем каталоге root.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> После входа в новую zsh-сессию привычные команды внезапно перестали запускаться. На сервере ничего не переустанавливали, проблема появилась после правки shell-конфига root.</p>\n<p><strong>Твоя цель:</strong> Вернуть нормальную работу новых zsh-сессий.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> После входа в новую zsh-сессию привычные команды внезапно перестали запускаться. На сервере ничего не переустанавливали, проблема появилась после правки shell-конфига root.</p>\n<p><strong>Твоя цель:</strong> Вернуть нормальную работу новых zsh-сессий.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Сервис после сбоя остаётся выключенным",
+      "taskid": "ltrouble_lab1_t02",
+      "hint": "<ul>\n<li>Начни с просмотра unit-файла.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> <code>simpleapp.service</code> запускается, но после аварийного завершения не поднимается сам. Для этого сервиса ожидается стандартное поведение: если процесс падает с ошибкой, systemd должен вернуть его в работу.</p>\n<p><strong>Твоя цель:</strong> Сделать так, чтобы <code>simpleapp.service</code> корректно переживал аварийное завершение процесса.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> <code>simpleapp.service</code> запускается, но после аварийного завершения не поднимается сам. Для этого сервиса ожидается стандартное поведение: если процесс падает с ошибкой, systemd должен вернуть его в работу.</p>\n<p><strong>Твоя цель:</strong> Сделать так, чтобы <code>simpleapp.service</code> корректно переживал аварийное завершение процесса.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Сервис myapp не стартует",
+      "taskid": "ltrouble_lab1_t03",
+      "hint": "<ul>\n<li>Сравни путь из unit-файла с файлами рядом в том же каталоге.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> <code>myapp.service</code> находится в состоянии <code>failed</code>. Бинарник приложения уже есть на сервере, но systemd не может его запустить.</p>\n<p><strong>Твоя цель:</strong> Добиться состояния <code>active</code> у <code>myapp.service</code>.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> <code>myapp.service</code> находится в состоянии <code>failed</code>. Бинарник приложения уже есть на сервере, но systemd не может его запустить.</p>\n<p><strong>Твоя цель:</strong> Добиться состояния <code>active</code> у <code>myapp.service</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Стартовый скрипт приложения падает",
+      "taskid": "ltrouble_lab1_t04",
+      "hint": "<ul>\n<li>Сначала запусти скрипт как есть и прочитай его вывод.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> <code>/opt/app/start.sh</code> есть и исполняемый, но обычный запуск завершается ошибкой. Скрипт сам подсказывает, какого режима запуска ему не хватает.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного старта приложения.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> <code>/opt/app/start.sh</code> есть и исполняемый, но обычный запуск завершается ошибкой. Скрипт сам подсказывает, какого режима запуска ему не хватает.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного старта приложения.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "gym_linux_troubleshoot/linux_troubleshoot/lab1/setup.yaml"
+}

@@ -1,0 +1,250 @@
+{
+  "n": 6,
+  "id": "ch_dock_lab2",
+  "title": "Лабораторная 2: Образы",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Изучить список образов",
+      "taskid": "dock_lab2_t1_images",
+      "hint": "<p>Выполни <code>docker images</code> и смотри на столбец <code>IMAGE</code>: там видно имя образа и tag после двоеточия.</p>",
+      "question_html": "<p>Выполни <code>docker images</code>. Какой столбец показывает полное имя образа вместе с tag, например <code>nginx:alpine</code>?</p>",
+      "options": [
+        {
+          "text": "IMAGE",
+          "correct": true,
+          "explanation": "Верно! В IMAGE указано полное имя образа; tag идёт после двоеточия"
+        },
+        {
+          "text": "REPOSITORY",
+          "correct": false,
+          "explanation": "Нет — в этом выводе нет отдельного столбца REPOSITORY, имя образа видно в IMAGE"
+        },
+        {
+          "text": "ID",
+          "correct": false,
+          "explanation": "Нет — это внутренний идентификатор конкретного образа"
+        },
+        {
+          "text": "DISK USAGE",
+          "correct": false,
+          "explanation": "Нет — это размер образа на диске"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker images</code>. Какой столбец показывает полное имя образа вместе с tag, например <code>nginx:alpine</code>?</p><ul>\n<li>+IMAGE [Верно! В IMAGE указано полное имя образа; tag идёт после двоеточия]</li>\n<li>REPOSITORY [Нет — в этом выводе нет отдельного столбца REPOSITORY, имя образа видно в IMAGE]</li>\n<li>ID [Нет — это внутренний идентификатор конкретного образа]</li>\n<li>DISK USAGE [Нет — это размер образа на диске]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Проверить локальные образы",
+      "taskid": "dock_lab2_t2_list",
+      "hint": "",
+      "question_html": "<p>Выполни <code>docker images</code>. Какой образ точно присутствует в локальном списке?</p>",
+      "options": [
+        {
+          "text": "postgres:16-alpine",
+          "correct": false,
+          "explanation": "Нет — этот образ не загружен в подготовке лабы"
+        },
+        {
+          "text": "nginx:alpine",
+          "correct": true,
+          "explanation": "Верно! Образ nginx:alpine загружен до начала лабораторной"
+        },
+        {
+          "text": "node:20-alpine",
+          "correct": false,
+          "explanation": "Нет — этот образ не нужен в этой лабораторной"
+        },
+        {
+          "text": "mysql:8",
+          "correct": false,
+          "explanation": "Нет — этого образа нет среди подготовленных"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker images</code>. Какой образ точно присутствует в локальном списке?</p><ul>\n<li>postgres:16-alpine [Нет — этот образ не загружен в подготовке лабы]</li>\n<li>+nginx:alpine [Верно! Образ nginx:alpine загружен до начала лабораторной]</li>\n<li>node:20-alpine [Нет — этот образ не нужен в этой лабораторной]</li>\n<li>mysql:8 [Нет — этого образа нет среди подготовленных]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Скачать образ redis",
+      "taskid": "dock_lab2_t3_pull",
+      "hint": "<p>Используй <code>docker pull</code>: укажи имя образа вместе с тегом, затем проверь локальный список через <code>docker images</code>.</p>\n<p><code>docker pull</code> скачивает образ без запуска контейнера. Docker скачивает только те слои, которых нет локально. Если образ уже есть — он обновится до последней версии с этим тегом.</p>",
+      "question_html": "<p>Скачай образ <code>redis:alpine</code> с помощью команды <code>docker pull</code>. В подготовке лабы этот образ специально не загружается заранее.</p>",
+      "options": [],
+      "raw_description": "<p>Скачай образ <code>redis:alpine</code> с помощью команды <code>docker pull</code>. В подготовке лабы этот образ специально не загружается заранее.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое image layer?",
+      "taskid": "dock_lab2_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Что такое слой (layer) в Docker-образе?</p>",
+      "options": [
+        {
+          "text": "Отдельная виртуальная машина внутри образа",
+          "correct": false,
+          "explanation": "Нет — Docker не создаёт VM"
+        },
+        {
+          "text": "Копия базового образа",
+          "correct": false,
+          "explanation": "Нет — слой хранит только diff (изменения), не копию"
+        },
+        {
+          "text": "Неизменяемый набор изменений файловой системы, созданный каждой инструкцией Dockerfile",
+          "correct": true,
+          "explanation": "Верно! Каждый RUN/COPY/ADD создаёт слой. Слои переиспользуются между образами."
+        },
+        {
+          "text": "Том (volume) для хранения данных",
+          "correct": false,
+          "explanation": "Нет — это разные концепции"
+        }
+      ],
+      "raw_description": "<p>Что такое слой (layer) в Docker-образе?</p><ul>\n<li>Отдельная виртуальная машина внутри образа [Нет — Docker не создаёт VM]</li>\n<li>Копия базового образа [Нет — слой хранит только diff (изменения), не копию]</li>\n<li>+Неизменяемый набор изменений файловой системы, созданный каждой инструкцией Dockerfile [Верно! Каждый RUN/COPY/ADD создаёт слой. Слои переиспользуются между образами.]</li>\n<li>Том (volume) для хранения данных [Нет — это разные концепции]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать тег образа",
+      "taskid": "dock_lab2_t5_tag",
+      "hint": "<p>Используй <code>docker tag</code>: первый аргумент — уже существующий образ, второй — новое имя с тегом. Проверь результат через <code>docker images</code>.</p>\n<p>Команда <code>docker tag</code> создаёт новое имя/тег для существующего образа. Образ не копируется — просто добавляется новая ссылка на те же слои. Это используется для переименования перед push в registry.</p>",
+      "question_html": "<p>Создай новый тег <code>myredis:v1</code> для образа <code>redis:alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай новый тег <code>myredis:v1</code> для образа <code>redis:alpine</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Инспектировать образ",
+      "taskid": "dock_lab2_t6_inspect",
+      "hint": "<p><code>docker image inspect</code> возвращает JSON с полной информацией: слои, переменные окружения, точка входа, архитектура, OS и т.д.</p>",
+      "question_html": "<p>Выполни <code>docker image inspect nginx:alpine</code>. Какое значение указано в поле <code>Architecture</code>?</p>\n<pre><code>docker image inspect nginx:alpine</code></pre>",
+      "options": [
+        {
+          "text": "arm64",
+          "correct": false,
+          "explanation": "Нет — это архитектура ARM"
+        },
+        {
+          "text": "linux",
+          "correct": false,
+          "explanation": "Нет — это значение поля Os, а не Architecture"
+        },
+        {
+          "text": "x86",
+          "correct": false,
+          "explanation": "Нет — Docker использует имя архитектуры amd64"
+        },
+        {
+          "text": "amd64",
+          "correct": true,
+          "explanation": "Верно! Лабораторная VM работает на x86_64/amd64"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker image inspect nginx:alpine</code>. Какое значение указано в поле <code>Architecture</code>?</p>\n<pre><code>docker image inspect nginx:alpine</code></pre>\n<ul>\n<li>arm64 [Нет — это архитектура ARM]</li>\n<li>linux [Нет — это значение поля Os, а не Architecture]</li>\n<li>x86 [Нет — Docker использует имя архитектуры amd64]</li>\n<li>+amd64 [Верно! Лабораторная VM работает на x86_64/amd64]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "История слоёв образа",
+      "taskid": "dock_lab2_t7_history",
+      "hint": "",
+      "question_html": "<p>Какая команда запуска по умолчанию удерживает nginx в foreground внутри официального образа <code>nginx:alpine</code>?</p>",
+      "options": [
+        {
+          "text": "<code>nginx -g 'daemon off;'</code>",
+          "correct": true,
+          "explanation": "Верно! Контейнер должен держать главный процесс в foreground"
+        },
+        {
+          "text": "<code>systemctl start nginx</code>",
+          "correct": false,
+          "explanation": "Нет — в контейнере обычно нет systemd"
+        },
+        {
+          "text": "<code>service nginx start</code>",
+          "correct": false,
+          "explanation": "Нет — это init/service-wrapper подход, не основной процесс контейнера"
+        },
+        {
+          "text": "<code>nginx</code> без параметров",
+          "correct": false,
+          "explanation": "Нет — nginx уйдёт в daemon mode, а контейнеру нужен foreground-процесс"
+        }
+      ],
+      "raw_description": "<p>Какая команда запуска по умолчанию удерживает nginx в foreground внутри официального образа <code>nginx:alpine</code>?</p><ul>\n<li>+<code>nginx -g 'daemon off;'</code> [Верно! Контейнер должен держать главный процесс в foreground]</li>\n<li><code>systemctl start nginx</code> [Нет — в контейнере обычно нет systemd]</li>\n<li><code>service nginx start</code> [Нет — это init/service-wrapper подход, не основной процесс контейнера]</li>\n<li><code>nginx</code> без параметров [Нет — nginx уйдёт в daemon mode, а контейнеру нужен foreground-процесс]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем нужен .dockerignore?",
+      "taskid": "dock_lab2_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Для чего используется файл <code>.dockerignore</code>?</p>",
+      "options": [
+        {
+          "text": "Запретить создание контейнеров из образа",
+          "correct": false,
+          "explanation": "Нет — такой функции нет"
+        },
+        {
+          "text": "Исключить файлы и директории из контекста сборки, чтобы не отправлять их Docker-демону",
+          "correct": true,
+          "explanation": "Верно! Без .dockerignore node_modules, .git и .env могут попасть в контекст и образ"
+        },
+        {
+          "text": "Описать какие образы нельзя использовать как базовые",
+          "correct": false,
+          "explanation": "Нет — это не задача .dockerignore"
+        },
+        {
+          "text": "Указать какие слои кэшировать",
+          "correct": false,
+          "explanation": "Нет — кэш управляется порядком инструкций в Dockerfile"
+        }
+      ],
+      "raw_description": "<p>Для чего используется файл <code>.dockerignore</code>?</p><ul>\n<li>Запретить создание контейнеров из образа [Нет — такой функции нет]</li>\n<li>+Исключить файлы и директории из контекста сборки, чтобы не отправлять их Docker-демону [Верно! Без .dockerignore node_modules, .git и .env могут попасть в контекст и образ]</li>\n<li>Описать какие образы нельзя использовать как базовые [Нет — это не задача .dockerignore]</li>\n<li>Указать какие слои кэшировать [Нет — кэш управляется порядком инструкций в Dockerfile]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить образ",
+      "taskid": "dock_lab2_t9_rmi",
+      "hint": "<p>Используй <code>docker rmi</code> для удаления тега образа. Перед удалением проверь, что указываешь именно тег, а не контейнер.</p>\n<p>Команда <code>docker rmi</code> удаляет образ из локального хранилища. Если образ используется работающим контейнером — команда завершится с ошибкой.</p>\n<p>Флаг <code>-f</code> принудительно удаляет образ, но здесь лучше сначала убедиться, что образ не используется работающим контейнером.</p>",
+      "question_html": "<p>Удали образ <code>myredis:v1</code>, созданный в задаче 5.</p>",
+      "options": [],
+      "raw_description": "<p>Удали образ <code>myredis:v1</code>, созданный в задаче 5.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Список образов в своём формате",
+      "taskid": "dock_lab2_t10_format",
+      "hint": "<p>Флаг <code>--format</code> позволяет управлять выводом с помощью Go-шаблонов. Доступные поля: .Repository, .Tag, .ID, .Size, .CreatedSince и другие.</p>",
+      "question_html": "<p>Выполни <code>docker image ls --format '{{.Repository}}:{{.Tag}}'</code>. Какая строка образа nginx в таком выводе?</p>",
+      "options": [
+        {
+          "text": "nginx:latest",
+          "correct": false,
+          "explanation": "Нет — в подготовке используется тег alpine"
+        },
+        {
+          "text": "redis:latest",
+          "correct": false,
+          "explanation": "Нет — redis в этой лабораторной используется с тегом alpine"
+        },
+        {
+          "text": "nginx:alpine",
+          "correct": true,
+          "explanation": "Верно! Формат repository:tag выводит nginx:alpine одной строкой"
+        },
+        {
+          "text": "myredis:v1",
+          "correct": false,
+          "explanation": "Нет — этот тег был удалён в предыдущей задаче"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker image ls --format '{{.Repository}}:{{.Tag}}'</code>. Какая строка образа nginx в таком выводе?</p>\n<ul>\n<li>nginx:latest [Нет — в подготовке используется тег alpine]</li>\n<li>redis:latest [Нет — redis в этой лабораторной используется с тегом alpine]</li>\n<li>+nginx:alpine [Верно! Формат repository:tag выводит nginx:alpine одной строкой]</li>\n<li>myredis:v1 [Нет — этот тег был удалён в предыдущей задаче]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab2/setup.yaml"
+}

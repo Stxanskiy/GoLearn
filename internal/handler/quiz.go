@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -10,11 +11,12 @@ import (
 )
 
 type QuizPageData struct {
-	PageTitle string
-	Module    *model.Module
-	Lesson    *model.Lesson
-	Quiz      *model.Quiz
-	Questions []model.QuizQuestion
+	PageTitle     string
+	Module        *model.Module
+	Lesson        *model.Lesson
+	Quiz          *model.Quiz
+	Questions     []model.QuizQuestion
+	QuestionsJSON template.JS
 }
 
 type QuizResultData struct {
@@ -59,12 +61,26 @@ func (h *Handler) QuizPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Compact payload for client-side one-at-a-time checking.
+	type qpayload struct {
+		Q string   `json:"q"`
+		O []string `json:"o"`
+		C int      `json:"c"`
+		E string   `json:"e"`
+	}
+	payload := make([]qpayload, len(questions))
+	for i, q := range questions {
+		payload[i] = qpayload{Q: q.Question, O: q.Options, C: q.CorrectIndex, E: q.Explanation}
+	}
+	qjson, _ := json.Marshal(payload) // json.Marshal escapes <,>,& -> safe inside <script>
+
 	data := QuizPageData{
-		PageTitle: "Quiz: " + lesson.Title,
-		Module:    mod,
-		Lesson:    lesson,
-		Quiz:      quiz,
-		Questions: questions,
+		PageTitle:     "Квиз: " + lesson.Title,
+		Module:        mod,
+		Lesson:        lesson,
+		Quiz:          quiz,
+		Questions:     questions,
+		QuestionsJSON: template.JS(qjson),
 	}
 
 	h.render(w, "quiz", &data)

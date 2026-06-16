@@ -1,0 +1,103 @@
+{
+  "n": 18,
+  "id": "ch_pgsql_lab3",
+  "title": "Лабораторная 6: меняем данные и смотрим план",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Войти в psql и осмотреть базу",
+      "taskid": "pgsql_lab3_t1_enter",
+      "hint": "<p>В этой лабораторной уже есть учебные таблицы магазина. Новую таблицу ты создашь отдельно, не ломая исходные данные.</p>\n<pre><code>\\dt\n\\d orders</code></pre>",
+      "question_html": "<p>Открой <code>psql</code> в базе <code>shop</code>.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>Посмотри список таблиц и структуру заказов.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>psql</code> в базе <code>shop</code>.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>Посмотри список таблиц и структуру заказов.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать таблицу query_notes",
+      "taskid": "pgsql_lab3_t2_create_table",
+      "hint": "<p>Для <code>id</code> удобно использовать <code>serial PRIMARY KEY</code>, для <code>topic</code> и <code>note</code> — <code>text NOT NULL</code>. Колонка <code>completed</code> может быть <code>boolean NOT NULL DEFAULT false</code>, а дата — <code>date NOT NULL DEFAULT current_date</code>.</p>\n<pre><code>CREATE TABLE query_notes (\n  id serial PRIMARY KEY,\n  topic text NOT NULL,\n  note text NOT NULL,\n  completed boolean NOT NULL DEFAULT false,\n  created_at date NOT NULL DEFAULT current_date\n);</code></pre>\n<p>Затем psql-команда для просмотра структуры:</p>\n<pre><code>\\d query_notes</code></pre>",
+      "question_html": "<p>Создай таблицу <code>query_notes</code> для заметок по SQL.</p>\n<p>В таблице должны быть колонки <code>id</code>, <code>topic</code>, <code>note</code>, <code>completed</code> и <code>created_at</code>. После создания посмотри структуру.</p>",
+      "options": [],
+      "raw_description": "<p>Создай таблицу <code>query_notes</code> для заметок по SQL.</p>\n<p>В таблице должны быть колонки <code>id</code>, <code>topic</code>, <code>note</code>, <code>completed</code> и <code>created_at</code>. После создания посмотри структуру.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить три заметки",
+      "taskid": "pgsql_lab3_t3_insert_notes",
+      "hint": "<p>Используй <code>INSERT INTO query_notes (topic, note) VALUES (...), (...), (...)</code>. Проверка смотрит на количество строк и темы: <code>select</code>, <code>join</code>, <code>transaction</code>.</p>\n<pre><code>INSERT INTO query_notes (topic, note)\nVALUES\n  ('select', 'SELECT reads table rows'),\n  ('join', 'JOIN connects tables'),\n  ('transaction', 'Transaction groups changes');\n\nSELECT topic, note, completed\nFROM query_notes\nORDER BY topic;</code></pre>",
+      "question_html": "<p>Добавь три строки в <code>query_notes</code> с темами <code>select</code>, <code>join</code> и <code>transaction</code>.</p>\n<p>Текст заметок можешь написать своими словами. После вставки проверь колонки <code>topic</code>, <code>note</code> и <code>completed</code>, порядок — по теме.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь три строки в <code>query_notes</code> с темами <code>select</code>, <code>join</code> и <code>transaction</code>.</p>\n<p>Текст заметок можешь написать своими словами. После вставки проверь колонки <code>topic</code>, <code>note</code> и <code>completed</code>, порядок — по теме.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить две заметки",
+      "taskid": "pgsql_lab3_t4_update_notes",
+      "hint": "<p>Нужен <code>UPDATE query_notes SET completed = true</code> с условием по темам. После изменения проверь строки отдельным <code>SELECT</code>.</p>\n<pre><code>UPDATE query_notes\nSET completed = true\nWHERE topic IN ('select', 'join');\n\nSELECT id, topic, completed\nFROM query_notes\nORDER BY topic;</code></pre>",
+      "question_html": "<p>Отметь заметки <code>select</code> и <code>join</code> как выполненные:</p>\n<p>После обновления выведи колонки <code>id</code>, <code>topic</code> и <code>completed</code>, чтобы увидеть результат. Отсортируй строки по теме.</p>",
+      "options": [],
+      "raw_description": "<p>Отметь заметки <code>select</code> и <code>join</code> как выполненные:</p>\n<p>После обновления выведи колонки <code>id</code>, <code>topic</code> и <code>completed</code>, чтобы увидеть результат. Отсортируй строки по теме.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить невыполненную заметку",
+      "taskid": "pgsql_lab3_t5_delete_note",
+      "hint": "<p><code>DELETE</code> без <code>WHERE</code> удалит всё. Здесь условие должно выбирать только строки, где <code>completed = false</code>. После удаления проверь результат через <code>SELECT</code>.</p>\n<pre><code>SELECT *\nFROM query_notes\nWHERE completed = false;\n\nDELETE FROM query_notes\nWHERE completed = false;\n\nSELECT id, topic, completed\nFROM query_notes\nORDER BY topic;</code></pre>",
+      "question_html": "<p>Удали невыполненные заметки. Сначала проверь, какие строки ещё не выполнены.</p>\n<p>Затем удали невыполненную заметку и проверь, что остались только выполненные строки.</p>",
+      "options": [],
+      "raw_description": "<p>Удали невыполненные заметки. Сначала проверь, какие строки ещё не выполнены.</p>\n<p>Затем удали невыполненную заметку и проверь, что остались только выполненные строки.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Попробовать ROLLBACK",
+      "taskid": "pgsql_lab3_t6_rollback",
+      "hint": "<p><code>COMMIT</code> сохраняет изменения, <code>ROLLBACK</code> отменяет изменения текущей транзакции.</p>\n<pre><code>BEGIN;\nINSERT INTO query_notes (topic, note)\nVALUES ('rollback', 'Эта строка будет отменена');\nSELECT count(*) FROM query_notes;\nROLLBACK;\nSELECT count(*) FROM query_notes;</code></pre>",
+      "question_html": "<p>Проверь, как работает откат транзакции.</p>\n<p>Транзакция — это блок действий с данными. <code>BEGIN</code> начинает блок, <code>COMMIT</code> сохраняет изменения, а <code>ROLLBACK</code> отменяет изменения, которые ещё не были сохранены.</p>\n<p>Начни транзакцию, добавь временную строку в <code>query_notes</code>, посчитай строки внутри транзакции, затем откати транзакцию и посчитай строки ещё раз.</p>\n<p>После <code>ROLLBACK</code> количество строк должно вернуться к прежнему значению.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, как работает откат транзакции.</p>\n<p>Транзакция — это блок действий с данными. <code>BEGIN</code> начинает блок, <code>COMMIT</code> сохраняет изменения, а <code>ROLLBACK</code> отменяет изменения, которые ещё не были сохранены.</p>\n<p>Начни транзакцию, добавь временную строку в <code>query_notes</code>, посчитай строки внутри транзакции, затем откати транзакцию и посчитай строки ещё раз.</p>\n<p>После <code>ROLLBACK</code> количество строк должно вернуться к прежнему значению.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Клиенты с открытыми обращениями",
+      "taskid": "pgsql_lab3_t7_open_ticket_view",
+      "hint": "<p>Связь таблиц: <code>support_tickets.customer_id = customers.id</code>. Фильтр открытых обращений: <code>WHERE t.status = 'open'</code>.</p>\n<pre><code>SELECT\n  c.id AS customer_id,\n  c.full_name,\n  t.subject,\n  t.created_at\nFROM customers AS c\nJOIN support_tickets AS t ON t.customer_id = c.id\nWHERE t.status = 'open'\nORDER BY c.id;</code></pre>",
+      "question_html": "<p>Соедини <code>customers</code> с <code>support_tickets</code> и оставь только открытые обращения.</p>\n<p>Нужны колонки <code>customer_id</code>, <code>full_name</code>, <code>subject</code>, <code>created_at</code>.</p>\n<p>Связь таблиц идёт по клиенту. Отфильтруй только обращения со статусом <code>open</code>, отсортируй по клиенту.</p>\n<p>Посмотри, какие клиенты сейчас имеют открытые обращения. Закрытые обращения отсекаются условием <code>WHERE t.status = 'open'</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Соедини <code>customers</code> с <code>support_tickets</code> и оставь только открытые обращения.</p>\n<p>Нужны колонки <code>customer_id</code>, <code>full_name</code>, <code>subject</code>, <code>created_at</code>.</p>\n<p>Связь таблиц идёт по клиенту. Отфильтруй только обращения со статусом <code>open</code>, отсортируй по клиенту.</p>\n<p>Посмотри, какие клиенты сейчас имеют открытые обращения. Закрытые обращения отсекаются условием <code>WHERE t.status = 'open'</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать индекс по дате заказа",
+      "taskid": "pgsql_lab3_t8_create_index",
+      "hint": "<p>Синтаксис: <code>CREATE INDEX имя_индекса ON имя_таблицы(имя_колонки)</code>. Здесь имя индекса должно быть <code>idx_orders_created_at</code>.</p>\n<pre><code>CREATE INDEX idx_orders_created_at\nON orders(created_at);</code></pre>\n<p>Затем psql-команда для просмотра структуры:</p>\n<pre><code>\\d orders</code></pre>",
+      "question_html": "<p>Создай индекс <code>idx_orders_created_at</code> по колонке <code>orders.created_at</code>.</p>\n<p>После создания можно проверить список индексов таблицы <code>orders</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай индекс <code>idx_orders_created_at</code> по колонке <code>orders.created_at</code>.</p>\n<p>После создания можно проверить список индексов таблицы <code>orders</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть план запроса",
+      "taskid": "pgsql_lab3_t9_explain",
+      "hint": "<p><code>EXPLAIN</code> показывает план, но не меняет данные.</p>\n<pre><code>EXPLAIN\nSELECT id, customer_id, status, created_at\nFROM orders\nWHERE created_at &gt;= '2026-05-10'\nORDER BY created_at;</code></pre>",
+      "question_html": "<p>Посмотри план запроса по дате.</p>\n<p>Запрос должен читать из <code>orders</code> колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>, оставлять строки начиная с <code>2026-05-10</code> и сортировать по дате.</p>\n<p>На маленькой учебной таблице PostgreSQL может выбрать обычное чтение таблицы. Это нормально: индекс полезнее на больших данных.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри план запроса по дате.</p>\n<p>Запрос должен читать из <code>orders</code> колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>, оставлять строки начиная с <code>2026-05-10</code> и сортировать по дате.</p>\n<p>На маленькой учебной таблице PostgreSQL может выбрать обычное чтение таблицы. Это нормально: индекс полезнее на больших данных.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Финальная самопроверка",
+      "taskid": "pgsql_lab3_t10_final_check",
+      "hint": "<p>Это задание без автоматической проверки: проверь три признака — две выполненные заметки в <code>query_notes</code>, только открытые обращения в запросе по тикетам и индекс <code>idx_orders_created_at</code> в структуре <code>orders</code>.</p>\n<p>Сначала обычные SQL-запросы:</p>\n<pre><code>SELECT * FROM query_notes ORDER BY id;\n\nSELECT c.id AS customer_id, c.full_name, t.subject, t.created_at\nFROM customers AS c\nJOIN support_tickets AS t ON t.customer_id = c.id\nWHERE t.status = 'open'\nORDER BY c.id;</code></pre>\n<p>Затем psql-команды для просмотра структуры:</p>\n<pre><code>\\d query_notes\n\\d orders</code></pre>",
+      "question_html": "<p>Еще раз посмотри на данные и служебные таблицы.</p>\n<p>Проверь строки в своей таблице <code>query_notes</code>, повтори запрос по открытым обращениям из задачи 7 и посмотри структуру таблиц <code>query_notes</code> и <code>orders</code>.</p>\n<p>Ожидаемо: в <code>query_notes</code> осталось две выполненные заметки, запрос по открытым обращениям возвращает только открытые тикеты, а у <code>orders</code> появился индекс по <code>created_at</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Еще раз посмотри на данные и служебные таблицы.</p>\n<p>Проверь строки в своей таблице <code>query_notes</code>, повтори запрос по открытым обращениям из задачи 7 и посмотри структуру таблиц <code>query_notes</code> и <code>orders</code>.</p>\n<p>Ожидаемо: в <code>query_notes</code> осталось две выполненные заметки, запрос по открытым обращениям возвращает только открытые тикеты, а у <code>orders</code> появился индекс по <code>created_at</code>.</p>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab3/setup.yaml"
+}

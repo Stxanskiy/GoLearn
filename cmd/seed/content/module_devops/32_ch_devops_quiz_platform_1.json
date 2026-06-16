@@ -1,0 +1,313 @@
+{
+  "n": 32,
+  "id": "ch_devops_quiz_platform_1",
+  "title": "Квиз: Platform Engineering",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "IDP определение",
+      "taskid": "plat_quiz1_t1_idp",
+      "hint": "",
+      "question_html": "<p>Internal Developer Platform (IDP) главная цель?</p>",
+      "options": [
+        {
+          "text": "Self-service без ожидания Ops",
+          "correct": true,
+          "explanation": "Верно! IDP снижает cognitive load и зависимость от другой команды"
+        },
+        {
+          "text": "Автоматизация HR процессов разработчиков (onboarding, offboarding)",
+          "correct": false,
+          "explanation": "Нет — IDP о технической платформе для разработки"
+        },
+        {
+          "text": "Контроль и аудит всех деплоев разработчиков",
+          "correct": false,
+          "explanation": "Нет — контроль это следствие; цель — ускорение и автономия команд"
+        },
+        {
+          "text": "Замена Kubernetes для упрощения инфраструктуры",
+          "correct": false,
+          "explanation": "Нет — IDP обычно строится поверх Kubernetes, не вместо него"
+        }
+      ],
+      "raw_description": "<p>Internal Developer Platform (IDP) главная цель?</p><ul>\n<li>+Self-service без ожидания Ops [Верно! IDP снижает cognitive load и зависимость от другой команды]</li>\n<li>Автоматизация HR процессов разработчиков (onboarding, offboarding) [Нет — IDP о технической платформе для разработки]</li>\n<li>Контроль и аудит всех деплоев разработчиков [Нет — контроль это следствие; цель — ускорение и автономия команд]</li>\n<li>Замена Kubernetes для упрощения инфраструктуры [Нет — IDP обычно строится поверх Kubernetes, не вместо него]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Platform as a Product",
+      "taskid": "plat_quiz1_t2_product",
+      "hint": "",
+      "question_html": "<p>Что означает подход \"Platform as a Product\"?</p>",
+      "options": [
+        {
+          "text": "Использовать Agile методологию для разработки платформы",
+          "correct": false,
+          "explanation": "Agile важен, но не определяет \"platform as a product\""
+        },
+        {
+          "text": "Продавать платформу внешним клиентам как SaaS",
+          "correct": false,
+          "explanation": "Нет — IDP это внутренний продукт; \"product mindset\" для внутренних клиентов"
+        },
+        {
+          "text": "Платформа как продукт для внутренних разработчиков",
+          "correct": true,
+          "explanation": "Верно! Platform team должна думать как product team: discovery, delivery, iteration"
+        },
+        {
+          "text": "Платформа должна приносить прибыль как отдельный бизнес",
+          "correct": false,
+          "explanation": "Нет — ценность IDP косвенная — ускорение других команд"
+        }
+      ],
+      "raw_description": "<p>Что означает подход \"Platform as a Product\"?</p><ul>\n<li>Использовать Agile методологию для разработки платформы [Agile важен, но не определяет \"platform as a product\"]</li>\n<li>Продавать платформу внешним клиентам как SaaS [Нет — IDP это внутренний продукт; \"product mindset\" для внутренних клиентов]</li>\n<li>+Платформа как продукт для внутренних разработчиков [Верно! Platform team должна думать как product team: discovery, delivery, iteration]</li>\n<li>Платформа должна приносить прибыль как отдельный бизнес [Нет — ценность IDP косвенная — ускорение других команд]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Golden Path",
+      "taskid": "plat_quiz1_t3_golden_path",
+      "hint": "",
+      "question_html": "<p>В чём отличие Golden Path от Mandate (обязательных стандартов)?</p>",
+      "options": [
+        {
+          "text": "Mandate устарел — современные компании используют только golden path",
+          "correct": false,
+          "explanation": "Нет — Mandate применим для security и compliance требований"
+        },
+        {
+          "text": "Golden Path только для junior разработчиков, Mandate для senior",
+          "correct": false,
+          "explanation": "Нет — golden path для всех; senior тоже используют рекомендованный путь"
+        },
+        {
+          "text": "Они синонимы — оба означают стандарт",
+          "correct": false,
+          "explanation": "Нет — ключевая разница в наличии/отсутствии выбора"
+        },
+        {
+          "text": "Golden Path удобен; Mandate обязателен",
+          "correct": true,
+          "explanation": "Верно! Spotify: \"мы не мандатируем, мы рекомендуем\". Команды \"притягиваются\" к golden path, а не \"принуждаются\""
+        }
+      ],
+      "raw_description": "<p>В чём отличие Golden Path от Mandate (обязательных стандартов)?</p><ul>\n<li>Mandate устарел — современные компании используют только golden path [Нет — Mandate применим для security и compliance требований]</li>\n<li>Golden Path только для junior разработчиков, Mandate для senior [Нет — golden path для всех; senior тоже используют рекомендованный путь]</li>\n<li>Они синонимы — оба означают стандарт [Нет — ключевая разница в наличии/отсутствии выбора]</li>\n<li>+Golden Path удобен; Mandate обязателен [Верно! Spotify: \"мы не мандатируем, мы рекомендуем\". Команды \"притягиваются\" к golden path, а не \"принуждаются\"]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "IaC идемпотентность",
+      "taskid": "plat_quiz1_t4_idempotent",
+      "hint": "",
+      "question_html": "<p>Что такое идемпотентность в контексте IaC?</p>",
+      "options": [
+        {
+          "text": "Код работает одинаково на разных операционных системах",
+          "correct": false,
+          "explanation": "Нет — это кросс-платформенность, не идемпотентность"
+        },
+        {
+          "text": "Повторный запуск даёт тот же результат",
+          "correct": true,
+          "explanation": "Верно! terraform apply можно запустить 100 раз — будет один и тот же результат если конфигурация не менялась"
+        },
+        {
+          "text": "Инфраструктура не изменяется со временем",
+          "correct": false,
+          "explanation": "Нет — это immutability; идемпотентность о повторных применениях"
+        },
+        {
+          "text": "IaC код проходит тесты при каждом запуске",
+          "correct": false,
+          "explanation": "Нет — тестирование это отдельная практика"
+        }
+      ],
+      "raw_description": "<p>Что такое идемпотентность в контексте IaC?</p><ul>\n<li>Код работает одинаково на разных операционных системах [Нет — это кросс-платформенность, не идемпотентность]</li>\n<li>+Повторный запуск даёт тот же результат [Верно! terraform apply можно запустить 100 раз — будет один и тот же результат если конфигурация не менялась]</li>\n<li>Инфраструктура не изменяется со временем [Нет — это immutability; идемпотентность о повторных применениях]</li>\n<li>IaC код проходит тесты при каждом запуске [Нет — тестирование это отдельная практика]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Backstage",
+      "taskid": "plat_quiz1_t5_backstage",
+      "hint": "",
+      "question_html": "<p>Что такое Backstage (от Spotify) и зачем он нужен?</p>",
+      "options": [
+        {
+          "text": "CI/CD система от Spotify",
+          "correct": false,
+          "explanation": "Нет — Backstage это portal/catalog; CI/CD это отдельные инструменты"
+        },
+        {
+          "text": "Developer Portal для сервисов, docs и шаблонов",
+          "correct": true,
+          "explanation": "Верно! Backstage решает проблему \"я не знаю где найти X\" в крупных компаниях"
+        },
+        {
+          "text": "Kubernetes dashboard аналог Lens",
+          "correct": false,
+          "explanation": "Нет — Backstage шире; включает service catalog, templates, TechDocs и плагины"
+        },
+        {
+          "text": "Инструмент для A/B тестирования UI компонентов",
+          "correct": false,
+          "explanation": "Нет — Backstage.io для developer portals; Spotify также делают Backstage для музыки — разные продукты"
+        }
+      ],
+      "raw_description": "<p>Что такое Backstage (от Spotify) и зачем он нужен?</p><ul>\n<li>CI/CD система от Spotify [Нет — Backstage это portal/catalog; CI/CD это отдельные инструменты]</li>\n<li>+Developer Portal для сервисов, docs и шаблонов [Верно! Backstage решает проблему \"я не знаю где найти X\" в крупных компаниях]</li>\n<li>Kubernetes dashboard аналог Lens [Нет — Backstage шире; включает service catalog, templates, TechDocs и плагины]</li>\n<li>Инструмент для A/B тестирования UI компонентов [Нет — Backstage.io для developer portals; Spotify также делают Backstage для музыки — разные продукты]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Mutable vs Immutable",
+      "taskid": "plat_quiz1_t6_immutable",
+      "hint": "",
+      "question_html": "<p>В чём преимущество Immutable Infrastructure перед Mutable?</p>",
+      "options": [
+        {
+          "text": "Immutable лучше для stateful приложений",
+          "correct": false,
+          "explanation": "Нет — immutable сложнее для stateful; нужно отделять данные от compute"
+        },
+        {
+          "text": "Дешевле в обслуживании",
+          "correct": false,
+          "explanation": "Нет — immutable требует Pipeline для пересборки образов; стоимость сопоставима"
+        },
+        {
+          "text": "Immutable серверы быстрее работают",
+          "correct": false,
+          "explanation": "Нет — runtime производительность не связана с mutability"
+        },
+        {
+          "text": "Нет drift: пересоздание из образа",
+          "correct": true,
+          "explanation": "Верно! Пересозданный из того же образа сервер идентичен оригиналу; изменённый \"на месте\" — нет"
+        }
+      ],
+      "raw_description": "<p>В чём преимущество Immutable Infrastructure перед Mutable?</p><ul>\n<li>Immutable лучше для stateful приложений [Нет — immutable сложнее для stateful; нужно отделять данные от compute]</li>\n<li>Дешевле в обслуживании [Нет — immutable требует Pipeline для пересборки образов; стоимость сопоставима]</li>\n<li>Immutable серверы быстрее работают [Нет — runtime производительность не связана с mutability]</li>\n<li>+Нет drift: пересоздание из образа [Верно! Пересозданный из того же образа сервер идентичен оригиналу; изменённый \"на месте\" — нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Cognitive load снижение",
+      "taskid": "plat_quiz1_t7_cognitive",
+      "hint": "",
+      "question_html": "<p>Разработчик чтобы задеплоить сервис должен знать: Kubernetes, Helm, Terraform, Vault, Prometheus, Grafana. Это пример...</p>",
+      "options": [
+        {
+          "text": "Требования для DevOps роли",
+          "correct": false,
+          "explanation": "Нет — DevOps engineer может знать все это; но разработчикам не нужно"
+        },
+        {
+          "text": "Нормального стека для senior разработчика",
+          "correct": false,
+          "explanation": "Нет — даже seniors выигрывают от снижения cognitive load; это позволяет фокусироваться на бизнес-логике"
+        },
+        {
+          "text": "Преимущества богатой экосистемы инструментов",
+          "correct": false,
+          "explanation": "Нет — разнообразие инструментов без абстракции это проблема, не преимущество"
+        },
+        {
+          "text": "Чрезмерная cognitive load, нужна платформа",
+          "correct": true,
+          "explanation": "Верно! Разработчик хочет деплоить приложение, а не изучать 6 инструментов платформы"
+        }
+      ],
+      "raw_description": "<p>Разработчик чтобы задеплоить сервис должен знать: Kubernetes, Helm, Terraform, Vault, Prometheus, Grafana. Это пример...</p><ul>\n<li>Требования для DevOps роли [Нет — DevOps engineer может знать все это; но разработчикам не нужно]</li>\n<li>Нормального стека для senior разработчика [Нет — даже seniors выигрывают от снижения cognitive load; это позволяет фокусироваться на бизнес-логике]</li>\n<li>Преимущества богатой экосистемы инструментов [Нет — разнообразие инструментов без абстракции это проблема, не преимущество]</li>\n<li>+Чрезмерная cognitive load, нужна платформа [Верно! Разработчик хочет деплоить приложение, а не изучать 6 инструментов платформы]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Self-service уровни",
+      "taskid": "plat_quiz1_t8_self_service",
+      "hint": "",
+      "question_html": "<p>Компания хочет внедрить IDP. С чего начать?</p>",
+      "options": [
+        {
+          "text": "Начать с переписывания всей инфраструктуры в Terraform",
+          "correct": false,
+          "explanation": "Нет — IaC важен, но IDP шире; и начинать нужно с проблем, не с технологий"
+        },
+        {
+          "text": "Купить готовую IDP платформу (Humanitec, Porter) и внедрить",
+          "correct": false,
+          "explanation": "Нет — без понимания реальных потребностей даже хороший инструмент не решит проблему"
+        },
+        {
+          "text": "Начать с боли разработчиков и автоматизировать ожидание",
+          "correct": true,
+          "explanation": "Верно! IDP строится от реальных потребностей; сначала discovery, потом решение"
+        },
+        {
+          "text": "Создать Platform team из 10 человек сразу",
+          "correct": false,
+          "explanation": "Нет — начинать нужно с малого: 2-3 человека, выявить ценность, масштабировать"
+        }
+      ],
+      "raw_description": "<p>Компания хочет внедрить IDP. С чего начать?</p><ul>\n<li>Начать с переписывания всей инфраструктуры в Terraform [Нет — IaC важен, но IDP шире; и начинать нужно с проблем, не с технологий]</li>\n<li>Купить готовую IDP платформу (Humanitec, Porter) и внедрить [Нет — без понимания реальных потребностей даже хороший инструмент не решит проблему]</li>\n<li>+Начать с боли разработчиков и автоматизировать ожидание [Верно! IDP строится от реальных потребностей; сначала discovery, потом решение]</li>\n<li>Создать Platform team из 10 человек сразу [Нет — начинать нужно с малого: 2-3 человека, выявить ценность, масштабировать]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Terraform state",
+      "taskid": "plat_quiz1_t9_terraform",
+      "hint": "",
+      "question_html": "<p>Зачем Terraform state файл нужно хранить удалённо (S3, Terraform Cloud)?</p>",
+      "options": [
+        {
+          "text": "Общий state и lock для командной работы",
+          "correct": true,
+          "explanation": "Верно! Локальный state у одного инженера = другие не знают о созданных ресурсах"
+        },
+        {
+          "text": "S3 хранилище быстрее локального диска",
+          "correct": false,
+          "explanation": "Нет — скорость не главная причина; state файлы небольшие"
+        },
+        {
+          "text": "Terraform не работает без удалённого backend",
+          "correct": false,
+          "explanation": "Нет — Terraform работает с локальным state; remote backend опциональный но рекомендованный"
+        },
+        {
+          "text": "Для шифрования sensitive данных в state",
+          "correct": false,
+          "explanation": "Шифрование важно, но это дополнительная причина; главное — командная работа"
+        }
+      ],
+      "raw_description": "<p>Зачем Terraform state файл нужно хранить удалённо (S3, Terraform Cloud)?</p><ul>\n<li>+Общий state и lock для командной работы [Верно! Локальный state у одного инженера = другие не знают о созданных ресурсах]</li>\n<li>S3 хранилище быстрее локального диска [Нет — скорость не главная причина; state файлы небольшие]</li>\n<li>Terraform не работает без удалённого backend [Нет — Terraform работает с локальным state; remote backend опциональный но рекомендованный]</li>\n<li>Для шифрования sensitive данных в state [Шифрование важно, но это дополнительная причина; главное — командная работа]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Time to first deploy",
+      "taskid": "plat_quiz1_t10_ttfd",
+      "hint": "",
+      "question_html": "<p>Почему \"Time to First Deploy\" (новый разработчик → production commit) важная метрика для IDP?</p>",
+      "options": [
+        {
+          "text": "Измеряет качество обучающих программ",
+          "correct": false,
+          "explanation": "Нет — обучение влияет, но TTFD в первую очередь о сложности платформы"
+        },
+        {
+          "text": "Показывает скорость найма в компании",
+          "correct": false,
+          "explanation": "Нет — TTFD о платформе, не о HR процессах"
+        },
+        {
+          "text": "Используется для оценки performance нового разработчика",
+          "correct": false,
+          "explanation": "Нет — TTFD о платформе, не об оценке людей"
+        },
+        {
+          "text": "Показывает onboarding friction платформы",
+          "correct": true,
+          "explanation": "Верно! Новый разработчик — \"свежий взгляд\"; если ему трудно, опытным просто уже привычно терпеть сложность"
+        }
+      ],
+      "raw_description": "<p>Почему \"Time to First Deploy\" (новый разработчик → production commit) важная метрика для IDP?</p><ul>\n<li>Измеряет качество обучающих программ [Нет — обучение влияет, но TTFD в первую очередь о сложности платформы]</li>\n<li>Показывает скорость найма в компании [Нет — TTFD о платформе, не о HR процессах]</li>\n<li>Используется для оценки performance нового разработчика [Нет — TTFD о платформе, не об оценке людей]</li>\n<li>+Показывает onboarding friction платформы [Верно! Новый разработчик — \"свежий взгляд\"; если ему трудно, опытным просто уже привычно терпеть сложность]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

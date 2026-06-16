@@ -19,6 +19,17 @@ func registrationOpen() bool {
 	return os.Getenv("REGISTRATION_OPEN") == "true"
 }
 
+// adminEmails returns the set of emails granted admin via ADMIN_EMAILS env.
+func adminEmails() map[string]bool {
+	set := make(map[string]bool)
+	for _, e := range strings.Split(os.Getenv("ADMIN_EMAILS"), ",") {
+		if e = strings.ToLower(strings.TrimSpace(e)); e != "" {
+			set[e] = true
+		}
+	}
+	return set
+}
+
 func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip auth for login/register pages
@@ -40,6 +51,13 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 			http.SetCookie(w, &http.Cookie{Name: "session", Value: "", MaxAge: -1, Path: "/"})
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
+		}
+
+		// Auto-promote configured emails to admin (ADMIN_EMAILS=a@x,b@y).
+		if !user.IsAdmin() && adminEmails()[strings.ToLower(user.Email)] {
+			if err := h.userRepo.SetRole(r.Context(), user.ID, "admin"); err == nil {
+				user.Role = "admin"
+			}
 		}
 
 		ctx := context.WithValue(r.Context(), userContextKey, user)

@@ -1,0 +1,119 @@
+{{define "simulator"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/simulators">Симуляторы</a> / <span>{{.Scenario.Title}}</span></div>
+<script id="sim-data" type="application/json">{{.ScenarioJSON}}</script>
+
+<div class="sim-wrap">
+    <div class="sim-head">
+        <div style="font-size:34px;">{{.Scenario.Icon}}</div>
+        <div><h1 style="font-size:1.5em;font-weight:800;">{{.Scenario.Title}}</h1>
+        <div class="muted" style="font-size:.88em;">Роль: {{.Scenario.Role}}</div></div>
+    </div>
+
+    <div class="sim-metrics" id="sim-metrics"></div>
+
+    <div id="sim-stage"></div>
+</div>
+
+<style>
+.sim-wrap { max-width:760px; margin:0 auto; }
+.sim-head { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.sim-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:20px; position:sticky; top:70px; z-index:5; }
+.sim-metric { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+.sim-metric .m-label { font-size:.74em; color:var(--text-muted); }
+.sim-metric .m-val { font-size:1.4em; font-weight:800; }
+.sim-metric .m-delta { font-size:.78em; font-weight:700; margin-left:6px; }
+.m-up { color:var(--green); } .m-down { color:var(--red); }
+.sim-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; animation:fadeIn .3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:none;} }
+.sim-turn-title { font-size:1.2em; font-weight:800; margin-bottom:10px; }
+.sim-situation { color:var(--text); line-height:1.6; margin-bottom:18px; }
+.sim-choice { display:block; width:100%; text-align:left; margin-bottom:10px; padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.96em; cursor:pointer; transition:all .15s; }
+.sim-choice:hover { border-color:var(--accent); transform:translateX(3px); }
+.sim-result { margin-top:6px; padding:14px 16px; border-radius:12px; background:var(--bg-elevated); border:1px solid rgba(110,168,255,.4); line-height:1.55; }
+.sim-progress { font-size:.8em; color:var(--text-muted); margin-bottom:10px; }
+.sim-verdict { font-size:1.3em; font-weight:800; margin-bottom:12px; }
+</style>
+
+<script>
+(function () {
+    var S = JSON.parse(document.getElementById('sim-data').textContent);
+    var state = {}, deltas = {};
+    S.metrics.forEach(function (m) { state[m.key] = m.start; });
+    var turn = 0;
+
+    var metricsEl = document.getElementById('sim-metrics');
+    var stageEl = document.getElementById('sim-stage');
+
+    function renderMetrics() {
+        metricsEl.innerHTML = S.metrics.map(function (m) {
+            var d = deltas[m.key] || 0;
+            var dh = d === 0 ? '' : '<span class="m-delta ' + ((d > 0) === m.higher ? 'm-up' : 'm-down') + '">' + (d > 0 ? '+' : '') + d + '</span>';
+            return '<div class="sim-metric"><div class="m-label">' + m.label + '</div><div class="m-val">' + state[m.key] + '<span style="font-size:.5em;color:var(--text-muted);"> ' + m.unit + '</span>' + dh + '</div></div>';
+        }).join('');
+    }
+
+    function intro() {
+        stageEl.innerHTML = '<div class="sim-card"><div class="sim-situation">' + escapeHtml(S.intro) + '</div>' +
+            '<button class="btn btn-primary" id="sim-start">Начать симуляцию →</button></div>';
+        document.getElementById('sim-start').onclick = function () { turn = 0; renderTurn(); };
+    }
+
+    function renderTurn() {
+        if (turn >= S.turns.length) return finish();
+        var t = S.turns[turn];
+        var html = '<div class="sim-card"><div class="sim-progress">Решение ' + (turn + 1) + ' из ' + S.turns.length + '</div>' +
+            '<div class="sim-turn-title">' + escapeHtml(t.title) + '</div>' +
+            '<div class="sim-situation">' + escapeHtml(t.situation) + '</div>';
+        t.choices.forEach(function (c, i) { html += '<button class="sim-choice" data-i="' + i + '">' + escapeHtml(c.text) + '</button>'; });
+        html += '</div>';
+        stageEl.innerHTML = html;
+        stageEl.querySelectorAll('.sim-choice').forEach(function (b) {
+            b.onclick = function () { choose(t.choices[+b.dataset.i]); };
+        });
+        renderMetrics();
+    }
+
+    function choose(c) {
+        deltas = {};
+        Object.keys(c.effects || {}).forEach(function (k) {
+            deltas[k] = c.effects[k];
+            state[k] = state[k] + c.effects[k];
+        });
+        renderMetrics();
+        stageEl.innerHTML = '<div class="sim-card"><div class="sim-result">' + escapeHtml(c.result) + '</div>' +
+            '<button class="btn btn-primary" id="sim-next" style="margin-top:16px;">Далее →</button></div>';
+        document.getElementById('sim-next').onclick = function () { turn++; deltas = {}; renderTurn(); };
+    }
+
+    function finish() {
+        deltas = {};
+        renderMetrics();
+        // simple score: normalized metrics (higher-better as-is, lower-better inverted)
+        var score = 0, n = 0;
+        S.metrics.forEach(function (m) { score += m.higher ? state[m.key] : (100 - state[m.key]); n++; });
+        var sat = state['satisfaction'] || 0, debt = state['techdebt'] || 100;
+        var verdict, sub;
+        if (sat >= 75 && debt <= 45) { verdict = '🏆 Отличный год!'; sub = 'Ты автоматизировал процессы, снял зависимость от одного человека и наладил надёжные релизы.'; }
+        else if (sat >= 55 && debt <= 65) { verdict = '👍 Достойно'; sub = 'Команда стабильна, но часть техдолга осталась — есть куда расти.'; }
+        else { verdict = '😬 Тяжёлый год'; sub = 'Ручные процессы и техдолг съели команду. В следующий раз инвестируй в автоматизацию раньше.'; }
+        stageEl.innerHTML = '<div class="sim-card"><div class="sim-verdict">' + verdict + '</div>' +
+            '<div class="sim-situation">' + sub + '</div>' +
+            '<button class="btn btn-outline" id="sim-restart">↻ Пройти заново</button> ' +
+            '<a class="btn btn-primary" href="/simulators">К симуляторам</a></div>';
+        document.getElementById('sim-restart').onclick = function () {
+            S.metrics.forEach(function (m) { state[m.key] = m.start; });
+            deltas = {}; turn = 0; renderMetrics(); renderTurn();
+        };
+    }
+
+    function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    renderMetrics();
+    intro();
+})();
+</script>
+{{end}}

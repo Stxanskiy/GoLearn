@@ -1,0 +1,157 @@
+{
+  "n": 2,
+  "id": "ch_ckad_lab1",
+  "title": "Лабораторная 1: Init и Sidecar containers",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Pod с Init Container",
+      "taskid": "ckad_lab1_t1_init",
+      "hint": "<p>Используй YAML-блоки <code>initContainers</code>, <code>containers</code>, <code>emptyDir</code> и <code>volumeMounts</code>. Оба контейнера должны монтировать volume <code>data</code> в <code>/data</code>.</p>\n<pre><code>volumeMounts:\n- name: data\n  mountPath: /data\nvolumes:\n- name: data\n  emptyDir: {}</code></pre>\n<p>Применяй манифест через <code>kubectl apply -f /root/init-pod.yaml</code>, результат проверяй через <code>kubectl logs init-pod -c app</code>.</p>",
+      "question_html": "<p>Создай Pod <code>init-pod</code> с init container <code>init-data</code>. Для init container и основного контейнера <code>app</code> используй образ <code>nginx:alpine</code>. Init container должен записать строку <code>init data</code> в файл <code>/data/init.txt</code> на общем <code>emptyDir</code> volume до старта основного контейнера. Основной контейнер <code>app</code> должен прочитать этот файл в лог и остаться запущенным.</p><p>Сохрани манифест в <code>/root/init-pod.yaml</code> и примени его в кластер.</p>\n<p>Для init container используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo init done; echo init data &gt; /data/init.txt\"]</code></pre>\n<p>Для основного контейнера <code>app</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"cat /data/init.txt; sleep 3600\"]</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>init-pod</code> с init container <code>init-data</code>. Для init container и основного контейнера <code>app</code> используй образ <code>nginx:alpine</code>. Init container должен записать строку <code>init data</code> в файл <code>/data/init.txt</code> на общем <code>emptyDir</code> volume до старта основного контейнера. Основной контейнер <code>app</code> должен прочитать этот файл в лог и остаться запущенным.</p><p>Сохрани манифест в <code>/root/init-pod.yaml</code> и примени его в кластер.</p>\n<p>Для init container используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo init done; echo init data &gt; /data/init.txt\"]</code></pre>\n<p>Для основного контейнера <code>app</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"cat /data/init.txt; sleep 3600\"]</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Проверить Init Container",
+      "taskid": "ckad_lab1_t2_init_check",
+      "hint": "",
+      "question_html": "<p>Посмотри логи init container:</p>\n<pre><code>kubectl logs init-pod -c init-data</code></pre>\n<p>Что пишет init container в лог?</p>",
+      "options": [
+        {
+          "text": "app started",
+          "correct": false,
+          "explanation": "Нет — это мог бы писать основной контейнер"
+        },
+        {
+          "text": "init done",
+          "correct": true,
+          "explanation": "Верно! init container пишет init done в stdout, затем записывает init data в /data/init.txt"
+        },
+        {
+          "text": "volume ready",
+          "correct": false,
+          "explanation": "Нет — такой строки нет в команде"
+        },
+        {
+          "text": "step1",
+          "correct": false,
+          "explanation": "Нет — это строки из multi-init Pod'а"
+        }
+      ],
+      "raw_description": "<p>Посмотри логи init container:</p>\n<pre><code>kubectl logs init-pod -c init-data</code></pre>\n<p>Что пишет init container в лог?</p><ul>\n<li>app started [Нет — это мог бы писать основной контейнер]</li>\n<li>+init done [Верно! init container пишет init done в stdout, затем записывает init data в /data/init.txt]</li>\n<li>volume ready [Нет — такой строки нет в команде]</li>\n<li>step1 [Нет — это строки из multi-init Pod'а]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать Pod с Sidecar",
+      "taskid": "ckad_lab1_t3_sidecar",
+      "hint": "<p>Используй два обычных контейнера в <code>spec.containers</code> и общий <code>emptyDir</code>. Оба контейнера должны монтировать volume <code>logs</code> в <code>/logs</code>.</p>\n<pre><code>volumeMounts:\n- name: logs\n  mountPath: /logs\nvolumes:\n- name: logs\n  emptyDir: {}</code></pre>\n<p>Применяй через <code>kubectl apply -f /root/sidecar-pod.yaml</code>, логи нужного контейнера смотри через <code>kubectl logs sidecar-pod -c log-reader</code>.</p>",
+      "question_html": "<p>Создай Pod <code>sidecar-pod</code> с контейнерами <code>app</code> и <code>log-reader</code>. Для обоих контейнеров используй образ <code>nginx:alpine</code>. Контейнер <code>app</code> должен писать строки <code>request</code> в <code>/logs/app.log</code> на общем <code>emptyDir</code> volume, а sidecar <code>log-reader</code> должен читать этот файл.</p><p>Сохрани манифест в <code>/root/sidecar-pod.yaml</code> и примени его в кластер.</p>\n<p>Для контейнера <code>app</code> используй готовую команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"touch /logs/app.log; while true; do echo request &gt;&gt; /logs/app.log; sleep 5; done\"]</code></pre>\n<p>Для sidecar-контейнера <code>log-reader</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"touch /logs/app.log; tail -F /logs/app.log\"]</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>sidecar-pod</code> с контейнерами <code>app</code> и <code>log-reader</code>. Для обоих контейнеров используй образ <code>nginx:alpine</code>. Контейнер <code>app</code> должен писать строки <code>request</code> в <code>/logs/app.log</code> на общем <code>emptyDir</code> volume, а sidecar <code>log-reader</code> должен читать этот файл.</p><p>Сохрани манифест в <code>/root/sidecar-pod.yaml</code> и примени его в кластер.</p>\n<p>Для контейнера <code>app</code> используй готовую команду:</p>\n<pre><code>command: [\"sh\", \"-c\", \"touch /logs/app.log; while true; do echo request &gt;&gt; /logs/app.log; sleep 5; done\"]</code></pre>\n<p>Для sidecar-контейнера <code>log-reader</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"touch /logs/app.log; tail -F /logs/app.log\"]</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть логи Sidecar",
+      "taskid": "ckad_lab1_t4_sidecar_logs",
+      "hint": "",
+      "question_html": "<p>Посмотри логи sidecar контейнера — он читает логи основного приложения:</p>\n<pre><code>kubectl logs sidecar-pod -c log-reader --tail=20</code></pre>\n<p>Убедись что видишь строки \"request\" — это основной контейнер пишет в общий volume, а sidecar их читает.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри логи sidecar контейнера — он читает логи основного приложения:</p>\n<pre><code>kubectl logs sidecar-pod -c log-reader --tail=20</code></pre>\n<p>Убедись что видишь строки \"request\" — это основной контейнер пишет в общий volume, а sidecar их читает.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Посмотреть все контейнеры Pod'а",
+      "taskid": "ckad_lab1_t5_containers",
+      "hint": "",
+      "question_html": "<p>Посмотри все контейнеры в Pod'е sidecar-pod:</p>\n<pre><code>kubectl get pod sidecar-pod -o jsonpath='{.spec.containers[*].name}'</code></pre>\n<p>Какие контейнеры запущены?</p>",
+      "options": [
+        {
+          "text": "app init-data",
+          "correct": false,
+          "explanation": "Нет — init-data это initContainer в другом Pod'е"
+        },
+        {
+          "text": "app log-reader init-data",
+          "correct": false,
+          "explanation": "Нет — init-data нет в sidecar-pod"
+        },
+        {
+          "text": "app log-reader",
+          "correct": true,
+          "explanation": "Верно! Pod содержит два контейнера: app и log-reader"
+        },
+        {
+          "text": "log-reader",
+          "correct": false,
+          "explanation": "Нет — есть и основной app контейнер"
+        }
+      ],
+      "raw_description": "<p>Посмотри все контейнеры в Pod'е sidecar-pod:</p>\n<pre><code>kubectl get pod sidecar-pod -o jsonpath='{.spec.containers[*].name}'</code></pre>\n<p>Какие контейнеры запущены?</p><ul>\n<li>app init-data [Нет — init-data это initContainer в другом Pod'е]</li>\n<li>app log-reader init-data [Нет — init-data нет в sidecar-pod]</li>\n<li>+app log-reader [Верно! Pod содержит два контейнера: app и log-reader]</li>\n<li>log-reader [Нет — есть и основной app контейнер]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать Pod с несколькими Init",
+      "taskid": "ckad_lab1_t6_multi_init",
+      "hint": "<p>Опиши несколько элементов в <code>initContainers</code>: они выполняются сверху вниз. Для общего файла используй один <code>emptyDir</code> volume <code>data</code> и одинаковые <code>volumeMounts</code> в <code>/data</code>.</p>\n<pre><code>volumeMounts:\n- name: data\n  mountPath: /data\nvolumes:\n- name: data\n  emptyDir: {}</code></pre>\n<p>Проверяй результат через <code>kubectl logs multi-init -c app</code>.</p>",
+      "question_html": "<p>Создай Pod <code>multi-init</code> с двумя init containers <code>step1</code> и <code>step2</code>, которые выполняются последовательно. Для init containers и основного контейнера <code>app</code> используй образ <code>nginx:alpine</code>. Они должны записать строки <code>step1</code> и <code>step2</code> в файлы на общем <code>emptyDir</code> volume, а основной контейнер <code>app</code> должен вывести обе строки в лог и остаться запущенным.</p><p>Сохрани манифест в <code>/root/multi-init.yaml</code> и примени его в кластер.</p>\n<p>Для init container <code>step1</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo step1 &gt; /data/step1\"]</code></pre>\n<p>Для init container <code>step2</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo step2 &gt; /data/step2\"]</code></pre>\n<p>Для основного контейнера <code>app</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"cat /data/step1 /data/step2; sleep 3600\"]</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>multi-init</code> с двумя init containers <code>step1</code> и <code>step2</code>, которые выполняются последовательно. Для init containers и основного контейнера <code>app</code> используй образ <code>nginx:alpine</code>. Они должны записать строки <code>step1</code> и <code>step2</code> в файлы на общем <code>emptyDir</code> volume, а основной контейнер <code>app</code> должен вывести обе строки в лог и остаться запущенным.</p><p>Сохрани манифест в <code>/root/multi-init.yaml</code> и примени его в кластер.</p>\n<p>Для init container <code>step1</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo step1 &gt; /data/step1\"]</code></pre>\n<p>Для init container <code>step2</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo step2 &gt; /data/step2\"]</code></pre>\n<p>Для основного контейнера <code>app</code> используй:</p>\n<pre><code>command: [\"sh\", \"-c\", \"cat /data/step1 /data/step2; sleep 3600\"]</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем Init Container?",
+      "taskid": "ckad_lab1_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Init container завершился с кодом 1 (ошибка). Что произойдёт с основным контейнером?</p>",
+      "options": [
+        {
+          "text": "Основной контейнер запустится без данных от init",
+          "correct": false,
+          "explanation": "Нет — kubernetes строго соблюдает порядок"
+        },
+        {
+          "text": "Pod перейдёт в статус Failed навсегда",
+          "correct": false,
+          "explanation": "Нет — init container будет перезапускаться по restartPolicy"
+        },
+        {
+          "text": "Init container игнорируется при ошибке",
+          "correct": false,
+          "explanation": "Нет — init containers обязательны"
+        },
+        {
+          "text": "Основной контейнер не запустится — Kubernetes будет перезапускать init container",
+          "correct": true,
+          "explanation": "Верно! Основные контейнеры запускаются только после успешного завершения ВСЕХ init containers"
+        }
+      ],
+      "raw_description": "<p>Init container завершился с кодом 1 (ошибка). Что произойдёт с основным контейнером?</p><ul>\n<li>Основной контейнер запустится без данных от init [Нет — kubernetes строго соблюдает порядок]</li>\n<li>Pod перейдёт в статус Failed навсегда [Нет — init container будет перезапускаться по restartPolicy]</li>\n<li>Init container игнорируется при ошибке [Нет — init containers обязательны]</li>\n<li>+Основной контейнер не запустится — Kubernetes будет перезапускать init container [Верно! Основные контейнеры запускаются только после успешного завершения ВСЕХ init containers]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Exec в конкретный контейнер",
+      "taskid": "ckad_lab1_t8_exec",
+      "hint": "<p>Если забыть <code>-c app</code>, <code>kubectl</code> может выбрать не тот контейнер или попросить уточнить имя контейнера.</p>",
+      "question_html": "<p>Выполни команду внутри контейнера <code>app</code> Pod'а <code>sidecar-pod</code> и посмотри, какой файл лежит в каталоге <code>/logs</code>.</p>\n<pre><code>kubectl exec sidecar-pod -c app -- sh -c 'ls /logs'</code></pre>\n<p>Ожидаемый файл — <code>app.log</code>. Здесь важна не догадка, а сам приём: <code>kubectl exec</code> с флагом <code>-c</code> выполняет команду в конкретном контейнере multi-container Pod'а.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду внутри контейнера <code>app</code> Pod'а <code>sidecar-pod</code> и посмотри, какой файл лежит в каталоге <code>/logs</code>.</p>\n<pre><code>kubectl exec sidecar-pod -c app -- sh -c 'ls /logs'</code></pre>\n<p>Ожидаемый файл — <code>app.log</code>. Здесь важна не догадка, а сам приём: <code>kubectl exec</code> с флагом <code>-c</code> выполняет команду в конкретном контейнере multi-container Pod'а.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Pod'ы",
+      "taskid": "ckad_lab1_t9_cleanup",
+      "hint": "<p>Затем проверь очистку через <code>kubectl get pods</code>. Если какой-то Pod уже удалён, это не ошибка для цели лабораторной.</p>",
+      "question_html": "<p>Удали тестовые Pod'ы <code>init-pod</code>, <code>sidecar-pod</code> и <code>multi-init</code>.</p>\n<pre><code>kubectl delete pod init-pod sidecar-pod multi-init --ignore-not-found</code></pre>",
+      "options": [],
+      "raw_description": "<p>Удали тестовые Pod'ы <code>init-pod</code>, <code>sidecar-pod</code> и <code>multi-init</code>.</p>\n<pre><code>kubectl delete pod init-pod sidecar-pod multi-init --ignore-not-found</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab1/setup.yaml"
+}

@@ -1,0 +1,127 @@
+{
+  "n": 14,
+  "id": "ch_dock_lab7",
+  "title": "Лабораторная 7: Registry, tag и push",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Аутентификация в registry",
+      "taskid": "dock_lab7_t1_login",
+      "hint": "",
+      "question_html": "<p>Прочитай, зачем нужен вход в Docker Registry перед отправкой образов.</p>\n<p>В этой лабораторной выполнять <code>docker login</code> не нужно: платформа уже настроила доступ к учебному Nexus, а дальше мы работаем с локальным registry.</p>\n<p>В реальной работе перед <code>docker push</code> ты входишь в Docker Hub или приватный registry и вводишь логин/пароль либо токен.</p>\n<pre><code>docker login</code></pre>\n<pre><code>docker login registry.example.com</code></pre>\n<p>Задача — просто посмотреть на команды и понять, что login нужен для доступа к приватному registry.</p>",
+      "options": [],
+      "raw_description": "<p>Прочитай, зачем нужен вход в Docker Registry перед отправкой образов.</p>\n<p>В этой лабораторной выполнять <code>docker login</code> не нужно: платформа уже настроила доступ к учебному Nexus, а дальше мы работаем с локальным registry.</p>\n<p>В реальной работе перед <code>docker push</code> ты входишь в Docker Hub или приватный registry и вводишь логин/пароль либо токен.</p>\n<pre><code>docker login</code></pre>\n<pre><code>docker login registry.example.com</code></pre>\n<p>Задача — просто посмотреть на команды и понять, что login нужен для доступа к приватному registry.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать тег для registry",
+      "taskid": "dock_lab7_t2_tag",
+      "hint": "<p>Используй <code>docker tag</code>: source — локальный образ, target — имя с адресом registry. Проверь новый тег через <code>docker images</code>.</p>\n<p>Перед push в приватный registry образу нужно дать тег с адресом registry. Формат: <code>registry_host/team/repository:tag</code>. В нашем примере используется учебное имя <code>registry.company.local/devops</code>.</p>",
+      "question_html": "<p>Создай тег <code>registry.company.local/devops/mynginx:v1</code> для образа <code>nginx:alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай тег <code>registry.company.local/devops/mynginx:v1</code> для образа <code>nginx:alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить список образов",
+      "taskid": "dock_lab7_t3_list",
+      "hint": "<p>Имя должно содержать registry, namespace, repository и tag: <code>registry.company.local/devops/mynginx:v1</code>.</p>",
+      "question_html": "<p>Проверь, что после тега из предыдущей задачи локально появился полный registry-тег <code>registry.company.local/devops/mynginx:v1</code>.</p>\n<pre><code>docker images registry.company.local/devops/mynginx</code></pre>",
+      "options": [],
+      "raw_description": "<p>Проверь, что после тега из предыдущей задачи локально появился полный registry-тег <code>registry.company.local/devops/mynginx:v1</code>.</p>\n<pre><code>docker images registry.company.local/devops/mynginx</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое Docker Hub?",
+      "taskid": "dock_lab7_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Что такое Docker Hub?</p>",
+      "options": [
+        {
+          "text": "Публичный реестр Docker-образов, содержащий официальные и пользовательские образы",
+          "correct": true,
+          "explanation": "Верно! hub.docker.com — крупнейшее хранилище образов с миллионами публичных образов"
+        },
+        {
+          "text": "Инструмент для оркестрации контейнеров",
+          "correct": false,
+          "explanation": "Нет — для оркестрации используется Kubernetes или Docker Swarm"
+        },
+        {
+          "text": "Центральный сервер Docker Engine",
+          "correct": false,
+          "explanation": "Нет — Docker Engine работает локально на каждом хосте"
+        },
+        {
+          "text": "Платный сервис мониторинга контейнеров",
+          "correct": false,
+          "explanation": "Нет — у Docker Hub есть бесплатный план, и это registry, не мониторинг"
+        }
+      ],
+      "raw_description": "<p>Что такое Docker Hub?</p><ul>\n<li>+Публичный реестр Docker-образов, содержащий официальные и пользовательские образы [Верно! hub.docker.com — крупнейшее хранилище образов с миллионами публичных образов]</li>\n<li>Инструмент для оркестрации контейнеров [Нет — для оркестрации используется Kubernetes или Docker Swarm]</li>\n<li>Центральный сервер Docker Engine [Нет — Docker Engine работает локально на каждом хосте]</li>\n<li>Платный сервис мониторинга контейнеров [Нет — у Docker Hub есть бесплатный план, и это registry, не мониторинг]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Скачать образ redis:7-alpine",
+      "taskid": "dock_lab7_t5_pull",
+      "hint": "<p>Используй <code>docker pull</code>: укажи образ вместе с тегом, затем проверь его наличие через <code>docker images</code>.</p>",
+      "question_html": "<p>Скачай образ <code>redis:7-alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Скачай образ <code>redis:7-alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Тег для production registry",
+      "taskid": "dock_lab7_t6_tag2",
+      "hint": "<p>Используй <code>docker tag</code>: исходный образ уже должен быть локально, а новый тег должен включать адрес registry и production-имя.</p>\n<p>Суффикс <code>:prod</code> — тег для production-версии. На практике используют семантическое версионирование: <code>:1.2.3</code>, или хеш коммита: <code>:abc1234</code>, или оба: <code>:1.2.3-abc1234</code>.</p>",
+      "question_html": "<p>Создай тег <code>registry.company.local/devops/myredis:prod</code> для образа <code>redis:7-alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай тег <code>registry.company.local/devops/myredis:prod</code> для образа <code>redis:7-alpine</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем приватный registry?",
+      "taskid": "dock_lab7_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем компании используют приватный Docker Registry (Nexus, Harbor, ECR)?</p>",
+      "options": [
+        {
+          "text": "Docker Hub слишком медленный",
+          "correct": false,
+          "explanation": "Нет — скорость это бонус, но не главная причина"
+        },
+        {
+          "text": "Хранить корпоративные образы приватно, без публикации в Docker Hub",
+          "correct": true,
+          "explanation": "Верно! Также: скорость (локальный кэш), compliance, сканирование уязвимостей"
+        },
+        {
+          "text": "Docker Hub не поддерживает теги",
+          "correct": false,
+          "explanation": "Нет — Docker Hub поддерживает теги"
+        },
+        {
+          "text": "Приватный registry бесплатнее Docker Hub",
+          "correct": false,
+          "explanation": "Нет — его ещё нужно поддерживать"
+        }
+      ],
+      "raw_description": "<p>Зачем компании используют приватный Docker Registry (Nexus, Harbor, ECR)?</p><ul>\n<li>Docker Hub слишком медленный [Нет — скорость это бонус, но не главная причина]</li>\n<li>+Хранить корпоративные образы приватно, без публикации в Docker Hub [Верно! Также: скорость (локальный кэш), compliance, сканирование уязвимостей]</li>\n<li>Docker Hub не поддерживает теги [Нет — Docker Hub поддерживает теги]</li>\n<li>Приватный registry бесплатнее Docker Hub [Нет — его ещё нужно поддерживать]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить теги",
+      "taskid": "dock_lab7_t8_cleanup",
+      "hint": "<p>Перед удалением выбери нужную Docker-команду: <code>docker rm</code>, <code>docker rmi</code>, <code>docker network rm</code> или <code>docker volume rm</code>. Остановленные контейнеры и неиспользуемые объекты чистятся разными действиями.</p>\n<p>Удаление тега не удаляет сами слои — только ссылку. Слои удаляются только если на них нет других ссылок.</p>",
+      "question_html": "<p>Удали теги <code>registry.company.local/devops/mynginx:v1</code> и <code>registry.company.local/devops/myredis:prod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали теги <code>registry.company.local/devops/mynginx:v1</code> и <code>registry.company.local/devops/myredis:prod</code>.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab7/setup.yaml"
+}

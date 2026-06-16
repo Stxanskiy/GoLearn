@@ -1,0 +1,313 @@
+{
+  "n": 18,
+  "id": "ch_devops_quiz_dora_1",
+  "title": "Квиз: DORA метрики",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "4 DORA метрики",
+      "taskid": "dora_quiz1_t1_four",
+      "hint": "",
+      "question_html": "<p>Какие 4 метрики определяет DORA как ключевые для DevOps?</p>",
+      "options": [
+        {
+          "text": "NPS, Revenue, Churn rate, Customer lifetime value",
+          "correct": false,
+          "explanation": "Нет — это бизнес-метрики; DORA изучает как DevOps на них влияет, но сами метрики другие"
+        },
+        {
+          "text": "DF, Lead Time, MTTR, Change Failure Rate",
+          "correct": true,
+          "explanation": "Верно! Эти 4 метрики коррелируют с бизнес-результатами и удовлетворённостью команд"
+        },
+        {
+          "text": "CPU usage, Memory usage, Response time, Error rate",
+          "correct": false,
+          "explanation": "Нет — это технические метрики, но не DORA показатели эффективности delivery"
+        },
+        {
+          "text": "Sprint velocity, Bug count, Code coverage, Test count",
+          "correct": false,
+          "explanation": "Нет — это метрики разработки, не delivery performance"
+        }
+      ],
+      "raw_description": "<p>Какие 4 метрики определяет DORA как ключевые для DevOps?</p><ul>\n<li>NPS, Revenue, Churn rate, Customer lifetime value [Нет — это бизнес-метрики; DORA изучает как DevOps на них влияет, но сами метрики другие]</li>\n<li>+DF, Lead Time, MTTR, Change Failure Rate [Верно! Эти 4 метрики коррелируют с бизнес-результатами и удовлетворённостью команд]</li>\n<li>CPU usage, Memory usage, Response time, Error rate [Нет — это технические метрики, но не DORA показатели эффективности delivery]</li>\n<li>Sprint velocity, Bug count, Code coverage, Test count [Нет — это метрики разработки, не delivery performance]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Метрики вместе",
+      "taskid": "dora_quiz1_t2_together",
+      "hint": "",
+      "question_html": "<p>Почему DORA-метрики нужно смотреть вместе, а не по одной?</p>",
+      "options": [
+        {
+          "text": "Потому что все четыре метрики всегда меняются одинаково",
+          "correct": false,
+          "explanation": "Нет — они могут двигаться в разные стороны"
+        },
+        {
+          "text": "Так красивее выглядит dashboard",
+          "correct": false,
+          "explanation": "Нет — дело не в визуализации"
+        },
+        {
+          "text": "Чтобы сравнивать команды между собой и наказывать слабых",
+          "correct": false,
+          "explanation": "Нет — метрики нужны для улучшения системы, а не для наказания"
+        },
+        {
+          "text": "Скорость без CFR и MTTR не показывает безопасность",
+          "correct": true,
+          "explanation": "Верно! Нужен баланс скорости и стабильности"
+        }
+      ],
+      "raw_description": "<p>Почему DORA-метрики нужно смотреть вместе, а не по одной?</p><ul>\n<li>Потому что все четыре метрики всегда меняются одинаково [Нет — они могут двигаться в разные стороны]</li>\n<li>Так красивее выглядит dashboard [Нет — дело не в визуализации]</li>\n<li>Чтобы сравнивать команды между собой и наказывать слабых [Нет — метрики нужны для улучшения системы, а не для наказания]</li>\n<li>+Скорость без CFR и MTTR не показывает безопасность [Верно! Нужен баланс скорости и стабильности]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Lead Time что входит",
+      "taskid": "dora_quiz1_t3_lead_time",
+      "hint": "",
+      "question_html": "<p>Lead Time for Changes измеряется от... до...</p>",
+      "options": [
+        {
+          "text": "От открытия задачи в Jira до её закрытия",
+          "correct": false,
+          "explanation": "Нет — это Cycle Time задачи, а не Lead Time в понимании DORA"
+        },
+        {
+          "text": "От деплоя до ответа первого клиента",
+          "correct": false,
+          "explanation": "Нет — Lead Time заканчивается на production deploy, не на реакции клиента"
+        },
+        {
+          "text": "От начала sprint до его окончания",
+          "correct": false,
+          "explanation": "Нет — sprint duration это planning метрика, не delivery"
+        },
+        {
+          "text": "От первого commit до production deploy",
+          "correct": true,
+          "explanation": "Верно! Lead Time включает всё: ожидание code review, CI, QA, деплой"
+        }
+      ],
+      "raw_description": "<p>Lead Time for Changes измеряется от... до...</p><ul>\n<li>От открытия задачи в Jira до её закрытия [Нет — это Cycle Time задачи, а не Lead Time в понимании DORA]</li>\n<li>От деплоя до ответа первого клиента [Нет — Lead Time заканчивается на production deploy, не на реакции клиента]</li>\n<li>От начала sprint до его окончания [Нет — sprint duration это planning метрика, не delivery]</li>\n<li>+От первого commit до production deploy [Верно! Lead Time включает всё: ожидание code review, CI, QA, деплой]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "MTTR",
+      "taskid": "dora_quiz1_t4_mttr",
+      "hint": "",
+      "question_html": "<p>Что измеряет MTTR в DORA и SRE-контексте?</p>",
+      "options": [
+        {
+          "text": "Сколько времени сервис работает без отказов",
+          "correct": false,
+          "explanation": "Нет — это про время до отказа, а не восстановление"
+        },
+        {
+          "text": "Среднее время обнаружить и восстановить сервис",
+          "correct": true,
+          "explanation": "Верно! MTTR показывает скорость восстановления после инцидента"
+        },
+        {
+          "text": "Сколько багов команда исправляет за месяц",
+          "correct": false,
+          "explanation": "Нет — MTTR измеряет время восстановления"
+        },
+        {
+          "text": "Сколько времени занимает обычный деплой",
+          "correct": false,
+          "explanation": "Нет — это относится к delivery-процессу, но не MTTR"
+        }
+      ],
+      "raw_description": "<p>Что измеряет MTTR в DORA и SRE-контексте?</p><ul>\n<li>Сколько времени сервис работает без отказов [Нет — это про время до отказа, а не восстановление]</li>\n<li>+Среднее время обнаружить и восстановить сервис [Верно! MTTR показывает скорость восстановления после инцидента]</li>\n<li>Сколько багов команда исправляет за месяц [Нет — MTTR измеряет время восстановления]</li>\n<li>Сколько времени занимает обычный деплой [Нет — это относится к delivery-процессу, но не MTTR]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Change Failure Rate",
+      "taskid": "dora_quiz1_t5_cfr",
+      "hint": "",
+      "question_html": "<p>Что показывает Change Failure Rate?</p>",
+      "options": [
+        {
+          "text": "Сколько раз сервис полностью падал за год",
+          "correct": false,
+          "explanation": "Нет — это ближе к инцидентам, но не доля проблемных изменений"
+        },
+        {
+          "text": "Доля деплоев, вызвавших инцидент или rollback",
+          "correct": true,
+          "explanation": "Верно! CFR показывает качество изменений в production"
+        },
+        {
+          "text": "Сколько багов нашла QA-команда",
+          "correct": false,
+          "explanation": "Нет — CFR считается по изменениям в production"
+        },
+        {
+          "text": "Сколько тестов упало в CI за неделю",
+          "correct": false,
+          "explanation": "Нет — это качество проверок до релиза, а CFR смотрит на последствия изменений после деплоя"
+        }
+      ],
+      "raw_description": "<p>Что показывает Change Failure Rate?</p><ul>\n<li>Сколько раз сервис полностью падал за год [Нет — это ближе к инцидентам, но не доля проблемных изменений]</li>\n<li>+Доля деплоев, вызвавших инцидент или rollback [Верно! CFR показывает качество изменений в production]</li>\n<li>Сколько багов нашла QA-команда [Нет — CFR считается по изменениям в production]</li>\n<li>Сколько тестов упало в CI за неделю [Нет — это качество проверок до релиза, а CFR смотрит на последствия изменений после деплоя]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Trunk-Based Development",
+      "taskid": "dora_quiz1_t6_tbd",
+      "hint": "",
+      "question_html": "<p>Чем Trunk-Based Development помогает Deployment Frequency?</p>",
+      "options": [
+        {
+          "text": "Короткие ветки в main, меньше merge pain",
+          "correct": true,
+          "explanation": "Верно! Долгоживущие feature branches — главный враг высокой deployment frequency"
+        },
+        {
+          "text": "TBD автоматически деплоит каждый коммит в production",
+          "correct": false,
+          "explanation": "Нет — TBD это branching strategy, не CD pipeline"
+        },
+        {
+          "text": "TBD работает только с командами менее 5 человек",
+          "correct": false,
+          "explanation": "Нет — Google с тысячами разработчиков использует монорепо с TBD"
+        },
+        {
+          "text": "TBD исключает необходимость в тестах",
+          "correct": false,
+          "explanation": "Нет — наоборот, TBD требует хорошего тестового покрытия"
+        }
+      ],
+      "raw_description": "<p>Чем Trunk-Based Development помогает Deployment Frequency?</p><ul>\n<li>+Короткие ветки в main, меньше merge pain [Верно! Долгоживущие feature branches — главный враг высокой deployment frequency]</li>\n<li>TBD автоматически деплоит каждый коммит в production [Нет — TBD это branching strategy, не CD pipeline]</li>\n<li>TBD работает только с командами менее 5 человек [Нет — Google с тысячами разработчиков использует монорепо с TBD]</li>\n<li>TBD исключает необходимость в тестах [Нет — наоборот, TBD требует хорошего тестового покрытия]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Value Stream Mapping",
+      "taskid": "dora_quiz1_t7_vsm",
+      "hint": "",
+      "question_html": "<p>Value Stream Mapping помогает улучшить Lead Time потому что...</p>",
+      "options": [
+        {
+          "text": "Показывает wait time и узкие места delivery",
+          "correct": true,
+          "explanation": "Верно! Обычно 90%+ Lead Time — это ожидание, а не реальная работа"
+        },
+        {
+          "text": "Автоматически устраняет bottlenecks",
+          "correct": false,
+          "explanation": "Нет — VSM только визуализирует; устранение требует отдельных действий"
+        },
+        {
+          "text": "Показывает какие разработчики работают медленно",
+          "correct": false,
+          "explanation": "Нет — VSM о процессе, не об индивидуальной производительности"
+        },
+        {
+          "text": "Создаёт документацию для аудита",
+          "correct": false,
+          "explanation": "Нет — хотя VSM документирует процесс, это не его цель"
+        }
+      ],
+      "raw_description": "<p>Value Stream Mapping помогает улучшить Lead Time потому что...</p><ul>\n<li>+Показывает wait time и узкие места delivery [Верно! Обычно 90%+ Lead Time — это ожидание, а не реальная работа]</li>\n<li>Автоматически устраняет bottlenecks [Нет — VSM только визуализирует; устранение требует отдельных действий]</li>\n<li>Показывает какие разработчики работают медленно [Нет — VSM о процессе, не об индивидуальной производительности]</li>\n<li>Создаёт документацию для аудита [Нет — хотя VSM документирует процесс, это не его цель]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Feature flags и deployment",
+      "taskid": "dora_quiz1_t8_flags",
+      "hint": "",
+      "question_html": "<p>Feature Flags помогают увеличить Deployment Frequency потому что...</p>",
+      "options": [
+        {
+          "text": "Флаги автоматически тестируют фичи",
+          "correct": false,
+          "explanation": "Нет — для тестирования флагов нужны специальные тесты"
+        },
+        {
+          "text": "Feature Flags ускоряют компиляцию кода",
+          "correct": false,
+          "explanation": "Нет — Feature Flags это runtime переключатели, не compile-time"
+        },
+        {
+          "text": "Деплой отделён от release через feature flags",
+          "correct": true,
+          "explanation": "Верно! Это позволяет деплоить чаще не показывая неготовые фичи пользователям"
+        },
+        {
+          "text": "Флаги позволяют пропустить code review",
+          "correct": false,
+          "explanation": "Нет — Feature Flags не влияют на процесс ревью"
+        }
+      ],
+      "raw_description": "<p>Feature Flags помогают увеличить Deployment Frequency потому что...</p><ul>\n<li>Флаги автоматически тестируют фичи [Нет — для тестирования флагов нужны специальные тесты]</li>\n<li>Feature Flags ускоряют компиляцию кода [Нет — Feature Flags это runtime переключатели, не compile-time]</li>\n<li>+Деплой отделён от release через feature flags [Верно! Это позволяет деплоить чаще не показывая неготовые фичи пользователям]</li>\n<li>Флаги позволяют пропустить code review [Нет — Feature Flags не влияют на процесс ревью]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Error Budget",
+      "taskid": "dora_quiz1_t9_error_budget",
+      "hint": "",
+      "question_html": "<p>SLO = 99.9% uptime. Какой Error Budget в минутах за месяц?</p>",
+      "options": [
+        {
+          "text": "Зависит от количества деплоев в этом месяце",
+          "correct": false,
+          "explanation": "Нет — Error Budget зависит только от SLO, не от числа деплоев"
+        },
+        {
+          "text": "1 час",
+          "correct": false,
+          "explanation": "Нет — 1 час = 60 минут, а 0.1% от месяца ≈ 43 минуты"
+        },
+        {
+          "text": "1 день",
+          "correct": false,
+          "explanation": "Нет — 1 день это ~0.3% от месяца, что соответствует SLO 99.7%"
+        },
+        {
+          "text": "43.8 минуты в месяц",
+          "correct": true,
+          "explanation": "Верно! 30 дней × 24 часа × 60 минут = 43,200 мин × 0.001 ≈ 43.2 мин"
+        }
+      ],
+      "raw_description": "<p>SLO = 99.9% uptime. Какой Error Budget в минутах за месяц?</p><ul>\n<li>Зависит от количества деплоев в этом месяце [Нет — Error Budget зависит только от SLO, не от числа деплоев]</li>\n<li>1 час [Нет — 1 час = 60 минут, а 0.1% от месяца ≈ 43 минуты]</li>\n<li>1 день [Нет — 1 день это ~0.3% от месяца, что соответствует SLO 99.7%]</li>\n<li>+43.8 минуты в месяц [Верно! 30 дней × 24 часа × 60 минут = 43,200 мин × 0.001 ≈ 43.2 мин]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DORA коррелирует с чем",
+      "taskid": "dora_quiz1_t10_correlation",
+      "hint": "",
+      "question_html": "<p>DORA-подход полезен потому что хорошие delivery-метрики связаны с...</p>",
+      "options": [
+        {
+          "text": "Только бизнес-метриками (выручка, прибыль) но не удовлетворённостью сотрудников",
+          "correct": false,
+          "explanation": "Нет — DORA обнаружила корреляцию с обоими"
+        },
+        {
+          "text": "Бизнес-результаты и здоровье engineering-системы",
+          "correct": true,
+          "explanation": "Верно! Метрики помогают видеть скорость, качество и восстановление как одну систему"
+        },
+        {
+          "text": "Размером компании — большие компании всегда лучше",
+          "correct": false,
+          "explanation": "Нет — размер сам по себе не делает delivery здоровым"
+        },
+        {
+          "text": "Использованием конкретных инструментов (Kubernetes, Jenkins)",
+          "correct": false,
+          "explanation": "Нет — инструменты не являются предиктором; важны практики и культура"
+        }
+      ],
+      "raw_description": "<p>DORA-подход полезен потому что хорошие delivery-метрики связаны с...</p><ul>\n<li>Только бизнес-метриками (выручка, прибыль) но не удовлетворённостью сотрудников [Нет — DORA обнаружила корреляцию с обоими]</li>\n<li>+Бизнес-результаты и здоровье engineering-системы [Верно! Метрики помогают видеть скорость, качество и восстановление как одну систему]</li>\n<li>Размером компании — большие компании всегда лучше [Нет — размер сам по себе не делает delivery здоровым]</li>\n<li>Использованием конкретных инструментов (Kubernetes, Jenkins) [Нет — инструменты не являются предиктором; важны практики и культура]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -1,0 +1,163 @@
+{
+  "n": 3,
+  "id": "ch_dkc_lab1",
+  "title": "Лабораторная 1: Первый docker-compose.yml",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Посмотреть заготовленный compose-файл",
+      "taskid": "dkc_lab1_t1_cat",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/app</code> уже есть файл <code>docker-compose.yml</code> с простым nginx-сервисом. Посмотри его содержимое:</p>\n<pre><code>cat /root/app/docker-compose.yml</code></pre>\n<p>Ты увидишь один сервис <code>web</code> на базе образа <code>nginx:alpine</code>. Он публикует порт VM <code>80</code>, поэтому после запуска его можно открыть через кнопку <code>Web Preview</code>.</p>\n<p>В следующих задачах мы будем работать с этим файлом.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/app</code> уже есть файл <code>docker-compose.yml</code> с простым nginx-сервисом. Посмотри его содержимое:</p>\n<pre><code>cat /root/app/docker-compose.yml</code></pre>\n<p>Ты увидишь один сервис <code>web</code> на базе образа <code>nginx:alpine</code>. Он публикует порт VM <code>80</code>, поэтому после запуска его можно открыть через кнопку <code>Web Preview</code>.</p>\n<p>В следующих задачах мы будем работать с этим файлом.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить стек",
+      "taskid": "dkc_lab1_t2_up",
+      "hint": "<p>Используй <code>docker compose ps</code>/<code>docker inspect</code>: проверь, в какой сети находятся сервисы, и обращайся к соседнему сервису по имени из compose-файла.</p>\n<p>Флаг <code>-d</code> (detached) запускает контейнеры в фоне.</p>",
+      "question_html": "<p>Запусти сервисы из файла <code>/root/app/docker-compose.yml</code> в фоновом режиме.</p>\n<p>Выполняй запуск из директории <code>/root/app</code>, чтобы Compose взял нужный файл проекта. Compose автоматически создаст сеть и запустит сервис <code>web</code>; ожидаемое имя контейнера — <code>app-web-1</code>.</p>\n<p>После запуска открой <code>Web Preview</code>, чтобы увидеть страницу nginx в браузере. Та же страница доступна из терминала через <code>curl http://localhost/</code>; в реальной диагностике это часто быстрее, чем переключаться в браузер.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти сервисы из файла <code>/root/app/docker-compose.yml</code> в фоновом режиме.</p>\n<p>Выполняй запуск из директории <code>/root/app</code>, чтобы Compose взял нужный файл проекта. Compose автоматически создаст сеть и запустит сервис <code>web</code>; ожидаемое имя контейнера — <code>app-web-1</code>.</p>\n<p>После запуска открой <code>Web Preview</code>, чтобы увидеть страницу nginx в браузере. Та же страница доступна из терминала через <code>curl http://localhost/</code>; в реальной диагностике это часто быстрее, чем переключаться в браузер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть статус сервисов",
+      "taskid": "dkc_lab1_t3_ps",
+      "hint": "",
+      "question_html": "<p>Посмотри статус запущенных сервисов текущего Compose-проекта:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>Обрати внимание на имя сервиса, состояние контейнера и проброшенные порты.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статус запущенных сервисов текущего Compose-проекта:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose ps</code></pre>\n<p>Обрати внимание на имя сервиса, состояние контейнера и проброшенные порты.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть логи",
+      "taskid": "dkc_lab1_t4_logs",
+      "hint": "",
+      "question_html": "<p>Посмотри логи сервиса <code>web</code>:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose logs web</code></pre>\n<p>Compose показывает логи по имени сервиса, а не по имени контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри логи сервиса <code>web</code>:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose logs web</code></pre>\n<p>Compose показывает логи по имени сервиса, а не по имени контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Выполнить команду в сервисе",
+      "taskid": "dkc_lab1_t5_exec",
+      "hint": "<p>Используй <code>docker compose exec</code>: он принимает имя сервиса из compose-файла. Для неинтерактивной команды обычно нужен режим без TTY, чтобы перенаправление в файл работало стабильно.</p>",
+      "question_html": "<p>Внутри запущенного сервиса <code>web</code> выполни команду, которая выводит файл <code>/etc/nginx/nginx.conf</code>.</p><p>Сохрани весь вывод этой команды в файл <code>/root/nginx_conf.txt</code> на VM.</p><p><code>docker compose exec</code> работает как <code>docker exec</code>, но принимает имя сервиса вместо имени контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Внутри запущенного сервиса <code>web</code> выполни команду, которая выводит файл <code>/etc/nginx/nginx.conf</code>.</p><p>Сохрани весь вывод этой команды в файл <code>/root/nginx_conf.txt</code> на VM.</p><p><code>docker compose exec</code> работает как <code>docker exec</code>, но принимает имя сервиса вместо имени контейнера.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает depends_on?",
+      "taskid": "dkc_lab1_t6_quiz",
+      "hint": "",
+      "question_html": "<p>В docker-compose.yml часто встречается директива <code>depends_on</code>. Что она гарантирует?</p>",
+      "options": [
+        {
+          "text": "Порядок запуска контейнеров — зависимый сервис запустится раньше",
+          "correct": true,
+          "explanation": "Верно! depends_on управляет порядком запуска, но НЕ ждёт готовности сервиса (для этого нужен healthcheck)"
+        },
+        {
+          "text": "Что зависимый сервис будет готов принимать соединения",
+          "correct": false,
+          "explanation": "Нет — для этого используется условие service_healthy с healthcheck"
+        },
+        {
+          "text": "Что сервисы запустятся одновременно",
+          "correct": false,
+          "explanation": "Нет — они запускаются последовательно в указанном порядке"
+        },
+        {
+          "text": "Что при падении зависимости сервис остановится",
+          "correct": false,
+          "explanation": "Нет — это настраивается через restart политики"
+        }
+      ],
+      "raw_description": "<p>В docker-compose.yml часто встречается директива <code>depends_on</code>. Что она гарантирует?</p><ul>\n<li>+Порядок запуска контейнеров — зависимый сервис запустится раньше [Верно! depends_on управляет порядком запуска, но НЕ ждёт готовности сервиса (для этого нужен healthcheck)]</li>\n<li>Что зависимый сервис будет готов принимать соединения [Нет — для этого используется условие service_healthy с healthcheck]</li>\n<li>Что сервисы запустятся одновременно [Нет — они запускаются последовательно в указанном порядке]</li>\n<li>Что при падении зависимости сервис остановится [Нет — это настраивается через restart политики]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить второй сервис",
+      "taskid": "dkc_lab1_t7_add_redis",
+      "hint": "<p>Используй <code>docker compose exec</code>: он принимает имя сервиса из compose-файла. Если команда не интерактивная, проверь режим без TTY.</p>",
+      "question_html": "<p>Добавь сервис <code>cache</code> на основе <code>redis:alpine</code> в файл <code>/root/app/docker-compose.yml</code> и перезапусти стек.</p><p>Для Redis подключи именованный volume <code>cache_data</code> в каталог <code>/data</code>, чтобы данные сервиса не удалялись при обычном <code>docker compose down</code>. В проекте <code>app</code> Compose создаст фактический Docker volume <code>app_cache_data</code>.</p>\n<p>Редактируй существующий compose-файл и применяй изменения из директории <code>/root/app</code>. Compose обнаружит новый сервис и запустит его, не трогая уже работающий <code>web</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь сервис <code>cache</code> на основе <code>redis:alpine</code> в файл <code>/root/app/docker-compose.yml</code> и перезапусти стек.</p><p>Для Redis подключи именованный volume <code>cache_data</code> в каталог <code>/data</code>, чтобы данные сервиса не удалялись при обычном <code>docker compose down</code>. В проекте <code>app</code> Compose создаст фактический Docker volume <code>app_cache_data</code>.</p>\n<p>Редактируй существующий compose-файл и применяй изменения из директории <code>/root/app</code>. Compose обнаружит новый сервис и запустит его, не трогая уже работающий <code>web</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить работу Redis",
+      "taskid": "dkc_lab1_t8_redis_check",
+      "hint": "<p>Используй <code>docker compose exec</code>: он принимает имя сервиса из compose-файла. Если команда не интерактивная, проверь режим без TTY.</p>",
+      "question_html": "<p>Проверь, что сервис <code>cache</code> работает. В контейнере Redis есть утилита <code>redis-cli</code>; её команда <code>ping</code> отправляет серверу простой проверочный запрос.</p><p>Выполни эту проверку внутри сервиса <code>cache</code> и сохрани только ответ Redis в <code>/root/redis_ping.txt</code>, без приглашения shell и лишних строк.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что сервис <code>cache</code> работает. В контейнере Redis есть утилита <code>redis-cli</code>; её команда <code>ping</code> отправляет серверу простой проверочный запрос.</p><p>Выполни эту проверку внутри сервиса <code>cache</code> и сохрани только ответ Redis в <code>/root/redis_ping.txt</code>, без приглашения shell и лишних строк.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что значит политика restart: always?",
+      "taskid": "dkc_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Ты добавил <code>restart: unless-stopped</code> для Redis. Чем это отличается от <code>restart: always</code>?</p>",
+      "options": [
+        {
+          "text": "unless-stopped перезапускает только при ошибке, always — всегда",
+          "correct": false,
+          "explanation": "Нет — on-failure перезапускает только при ошибке"
+        },
+        {
+          "text": "unless-stopped не перезапускает контейнер если его явно остановили командой stop",
+          "correct": true,
+          "explanation": "Верно! always перезапустит даже после docker compose stop, unless-stopped — нет"
+        },
+        {
+          "text": "Это синонимы, разницы нет",
+          "correct": false,
+          "explanation": "Нет — разница есть при явной остановке docker stop/compose stop"
+        },
+        {
+          "text": "always работает быстрее",
+          "correct": false,
+          "explanation": "Нет — скорость перезапуска одинакова"
+        }
+      ],
+      "raw_description": "<p>Ты добавил <code>restart: unless-stopped</code> для Redis. Чем это отличается от <code>restart: always</code>?</p><ul>\n<li>unless-stopped перезапускает только при ошибке, always — всегда [Нет — on-failure перезапускает только при ошибке]</li>\n<li>+unless-stopped не перезапускает контейнер если его явно остановили командой stop [Верно! always перезапустит даже после docker compose stop, unless-stopped — нет]</li>\n<li>Это синонимы, разницы нет [Нет — разница есть при явной остановке docker stop/compose stop]</li>\n<li>always работает быстрее [Нет — скорость перезапуска одинакова]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть список контейнеров проекта",
+      "taskid": "dkc_lab1_t10_list",
+      "hint": "",
+      "question_html": "<p>Посмотри список всех контейнеров текущего проекта, включая остановленные:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose ps -a</code></pre>\n<p>Флаг <code>-a</code> показывает и запущенные, и остановленные сервисы.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри список всех контейнеров текущего проекта, включая остановленные:</p>\n<pre><code>cd /root/app</code></pre>\n<pre><code>docker compose ps -a</code></pre>\n<p>Флаг <code>-a</code> показывает и запущенные, и остановленные сервисы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить один сервис",
+      "taskid": "dkc_lab1_t11_stop_svc",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови только сервис <code>cache</code>, не трогая <code>web</code>.</p><p>В отличие от <code>docker compose down</code>, команда <code>stop</code> только останавливает контейнеры, не удаляя их. Можно указать конкретный сервис.</p>",
+      "options": [],
+      "raw_description": "<p>Останови только сервис <code>cache</code>, не трогая <code>web</code>.</p><p>В отличие от <code>docker compose down</code>, команда <code>stop</code> только останавливает контейнеры, не удаляя их. Можно указать конкретный сервис.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить и удалить весь стек",
+      "taskid": "dkc_lab1_t12_down",
+      "hint": "<p>Отличай <code>docker compose stop</code> от <code>docker compose down</code>: <code>stop</code> оставляет контейнеры и сеть, а <code>down</code> разбирает стек. Если нужен один сервис, укажи его имя.</p>",
+      "question_html": "<p>Останови и удали контейнеры проекта вместе с созданной Compose-сетью.</p><p>Именованный volume Redis <code>app_cache_data</code> должен сохраниться, поэтому не используй режим удаления volumes.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнеры проекта вместе с созданной Compose-сетью.</p><p>Именованный volume Redis <code>app_cache_data</code> должен сохраниться, поэтому не используй режим удаления volumes.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_compose/compose/lab1/setup.yaml"
+}

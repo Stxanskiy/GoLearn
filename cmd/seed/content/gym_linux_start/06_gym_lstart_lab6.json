@@ -1,0 +1,229 @@
+{
+  "n": 6,
+  "id": "gym_lstart_lab6",
+  "title": "Тренировка 6: Конвейеры и обработка текста",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Фильтр по коду ответа",
+      "taskid": "gym_lstart_lab6_t1_grep404",
+      "hint": "<p>Используй <code>grep</code> с подходящим флагом для нужного вида поиска.</p>",
+      "question_html": "<p>В файле <code>/opt/devops/lab6/access.log</code> находится лог веб-сервера.</p>\n<p>Выбери строки, содержащие код ответа <code>404</code>, и сохрани их в <code>/root/not_found.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/opt/devops/lab6/access.log</code> находится лог веб-сервера.</p>\n<p>Выбери строки, содержащие код ответа <code>404</code>, и сохрани их в <code>/root/not_found.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Сортировка строк",
+      "taskid": "gym_lstart_lab6_t2_sort",
+      "hint": "<p>Используй <code>sort</code> как часть обработки списка; при необходимости сначала отсортируй данные.</p>",
+      "question_html": "<p>Файл <code>/opt/devops/lab6/ips.txt</code> содержит список IP-адресов — по одному на строку, с повторениями.</p>\n<p>Отсортируй строки и запиши результат в <code>/root/sorted_ips.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Файл <code>/opt/devops/lab6/ips.txt</code> содержит список IP-адресов — по одному на строку, с повторениями.</p>\n<p>Отсортируй строки и запиши результат в <code>/root/sorted_ips.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Уникальные строки",
+      "taskid": "gym_lstart_lab6_t3_uniq",
+      "hint": "<p>Используй <code>sort</code> как часть обработки списка; при необходимости сначала отсортируй данные. Собирай pipeline постепенно: сначала проверь левую часть, затем добавляй следующий фильтр.</p>\n<p>Команда <code>uniq</code> убирает дублирующиеся строки, но только если они стоят рядом. Поэтому сначала нужно отсортировать файл.</p>",
+      "question_html": "<p>Из файла <code>/opt/devops/lab6/ips.txt</code> получи только уникальные IP-адреса (без повторений) и сохрани в <code>/root/unique_ips.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Из файла <code>/opt/devops/lab6/ips.txt</code> получи только уникальные IP-адреса (без повторений) и сохрани в <code>/root/unique_ips.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем финальный sort -rn?",
+      "taskid": "gym_lstart_lab6_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем после <code>uniq -c</code> часто добавляют <code>sort -rn</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы отсортировать строки по числовому счётчику от большего к меньшему",
+          "correct": true,
+          "explanation": "Верно! Так самые частые значения оказываются сверху"
+        },
+        {
+          "text": "Чтобы удалить исходный файл",
+          "correct": false,
+          "explanation": "Нет — сортировка не удаляет файлы"
+        },
+        {
+          "text": "Чтобы заменить IP-адреса на имена хостов",
+          "correct": false,
+          "explanation": "Нет — <code>sort</code> не делает DNS"
+        },
+        {
+          "text": "Чтобы оставить только первые 10 байт",
+          "correct": false,
+          "explanation": "Нет — это не задача sort"
+        }
+      ],
+      "raw_description": "<p>Зачем после <code>uniq -c</code> часто добавляют <code>sort -rn</code>?</p><ul>\n<li>+Чтобы отсортировать строки по числовому счётчику от большего к меньшему [Верно! Так самые частые значения оказываются сверху]</li><li>Чтобы удалить исходный файл [Нет — сортировка не удаляет файлы]</li><li>Чтобы заменить IP-адреса на имена хостов [Нет — <code>sort</code> не делает DNS]</li><li>Чтобы оставить только первые 10 байт [Нет — это не задача sort]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Статистика IP в логе",
+      "taskid": "gym_lstart_lab6_t5_ipstat",
+      "hint": "<p>Используй <code>awk</code>: выбери нужное поле или условие фильтрации. Собирай pipeline постепенно: сначала проверь левую часть, затем добавляй следующий фильтр.</p>",
+      "question_html": "<p>Подсчитай, сколько раз каждый IP-адрес встречается в логе <code>/opt/devops/lab6/access.log</code>.</p>\n<p>Выведи статистику по IP-адресам в порядке убывания в файл <code>/root/ip_stats.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Подсчитай, сколько раз каждый IP-адрес встречается в логе <code>/opt/devops/lab6/access.log</code>.</p>\n<p>Выведи статистику по IP-адресам в порядке убывания в файл <code>/root/ip_stats.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Номера строк в grep",
+      "taskid": "gym_lstart_lab6_t6_count",
+      "hint": "",
+      "question_html": "<p>Какой флаг <code>grep</code> показывает номера строк вместе с найденными совпадениями?</p>",
+      "options": [
+        {
+          "text": "<code>-c</code>",
+          "correct": false,
+          "explanation": "Нет — считает количество строк"
+        },
+        {
+          "text": "<code>-n</code>",
+          "correct": true,
+          "explanation": "Верно! Он добавляет номер строки к каждому совпадению"
+        },
+        {
+          "text": "<code>-r</code>",
+          "correct": false,
+          "explanation": "Нет — рекурсивный поиск"
+        },
+        {
+          "text": "<code>-v</code>",
+          "correct": false,
+          "explanation": "Нет — инвертирует совпадение"
+        }
+      ],
+      "raw_description": "<p>Какой флаг <code>grep</code> показывает номера строк вместе с найденными совпадениями?</p>\n<ul>\n<li><code>-c</code> [Нет — считает количество строк]</li><li>+<code>-n</code> [Верно! Он добавляет номер строки к каждому совпадению]</li><li><code>-r</code> [Нет — рекурсивный поиск]</li><li><code>-v</code> [Нет — инвертирует совпадение]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Сохранение результата pipeline",
+      "taskid": "gym_lstart_lab6_t7_total",
+      "hint": "",
+      "question_html": "<p>Как сохранить результат команды <code>grep \"404\" access.log</code> в файл <code>not_found.txt</code>, заменив старое содержимое файла?</p>",
+      "options": [
+        {
+          "text": "<code>grep \"404\" access.log &gt; not_found.txt</code>",
+          "correct": true,
+          "explanation": "Верно! Одинарное перенаправление перезаписывает файл"
+        },
+        {
+          "text": "<code>grep \"404\" access.log | not_found.txt</code>",
+          "correct": false,
+          "explanation": "Нет — справа от pipe должна быть команда"
+        },
+        {
+          "text": "<code>grep \"404\" access.log &lt; not_found.txt</code>",
+          "correct": false,
+          "explanation": "Нет — это перенаправление ввода"
+        },
+        {
+          "text": "<code>grep \"404\" access.log &amp; not_found.txt</code>",
+          "correct": false,
+          "explanation": "Нет — это не сохранение вывода"
+        }
+      ],
+      "raw_description": "<p>Как сохранить результат команды <code>grep \"404\" access.log</code> в файл <code>not_found.txt</code>, заменив старое содержимое файла?</p>\n<ul>\n<li>+<code>grep \"404\" access.log &gt; not_found.txt</code> [Верно! Одинарное перенаправление перезаписывает файл]</li><li><code>grep \"404\" access.log | not_found.txt</code> [Нет — справа от pipe должна быть команда]</li><li><code>grep \"404\" access.log &lt; not_found.txt</code> [Нет — это перенаправление ввода]</li><li><code>grep \"404\" access.log &amp; not_found.txt</code> [Нет — это не сохранение вывода]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Какой этап достаёт IP из access.log?",
+      "taskid": "gym_lstart_lab6_t8_quiz",
+      "hint": "",
+      "question_html": "<p>В типичном access.log IP-адрес клиента часто находится в первом поле. Какой этап pipeline обычно извлекает это поле?</p>",
+      "options": [
+        {
+          "text": "<code>awk '{print $1}'</code>",
+          "correct": true,
+          "explanation": "Верно! awk печатает первое поле строки"
+        },
+        {
+          "text": "<code>sort -rn</code>",
+          "correct": false,
+          "explanation": "Нет — это сортировка"
+        },
+        {
+          "text": "<code>uniq -c</code>",
+          "correct": false,
+          "explanation": "Нет — это подсчёт соседних повторов"
+        },
+        {
+          "text": "<code>wc -l</code>",
+          "correct": false,
+          "explanation": "Нет — это подсчёт строк"
+        }
+      ],
+      "raw_description": "<p>В типичном access.log IP-адрес клиента часто находится в первом поле. Какой этап pipeline обычно извлекает это поле?</p><ul>\n<li>+<code>awk '{print $1}'</code> [Верно! awk печатает первое поле строки]</li>\n<li><code>sort -rn</code> [Нет — это сортировка]</li>\n<li><code>uniq -c</code> [Нет — это подсчёт соседних повторов]</li>\n<li><code>wc -l</code> [Нет — это подсчёт строк]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает NF в awk?",
+      "taskid": "gym_lstart_lab6_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает переменная <code>NF</code> в <code>awk</code>?</p>",
+      "options": [
+        {
+          "text": "Количество полей в текущей строке",
+          "correct": true,
+          "explanation": "Верно! Поэтому <code>$NF</code> обращается к последнему полю"
+        },
+        {
+          "text": "Номер текущей строки",
+          "correct": false,
+          "explanation": "Нет — это <code>NR</code>"
+        },
+        {
+          "text": "Первое поле строки",
+          "correct": false,
+          "explanation": "Нет — это <code>$1</code>"
+        },
+        {
+          "text": "Имя файла без расширения",
+          "correct": false,
+          "explanation": "Нет — это не встроенная переменная awk"
+        }
+      ],
+      "raw_description": "<p>Что означает переменная <code>NF</code> в <code>awk</code>?</p><ul>\n<li>+Количество полей в текущей строке [Верно! Поэтому <code>$NF</code> обращается к последнему полю]</li><li>Номер текущей строки [Нет — это <code>NR</code>]</li><li>Первое поле строки [Нет — это <code>$1</code>]</li><li>Имя файла без расширения [Нет — это не встроенная переменная awk]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Несколько кодов через grep -E",
+      "taskid": "gym_lstart_lab6_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем использовать <code>grep -E \" 404 | 500 \" access.log</code> вместо двух отдельных запусков <code>grep</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы одним расширенным регулярным выражением найти несколько альтернативных кодов",
+          "correct": true,
+          "explanation": "Верно! <code>-E</code> включает удобный синтаксис альтернатив"
+        },
+        {
+          "text": "Чтобы grep изменил все найденные строки",
+          "correct": false,
+          "explanation": "Нет — grep не редактирует файл"
+        },
+        {
+          "text": "Чтобы посчитать размер файла в мегабайтах",
+          "correct": false,
+          "explanation": "Нет — это не задача grep"
+        },
+        {
+          "text": "Чтобы отсортировать IP по убыванию",
+          "correct": false,
+          "explanation": "Нет — сортировку делает <code>sort</code>"
+        }
+      ],
+      "raw_description": "<p>Зачем использовать <code>grep -E \" 404 | 500 \" access.log</code> вместо двух отдельных запусков <code>grep</code>?</p><ul>\n<li>+Чтобы одним расширенным регулярным выражением найти несколько альтернативных кодов [Верно! <code>-E</code> включает удобный синтаксис альтернатив]</li><li>Чтобы grep изменил все найденные строки [Нет — grep не редактирует файл]</li><li>Чтобы посчитать размер файла в мегабайтах [Нет — это не задача grep]</li><li>Чтобы отсортировать IP по убыванию [Нет — сортировку делает <code>sort</code>]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab6/setup.yaml"
+}

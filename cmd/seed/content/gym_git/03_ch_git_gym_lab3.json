@@ -1,0 +1,208 @@
+{
+  "n": 3,
+  "id": "ch_git_gym_lab3",
+  "title": "Блок C: Теги и stash",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "git tag (lightweight)",
+      "taskid": "git_gym_t11_tag",
+      "hint": "<p>Используй <code>git tag</code>: для lightweight тега достаточно имени, затем проверь список тегов и привязку к commit.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> создай lightweight тег <code>v1.0.0</code> на текущем коммите.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> создай lightweight тег <code>v1.0.0</code> на текущем коммите.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git tag -a (annotated)",
+      "taskid": "git_gym_t12_atag",
+      "hint": "<p>Используй <code>git tag</code>: для annotated тега нужен режим с сообщением, затем проверь список тегов и привязку к commit.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> создай annotated тег <code>v2.0.0</code> с сообщением <code>Release 2.0</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> создай annotated тег <code>v2.0.0</code> с сообщением <code>Release 2.0</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git stash",
+      "taskid": "git_gym_t13_stash",
+      "hint": "<p>Используй <code>git stash</code>: он временно убирает незакоммиченные изменения. После действия проверь <code>git status</code>.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> добавь строку <code>wip</code> в конец файла <code>feature.txt</code>, затем спрячь изменения в stash. Рабочая директория должна стать чистой.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> добавь строку <code>wip</code> в конец файла <code>feature.txt</code>, затем спрячь изменения в stash. Рабочая директория должна стать чистой.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git stash pop",
+      "taskid": "git_gym_t14_stash_pop",
+      "hint": "<p>Используй <code>git stash</code> для возврата последней записи. После действия проверь <code>git status</code> и содержимое файла.</p>",
+      "question_html": "<p>Верни изменения из stash через <code>git stash pop</code>. Строка <code>wip</code> должна вернуться в <code>feature.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Верни изменения из stash через <code>git stash pop</code>. Строка <code>wip</code> должна вернуться в <code>feature.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git revert",
+      "taskid": "git_gym_t15_revert",
+      "hint": "<p>Используй <code>git revert</code>: он создаёт новый commit, который отменяет выбранный старый commit. После операции проверь <code>git log</code>.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> откати последний коммит (<code>bad commit: debug code</code>) с помощью <code>git revert</code>, не удаляя его из истории. Файл <code>bug.txt</code> должен исчезнуть из рабочей директории.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> откати последний коммит (<code>bad commit: debug code</code>) с помощью <code>git revert</code>, не удаляя его из истории. Файл <code>bug.txt</code> должен исчезнуть из рабочей директории.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Lightweight vs annotated tag",
+      "taskid": "git_gym_t16_quiz_tags",
+      "hint": "",
+      "question_html": "<p>В чём практическая разница между lightweight и annotated тегом?</p>",
+      "options": [
+        {
+          "text": "<code>Lightweight всегда пушится автоматически</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Annotated работает только в main</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Annotated хранит метаданные и сообщение, lightweight — просто указатель на коммит</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Разницы нет</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В чём практическая разница между lightweight и annotated тегом?</p>\n<ul>\n<li><code>Lightweight всегда пушится автоматически</code></li>\n<li><code>Annotated работает только в main</code></li>\n<li><code>+Annotated хранит метаданные и сообщение, lightweight — просто указатель на коммит</code></li>\n<li><code>Разницы нет</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда уместен stash?",
+      "taskid": "git_gym_t17_quiz_stash",
+      "hint": "",
+      "question_html": "<p>Когда чаще всего используют <code>git stash</code>?</p>",
+      "options": [
+        {
+          "text": "<code>Нужно удалить коммит из истории remote</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Нужно объединить ветки</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Нужно создать новый remote</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Нужно временно отложить незакоммиченные изменения и переключиться на другую задачу</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Когда чаще всего используют <code>git stash</code>?</p>\n<ul>\n<li><code>Нужно удалить коммит из истории remote</code></li>\n<li><code>Нужно объединить ветки</code></li>\n<li><code>Нужно создать новый remote</code></li>\n<li><code>+Нужно временно отложить незакоммиченные изменения и переключиться на другую задачу</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "stash pop риск",
+      "taskid": "git_gym_t18_quiz_stash_pop",
+      "hint": "",
+      "question_html": "<p>Какой риск есть у <code>git stash pop</code>?</p>",
+      "options": [
+        {
+          "text": "<code>+Если изменения конфликтуют с текущей веткой, потребуется ручное разрешение конфликтов</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Команда всегда удаляет последний коммит</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Команда всегда удаляет текущую ветку</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Команда не работает после merge</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Какой риск есть у <code>git stash pop</code>?</p>\n<ul>\n<li><code>+Если изменения конфликтуют с текущей веткой, потребуется ручное разрешение конфликтов</code></li>\n<li><code>Команда всегда удаляет последний коммит</code></li>\n<li><code>Команда всегда удаляет текущую ветку</code></li>\n<li><code>Команда не работает после merge</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "revert для shared history",
+      "taskid": "git_gym_t19_quiz_revert",
+      "hint": "",
+      "question_html": "<p>Почему <code>git revert</code> часто выбирают в командной работе?</p>",
+      "options": [
+        {
+          "text": "<code>Он быстрее чем commit</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Он не переписывает историю, а добавляет новый коммит-откат</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Он автоматически решает все конфликты</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Он удаляет remote origin</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему <code>git revert</code> часто выбирают в командной работе?</p>\n<ul>\n<li><code>Он быстрее чем commit</code></li>\n<li><code>+Он не переписывает историю, а добавляет новый коммит-откат</code></li>\n<li><code>Он автоматически решает все конфликты</code></li>\n<li><code>Он удаляет remote origin</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делать после создания тега?",
+      "taskid": "git_gym_t20_quiz_push_tag",
+      "hint": "",
+      "question_html": "<p>Что нужно сделать, чтобы тег увидели другие разработчики?</p>",
+      "options": [
+        {
+          "text": "<code>Сделать git stash</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Сделать git reset --hard</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Отправить тег на remote (например, git push origin v1.0.0 или --tags)</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Переименовать ветку main</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что нужно сделать, чтобы тег увидели другие разработчики?</p>\n<ul>\n<li><code>Сделать git stash</code></li>\n<li><code>Сделать git reset --hard</code></li>\n<li><code>+Отправить тег на remote (например, git push origin v1.0.0 или --tags)</code></li>\n<li><code>Переименовать ветку main</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_git/git_gym/lab3/setup.yaml"
+}

@@ -1,0 +1,313 @@
+{
+  "n": 12,
+  "id": "ch_devops_quiz_cicd_2",
+  "title": "Квиз: GitOps и стратегии деплоя",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "ArgoCD reconciliation",
+      "taskid": "cicd_quiz2_t1_reconcile",
+      "hint": "",
+      "question_html": "<p>Как часто ArgoCD сравнивает состояние кластера с Git?</p>",
+      "options": [
+        {
+          "text": "Только при деплое через CI pipeline",
+          "correct": false,
+          "explanation": "Нет — ArgoCD независим от CI; он сам следит за Git"
+        },
+        {
+          "text": "Раз в 24 часа по расписанию",
+          "correct": false,
+          "explanation": "Нет — ArgoCD реагирует на Git события почти мгновенно (webhook или polling каждые 3 мин)"
+        },
+        {
+          "text": "Постоянно сравнивает Git и кластер",
+          "correct": true,
+          "explanation": "Верно! ArgoCD работает как control loop — постоянно reconciles desired vs actual state"
+        },
+        {
+          "text": "Только при ручном нажатии кнопки Sync",
+          "correct": false,
+          "explanation": "Нет — при автоматическом режиме ArgoCD синхронизирует автоматически"
+        }
+      ],
+      "raw_description": "<p>Как часто ArgoCD сравнивает состояние кластера с Git?</p><ul>\n<li>Только при деплое через CI pipeline [Нет — ArgoCD независим от CI; он сам следит за Git]</li>\n<li>Раз в 24 часа по расписанию [Нет — ArgoCD реагирует на Git события почти мгновенно (webhook или polling каждые 3 мин)]</li>\n<li>+Постоянно сравнивает Git и кластер [Верно! ArgoCD работает как control loop — постоянно reconciles desired vs actual state]</li>\n<li>Только при ручном нажатии кнопки Sync [Нет — при автоматическом режиме ArgoCD синхронизирует автоматически]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Pipeline trigger по расписанию",
+      "taskid": "cicd_quiz2_t2_schedule",
+      "hint": "",
+      "question_html": "<p>Зачем запускать CI pipeline по расписанию (cron), если он уже запускается по commit?</p>",
+      "options": [
+        {
+          "text": "Ловить поломки зависимостей без коммита",
+          "correct": true,
+          "explanation": "Верно! Зависимости меняются независимо от вашего кода; scheduled pipeline обнаруживает это"
+        },
+        {
+          "text": "Чтобы экономить деньги на CI",
+          "correct": false,
+          "explanation": "Нет — scheduled runs добавляют запуски, а не сокращают"
+        },
+        {
+          "text": "Для автоматического деплоя в production",
+          "correct": false,
+          "explanation": "Нет — для этого используется CD, а не scheduled CI"
+        },
+        {
+          "text": "Cron pipeline работает быстрее commit pipeline",
+          "correct": false,
+          "explanation": "Нет — тип триггера не влияет на скорость выполнения"
+        }
+      ],
+      "raw_description": "<p>Зачем запускать CI pipeline по расписанию (cron), если он уже запускается по commit?</p><ul>\n<li>+Ловить поломки зависимостей без коммита [Верно! Зависимости меняются независимо от вашего кода; scheduled pipeline обнаруживает это]</li>\n<li>Чтобы экономить деньги на CI [Нет — scheduled runs добавляют запуски, а не сокращают]</li>\n<li>Для автоматического деплоя в production [Нет — для этого используется CD, а не scheduled CI]</li>\n<li>Cron pipeline работает быстрее commit pipeline [Нет — тип триггера не влияет на скорость выполнения]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Monorepo CI",
+      "taskid": "cicd_quiz2_t3_monorepo",
+      "hint": "",
+      "question_html": "<p>В монорепо (один репозиторий, много сервисов) как правильно настроить CI?</p>",
+      "options": [
+        {
+          "text": "Path-based triggers только для изменённых сервисов",
+          "correct": true,
+          "explanation": "Верно! Если изменился только service-a — нет смысла тестировать service-b"
+        },
+        {
+          "text": "Запускать pipeline только по тегам, не по коммитам",
+          "correct": false,
+          "explanation": "Нет — теги для releases; коммиты должны тоже триггерить CI"
+        },
+        {
+          "text": "Всегда запускать все тесты при любом коммите",
+          "correct": false,
+          "explanation": "Нет — для больших монорепо это часы ожидания при каждом commit"
+        },
+        {
+          "text": "Разделить монорепо на отдельные репозитории",
+          "correct": false,
+          "explanation": "Нет — монорепо имеет свои преимущества; решение — path-based triggers"
+        }
+      ],
+      "raw_description": "<p>В монорепо (один репозиторий, много сервисов) как правильно настроить CI?</p><ul>\n<li>+Path-based triggers только для изменённых сервисов [Верно! Если изменился только service-a — нет смысла тестировать service-b]</li>\n<li>Запускать pipeline только по тегам, не по коммитам [Нет — теги для releases; коммиты должны тоже триггерить CI]</li>\n<li>Всегда запускать все тесты при любом коммите [Нет — для больших монорепо это часы ожидания при каждом commit]</li>\n<li>Разделить монорепо на отдельные репозитории [Нет — монорепо имеет свои преимущества; решение — path-based triggers]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Rollback в GitOps",
+      "taskid": "cicd_quiz2_t4_rollback",
+      "hint": "",
+      "question_html": "<p>Как делается rollback в GitOps подходе?</p>",
+      "options": [
+        {
+          "text": "kubectl rollout undo напрямую в кластере",
+          "correct": false,
+          "explanation": "Нет — прямые изменения в кластере создают drift; GitOps предпочитает изменения через Git"
+        },
+        {
+          "text": "helm rollback в CLI",
+          "correct": false,
+          "explanation": "Нет — если используется GitOps, helm состояние в Git; rollback через Git commit"
+        },
+        {
+          "text": "Revert в Git, дальше применит ArgoCD",
+          "correct": true,
+          "explanation": "Верно! В GitOps rollback = изменение в Git; ArgoCD делает остальное"
+        },
+        {
+          "text": "Нажать кнопку Rollback в ArgoCD UI",
+          "correct": false,
+          "explanation": "Частично допустимо для emergency, но правильно — через Git; ArgoCD восстановит drift при selfHeal"
+        }
+      ],
+      "raw_description": "<p>Как делается rollback в GitOps подходе?</p><ul>\n<li>kubectl rollout undo напрямую в кластере [Нет — прямые изменения в кластере создают drift; GitOps предпочитает изменения через Git]</li>\n<li>helm rollback в CLI [Нет — если используется GitOps, helm состояние в Git; rollback через Git commit]</li>\n<li>+Revert в Git, дальше применит ArgoCD [Верно! В GitOps rollback = изменение в Git; ArgoCD делает остальное]</li>\n<li>Нажать кнопку Rollback в ArgoCD UI [Частично допустимо для emergency, но правильно — через Git; ArgoCD восстановит drift при selfHeal]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Contract Testing",
+      "taskid": "cicd_quiz2_t5_contract",
+      "hint": "",
+      "question_html": "<p>Contract Testing в микросервисах нужен чтобы...</p>",
+      "options": [
+        {
+          "text": "Проверить что API соответствует OpenAPI спецификации",
+          "correct": false,
+          "explanation": "Нет — это schema validation; contract testing о конкретных ожиданиях конкретного потребителя"
+        },
+        {
+          "text": "Тестировать производительность API под нагрузкой",
+          "correct": false,
+          "explanation": "Нет — это load testing; contract testing о функциональной совместимости"
+        },
+        {
+          "text": "Заменить integration тесты между сервисами",
+          "correct": false,
+          "explanation": "Нет — contract testing дополняет integration тесты, не заменяет"
+        },
+        {
+          "text": "Проверить совместимость provider API и consumers",
+          "correct": true,
+          "explanation": "Верно! Инструменты как Pact позволяют тестировать контракт изолированно от другого сервиса"
+        }
+      ],
+      "raw_description": "<p>Contract Testing в микросервисах нужен чтобы...</p><ul>\n<li>Проверить что API соответствует OpenAPI спецификации [Нет — это schema validation; contract testing о конкретных ожиданиях конкретного потребителя]</li>\n<li>Тестировать производительность API под нагрузкой [Нет — это load testing; contract testing о функциональной совместимости]</li>\n<li>Заменить integration тесты между сервисами [Нет — contract testing дополняет integration тесты, не заменяет]</li>\n<li>+Проверить совместимость provider API и consumers [Верно! Инструменты как Pact позволяют тестировать контракт изолированно от другого сервиса]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Blue-Green deployment",
+      "taskid": "cicd_quiz2_t6_blue_green",
+      "hint": "",
+      "question_html": "<p>В чём суть Blue-Green deployment стратегии?</p>",
+      "options": [
+        {
+          "text": "Запускать новую версию рядом со старой и постепенно переводить трафик",
+          "correct": false,
+          "explanation": "Нет — это Canary deployment; Blue-Green переключается полностью"
+        },
+        {
+          "text": "Два окружения, переключение через router/LB",
+          "correct": true,
+          "explanation": "Верно! Rollback = переключить обратно на blue; нет downtime при деплое"
+        },
+        {
+          "text": "Деплоить одновременно в blue (dev) и green (production) окружения",
+          "correct": false,
+          "explanation": "Нет — blue и green это prod окружения одновременно, не dev/prod"
+        },
+        {
+          "text": "Деплоить новую версию на 50% серверов, потом на остальные",
+          "correct": false,
+          "explanation": "Нет — это Rolling update стратегия"
+        }
+      ],
+      "raw_description": "<p>В чём суть Blue-Green deployment стратегии?</p><ul>\n<li>Запускать новую версию рядом со старой и постепенно переводить трафик [Нет — это Canary deployment; Blue-Green переключается полностью]</li>\n<li>+Два окружения, переключение через router/LB [Верно! Rollback = переключить обратно на blue; нет downtime при деплое]</li>\n<li>Деплоить одновременно в blue (dev) и green (production) окружения [Нет — blue и green это prod окружения одновременно, не dev/prod]</li>\n<li>Деплоить новую версию на 50% серверов, потом на остальные [Нет — это Rolling update стратегия]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Canary deployment",
+      "taskid": "cicd_quiz2_t7_canary",
+      "hint": "",
+      "question_html": "<p>Canary deployment — когда 5% пользователей получают новую версию. Основная цель?</p>",
+      "options": [
+        {
+          "text": "Экономить ресурсы — не деплоить на все серверы сразу",
+          "correct": false,
+          "explanation": "Нет — ресурсная экономия не главная цель; цель — risk reduction"
+        },
+        {
+          "text": "Проводить A/B тестирование фич",
+          "correct": false,
+          "explanation": "Близко, но Canary о надёжности; A/B о user behavior. Технически похожи, разные цели"
+        },
+        {
+          "text": "Ускорить CI/CD pipeline",
+          "correct": false,
+          "explanation": "Нет — Canary о deployment стратегии, не о скорости pipeline"
+        },
+        {
+          "text": "Поймать production-проблемы на малой доле трафика",
+          "correct": true,
+          "explanation": "Верно! Как шахтёры использовали канарейку для обнаружения газа — ранний сигнал опасности"
+        }
+      ],
+      "raw_description": "<p>Canary deployment — когда 5% пользователей получают новую версию. Основная цель?</p><ul>\n<li>Экономить ресурсы — не деплоить на все серверы сразу [Нет — ресурсная экономия не главная цель; цель — risk reduction]</li>\n<li>Проводить A/B тестирование фич [Близко, но Canary о надёжности; A/B о user behavior. Технически похожи, разные цели]</li>\n<li>Ускорить CI/CD pipeline [Нет — Canary о deployment стратегии, не о скорости pipeline]</li>\n<li>+Поймать production-проблемы на малой доле трафика [Верно! Как шахтёры использовали канарейку для обнаружения газа — ранний сигнал опасности]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Pipeline as Code",
+      "taskid": "cicd_quiz2_t8_pipeline_as_code",
+      "hint": "",
+      "question_html": "<p>Зачем хранить CI/CD pipeline конфигурацию в Git вместо настройки в UI инструмента?</p>",
+      "options": [
+        {
+          "text": "Git хранилище быстрее чем база данных CI инструмента",
+          "correct": false,
+          "explanation": "Нет — скорость не причина для pipeline-as-code"
+        },
+        {
+          "text": "CI инструменты не поддерживают UI конфигурацию",
+          "correct": false,
+          "explanation": "Нет — большинство поддерживают оба режима"
+        },
+        {
+          "text": "Versioning, review и history для pipeline",
+          "correct": true,
+          "explanation": "Верно! Pipeline в Git = reproducible builds, аудит изменений, возможность rollback пайплайна"
+        },
+        {
+          "text": "UI инструментов сложнее чем YAML — разработчикам проще в Git",
+          "correct": false,
+          "explanation": "Нет — YAML не проще UI; преимущество в версионировании, не в UX"
+        }
+      ],
+      "raw_description": "<p>Зачем хранить CI/CD pipeline конфигурацию в Git вместо настройки в UI инструмента?</p><ul>\n<li>Git хранилище быстрее чем база данных CI инструмента [Нет — скорость не причина для pipeline-as-code]</li>\n<li>CI инструменты не поддерживают UI конфигурацию [Нет — большинство поддерживают оба режима]</li>\n<li>+Versioning, review и history для pipeline [Верно! Pipeline в Git = reproducible builds, аудит изменений, возможность rollback пайплайна]</li>\n<li>UI инструментов сложнее чем YAML — разработчикам проще в Git [Нет — YAML не проще UI; преимущество в версионировании, не в UX]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DAST vs SAST",
+      "taskid": "cicd_quiz2_t9_security",
+      "hint": "",
+      "question_html": "<p>SAST (Static Application Security Testing) в CI — что проверяет?</p>",
+      "options": [
+        {
+          "text": "Тестирует API endpoints на доступность и правильные HTTP статусы",
+          "correct": false,
+          "explanation": "Нет — это функциональное тестирование, не security"
+        },
+        {
+          "text": "Статический анализ кода без запуска приложения",
+          "correct": true,
+          "explanation": "Верно! SAST работает на этапе code review; DAST тестирует запущенное приложение"
+        },
+        {
+          "text": "Сканирует Docker образы на уязвимые пакеты",
+          "correct": false,
+          "explanation": "Нет — это Container/SCA scanning; SAST анализирует именно исходный код"
+        },
+        {
+          "text": "Проверяет производительность при высокой нагрузке",
+          "correct": false,
+          "explanation": "Нет — это load testing"
+        }
+      ],
+      "raw_description": "<p>SAST (Static Application Security Testing) в CI — что проверяет?</p><ul>\n<li>Тестирует API endpoints на доступность и правильные HTTP статусы [Нет — это функциональное тестирование, не security]</li>\n<li>+Статический анализ кода без запуска приложения [Верно! SAST работает на этапе code review; DAST тестирует запущенное приложение]</li>\n<li>Сканирует Docker образы на уязвимые пакеты [Нет — это Container/SCA scanning; SAST анализирует именно исходный код]</li>\n<li>Проверяет производительность при высокой нагрузке [Нет — это load testing]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Deployment frequency увеличение",
+      "taskid": "cicd_quiz2_t10_increase_freq",
+      "hint": "",
+      "question_html": "<p>Главное препятствие для увеличения Deployment Frequency — это...</p>",
+      "options": [
+        {
+          "text": "Сложность Kubernetes делает деплои медленными",
+          "correct": false,
+          "explanation": "Нет — Kubernetes позволяет быстрые rolling updates"
+        },
+        {
+          "text": "Регуляторные требования всегда запрещают частые деплои",
+          "correct": false,
+          "explanation": "Нет — regulated industries (банки) тоже достигают высокой deployment frequency с правильными процессами"
+        },
+        {
+          "text": "Нехватка серверов для запуска всех тестов",
+          "correct": false,
+          "explanation": "Нет — cloud ресурсы масштабируются; hardware не главный ограничитель"
+        },
+        {
+          "text": "Недоверие к тестам, CI и автоматизации",
+          "correct": true,
+          "explanation": "Верно! Техника достаточная; проблема в уверенности. Хорошие тесты + observability дают уверенность деплоить часто"
+        }
+      ],
+      "raw_description": "<p>Главное препятствие для увеличения Deployment Frequency — это...</p><ul>\n<li>Сложность Kubernetes делает деплои медленными [Нет — Kubernetes позволяет быстрые rolling updates]</li>\n<li>Регуляторные требования всегда запрещают частые деплои [Нет — regulated industries (банки) тоже достигают высокой deployment frequency с правильными процессами]</li>\n<li>Нехватка серверов для запуска всех тестов [Нет — cloud ресурсы масштабируются; hardware не главный ограничитель]</li>\n<li>+Недоверие к тестам, CI и автоматизации [Верно! Техника достаточная; проблема в уверенности. Хорошие тесты + observability дают уверенность деплоить часто]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

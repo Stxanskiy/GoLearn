@@ -1,0 +1,181 @@
+{
+  "n": 29,
+  "id": "ch_k8si_lab10_ingress",
+  "title": "Лабораторная: Ingress",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>До Ingress проверь, что каждый Service работает внутри кластера. Это первый нормальный шаг диагностики: если Service не отвечает напрямую, Ingress пока ни при чём.</p>\n<p>Сначала посмотри, что Service вообще созданы:</p>\n<pre><code>kubectl get service frontend-svc catalog-svc cart-svc</code></pre>\n<p>Обрати внимание на имена и порт <code>80/TCP</code>. Для приложения внутри кластера важно DNS-имя Service: <code>frontend-svc</code>, <code>catalog-svc</code>, <code>cart-svc</code>.</p>\n<p>Теперь проверь, есть ли у Service живые backend Pod'ы:</p>\n<pre><code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code></pre>\n<p>В колонке <code>ENDPOINTS</code> должны быть IP-адреса с портами. Если у какого-то Service написано <code>&lt;none&gt;</code>, Service не выбрал Pod'ы. Тогда нужно смотреть selector у Service и labels у Pod'ов, а не Ingress.</p>\n<p>Проверь frontend через временный debug Pod. Запрос идёт так: debug Pod → DNS имя <code>frontend-svc</code> → Service → nginx Pod.</p>\n<pre><code>kubectl run ingress-check-frontend --image=busybox:1.28 --restart=Never --rm -i -- \\\n  wget -qO- http://frontend-svc</code></pre>\n<p>В ответе должна быть HTML-страница с текстом <code>DevOps404 Mini Store</code> и упоминанием <code>frontend-svc</code>. Это доказывает, что nginx отвечает через Service, без участия Ingress.</p>\n<p>Теперь отдельно проверь catalog backend. Запрос идёт не через frontend и не через Ingress, а прямо в <code>catalog-svc</code>:</p>\n<pre><code>kubectl run ingress-check-catalog --image=busybox:1.28 --restart=Never --rm -i -- \\\n  wget -qO- http://catalog-svc/api/catalog</code></pre>\n<p>В ответе должны быть строки <code>service=catalog-svc</code>, <code>route=/api/catalog</code> и список товаров. Если вместо этого пришёл HTML frontend'а или ошибка, значит запрос ушёл не в тот backend или backend не отдаёт нужный path.</p>\n<p>Затем проверь cart backend:</p>\n<pre><code>kubectl run ingress-check-cart --image=busybox:1.28 --restart=Never --rm -i -- \\\n  wget -qO- http://cart-svc/api/cart</code></pre>\n<p>В ответе должны быть строки <code>service=cart-svc</code>, <code>route=/api/cart</code> и данные корзины.</p>\n<p>Итог этого шага: слой Service уже живёт. Frontend отдаёт HTML, catalog отдаёт товары, cart отдаёт корзину. Только после этого имеет смысл добавлять Ingress сверху.</p>\n<p>Отметь задачу выполненной, когда все три прямых запроса к Service возвращают ожидаемые ответы.</p>2a:T5ac,<p>Создай Ingress <code>store-ingress</code> в файле <code>/root/store-ingress.yaml</code>. Он должен использовать <code>ingressClassName: traefik</code>, annotation <code>traefik.ingress.kubernetes.io/router.entrypoints: web</code> и host из файла <code>/root/ingress-lab/preview-host.txt</code>.</p>\n<p>Host нужен не как отдельная тема, а чтобы <code>Web Preview</code> попал именно в твой namespace.</p>\n<pre><code>HOST=\"$(cat /root/ingress-lab/preview-host.txt)\"</code></pre>\n<p>Внутри этого Ingress маршрутизируй три path:</p>\n<ul>\n<li><code>/api/catalog</code> → <code>catalog-svc:80</code>;</li>\n<li><code>/api/cart</code> → <code>cart-svc:80</code>;</li>\n<li><code>/</code> → <code>frontend-svc:80</code>.</li>\n</ul>\n<p>Для всех путей используй <code>pathType: Prefix</code>. Более конкретные пути <code",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Понять схему mini-store",
+      "taskid": "k8si_ingress_t1_scheme",
+      "hint": "",
+      "question_html": "<p>В этой лабораторной мы соберём маленький магазин из трёх частей:</p>\n\n<p>К концу лабы Ingress будет одной HTTP-точкой входа и разложит запросы по path:</p>\n<pre><code>/            → frontend-svc\n/api/catalog → catalog-svc\n/api/cart    → cart-svc\n/health      → frontend-svc</code></pre>\n<p>В этой лабе мы диагностируем то, что доступно в своём namespace: Deployment, Service, Endpoints, Ingress YAML и реальные HTTP-ответы.</p>",
+      "options": [
+        {
+          "text": "<code>frontend</code> — nginx отдаёт HTML-страницу;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>catalog</code> — отдельный HTTP backend отдаёт список товаров;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>cart</code> — отдельный HTTP backend отдаёт данные корзины.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В этой лабораторной мы соберём маленький магазин из трёх частей:</p>\n<ul>\n<li><code>frontend</code> — nginx отдаёт HTML-страницу;</li>\n<li><code>catalog</code> — отдельный HTTP backend отдаёт список товаров;</li>\n<li><code>cart</code> — отдельный HTTP backend отдаёт данные корзины.</li>\n</ul>\n<p>К концу лабы Ingress будет одной HTTP-точкой входа и разложит запросы по path:</p>\n<pre><code>/            → frontend-svc\n/api/catalog → catalog-svc\n/api/cart    → cart-svc\n/health      → frontend-svc</code></pre>\n<p>В этой лабе мы диагностируем то, что доступно в своём namespace: Deployment, Service, Endpoints, Ingress YAML и реальные HTTP-ответы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Развернуть mini-store",
+      "taskid": "k8si_ingress_t2_apps",
+      "hint": "<p>Если Service есть, но endpoints пустые, сравни labels у Pod'ов и selector у Service.</p>",
+      "question_html": "<p>Посмотри подготовленный манифест приложения:</p>\n<pre><code>cat /root/ingress-lab/app.yaml</code></pre>\n<p>Примени его и дождись готовности трёх Deployment'ов:</p>\n<pre><code>kubectl apply -f /root/ingress-lab/app.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/frontend --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/catalog --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/cart --timeout=300s</code></pre>\n<p>Проверь Service и endpoints внутри своего namespace:</p>\n<pre><code>kubectl get service frontend-svc catalog-svc cart-svc</code></pre>\n<pre><code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code></pre>\n<p>Ingress сам не создаёт Pod'ы и Service. Он только решает, в какой Service отправить HTTP-запрос.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри подготовленный манифест приложения:</p>\n<pre><code>cat /root/ingress-lab/app.yaml</code></pre>\n<p>Примени его и дождись готовности трёх Deployment'ов:</p>\n<pre><code>kubectl apply -f /root/ingress-lab/app.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/frontend --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/catalog --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/cart --timeout=300s</code></pre>\n<p>Проверь Service и endpoints внутри своего namespace:</p>\n<pre><code>kubectl get service frontend-svc catalog-svc cart-svc</code></pre>\n<pre><code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code></pre>\n<p>Ingress сам не создаёт Pod'ы и Service. Он только решает, в какой Service отправить HTTP-запрос.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить Service изнутри кластера",
+      "taskid": "k8si_ingress_t3_service_check",
+      "hint": "<p>Если один из запросов не отвечает, проверь <code>kubectl get pods -o wide</code>, <code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code>, selector у Service и labels у Pod'ов. Ingress пока не участвовал в этих запросах.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "check",
+      "title": "Создать Ingress с path-routing",
+      "taskid": "k8si_ingress_t4_ingress",
+      "hint": "<p>Ingress backend указывает на Service port. Здесь везде <code>number: 80</code>, хотя catalog/cart внутри контейнера слушают <code>8080</code>; это скрыто за Service <code>targetPort</code>.</p>",
+      "question_html": "$2a",
+      "options": [],
+      "raw_description": "$2a"
+    },
+    {
+      "type": "check",
+      "title": "Добавить маршрут /health",
+      "taskid": "k8si_ingress_t5_health_route",
+      "hint": "<p>Ingress route указывает на Service port, а не на containerPort. Для <code>/health</code> backend такой же, как у <code>/</code>: service <code>frontend-svc</code>, port <code>80</code>.</p>",
+      "question_html": "$2b",
+      "options": [],
+      "raw_description": "$2b"
+    },
+    {
+      "type": "self",
+      "title": "Проверить Ingress через HTTP изнутри кластера",
+      "taskid": "k8si_ingress_t5_ingress_check",
+      "hint": "<p>Если прямые запросы к Service из задачи 3 работают, а через Traefik нет, смотри <code>kubectl get ingress store-ingress -o yaml</code>: host, paths, backend service names и ports. В этой лабе backend port у Ingress должен быть <code>80</code>, потому что это port Service, а не containerPort.</p>",
+      "question_html": "$2c",
+      "options": [],
+      "raw_description": "$2c"
+    },
+    {
+      "type": "self",
+      "title": "Открыть `Web Preview` и увидеть все три сервиса",
+      "taskid": "k8si_ingress_t6_web_preview",
+      "hint": "",
+      "question_html": "<p>Открой кнопку <code>Web Preview</code>. На странице должен загрузиться frontend, а внутри страницы должны появиться два ответа:</p>\n\n<p>Это тот же маршрут, что и в curl-проверке: браузер открывает <code>/</code>, nginx отдаёт страницу, JavaScript на странице делает относительные запросы <code>api/catalog</code> и <code>api/cart</code>, а Ingress отправляет эти path в разные Service.</p>\n<p>Важно: в <code>Web Preview</code> страница открывается под путём платформы вида <code>/k8s/.../</code>. Поэтому frontend должен использовать относительные пути без начального <code>/</code>. Запрос <code>/api/catalog</code> ушёл бы в корень платформы, а не в preview-прокси.</p>",
+      "options": [
+        {
+          "text": "зелёный <code>OK</code> и данные каталога из <code>catalog-svc</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "зелёный <code>OK</code> и данные корзины из <code>cart-svc</code>.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Открой кнопку <code>Web Preview</code>. На странице должен загрузиться frontend, а внутри страницы должны появиться два ответа:</p>\n<ul>\n<li>зелёный <code>OK</code> и данные каталога из <code>catalog-svc</code>;</li>\n<li>зелёный <code>OK</code> и данные корзины из <code>cart-svc</code>.</li>\n</ul>\n<p>Это тот же маршрут, что и в curl-проверке: браузер открывает <code>/</code>, nginx отдаёт страницу, JavaScript на странице делает относительные запросы <code>api/catalog</code> и <code>api/cart</code>, а Ingress отправляет эти path в разные Service.</p>\n<p>Важно: в <code>Web Preview</code> страница открывается под путём платформы вида <code>/k8s/.../</code>. Поэтому frontend должен использовать относительные пути без начального <code>/</code>. Запрос <code>/api/catalog</code> ушёл бы в корень платформы, а не в preview-прокси.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Пройти debug-чеклист по Ingress",
+      "taskid": "k8si_ingress_t7_debug_report",
+      "hint": "<p>Для прикладной диагностики Ingress надёжнее смотреть <code>get ingress -o yaml</code>, <code>get service</code> и <code>get endpoints</code>: так видно правило маршрутизации, Service и реальные backend Pod'ы.</p>",
+      "question_html": "$2d",
+      "options": [],
+      "raw_description": "$2d"
+    },
+    {
+      "type": "quiz",
+      "title": "Что проверять, если API не видно на странице?",
+      "taskid": "k8si_ingress_t8_quiz_debug",
+      "hint": "",
+      "question_html": "<p><code>Web Preview</code> открывает frontend, но блок catalog или cart на странице не загружается. Что проверять в первую очередь?</p>",
+      "options": [
+        {
+          "text": "Сразу смотреть Pod'ы Traefik в kube-system",
+          "correct": false,
+          "explanation": "Нет — сначала нужно проверить свои Service, endpoints и Ingress rule"
+        },
+        {
+          "text": "Прямой HTTP к нужному Service, endpoints этого Service и path/backend в Ingress",
+          "correct": true,
+          "explanation": "Верно! Нужно понять, сломался backend или маршрутизация Ingress"
+        },
+        {
+          "text": "Создать TLS Secret",
+          "correct": false,
+          "explanation": "Нет — эта лаба работает по HTTP, TLS тут не участвует"
+        },
+        {
+          "text": "Удалить все Pod'ы приложения",
+          "correct": false,
+          "explanation": "Нет — сначала нужно собрать факты, а не перезапускать всё"
+        }
+      ],
+      "raw_description": "<p><code>Web Preview</code> открывает frontend, но блок catalog или cart на странице не загружается. Что проверять в первую очередь?</p><ul>\n<li>Сразу смотреть Pod'ы Traefik в kube-system [Нет — сначала нужно проверить свои Service, endpoints и Ingress rule]</li>\n<li>+Прямой HTTP к нужному Service, endpoints этого Service и path/backend в Ingress [Верно! Нужно понять, сломался backend или маршрутизация Ingress]</li>\n<li>Создать TLS Secret [Нет — эта лаба работает по HTTP, TLS тут не участвует]</li>\n<li>Удалить все Pod'ы приложения [Нет — сначала нужно собрать факты, а не перезапускать всё]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему в лабе не смотрим kube-system?",
+      "taskid": "k8si_ingress_t9_quiz_rbac",
+      "hint": "",
+      "question_html": "<p>Почему в этой лабораторной мы сначала проверяем <code>Ingress</code>, <code>Service</code>, <code>endpoints</code> и HTTP-ответы, а не начинаем с Pod'ов controller'а в <code>kube-system</code>?</p>",
+      "options": [
+        {
+          "text": "Потому что Ingress Controller не нужен",
+          "correct": false,
+          "explanation": "Нет — нужен, просто он обслуживается платформой"
+        },
+        {
+          "text": "Потому что Service заменяет Ingress",
+          "correct": false,
+          "explanation": "Нет — Service и Ingress решают разные задачи"
+        },
+        {
+          "text": "Потому что для прикладной диагностики сначала достаточно проверить свои Ingress, Service, endpoints и HTTP-ответы",
+          "correct": true,
+          "explanation": "Верно! Controller — инфраструктурный слой"
+        },
+        {
+          "text": "Потому что Traefik работает только с TLS",
+          "correct": false,
+          "explanation": "Нет — Traefik может обслуживать обычный HTTP"
+        }
+      ],
+      "raw_description": "<p>Почему в этой лабораторной мы сначала проверяем <code>Ingress</code>, <code>Service</code>, <code>endpoints</code> и HTTP-ответы, а не начинаем с Pod'ов controller'а в <code>kube-system</code>?</p><ul>\n<li>Потому что Ingress Controller не нужен [Нет — нужен, просто он обслуживается платформой]</li>\n<li>Потому что Service заменяет Ingress [Нет — Service и Ingress решают разные задачи]</li>\n<li>+Потому что для прикладной диагностики сначала достаточно проверить свои Ingress, Service, endpoints и HTTP-ответы [Верно! Controller — инфраструктурный слой]</li>\n<li>Потому что Traefik работает только с TLS [Нет — Traefik может обслуживать обычный HTTP]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы",
+      "taskid": "k8si_ingress_t10_cleanup",
+      "hint": "<p>После удаления проверь <code>kubectl get ingress</code>, <code>kubectl get deployment</code> и <code>kubectl get service</code>.</p>",
+      "question_html": "<p>Удали Ingress, Service'ы, Deployment'ы и ConfigMap'ы, которые создавались в лабораторной:</p>\n<pre><code>kubectl delete ingress store-ingress --ignore-not-found</code></pre>\n<pre><code>kubectl delete service frontend-svc catalog-svc cart-svc --ignore-not-found</code></pre>\n<pre><code>kubectl delete deployment frontend catalog cart --ignore-not-found</code></pre>\n<pre><code>kubectl delete configmap frontend-content catalog-source cart-source --ignore-not-found</code></pre>",
+      "options": [],
+      "raw_description": "<p>Удали Ingress, Service'ы, Deployment'ы и ConfigMap'ы, которые создавались в лабораторной:</p>\n<pre><code>kubectl delete ingress store-ingress --ignore-not-found</code></pre>\n<pre><code>kubectl delete service frontend-svc catalog-svc cart-svc --ignore-not-found</code></pre>\n<pre><code>kubectl delete deployment frontend catalog cart --ignore-not-found</code></pre>\n<pre><code>kubectl delete configmap frontend-content catalog-source cart-source --ignore-not-found</code></pre>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/net_lab2/setup.yaml"
+}

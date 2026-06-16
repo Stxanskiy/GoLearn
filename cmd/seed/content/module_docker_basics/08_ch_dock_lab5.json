@@ -1,0 +1,187 @@
+{
+  "n": 8,
+  "id": "ch_dock_lab5",
+  "title": "Лабораторная 3: Сети Docker",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Проверь вручную, как работает DNS внутри пользовательской сети Docker.</p>\n<p>Сначала обратись из <code>web1</code> к <code>web2</code> по имени:</p>\n<pre><code>docker exec web1 wget -qO- http://web2 | head</code></pre>\n<p>Ты должен увидеть страницу с текстом <code>Hello from web2 backend</code>. Это значит, что <code>web1</code> нашёл контейнер <code>web2</code> по имени внутри сети <code>mynet</code>.</p>\n<p>Теперь создай третий контейнер без подключения к <code>mynet</code>:</p>\n<pre><code>docker rm -f outsider 2&gt;/dev/null || true</code></pre>\n<pre><code>docker run -d --name outsider nginx:alpine</code></pre>\n<p>Проверь, в какой сети он находится:</p>\n<pre><code>docker inspect outsider --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}'</code></pre>\n<p>В выводе будет <code>bridge</code>, а не <code>mynet</code>.</p>\n<p>Теперь попробуй обратиться к <code>web2</code> из контейнера <code>outsider</code>:</p>\n<pre><code>docker exec outsider sh -c 'wget -T 3 -qO- http://web2 || echo \"web2 недоступен из default bridge\"'</code></pre>\n<p>Так видно главное правило: имя <code>web2</code> работает для контейнеров в одной пользовательской сети, но не обязано работать из другой сети.</p>\n<p>Когда увидишь успешный ответ из <code>web1</code> и неуспешный доступ из <code>outsider</code>, нажми «Готово».</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L24\",null,{}],[\"$\",\"$L25\",null,{\"initialData\":{\"id\":\"ch_dock_lab5\",\"title\":\"Лабораторная 3: Сети Docker\",\"type\":\"lab\",\"description\":null,\"task_id\":null,\"vm_image\":\"docker\",\"vm_init\":\"module_doc",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Изучить сети Docker",
+      "taskid": "dock_lab5_t1_ls",
+      "hint": "<p>Docker автоматически создаёт три сети при установке: <strong>bridge</strong> (изолированная сеть по умолчанию), <strong>host</strong> (без изоляции, использует сеть хоста) и <strong>none</strong> (без сети). Контейнеры в одной сети могут общаться между собой.</p>",
+      "question_html": "<p>Выполни <code>docker network ls</code>. Какая сеть означает «без сетевого доступа»?</p>\n<pre><code>docker network ls</code></pre>",
+      "options": [
+        {
+          "text": "bridge",
+          "correct": false,
+          "explanation": "Нет — bridge даёт изолированную сеть с NAT"
+        },
+        {
+          "text": "none",
+          "correct": true,
+          "explanation": "Верно! none оставляет контейнер только с loopback"
+        },
+        {
+          "text": "host",
+          "correct": false,
+          "explanation": "Нет — host использует сеть хоста"
+        },
+        {
+          "text": "mynet",
+          "correct": false,
+          "explanation": "Нет — это пользовательская сеть, которую мы создадим позже"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker network ls</code>. Какая сеть означает «без сетевого доступа»?</p>\n<pre><code>docker network ls</code></pre>\n<ul>\n<li>bridge [Нет — bridge даёт изолированную сеть с NAT]</li>\n<li>+none [Верно! none оставляет контейнер только с loopback]</li>\n<li>host [Нет — host использует сеть хоста]</li>\n<li>mynet [Нет — это пользовательская сеть, которую мы создадим позже]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Проверить список сетей",
+      "taskid": "dock_lab5_t2_list",
+      "hint": "",
+      "question_html": "<p>Выполни <code>docker network ls</code>. Какая сеть есть сразу после установки Docker?</p>",
+      "options": [
+        {
+          "text": "frontend",
+          "correct": false,
+          "explanation": "Нет — такую сеть нужно создавать вручную"
+        },
+        {
+          "text": "backend",
+          "correct": false,
+          "explanation": "Нет — такую сеть нужно создавать вручную"
+        },
+        {
+          "text": "bridge",
+          "correct": true,
+          "explanation": "Верно! bridge создаётся автоматически"
+        },
+        {
+          "text": "mynet",
+          "correct": false,
+          "explanation": "Нет — mynet будет создана в следующей задаче"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker network ls</code>. Какая сеть есть сразу после установки Docker?</p><ul>\n<li>frontend [Нет — такую сеть нужно создавать вручную]</li>\n<li>backend [Нет — такую сеть нужно создавать вручную]</li>\n<li>+bridge [Верно! bridge создаётся автоматически]</li>\n<li>mynet [Нет — mynet будет создана в следующей задаче]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать сеть",
+      "taskid": "dock_lab5_t3_create",
+      "hint": "<p>Используй <code>docker network</code>: проверь подключения контейнера, при необходимости подключи или отключи его от сети, затем проверь связь по имени контейнера.</p>\n<p>Пользовательские сети лучше default bridge: в них работает <strong>DNS-разрешение по имени контейнера</strong>. Контейнер <code>web1</code> может обратиться к <code>web2</code> просто по имени.</p>",
+      "question_html": "<p>Создай пользовательскую bridge-сеть с именем <code>mynet</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай пользовательскую bridge-сеть с именем <code>mynet</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить первый контейнер в сети",
+      "taskid": "dock_lab5_t4_web1",
+      "hint": "<p>Используй <code>docker network</code>: проверь подключения контейнера, при необходимости подключи или отключи его от сети, затем проверь связь по имени контейнера.</p>\n<p>При запуске контейнера флаг <code>--network</code> подключает его к указанной сети.</p>\n<p>Для preview нужны ещё <code>-p 80:80</code> и bind mount <code>-v /root/docker-lab5/web1:/usr/share/nginx/html:ro</code>.</p>",
+      "question_html": "<p>Запусти контейнер <code>web1</code> на основе <code>nginx:alpine</code> в сети <code>mynet</code>.</p>\n<p>Опубликуй порт VM <code>80</code> на порт контейнера <code>80</code> и примонтируй подготовленную директорию <code>/root/docker-lab5/web1</code> в <code>/usr/share/nginx/html</code>.</p>\n<p>После запуска можно открыть <code>Web Preview</code> или быстрее проверить тот же ответ командой <code>curl http://localhost/</code>. Корректная страница <code>web1</code> содержит текст <code>Docker network preview works</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер <code>web1</code> на основе <code>nginx:alpine</code> в сети <code>mynet</code>.</p>\n<p>Опубликуй порт VM <code>80</code> на порт контейнера <code>80</code> и примонтируй подготовленную директорию <code>/root/docker-lab5/web1</code> в <code>/usr/share/nginx/html</code>.</p>\n<p>После запуска можно открыть <code>Web Preview</code> или быстрее проверить тот же ответ командой <code>curl http://localhost/</code>. Корректная страница <code>web1</code> содержит текст <code>Docker network preview works</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить второй контейнер в сети",
+      "taskid": "dock_lab5_t5_web2",
+      "hint": "<p>Используй <code>docker network</code>: проверь подключения контейнера, при необходимости подключи или отключи его от сети, затем проверь связь по имени контейнера.</p>\n<p>Контейнер <code>web2</code> должен быть в <code>mynet</code>. Проверка из <code>web1</code> к <code>http://web2</code> должна вернуть страницу с текстом <code>Hello from web2 backend</code>.</p>",
+      "question_html": "<p>Запусти контейнер <code>web2</code> на основе <code>nginx:alpine</code> в той же сети <code>mynet</code>.</p>\n<p>Примонтируй подготовленную директорию <code>/root/docker-lab5/web2</code> в <code>/usr/share/nginx/html</code>. Порт наружу публиковать не нужно: этот контейнер нужен как внутренний backend для проверки DNS внутри Docker-сети.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер <code>web2</code> на основе <code>nginx:alpine</code> в той же сети <code>mynet</code>.</p>\n<p>Примонтируй подготовленную директорию <code>/root/docker-lab5/web2</code> в <code>/usr/share/nginx/html</code>. Порт наружу публиковать не нужно: этот контейнер нужен как внутренний backend для проверки DNS внутри Docker-сети.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Сеть по умолчанию",
+      "taskid": "dock_lab5_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Какая сеть используется контейнером по умолчанию, если не указан флаг <code>--network</code>?</p>",
+      "options": [
+        {
+          "text": "host — контейнер использует сеть хоста",
+          "correct": false,
+          "explanation": "Нет — host нужно указывать явно: --network host"
+        },
+        {
+          "text": "none — без сетевого доступа",
+          "correct": false,
+          "explanation": "Нет — контейнер получил бы только loopback"
+        },
+        {
+          "text": "overlay — сеть для Docker Swarm",
+          "correct": false,
+          "explanation": "Нет — overlay для кластера, не используется по умолчанию"
+        },
+        {
+          "text": "bridge — изолированная сеть с NAT для выхода в интернет",
+          "correct": true,
+          "explanation": "Верно! Дефолтная bridge-сеть, но без DNS по имени контейнера — только по IP"
+        }
+      ],
+      "raw_description": "<p>Какая сеть используется контейнером по умолчанию, если не указан флаг <code>--network</code>?</p><ul>\n<li>host — контейнер использует сеть хоста [Нет — host нужно указывать явно: --network host]</li>\n<li>none — без сетевого доступа [Нет — контейнер получил бы только loopback]</li>\n<li>overlay — сеть для Docker Swarm [Нет — overlay для кластера, не используется по умолчанию]</li>\n<li>+bridge — изолированная сеть с NAT для выхода в интернет [Верно! Дефолтная bridge-сеть, но без DNS по имени контейнера — только по IP]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить связность между контейнерами",
+      "taskid": "dock_lab5_t7_connect",
+      "hint": "<p>Если <code>web1</code> не находит <code>web2</code>, проверь, что оба контейнера запущены и подключены к <code>mynet</code>: <code>docker ps</code> и <code>docker network inspect mynet</code>.</p>\n<p>Контейнер <code>outsider</code> специально запускается без <code>--network mynet</code>, поэтому он остаётся в default bridge-сети.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Инспектировать сеть",
+      "taskid": "dock_lab5_t8_inspect",
+      "hint": "<p>Используй <code>docker network</code>: проверь подключения контейнера, при необходимости подключи или отключи его от сети, затем проверь связь по имени контейнера.</p>\n<p><code>docker network inspect</code> показывает подключённые контейнеры, их IP-адреса, маску сети и другие параметры.</p>\n<p>В файл нужно записать только IPv4 без маски и без всего JSON.</p>",
+      "question_html": "<p>Получи детальную информацию о сети <code>mynet</code>, найди IP-адрес контейнера <code>web1</code> в этой сети и сохрани только IP в <code>/root/web1_ip.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи детальную информацию о сети <code>mynet</code>, найди IP-адрес контейнера <code>web1</code> в этой сети и сохрани только IP в <code>/root/web1_ip.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Разница bridge и host",
+      "taskid": "dock_lab5_t9_quiz",
+      "hint": "",
+      "question_html": "<p>В чём принципиальная разница между сетями <code>bridge</code> и <code>host</code>?</p>",
+      "options": [
+        {
+          "text": "bridge создаёт изолированную виртуальную сеть, host использует сетевой стек хоста напрямую",
+          "correct": true,
+          "explanation": "Верно! В host-режиме нет изоляции: контейнер делит порты с хостом, нет NAT"
+        },
+        {
+          "text": "bridge быстрее host",
+          "correct": false,
+          "explanation": "Нет — host быстрее, так как нет overhead NAT"
+        },
+        {
+          "text": "host не поддерживает проброску портов",
+          "correct": false,
+          "explanation": "Верно, но не потому что не поддерживает — просто не нужна, контейнер уже на сети хоста"
+        },
+        {
+          "text": "bridge только для Linux, host для Windows",
+          "correct": false,
+          "explanation": "Нет — оба типа поддерживаются на Linux"
+        }
+      ],
+      "raw_description": "<p>В чём принципиальная разница между сетями <code>bridge</code> и <code>host</code>?</p><ul>\n<li>+bridge создаёт изолированную виртуальную сеть, host использует сетевой стек хоста напрямую [Верно! В host-режиме нет изоляции: контейнер делит порты с хостом, нет NAT]</li>\n<li>bridge быстрее host [Нет — host быстрее, так как нет overhead NAT]</li>\n<li>host не поддерживает проброску портов [Верно, но не потому что не поддерживает — просто не нужна, контейнер уже на сети хоста]</li>\n<li>bridge только для Linux, host для Windows [Нет — оба типа поддерживаются на Linux]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить контейнеры и сеть",
+      "taskid": "dock_lab5_t10_cleanup",
+      "hint": "<p>Используй <code>docker network</code>: проверь подключения контейнера, при необходимости подключи или отключи его от сети, затем проверь связь по имени контейнера.</p>\n<p>Сеть нельзя удалить, пока к ней подключены контейнеры. Сначала останавливаем контейнеры.</p>",
+      "question_html": "<p>Останови и удали контейнеры <code>web1</code>, <code>web2</code> и <code>outsider</code>, затем удали сеть <code>mynet</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнеры <code>web1</code>, <code>web2</code> и <code>outsider</code>, затем удали сеть <code>mynet</code>.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab5/setup.yaml"
+}

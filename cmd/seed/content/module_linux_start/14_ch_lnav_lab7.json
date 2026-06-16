@@ -1,0 +1,208 @@
+{
+  "n": 14,
+  "id": "ch_lnav_lab7",
+  "title": "Лабораторная 7: Wildcards и glob-паттерны",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что такое * в glob?",
+      "taskid": "lnav_lab7_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает символ <code>*</code> в glob-паттерне (например, <code>ls *.log</code>)?</p>",
+      "options": [
+        {
+          "text": "Ровно один любой символ",
+          "correct": false,
+          "explanation": "Нет — это значение ? (вопросительного знака)"
+        },
+        {
+          "text": "Все файлы включая скрытые (начинающиеся с .)",
+          "correct": false,
+          "explanation": "Нет — * не соответствует файлам начинающимся с точки. Для них нужен явный .* или флаг -a у ls"
+        },
+        {
+          "text": "Рекурсивный поиск во всех поддиректориях",
+          "correct": false,
+          "explanation": "Нет — для рекурсии нужен ** в bash 4+ с shopt -s globstar"
+        },
+        {
+          "text": "Любая последовательность символов, включая пустую",
+          "correct": true,
+          "explanation": "Верно! *.log соответствует любому файлу, имя которого заканчивается на .log: app.log, error.log, и даже просто .log"
+        }
+      ],
+      "raw_description": "<p>Что означает символ <code>*</code> в glob-паттерне (например, <code>ls *.log</code>)?</p><ul>\n<li>Ровно один любой символ [Нет — это значение ? (вопросительного знака)]</li>\n<li>Все файлы включая скрытые (начинающиеся с .) [Нет — * не соответствует файлам начинающимся с точки. Для них нужен явный .* или флаг -a у ls]</li>\n<li>Рекурсивный поиск во всех поддиректориях [Нет — для рекурсии нужен ** в bash 4+ с shopt -s globstar]</li>\n<li>+Любая последовательность символов, включая пустую [Верно! *.log соответствует любому файлу, имя которого заканчивается на .log: app.log, error.log, и даже просто .log]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Список всех логов",
+      "taskid": "lnav_lab7_t2_star",
+      "hint": "<p>Используй <code>ls</code> с wildcard: <code>*</code> подставляет любое количество символов, поэтому подойдёт шаблон для всех имён с расширением <code>.log</code>.</p>",
+      "question_html": "<p>Получи список всех файлов с расширением <code>.log</code> в директории <code>/opt/devops/lab7</code> и запиши его в <code>/root/log_list.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи список всех файлов с расширением <code>.log</code> в директории <code>/opt/devops/lab7</code> и запиши его в <code>/root/log_list.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Скопировать конфиги",
+      "taskid": "lnav_lab7_t3_copy",
+      "hint": "<p>Сначала используй <code>mkdir</code> для директории назначения. Затем используй <code>cp</code> с wildcard для всех файлов с расширением <code>.conf</code>.</p>",
+      "question_html": "<p>Скопируй все файлы с расширением <code>.conf</code> из директории <code>/opt/devops/lab7</code> в <code>/root/configs/</code>.</p>\n<p>Директорию нужно создать самостоятельно перед копированием.</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй все файлы с расширением <code>.conf</code> из директории <code>/opt/devops/lab7</code> в <code>/root/configs/</code>.</p>\n<p>Директорию нужно создать самостоятельно перед копированием.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Паттерн с ?",
+      "taskid": "lnav_lab7_t4_question",
+      "hint": "<p>Используй <code>ls</code> или другую файловую команду с wildcard: <code>?</code> заменяет ровно один символ, в отличие от <code>*</code>.</p>",
+      "question_html": "<p>В директории <code>/opt/devops/lab7</code> есть файлы вида <code>data1.txt</code>, <code>data2.txt</code>, <code>data3.txt</code>.</p>\n<p>Используй паттерн с <code>?</code>, чтобы получить список только этих файлов (не других .txt файлов), и запиши в <code>/root/data_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/opt/devops/lab7</code> есть файлы вида <code>data1.txt</code>, <code>data2.txt</code>, <code>data3.txt</code>.</p>\n<p>Используй паттерн с <code>?</code>, чтобы получить список только этих файлов (не других .txt файлов), и запиши в <code>/root/data_files.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Найти все .txt файлы",
+      "taskid": "lnav_lab7_t5_find",
+      "hint": "<p>Для рекурсивного поиска нужен <code>find</code>; фильтруй по имени с расширением <code>.txt</code>.</p>",
+      "question_html": "<p>Найди все файлы с расширением <code>.txt</code> в директории <code>/opt/devops/lab7</code> (включая поддиректории) и запиши список путей в <code>/root/txt_files.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы с расширением <code>.txt</code> в директории <code>/opt/devops/lab7</code> (включая поддиректории) и запиши список путей в <code>/root/txt_files.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переместить конфиги",
+      "taskid": "lnav_lab7_t6_mv",
+      "hint": "<p>Используй <code>mkdir</code> для директории назначения, затем <code>mv</code> с wildcard для группы <code>.conf</code>-файлов.</p>",
+      "question_html": "<p>Перемести все <code>.conf</code> файлы из <code>/root/configs/</code> в новую директорию <code>/root/old_configs/</code>.</p>\n<p>Создай целевую директорию и используй wildcard при перемещении.</p>",
+      "options": [],
+      "raw_description": "<p>Перемести все <code>.conf</code> файлы из <code>/root/configs/</code> в новую директорию <code>/root/old_configs/</code>.</p>\n<p>Создай целевую директорию и используй wildcard при перемещении.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "? против *",
+      "taskid": "lnav_lab7_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Есть файлы: <code>app.log</code>, <code>app1.log</code>, <code>app12.log</code>. Какой glob-паттерн соответствует только <code>app1.log</code> и <code>app2.log</code> (один цифровой символ), но не <code>app12.log</code>?</p>",
+      "options": [
+        {
+          "text": "app?.log",
+          "correct": true,
+          "explanation": "Верно! ? заменяет ровно один символ. app?.log: app + один символ + .log"
+        },
+        {
+          "text": "app*.log",
+          "correct": false,
+          "explanation": "Нет — * соответствует любому количеству символов, включая два: app12.log тоже попадёт"
+        },
+        {
+          "text": "app",
+          "correct": false,
+          "explanation": "0-9].log [Нет — это тоже правильный ответ, но вопрос про разницу ? и *. [0-9] ограничивает только цифрами, но ? принимает и буквы"
+        },
+        {
+          "text": "app1.log app2.log",
+          "correct": false,
+          "explanation": "Нет — это не паттерн, а явное перечисление"
+        }
+      ],
+      "raw_description": "<p>Есть файлы: <code>app.log</code>, <code>app1.log</code>, <code>app12.log</code>. Какой glob-паттерн соответствует только <code>app1.log</code> и <code>app2.log</code> (один цифровой символ), но не <code>app12.log</code>?</p><ul>\n<li>+app?.log [Верно! ? заменяет ровно один символ. app?.log: app + один символ + .log]</li>\n<li>app*.log [Нет — * соответствует любому количеству символов, включая два: app12.log тоже попадёт]</li>\n<li>app[0-9].log [Нет — это тоже правильный ответ, но вопрос про разницу ? и *. [0-9] ограничивает только цифрами, но ? принимает и буквы]</li>\n<li>app1.log app2.log [Нет — это не паттерн, а явное перечисление]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда glob не находит?",
+      "taskid": "lnav_lab7_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Почему команда <code>ls *.log</code> может вернуть ошибку \"No such file or directory\"?</p>",
+      "options": [
+        {
+          "text": "Потому что * ищет только скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — скрытые как раз не матчятся"
+        },
+        {
+          "text": "Потому что в текущей директории нет файлов, подходящих под шаблон",
+          "correct": true,
+          "explanation": "Верно! Shell не находит совпадений для glob"
+        },
+        {
+          "text": "Потому что ls не поддерживает wildcard",
+          "correct": false,
+          "explanation": "Нет — поддерживает через shell expansion"
+        },
+        {
+          "text": "Потому что нужен root",
+          "correct": false,
+          "explanation": "Нет — права тут не ключевая причина"
+        }
+      ],
+      "raw_description": "<p>Почему команда <code>ls *.log</code> может вернуть ошибку \"No such file or directory\"?</p><ul>\n<li>Потому что * ищет только скрытые файлы [Нет — скрытые как раз не матчятся]</li>\n<li>+Потому что в текущей директории нет файлов, подходящих под шаблон [Верно! Shell не находит совпадений для glob]</li>\n<li>Потому что ls не поддерживает wildcard [Нет — поддерживает через shell expansion]</li>\n<li>Потому что нужен root [Нет — права тут не ключевая причина]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "[] в glob",
+      "taskid": "lnav_lab7_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает паттерн <code>file[0-9].txt</code>?</p>",
+      "options": [
+        {
+          "text": "Любое количество цифр",
+          "correct": false,
+          "explanation": "Нет — это только один символ"
+        },
+        {
+          "text": "Только file0.txt",
+          "correct": false,
+          "explanation": "Нет — диапазон включает 0..9"
+        },
+        {
+          "text": "Совпадение с одним символом-цифрой от 0 до 9 в указанной позиции",
+          "correct": true,
+          "explanation": "Верно! file1.txt подходит, file12.txt — нет"
+        },
+        {
+          "text": "Скрытые файлы file*.txt",
+          "correct": false,
+          "explanation": "Нет — это не про скрытые файлы"
+        }
+      ],
+      "raw_description": "<p>Что означает паттерн <code>file[0-9].txt</code>?</p><ul>\n<li>Любое количество цифр [Нет — это только один символ]</li>\n<li>Только file0.txt [Нет — диапазон включает 0..9]</li>\n<li>+Совпадение с одним символом-цифрой от 0 до 9 в указанной позиции [Верно! file1.txt подходит, file12.txt — нет]</li>\n<li>Скрытые файлы file*.txt [Нет — это не про скрытые файлы]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему find для рекурсии?",
+      "taskid": "lnav_lab7_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему для поиска файлов во всех вложенных директориях чаще выбирают <code>find</code>, а не простой glob <code>*.txt</code>?</p>",
+      "options": [
+        {
+          "text": "Потому что find умеет только копировать файлы",
+          "correct": false,
+          "explanation": "Нет — find ищет объекты, не копирует"
+        },
+        {
+          "text": "Потому что glob всегда медленнее",
+          "correct": false,
+          "explanation": "Нет — это не универсальное правило"
+        },
+        {
+          "text": "Потому что find не зависит от shell",
+          "correct": false,
+          "explanation": "Не совсем — команда зависит от shell для запуска, но поиск делает сама"
+        },
+        {
+          "text": "Потому что обычный glob работает только в текущей директории, а find идёт рекурсивно",
+          "correct": true,
+          "explanation": "Верно! Это главное отличие"
+        }
+      ],
+      "raw_description": "<p>Почему для поиска файлов во всех вложенных директориях чаще выбирают <code>find</code>, а не простой glob <code>*.txt</code>?</p><ul>\n<li>Потому что find умеет только копировать файлы [Нет — find ищет объекты, не копирует]</li>\n<li>Потому что glob всегда медленнее [Нет — это не универсальное правило]</li>\n<li>Потому что find не зависит от shell [Не совсем — команда зависит от shell для запуска, но поиск делает сама]</li>\n<li>+Потому что обычный glob работает только в текущей директории, а find идёт рекурсивно [Верно! Это главное отличие]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_start/linux_nav/lab7/setup.yaml"
+}

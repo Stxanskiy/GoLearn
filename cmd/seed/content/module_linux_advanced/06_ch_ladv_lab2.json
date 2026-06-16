@@ -1,0 +1,214 @@
+{
+  "n": 6,
+  "id": "ch_ladv_lab2",
+  "title": "Лабораторная 2: SSH и ключи",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: асимметричное шифрование",
+      "taskid": "ladv_lab2_t1_quiz",
+      "hint": "",
+      "question_html": "<p>В SSH-аутентификации по ключам: что хранится на сервере, а что на клиенте?</p>",
+      "options": [
+        {
+          "text": "Приватный ключ на сервере, публичный на клиенте",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Одинаковые ключи на обоих концах",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Публичный ключ на сервере (в authorized_keys), приватный — только на клиенте</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Оба ключа на сервере, клиент скачивает нужный",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В SSH-аутентификации по ключам: что хранится на сервере, а что на клиенте?</p>\n<ul>\n<li>Приватный ключ на сервере, публичный на клиенте</li>\n<li>Одинаковые ключи на обоих концах</li>\n<li><code>+Публичный ключ на сервере (в authorized_keys), приватный — только на клиенте</code></li>\n<li>Оба ключа на сервере, клиент скачивает нужный</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "ssh-keygen: создать пару ключей",
+      "taskid": "ladv_lab2_t2_keygen",
+      "hint": "<p>Используй <code>ssh-keygen</code>: выбери тип ключа, путь сохранения и режим без passphrase.</p>",
+      "question_html": "<p>Создай SSH-ключевую пару ed25519 без пароля: приватный ключ сохрани в <code>/root/.ssh/mykey</code>, публичный ключ должен появиться в <code>/root/.ssh/mykey.pub</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай SSH-ключевую пару ed25519 без пароля: приватный ключ сохрани в <code>/root/.ssh/mykey</code>, публичный ключ должен появиться в <code>/root/.ssh/mykey.pub</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "проверить права на ключ",
+      "taskid": "ladv_lab2_t3_perms",
+      "hint": "<p>Используй <code>chmod</code> и после изменения проверь результат через просмотр атрибутов файла.</p>",
+      "question_html": "<p>Убедись что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> (иначе SSH откажет).</p>",
+      "options": [],
+      "raw_description": "<p>Убедись что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> (иначе SSH откажет).</p>"
+    },
+    {
+      "type": "check",
+      "title": "authorized_keys: добавить ключ",
+      "taskid": "ladv_lab2_t4_auth_keys",
+      "hint": "<p>Публичный ключ можно добавить в <code>authorized_keys</code> через <code>cat</code> и перенаправление. Перед этим проверь, что директория <code>.ssh</code> существует.</p>",
+      "question_html": "<p>Добавь содержимое публичного ключа <code>/root/.ssh/mykey.pub</code> в <code>authorized_keys</code> для текущего пользователя.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь содержимое публичного ключа <code>/root/.ssh/mykey.pub</code> в <code>authorized_keys</code> для текущего пользователя.</p>"
+    },
+    {
+      "type": "check",
+      "title": "ssh-copy-id: имитация",
+      "taskid": "ladv_lab2_t5_copy",
+      "hint": "<p>Используй <code>ssh-keygen</code> в режиме просмотра fingerprint для публичного ключа, затем сохрани вывод в файл.</p>",
+      "question_html": "<p>Выведи fingerprint созданного ключа и сохрани в <code>/root/key_info.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи fingerprint созданного ключа и сохрани в <code>/root/key_info.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "ssh config: настройка",
+      "taskid": "ladv_lab2_t6_config",
+      "hint": "<p>SSH-клиент читает настройки из файла <code>config</code> в <code>.ssh</code>. Создай запись через редактор, <code>cat</code> или <code>tee</code> и проверь, что в файле есть нужный Host.</p>",
+      "question_html": "<p>Создай файл конфигурации SSH клиента <code>/root/.ssh/config</code> с записью для хоста <code>myserver</code> (Host myserver, HostName 127.0.0.1, User root, IdentityFile ~/.ssh/mykey).</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл конфигурации SSH клиента <code>/root/.ssh/config</code> с записью для хоста <code>myserver</code> (Host myserver, HostName 127.0.0.1, User root, IdentityFile ~/.ssh/mykey).</p>"
+    },
+    {
+      "type": "playbook",
+      "title": "подготовить учебный SSH-сервер",
+      "taskid": "ladv_lab2_t7_ssh_image",
+      "hint": "",
+      "question_html": "<p>Нажми «Подготовить задачу». Платформа подготовит учебный SSH-сервер внутри твоей лабораторной. Может занять 10-15 секунд.</p>\n<p>После подготовки у тебя будет учебный SSH-сервер:</p>\n<pre><code class=\"language-text\">ssh-target\nадрес: 127.0.0.1\nпорт: 2222\nпользователь: devops\nключ: /root/.ssh/mykey\n</code></pre>\n<p>Дальше ты подключишься к нему по SSH так же, как подключаются к обычным удалённым серверам.</p>",
+      "options": [],
+      "raw_description": "<p>Нажми «Подготовить задачу». Платформа подготовит учебный SSH-сервер внутри твоей лабораторной. Может занять 10-15 секунд.</p>\n<p>После подготовки у тебя будет учебный SSH-сервер:</p>\n<pre><code class=\"language-text\">ssh-target\nадрес: 127.0.0.1\nпорт: 2222\nпользователь: devops\nключ: /root/.ssh/mykey\n</code></pre>\n<p>Дальше ты подключишься к нему по SSH так же, как подключаются к обычным удалённым серверам.</p>"
+    },
+    {
+      "type": "self",
+      "title": "SSH: подключиться к учебному серверу",
+      "taskid": "ladv_lab2_t8_ssh_container",
+      "hint": "<p>Если подключение не получилось, вернись к задаче 7 и снова нажми «Подготовить задачу».</p>",
+      "question_html": "<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">ssh ssh-target\n</code></pre>\n<p>Так ты подключишься внутрь учебного SSH-сервера. Для тебя это выглядит как вход на другую машину: после подключения команды в терминале будут выполняться уже на стороне <code>ssh-target</code>.</p>\n<p>В реальной работе идея такая же: ты пишешь <code>ssh имя_сервера</code> и попадаешь в shell удалённого сервера.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду:</p>\n<pre><code class=\"language-bash\">ssh ssh-target\n</code></pre>\n<p>Так ты подключишься внутрь учебного SSH-сервера. Для тебя это выглядит как вход на другую машину: после подключения команды в терминале будут выполняться уже на стороне <code>ssh-target</code>.</p>\n<p>В реальной работе идея такая же: ты пишешь <code>ssh имя_сервера</code> и попадаешь в shell удалённого сервера.</p>"
+    },
+    {
+      "type": "self",
+      "title": "посмотреть пользователя внутри SSH-сервера",
+      "taskid": "ladv_lab2_t9_container_key",
+      "hint": "<p>Если ты вышел из <code>ssh-target</code>, снова выполни <code>ssh ssh-target</code>.</p>",
+      "question_html": "<p>Внутри подключённого <code>ssh-target</code> выполни:</p>\n<pre><code class=\"language-bash\">id\n</code></pre>\n<p>Ты должен увидеть, что работаешь не как <code>root</code> из лабораторной VM, а как пользователь <code>devops</code> внутри учебного SSH-сервера.</p>\n<p>Это имитация реальной работы с сервером: ты подключился по SSH и теперь выполняешь команды уже в удалённой среде.</p>",
+      "options": [],
+      "raw_description": "<p>Внутри подключённого <code>ssh-target</code> выполни:</p>\n<pre><code class=\"language-bash\">id\n</code></pre>\n<p>Ты должен увидеть, что работаешь не как <code>root</code> из лабораторной VM, а как пользователь <code>devops</code> внутри учебного SSH-сервера.</p>\n<p>Это имитация реальной работы с сервером: ты подключился по SSH и теперь выполняешь команды уже в удалённой среде.</p>"
+    },
+    {
+      "type": "self",
+      "title": "посмотреть authorized_keys на стороне сервера",
+      "taskid": "ladv_lab2_t10_ssh_connect",
+      "hint": "<p>Если ты вышел из <code>ssh-target</code> раньше, снова подключись командой <code>ssh ssh-target</code>.</p>",
+      "question_html": "<p>Внутри <code>ssh-target</code> выполни:</p>\n<pre><code class=\"language-bash\">cat /config/.ssh/authorized_keys\n</code></pre>\n<p>Ты увидишь публичный SSH-ключ, который был добавлен на сторону сервера. Обычно такая строка начинается с <code>ssh-ed25519</code>.</p>\n<p>Смысл такой же, как на настоящем сервере: публичный ключ лежит на сервере в <code>authorized_keys</code>, а приватный ключ остаётся у клиента и никуда не копируется.</p>\n<p>После просмотра выйди обратно в лабораторную VM:</p>\n<pre><code class=\"language-bash\">exit\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Внутри <code>ssh-target</code> выполни:</p>\n<pre><code class=\"language-bash\">cat /config/.ssh/authorized_keys\n</code></pre>\n<p>Ты увидишь публичный SSH-ключ, который был добавлен на сторону сервера. Обычно такая строка начинается с <code>ssh-ed25519</code>.</p>\n<p>Смысл такой же, как на настоящем сервере: публичный ключ лежит на сервере в <code>authorized_keys</code>, а приватный ключ остаётся у клиента и никуда не копируется.</p>\n<p>После просмотра выйди обратно в лабораторную VM:</p>\n<pre><code class=\"language-bash\">exit\n</code></pre>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: StrictHostKeyChecking",
+      "taskid": "ladv_lab2_t11_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем нужен файл <code>~/.ssh/known_hosts</code>?</p>",
+      "options": [
+        {
+          "text": "Хранит список разрешённых IP",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Хранит приватные ключи для каждого хоста",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Управляет форвардингом портов",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Хранит отпечатки (fingerprints) серверов — защита от MITM-атак при первом подключении</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем нужен файл <code>~/.ssh/known_hosts</code>?</p>\n<ul>\n<li>Хранит список разрешённых IP</li>\n<li>Хранит приватные ключи для каждого хоста</li>\n<li>Управляет форвардингом портов</li>\n<li><code>+Хранит отпечатки (fingerprints) серверов — защита от MITM-атак при первом подключении</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: приватный ключ",
+      "taskid": "ladv_lab2_t12_quiz",
+      "hint": "",
+      "question_html": "<p>Почему приватный SSH-ключ нельзя копировать на сервер?</p>",
+      "options": [
+        {
+          "text": "<code>+Потому что компрометация сервера тогда даст атакующему полный доступ от твоего имени</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что сервер не понимает формат приватного ключа</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что ключ станет публичным автоматически</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что sshd удалит его при старте</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему приватный SSH-ключ нельзя копировать на сервер?</p>\n<ul>\n<li><code>+Потому что компрометация сервера тогда даст атакующему полный доступ от твоего имени</code></li>\n<li><code>Потому что сервер не понимает формат приватного ключа</code></li>\n<li><code>Потому что ключ станет публичным автоматически</code></li>\n<li><code>Потому что sshd удалит его при старте</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: права на ~/.ssh",
+      "taskid": "ladv_lab2_t13_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем задают строгие права на <code>~/.ssh</code>, <code>id_*</code>, <code>authorized_keys</code>?</p>",
+      "options": [
+        {
+          "text": "<code>Чтобы ssh работал быстрее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Чтобы исключить доступ посторонних и не получить отказ SSH из-за небезопасных прав</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы отключить проверку host key</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы не требовался known_hosts</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем задают строгие права на <code>~/.ssh</code>, <code>id_*</code>, <code>authorized_keys</code>?</p>\n<ul>\n<li><code>Чтобы ssh работал быстрее</code></li>\n<li><code>+Чтобы исключить доступ посторонних и не получить отказ SSH из-за небезопасных прав</code></li>\n<li><code>Чтобы отключить проверку host key</code></li>\n<li><code>Чтобы не требовался known_hosts</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_linux_advanced/linux_adv/lab2/setup.yaml"
+}

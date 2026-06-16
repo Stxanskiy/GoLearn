@@ -1,0 +1,208 @@
+{
+  "n": 8,
+  "id": "ch_lcore_lab4",
+  "title": "Лабораторная 4: stdin, stdout, stderr и редиректы",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: поток stderr",
+      "taskid": "lcore_lab4_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает <code>2&gt;</code> в команде <code>ls /nonexistent 2&gt; /root/errors.txt</code>?</p>",
+      "options": [
+        {
+          "text": "Выполнить команду два раза",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Перенаправить второй аргумент",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Перенаправить stdin",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Перенаправить stderr (поток ошибок, дескриптор 2) в файл</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что означает <code>2&gt;</code> в команде <code>ls /nonexistent 2&gt; /root/errors.txt</code>?</p>\n<ul>\n<li>Выполнить команду два раза</li>\n<li>Перенаправить второй аргумент</li>\n<li>Перенаправить stdin</li>\n<li><code>+Перенаправить stderr (поток ошибок, дескриптор 2) в файл</code></li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "stdout redirect",
+      "taskid": "lcore_lab4_t2_stdout",
+      "hint": "<p>Используй <code>ls</code> для просмотра директории. Здесь нужен stdout: обычное перенаправление <code>&gt;</code> сохраняет стандартный вывод в файл.</p>",
+      "question_html": "<p>Сохрани обычный вывод команды просмотра директории <code>/opt/devops/lab4/</code> в <code>/root/listing.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сохрани обычный вывод команды просмотра директории <code>/opt/devops/lab4/</code> в <code>/root/listing.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "stderr redirect",
+      "taskid": "lcore_lab4_t3_stderr",
+      "hint": "<p>Используй <code>ls</code> для несуществующего пути. Ошибка пойдёт в stderr, который сохраняется через дескриптор <code>2</code>.</p>",
+      "question_html": "<p>Получи ошибку при просмотре несуществующей директории <code>/nonexistent_dir</code> и сохрани именно stderr в <code>/root/error_msg.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи ошибку при просмотре несуществующей директории <code>/nonexistent_dir</code> и сохрани именно stderr в <code>/root/error_msg.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "append: дописать в файл",
+      "taskid": "lcore_lab4_t4_append",
+      "hint": "<p>Используй <code>cat</code> для чтения частей и <code>&gt;&gt;</code>, чтобы дописывать вывод в конец итогового файла.</p>",
+      "question_html": "<p>Создай файл <code>/root/combined.log</code>, добавив в него сначала содержимое <code>/opt/devops/lab4/part1.log</code>, затем содержимое <code>/opt/devops/lab4/part2.log</code> (с помощью <code>&gt;&gt;</code>).</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/combined.log</code>, добавив в него сначала содержимое <code>/opt/devops/lab4/part1.log</code>, затем содержимое <code>/opt/devops/lab4/part2.log</code> (с помощью <code>&gt;&gt;</code>).</p>"
+    },
+    {
+      "type": "check",
+      "title": "/dev/null: отбросить вывод",
+      "taskid": "lcore_lab4_t5_devnull",
+      "hint": "<p>Для поиска по имени у <code>find</code> есть условие <code>-name</code>; шаблон лучше держать в кавычках, чтобы shell не раскрыл его раньше времени. Ошибки можно отправить в <code>/dev/null</code> через поток <code>2</code>, а обычный вывод сохранить отдельно.</p>",
+      "question_html": "<p>Найди все файлы с именами, заканчивающимися на <code>.conf</code>, начиная поиск от корня <code>/</code>, и сохрани только обычный вывод в <code>/root/confs.txt</code>. Ошибки вроде <code>Permission denied</code> не должны попасть в файл.</p>",
+      "options": [],
+      "raw_description": "<p>Найди все файлы с именами, заканчивающимися на <code>.conf</code>, начиная поиск от корня <code>/</code>, и сохрани только обычный вывод в <code>/root/confs.txt</code>. Ошибки вроде <code>Permission denied</code> не должны попасть в файл.</p>"
+    },
+    {
+      "type": "check",
+      "title": "& 2>&1: объединить потоки",
+      "taskid": "lcore_lab4_t6_combine",
+      "hint": "<p>Запусти скрипт через <code>bash</code>. Здесь важен порядок редиректов: сначала направь stdout в файл, затем присоедини stderr к текущему stdout через дескриптор <code>2</code>.</p>",
+      "question_html": "<p>Запусти скрипт <code>/opt/devops/lab4/test.sh</code> и сохрани И stdout, И stderr в один файл <code>/root/full_output.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти скрипт <code>/opt/devops/lab4/test.sh</code> и сохрани И stdout, И stderr в один файл <code>/root/full_output.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: tee",
+      "taskid": "lcore_lab4_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Команда <code>tee</code> используется для:</p>",
+      "options": [
+        {
+          "text": "<code>+Одновременной записи вывода в файл и его отображения на экране</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Копирования файлов на удалённый сервер",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Перенаправления stderr в stdout",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Мониторинга файла в реальном времени",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Команда <code>tee</code> используется для:</p>\n<ul>\n<li><code>+Одновременной записи вывода в файл и его отображения на экране</code></li>\n<li>Копирования файлов на удалённый сервер</li>\n<li>Перенаправления stderr в stdout</li>\n<li>Мониторинга файла в реальном времени</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему полезно разделять stdout и stderr?",
+      "taskid": "lcore_lab4_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем в скриптах часто направляют stdout и stderr в разные файлы?</p>",
+      "options": [
+        {
+          "text": "<code>Чтобы stdout выполнялся быстрее</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Чтобы разделить нормальный результат и ошибки для удобной диагностики</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы команда не завершалась с ошибкой</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Чтобы автоматически исправлять stderr</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Зачем в скриптах часто направляют stdout и stderr в разные файлы?</p>\n<ul>\n<li><code>Чтобы stdout выполнялся быстрее</code></li>\n<li><code>+Чтобы разделить нормальный результат и ошибки для удобной диагностики</code></li>\n<li><code>Чтобы команда не завершалась с ошибкой</code></li>\n<li><code>Чтобы автоматически исправлять stderr</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда применять /dev/null?",
+      "taskid": "lcore_lab4_t9_quiz",
+      "hint": "",
+      "question_html": "<p>В каком случае обычно уместно перенаправление в <code>/dev/null</code>?</p>",
+      "options": [
+        {
+          "text": "<code>Когда нужно сохранить вывод в архив</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Когда нужно удалить файл</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Когда нужно отбросить шумный ненужный вывод (например, ожидаемые permission denied)</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Когда нужно запустить команду от root</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В каком случае обычно уместно перенаправление в <code>/dev/null</code>?</p>\n<ul>\n<li><code>Когда нужно сохранить вывод в архив</code></li>\n<li><code>Когда нужно удалить файл</code></li>\n<li><code>+Когда нужно отбросить шумный ненужный вывод (например, ожидаемые permission denied)</code></li>\n<li><code>Когда нужно запустить команду от root</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает 2>&1?",
+      "taskid": "lcore_lab4_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Что означает конструкция <code>2&gt;&amp;1</code> в конце команды?</p>",
+      "options": [
+        {
+          "text": "<code>Копирует файл descriptor 2 в файл descriptor 1</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Перенаправляет stdout в stderr</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Включает второй режим выполнения команды</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Перенаправляет stderr туда же, куда сейчас направлен stdout</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что означает конструкция <code>2&gt;&amp;1</code> в конце команды?</p>\n<ul>\n<li><code>Копирует файл descriptor 2 в файл descriptor 1</code></li>\n<li><code>Перенаправляет stdout в stderr</code></li>\n<li><code>Включает второй режим выполнения команды</code></li>\n<li><code>+Перенаправляет stderr туда же, куда сейчас направлен stdout</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab4/setup.yaml"
+}

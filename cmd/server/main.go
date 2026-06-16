@@ -42,8 +42,9 @@ func main() {
 	progressRepo := repository.NewProgressRepo(pool)
 	submissionRepo := repository.NewSubmissionRepo(pool)
 	userRepo := repository.NewUserRepo(pool)
+	specRepo := repository.NewSpecRepo(pool)
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, log)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

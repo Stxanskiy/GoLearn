@@ -1,0 +1,145 @@
+{
+  "n": 13,
+  "id": "ch_k8si_lab3",
+  "title": "Лабораторная 4: Сервисы",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Проверь DNS изнутри кластера: запусти временный debug Pod и обратись к <code>web-svc</code> по имени.</p>\n<p><code>dns-test</code> — это отдельный Pod-клиент. Он не входит в Deployment <code>web-app</code>; мы запускаем его как временную маленькую машину внутри Kubernetes, чтобы посмотреть на сеть глазами другого Pod'а.</p>\n<p>Из этого Pod'а мы обращаемся к <code>web-svc</code> по имени. Это похоже на реальную ситуацию: одно приложение внутри кластера обращается к другому приложению не по IP конкретного Pod'а, а по стабильному имени Service.</p>\n<p>Важно: <code>web-svc</code> — это имя Service, а не имя конкретного Pod. Kubernetes DNS находит Service, Service смотрит на Endpoints, а дальше трафик попадает в один из Pod'ов Deployment <code>web-app</code>.</p>\n<pre><code>kubectl run dns-test --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl exec dns-test -- nslookup web-svc</code></pre>\n<pre><code>kubectl exec dns-test -- wget -qO- http://web-svc</code></pre>\n\n<p>В выводе посмотри строки <code>Name:</code> и <code>Address:</code>. Адрес должен совпадать с ClusterIP сервиса:</p>\n<pre><code>kubectl get svc web-svc -o wide</code></pre>\n<p>Команда <code>wget -qO- http://web-svc</code> делает обычный HTTP-запрос по имени Service и печатает ответ в терминал. Если ты видишь HTML-страницу nginx, значит запрос дошёл до <code>web-svc</code>, Service выбрал один из Endpoints, и Pod <code>web-app</code> вернул ответ.</p>\n<p>После этого ещё раз посмотри Endpoints:</p>\n<pre><code>kubectl get endpoints web-svc</code></pre>\n<p>Так видно четыре уровня: DNS имя <code>web-svc</code> нашлось, Service имеет ClusterIP, HTTP-запрос по имени Service получает ответ, а Endpoints показывают реальные Pod IP за этим Service.</p>\n<p>Упрощённая цепочка такая: <code>dns-test Pod</code> → <code>Kubernetes DNS</code> → <code>Service web-svc</code> → <code>Endpoint</code> → <code>Pod web-app</code>. Именно так внутри кластера один компонент приложения обычно находит другой.</p>\n<p>В конце удали временный Pod:</p>\n<pre><code>kubectl delete pod dns-test</code></pre>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L24\",null,{}],[\"$\",\"$L25\",null,{\"initialData\":{\"id\":\"ch_k8si_lab3\",\"title\":\"Лабораторная 4: Сервисы\",\"type\":\"lab\",\"description\":null,\"task_id\":null,\"vm_image\":\"kuber\",\"vm_init\":\"module_k8s_intro/k8s_intro/lab3/setup.yaml\",\"labs\":[{\"url\":\"module_k8s_intro/k8s_intro/lab3/task_01.yaml\",\"hint\":\"<p>Используй <code>kubectl create deployment</code>: имя Deployment указывается после команды, образ — через <code>--image</code>, число реплик — через <code>--replicas</code>. После создания проверь готовность через <code>kubectl rollout ",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Deployment для сервиса",
+      "taskid": "k8si_lab3_t1_cat",
+      "hint": "<p>Используй <code>kubectl create deployment</code>: имя Deployment указывается после команды, образ — через <code>--image</code>, число реплик — через <code>--replicas</code>. После создания проверь готовность через <code>kubectl rollout status deployment/web-app</code>.</p>",
+      "question_html": "<p>Создай Deployment <code>web-app</code> с 2 репликами образа <code>nginx:alpine</code>, к которому дальше подключим Service. Service выбирает Pod'ы по labels, поэтому сначала нужен workload.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Deployment <code>web-app</code> с 2 репликами образа <code>nginx:alpine</code>, к которому дальше подключим Service. Service выбирает Pod'ы по labels, поэтому сначала нужен workload.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать ClusterIP Service",
+      "taskid": "k8si_lab3_t2_clusterip",
+      "hint": "<p>Используй <code>kubectl expose deployment</code> для <code>web-app</code>: задай имя Service через <code>--name</code>, порт через <code>--port</code> и порт контейнера через <code>--target-port</code>. После создания проверь <code>kubectl get svc web-svc</code> и <code>kubectl get endpoints web-svc</code>.</p>",
+      "question_html": "<p>Создай Service <code>web-svc</code> типа ClusterIP для Deployment'а <code>web-app</code>: selector <code>app=web-app</code>, port <code>80</code>, targetPort <code>80</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Service <code>web-svc</code> типа ClusterIP для Deployment'а <code>web-app</code>: selector <code>app=web-app</code>, port <code>80</code>, targetPort <code>80</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть Service",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри список Service'ов и убедись, что <code>web-svc</code> появился.</p>\n<pre><code>kubectl get services</code></pre>\n</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри список Service'ов и убедись, что <code>web-svc</code> появился.</p>\n<pre><code>kubectl get services</code></pre>\n</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить Endpoints",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри Endpoints сервиса <code>web-svc</code> — это IP-адреса Pod'ов на которые роутится трафик.</p>\n<pre><code>kubectl get endpoints web-svc</code></pre>\n</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри Endpoints сервиса <code>web-svc</code> — это IP-адреса Pod'ов на которые роутится трафик.</p>\n<pre><code>kubectl get endpoints web-svc</code></pre>\n</p>"
+    },
+    {
+      "type": "self",
+      "title": "DNS внутри кластера",
+      "taskid": "",
+      "hint": "",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Создать NodePort Service",
+      "taskid": "k8si_lab3_t6_nodeport",
+      "hint": "<p>Используй <code>kubectl expose deployment</code> с <code>--type=NodePort</code> и <code>--dry-run=client -o yaml</code>, чтобы сначала сохранить манифест в <code>/root/web-nodeport.yaml</code>. Затем примени его через <code>kubectl apply -f</code>.</p>",
+      "question_html": "<p>Создай Service <code>web-nodeport</code> типа NodePort для Deployment'а <code>web-app</code>: selector <code>app=web-app</code>, port <code>80</code>, targetPort <code>80</code>.</p><p>Сохрани результат в <code>/root/web-nodeport.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Service <code>web-nodeport</code> типа NodePort для Deployment'а <code>web-app</code>: selector <code>app=web-app</code>, port <code>80</code>, targetPort <code>80</code>.</p><p>Сохрани результат в <code>/root/web-nodeport.yaml</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем ClusterIP отличается от NodePort?",
+      "taskid": "k8si_lab3_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Какое утверждение верно про ClusterIP и NodePort?</p>",
+      "options": [
+        {
+          "text": "ClusterIP быстрее NodePort",
+          "correct": false,
+          "explanation": "Нет — разница в доступности, не в скорости"
+        },
+        {
+          "text": "NodePort заменяет ClusterIP",
+          "correct": false,
+          "explanation": "Нет — NodePort включает ClusterIP + добавляет внешний порт"
+        },
+        {
+          "text": "ClusterIP доступен только внутри кластера, NodePort — снаружи через порт на Node",
+          "correct": true,
+          "explanation": "Верно! ClusterIP — внутренний, NodePort добавляет внешний доступ"
+        },
+        {
+          "text": "ClusterIP нужен только для баз данных",
+          "correct": false,
+          "explanation": "Нет — ClusterIP используется для любых внутренних сервисов"
+        }
+      ],
+      "raw_description": "<p>Какое утверждение верно про ClusterIP и NodePort?</p><ul>\n<li>ClusterIP быстрее NodePort [Нет — разница в доступности, не в скорости]</li>\n<li>NodePort заменяет ClusterIP [Нет — NodePort включает ClusterIP + добавляет внешний порт]</li>\n<li>+ClusterIP доступен только внутри кластера, NodePort — снаружи через порт на Node [Верно! ClusterIP — внутренний, NodePort добавляет внешний доступ]</li>\n<li>ClusterIP нужен только для баз данных [Нет — ClusterIP используется для любых внутренних сервисов]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Описать Service",
+      "taskid": "k8si_lab3_t8_describe",
+      "hint": "",
+      "question_html": "<p>Какой тип Service у <code>web-svc</code>, созданного в этой лаборатории?</p>",
+      "options": [
+        {
+          "text": "NodePort",
+          "correct": false,
+          "explanation": "Нет — NodePort создаётся отдельной задачей для другого Service"
+        },
+        {
+          "text": "LoadBalancer",
+          "correct": false,
+          "explanation": "Нет — внешний балансировщик здесь не создаётся"
+        },
+        {
+          "text": "ExternalName",
+          "correct": false,
+          "explanation": "Нет — web-svc выбирает Pod'ы через selector"
+        },
+        {
+          "text": "ClusterIP",
+          "correct": true,
+          "explanation": "Верно! web-svc — внутренний сервис кластера"
+        }
+      ],
+      "raw_description": "<p>Какой тип Service у <code>web-svc</code>, созданного в этой лаборатории?</p><ul>\n<li>NodePort [Нет — NodePort создаётся отдельной задачей для другого Service]</li>\n<li>LoadBalancer [Нет — внешний балансировщик здесь не создаётся]</li>\n<li>ExternalName [Нет — web-svc выбирает Pod'ы через selector]</li>\n<li>+ClusterIP [Верно! web-svc — внутренний сервис кластера]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть все сервисы",
+      "taskid": "k8si_lab3_t9_all_svc",
+      "hint": "<p>Используй <code>kubectl get services -o wide</code> или короткую форму <code>kubectl get svc</code>. В списке должны быть <code>web-svc</code> и <code>web-nodeport</code>.</p>",
+      "question_html": "<p>Посмотри все сервисы — убедись, что оба (<code>web-svc</code> и <code>web-nodeport</code>) есть в списке.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри все сервисы — убедись, что оба (<code>web-svc</code> и <code>web-nodeport</code>) есть в списке.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить сервисы",
+      "taskid": "k8si_lab3_t10_del",
+      "hint": "<p>Используй <code>kubectl delete service</code> для <code>web-svc</code> и <code>web-nodeport</code>. После удаления проверь список через <code>kubectl get svc</code>.</p>",
+      "question_html": "<p>Удали оба сервиса <code>web-svc</code> и <code>web-nodeport</code> и убедись, что они исчезли из списка.</p>",
+      "options": [],
+      "raw_description": "<p>Удали оба сервиса <code>web-svc</code> и <code>web-nodeport</code> и убедись, что они исчезли из списка.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab3/setup.yaml"
+}

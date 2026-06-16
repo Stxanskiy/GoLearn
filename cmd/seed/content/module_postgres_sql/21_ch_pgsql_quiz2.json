@@ -1,0 +1,253 @@
+{
+  "n": 21,
+  "id": "ch_pgsql_quiz2",
+  "title": "Проверка: изменение данных и надёжность",
+  "type": "quiz",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что делает INSERT?",
+      "taskid": "pgsql_quiz2_t1_insert",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>INSERT</code>?</p>",
+      "options": [
+        {
+          "text": "Читает строки из таблицы",
+          "correct": false,
+          "explanation": "Нет — это SELECT"
+        },
+        {
+          "text": "Добавляет новые строки в таблицу",
+          "correct": true,
+          "explanation": "Верно! INSERT создаёт записи"
+        },
+        {
+          "text": "Удаляет таблицу целиком",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Создаёт индекс",
+          "correct": false,
+          "explanation": "Нет — индекс создаёт CREATE INDEX"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>INSERT</code>?</p><ul>\n<li>Читает строки из таблицы [Нет — это SELECT]</li>\n<li>+Добавляет новые строки в таблицу [Верно! INSERT создаёт записи]</li>\n<li>Удаляет таблицу целиком [Нет]</li>\n<li>Создаёт индекс [Нет — индекс создаёт CREATE INDEX]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем опасен UPDATE без WHERE?",
+      "taskid": "pgsql_quiz2_t2_update_where",
+      "hint": "",
+      "question_html": "<p>Что произойдёт, если выполнить <code>UPDATE query_notes SET completed = true;</code> без <code>WHERE</code>?</p>",
+      "options": [
+        {
+          "text": "Изменится только первая строка",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "PostgreSQL всегда попросит подтверждение",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Изменятся все строки таблицы",
+          "correct": true,
+          "explanation": "Верно! Без WHERE UPDATE применится ко всем строкам"
+        },
+        {
+          "text": "Запрос не выполнится из-за синтаксической ошибки",
+          "correct": false,
+          "explanation": "Нет — синтаксис корректный"
+        }
+      ],
+      "raw_description": "<p>Что произойдёт, если выполнить <code>UPDATE query_notes SET completed = true;</code> без <code>WHERE</code>?</p><ul>\n<li>Изменится только первая строка [Нет]</li>\n<li>PostgreSQL всегда попросит подтверждение [Нет]</li>\n<li>+Изменятся все строки таблицы [Верно! Без WHERE UPDATE применится ко всем строкам]</li>\n<li>Запрос не выполнится из-за синтаксической ошибки [Нет — синтаксис корректный]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает RETURNING?",
+      "taskid": "pgsql_quiz2_t3_returning",
+      "hint": "",
+      "question_html": "<p>Зачем в PostgreSQL используют <code>RETURNING</code> после <code>INSERT</code>, <code>UPDATE</code> или <code>DELETE</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы откатить транзакцию",
+          "correct": false,
+          "explanation": "Нет — для этого ROLLBACK"
+        },
+        {
+          "text": "Чтобы отключить проверку ограничений",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы сразу вернуть изменённые строки",
+          "correct": true,
+          "explanation": "Верно! Это удобно для проверки результата изменения"
+        },
+        {
+          "text": "Чтобы отсортировать строки",
+          "correct": false,
+          "explanation": "Нет — для сортировки ORDER BY"
+        }
+      ],
+      "raw_description": "<p>Зачем в PostgreSQL используют <code>RETURNING</code> после <code>INSERT</code>, <code>UPDATE</code> или <code>DELETE</code>?</p><ul>\n<li>Чтобы откатить транзакцию [Нет — для этого ROLLBACK]</li>\n<li>Чтобы отключить проверку ограничений [Нет]</li>\n<li>+Чтобы сразу вернуть изменённые строки [Верно! Это удобно для проверки результата изменения]</li>\n<li>Чтобы отсортировать строки [Нет — для сортировки ORDER BY]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает ROLLBACK?",
+      "taskid": "pgsql_quiz2_t4_rollback",
+      "hint": "",
+      "question_html": "<p>Что делает <code>ROLLBACK</code> внутри транзакции?</p>",
+      "options": [
+        {
+          "text": "Сохраняет изменения",
+          "correct": false,
+          "explanation": "Нет — сохраняет COMMIT"
+        },
+        {
+          "text": "Отменяет изменения текущей транзакции",
+          "correct": true,
+          "explanation": "Верно! После ROLLBACK изменения не сохраняются"
+        },
+        {
+          "text": "Создаёт резервную копию",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Удаляет индекс",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Что делает <code>ROLLBACK</code> внутри транзакции?</p><ul>\n<li>Сохраняет изменения [Нет — сохраняет COMMIT]</li>\n<li>+Отменяет изменения текущей транзакции [Верно! После ROLLBACK изменения не сохраняются]</li>\n<li>Создаёт резервную копию [Нет]</li>\n<li>Удаляет индекс [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое PRIMARY KEY?",
+      "taskid": "pgsql_quiz2_t5_primary_key",
+      "hint": "",
+      "question_html": "<p>Что означает <code>PRIMARY KEY</code>?</p>",
+      "options": [
+        {
+          "text": "Колонка может хранить только текст",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Колонка автоматически сортирует результат",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Уникальный идентификатор строки, который не может быть NULL",
+          "correct": true,
+          "explanation": "Верно! Первичный ключ однозначно указывает на строку"
+        },
+        {
+          "text": "Временная колонка только для текущего запроса",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Что означает <code>PRIMARY KEY</code>?</p><ul>\n<li>Колонка может хранить только текст [Нет]</li>\n<li>Колонка автоматически сортирует результат [Нет]</li>\n<li>+Уникальный идентификатор строки, который не может быть NULL [Верно! Первичный ключ однозначно указывает на строку]</li>\n<li>Временная колонка только для текущего запроса [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает FOREIGN KEY?",
+      "taskid": "pgsql_quiz2_t6_foreign_key",
+      "hint": "",
+      "question_html": "<p>Для чего нужен внешний ключ?</p>",
+      "options": [
+        {
+          "text": "Чтобы ускорить любой SELECT",
+          "correct": false,
+          "explanation": "Нет — это не главная задача внешнего ключа"
+        },
+        {
+          "text": "Чтобы хранить пароль",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы значение в одной таблице ссылалось на существующую строку другой таблицы",
+          "correct": true,
+          "explanation": "Верно! Например orders.customer_id ссылается на customers.id"
+        },
+        {
+          "text": "Чтобы отключить транзакции",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Для чего нужен внешний ключ?</p><ul>\n<li>Чтобы ускорить любой SELECT [Нет — это не главная задача внешнего ключа]</li>\n<li>Чтобы хранить пароль [Нет]</li>\n<li>+Чтобы значение в одной таблице ссылалось на существующую строку другой таблицы [Верно! Например orders.customer_id ссылается на customers.id]</li>\n<li>Чтобы отключить транзакции [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое view?",
+      "taskid": "pgsql_quiz2_t7_view",
+      "hint": "",
+      "question_html": "<p>Что такое обычная PostgreSQL view?</p>",
+      "options": [
+        {
+          "text": "Копия данных на диске, которая всегда обновляется вручную",
+          "correct": false,
+          "explanation": "Нет — это ближе к materialized view, но и там нюансы"
+        },
+        {
+          "text": "Сохранённый запрос, к которому можно обращаться как к таблице",
+          "correct": true,
+          "explanation": "Верно! Обычная view хранит определение запроса"
+        },
+        {
+          "text": "Папка с временными файлами",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Команда выхода из psql",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Что такое обычная PostgreSQL view?</p><ul>\n<li>Копия данных на диске, которая всегда обновляется вручную [Нет — это ближе к materialized view, но и там нюансы]</li>\n<li>+Сохранённый запрос, к которому можно обращаться как к таблице [Верно! Обычная view хранит определение запроса]</li>\n<li>Папка с временными файлами [Нет]</li>\n<li>Команда выхода из psql [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем нужен индекс?",
+      "taskid": "pgsql_quiz2_t8_index",
+      "hint": "",
+      "question_html": "<p>Зачем создают индекс?</p>",
+      "options": [
+        {
+          "text": "Чтобы автоматически удалить дубликаты",
+          "correct": false,
+          "explanation": "Нет — для уникальности нужен UNIQUE"
+        },
+        {
+          "text": "Чтобы заменить таблицу",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы база могла быстрее искать или сортировать строки по индексированным колонкам",
+          "correct": true,
+          "explanation": "Верно! Но индекс занимает место и влияет на запись"
+        },
+        {
+          "text": "Чтобы включить psql",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем создают индекс?</p><ul>\n<li>Чтобы автоматически удалить дубликаты [Нет — для уникальности нужен UNIQUE]</li>\n<li>Чтобы заменить таблицу [Нет]</li>\n<li>+Чтобы база могла быстрее искать или сортировать строки по индексированным колонкам [Верно! Но индекс занимает место и влияет на запись]</li>\n<li>Чтобы включить psql [Нет]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

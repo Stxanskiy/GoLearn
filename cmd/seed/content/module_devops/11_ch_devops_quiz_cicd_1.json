@@ -1,0 +1,313 @@
+{
+  "n": 11,
+  "id": "ch_devops_quiz_cicd_1",
+  "title": "Квиз: CI/CD, проверки и безопасность",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "CI vs CD",
+      "taskid": "cicd_quiz1_t1_ci_cd",
+      "hint": "",
+      "question_html": "<p>В чём разница между Continuous Delivery и Continuous Deployment?</p>",
+      "options": [
+        {
+          "text": "Delivery = approve; Deployment = auto deploy",
+          "correct": true,
+          "explanation": "Верно! CD (Delivery) даёт кнопку деплоя; CD (Deployment) нажимает её сама"
+        },
+        {
+          "text": "Delivery быстрее чем Deployment",
+          "correct": false,
+          "explanation": "Нет — наоборот, автоматический Deployment быстрее по времени"
+        },
+        {
+          "text": "Это синонимы — оба означают автоматический деплой",
+          "correct": false,
+          "explanation": "Нет — разница ключевая: ручное vs автоматическое одобрение"
+        },
+        {
+          "text": "Deployment только для микросервисов, Delivery для монолитов",
+          "correct": false,
+          "explanation": "Нет — оба применимы к любой архитектуре"
+        }
+      ],
+      "raw_description": "<p>В чём разница между Continuous Delivery и Continuous Deployment?</p><ul>\n<li>+Delivery = approve; Deployment = auto deploy [Верно! CD (Delivery) даёт кнопку деплоя; CD (Deployment) нажимает её сама]</li>\n<li>Delivery быстрее чем Deployment [Нет — наоборот, автоматический Deployment быстрее по времени]</li>\n<li>Это синонимы — оба означают автоматический деплой [Нет — разница ключевая: ручное vs автоматическое одобрение]</li>\n<li>Deployment только для микросервисов, Delivery для монолитов [Нет — оба применимы к любой архитектуре]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Artifacts vs Cache",
+      "taskid": "cicd_quiz1_t2_artifacts",
+      "hint": "",
+      "question_html": "<p>В CI pipeline в чём разница между artifact и cache?</p>",
+      "options": [
+        {
+          "text": "Artifact больше по размеру чем cache",
+          "correct": false,
+          "explanation": "Нет — размер не определяет тип"
+        },
+        {
+          "text": "Cache хранится вечно, artifact удаляется после pipeline",
+          "correct": false,
+          "explanation": "Нет — обычно наоборот: cache более эфемерен"
+        },
+        {
+          "text": "Artifact переносит данные; cache ускоряет пересборку",
+          "correct": true,
+          "explanation": "Верно! npm packages это cache; compiled binary это artifact"
+        },
+        {
+          "text": "Это одно и то же, разные названия",
+          "correct": false,
+          "explanation": "Нет — принципиально разные роли в pipeline"
+        }
+      ],
+      "raw_description": "<p>В CI pipeline в чём разница между artifact и cache?</p><ul>\n<li>Artifact больше по размеру чем cache [Нет — размер не определяет тип]</li>\n<li>Cache хранится вечно, artifact удаляется после pipeline [Нет — обычно наоборот: cache более эфемерен]</li>\n<li>+Artifact переносит данные; cache ускоряет пересборку [Верно! npm packages это cache; compiled binary это artifact]</li>\n<li>Это одно и то же, разные названия [Нет — принципиально разные роли в pipeline]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Quality gate",
+      "taskid": "cicd_quiz1_t3_quality_gate",
+      "hint": "",
+      "question_html": "<p>Что такое quality gate в CI/CD?</p>",
+      "options": [
+        {
+          "text": "Автоматический блокер merge/deploy при высоком риске",
+          "correct": true,
+          "explanation": "Верно! Quality gate останавливает изменение до следующего этапа"
+        },
+        {
+          "text": "Красивый dashboard с результатами pipeline",
+          "correct": false,
+          "explanation": "Нет — dashboard показывает данные, но не принимает решение"
+        },
+        {
+          "text": "Отдельная команда, которая проверяет качество перед релизом",
+          "correct": false,
+          "explanation": "Нет — это возвращает ручную очередь; gate должен быть частью pipeline"
+        },
+        {
+          "text": "Ручное одобрение каждого commit тимлидом",
+          "correct": false,
+          "explanation": "Нет — quality gate обычно автоматизирован и основан на заранее понятных правилах"
+        }
+      ],
+      "raw_description": "<p>Что такое quality gate в CI/CD?</p><ul>\n<li>+Автоматический блокер merge/deploy при высоком риске [Верно! Quality gate останавливает изменение до следующего этапа]</li>\n<li>Красивый dashboard с результатами pipeline [Нет — dashboard показывает данные, но не принимает решение]</li>\n<li>Отдельная команда, которая проверяет качество перед релизом [Нет — это возвращает ручную очередь; gate должен быть частью pipeline]</li>\n<li>Ручное одобрение каждого commit тимлидом [Нет — quality gate обычно автоматизирован и основан на заранее понятных правилах]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Test Pyramid",
+      "taskid": "cicd_quiz1_t4_pyramid",
+      "hint": "",
+      "question_html": "<p>По Test Pyramid какое соотношение типов тестов рекомендуется?</p>",
+      "options": [
+        {
+          "text": "Unit тесты необязательны если есть хорошие E2E",
+          "correct": false,
+          "explanation": "Нет — unit тесты дают мгновенный feedback при разработке"
+        },
+        {
+          "text": "70% unit / 20% integration / 10% E2E",
+          "correct": true,
+          "explanation": "Верно! Unit тесты быстрые и дешёвые; E2E медленные и хрупкие — не нужно их много"
+        },
+        {
+          "text": "Только E2E — они проверяют реальный user journey",
+          "correct": false,
+          "explanation": "Нет — только E2E это \"Ice Cream Cone\" антипаттерн: медленно, дорого, хрупко"
+        },
+        {
+          "text": "Поровну всех типов тестов",
+          "correct": false,
+          "explanation": "Нет — E2E тесты медленные; большинство должны быть unit тестами"
+        }
+      ],
+      "raw_description": "<p>По Test Pyramid какое соотношение типов тестов рекомендуется?</p><ul>\n<li>Unit тесты необязательны если есть хорошие E2E [Нет — unit тесты дают мгновенный feedback при разработке]</li>\n<li>+70% unit / 20% integration / 10% E2E [Верно! Unit тесты быстрые и дешёвые; E2E медленные и хрупкие — не нужно их много]</li>\n<li>Только E2E — они проверяют реальный user journey [Нет — только E2E это \"Ice Cream Cone\" антипаттерн: медленно, дорого, хрупко]</li>\n<li>Поровну всех типов тестов [Нет — E2E тесты медленные; большинство должны быть unit тестами]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "GitOps Pull модель",
+      "taskid": "cicd_quiz1_t5_gitops",
+      "hint": "",
+      "question_html": "<p>Чем GitOps Pull модель (ArgoCD) лучше традиционного Push (CI деплоит)?</p>",
+      "options": [
+        {
+          "text": "Pull модель быстрее деплоит изменения",
+          "correct": false,
+          "explanation": "Нет — скорость сопоставима; главное преимущество в безопасности и drift detection"
+        },
+        {
+          "text": "CI без kube credentials; drift видит ArgoCD",
+          "correct": true,
+          "explanation": "Верно! Push модель требует CI иметь доступ к кластеру — security risk; Pull безопаснее"
+        },
+        {
+          "text": "GitOps Pull работает только с одним кластером",
+          "correct": false,
+          "explanation": "Нет — ArgoCD поддерживает множество кластеров"
+        },
+        {
+          "text": "Push не поддерживает Kubernetes, только VMs",
+          "correct": false,
+          "explanation": "Нет — Push модель работает с любой инфраструктурой"
+        }
+      ],
+      "raw_description": "<p>Чем GitOps Pull модель (ArgoCD) лучше традиционного Push (CI деплоит)?</p><ul>\n<li>Pull модель быстрее деплоит изменения [Нет — скорость сопоставима; главное преимущество в безопасности и drift detection]</li>\n<li>+CI без kube credentials; drift видит ArgoCD [Верно! Push модель требует CI иметь доступ к кластеру — security risk; Pull безопаснее]</li>\n<li>GitOps Pull работает только с одним кластером [Нет — ArgoCD поддерживает множество кластеров]</li>\n<li>Push не поддерживает Kubernetes, только VMs [Нет — Push модель работает с любой инфраструктурой]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Shift Left Testing",
+      "taskid": "cicd_quiz1_t6_shift_left",
+      "hint": "",
+      "question_html": "<p>Что означает \"Shift Left\" в контексте тестирования?</p>",
+      "options": [
+        {
+          "text": "Запускать тесты на левой части экрана в IDE",
+          "correct": false,
+          "explanation": "Нет — \"left\" это метафора временной шкалы разработки"
+        },
+        {
+          "text": "Перенести все тесты из QA команды в Dev команду",
+          "correct": false,
+          "explanation": "Нет — shift left о времени обнаружения, не о том кто тестирует"
+        },
+        {
+          "text": "Ранние проверки, пока исправлять дешевле",
+          "correct": true,
+          "explanation": "Верно! Баг в production стоит в 100x больше чем баг в unit тесте"
+        },
+        {
+          "text": "Начать с E2E тестов, потом unit",
+          "correct": false,
+          "explanation": "Нет — это противоположность shift left"
+        }
+      ],
+      "raw_description": "<p>Что означает \"Shift Left\" в контексте тестирования?</p><ul>\n<li>Запускать тесты на левой части экрана в IDE [Нет — \"left\" это метафора временной шкалы разработки]</li>\n<li>Перенести все тесты из QA команды в Dev команду [Нет — shift left о времени обнаружения, не о том кто тестирует]</li>\n<li>+Ранние проверки, пока исправлять дешевле [Верно! Баг в production стоит в 100x больше чем баг в unit тесте]</li>\n<li>Начать с E2E тестов, потом unit [Нет — это противоположность shift left]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Environment variables security",
+      "taskid": "cicd_quiz1_t7_secrets",
+      "hint": "",
+      "question_html": "<p>Как правильно передавать secrets (DB password, API keys) в CI/CD pipeline?</p>",
+      "options": [
+        {
+          "text": "Передавать через environment переменные в Dockerfile",
+          "correct": false,
+          "explanation": "Нет — ENV в Dockerfile видны в layers image"
+        },
+        {
+          "text": "Создавать отдельную private ветку для secrets файлов",
+          "correct": false,
+          "explanation": "Нет — private ветки в shared репозитории всё равно видны команде"
+        },
+        {
+          "text": "CI/CD masked secrets, не код и не YAML",
+          "correct": true,
+          "explanation": "Верно! Secrets в git истории вечны даже после удаления; используй CI masked variables или внешние vault"
+        },
+        {
+          "text": "Зашифровать Base64 и положить в репозиторий",
+          "correct": false,
+          "explanation": "Нет — Base64 это кодирование, не шифрование; легко декодируется"
+        }
+      ],
+      "raw_description": "<p>Как правильно передавать secrets (DB password, API keys) в CI/CD pipeline?</p><ul>\n<li>Передавать через environment переменные в Dockerfile [Нет — ENV в Dockerfile видны в layers image]</li>\n<li>Создавать отдельную private ветку для secrets файлов [Нет — private ветки в shared репозитории всё равно видны команде]</li>\n<li>+CI/CD masked secrets, не код и не YAML [Верно! Secrets в git истории вечны даже после удаления; используй CI masked variables или внешние vault]</li>\n<li>Зашифровать Base64 и положить в репозиторий [Нет — Base64 это кодирование, не шифрование; легко декодируется]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Smoke тесты",
+      "taskid": "cicd_quiz1_t8_smoke",
+      "hint": "",
+      "question_html": "<p>Зачем нужны Smoke тесты после деплоя?</p>",
+      "options": [
+        {
+          "text": "Проверить что все unit тесты прошли",
+          "correct": false,
+          "explanation": "Нет — unit тесты запускаются до деплоя; smoke после деплоя"
+        },
+        {
+          "text": "Заменить полный набор тестов для ускорения pipeline",
+          "correct": false,
+          "explanation": "Нет — smoke тесты дополняют, не заменяют; они минимальные по охвату"
+        },
+        {
+          "text": "Проверить, что сервис жив после деплоя",
+          "correct": true,
+          "explanation": "Верно! Smoke = \"есть ли дым\" — если нет, пожара нет. Запускаются сразу после деплоя"
+        },
+        {
+          "text": "Тестировать производительность под нагрузкой",
+          "correct": false,
+          "explanation": "Нет — это load/performance тесты; smoke проверяет базовую работоспособность"
+        }
+      ],
+      "raw_description": "<p>Зачем нужны Smoke тесты после деплоя?</p><ul>\n<li>Проверить что все unit тесты прошли [Нет — unit тесты запускаются до деплоя; smoke после деплоя]</li>\n<li>Заменить полный набор тестов для ускорения pipeline [Нет — smoke тесты дополняют, не заменяют; они минимальные по охвату]</li>\n<li>+Проверить, что сервис жив после деплоя [Верно! Smoke = \"есть ли дым\" — если нет, пожара нет. Запускаются сразу после деплоя]</li>\n<li>Тестировать производительность под нагрузкой [Нет — это load/performance тесты; smoke проверяет базовую работоспособность]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Drift в GitOps",
+      "taskid": "cicd_quiz1_t9_drift",
+      "hint": "",
+      "question_html": "<p>Что такое \"configuration drift\" в контексте GitOps?</p>",
+      "options": [
+        {
+          "text": "Постепенное устаревание конфигурации с течением времени",
+          "correct": false,
+          "explanation": "Нет — drift это конкретное расхождение, не старение"
+        },
+        {
+          "text": "Медленная работа ArgoCD при синхронизации",
+          "correct": false,
+          "explanation": "Нет — drift не связан с производительностью"
+        },
+        {
+          "text": "Разница в конфигурации между dev и production",
+          "correct": false,
+          "explanation": "Нет — это environment difference, не drift; drift это unauthorized/unexpected изменение"
+        },
+        {
+          "text": "Desired в Git != actual в кластере",
+          "correct": true,
+          "explanation": "Верно! ArgoCD с selfHeal: true автоматически исправляет drift возвращая к состоянию в Git"
+        }
+      ],
+      "raw_description": "<p>Что такое \"configuration drift\" в контексте GitOps?</p><ul>\n<li>Постепенное устаревание конфигурации с течением времени [Нет — drift это конкретное расхождение, не старение]</li>\n<li>Медленная работа ArgoCD при синхронизации [Нет — drift не связан с производительностью]</li>\n<li>Разница в конфигурации между dev и production [Нет — это environment difference, не drift; drift это unauthorized/unexpected изменение]</li>\n<li>+Desired в Git != actual в кластере [Верно! ArgoCD с selfHeal: true автоматически исправляет drift возвращая к состоянию в Git]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Immutable artifacts",
+      "taskid": "cicd_quiz1_t10_immutable",
+      "hint": "",
+      "question_html": "<p>Принцип \"immutable artifacts\" означает что...</p>",
+      "options": [
+        {
+          "text": "Terraform state файл нельзя изменять",
+          "correct": false,
+          "explanation": "Нет — state файл изменяется при каждом apply; immutable artifacts о бинарниках/образах"
+        },
+        {
+          "text": "Нельзя использовать latest тег для Docker образов",
+          "correct": false,
+          "explanation": "Это лучшая практика, но не определение immutable artifacts"
+        },
+        {
+          "text": "Docker образы нельзя обновлять — нужно создавать новые",
+          "correct": false,
+          "explanation": "Частично верно, но смысл шире: тот же artifact везде"
+        },
+        {
+          "text": "Один artifact проходит dev, staging и prod",
+          "correct": true,
+          "explanation": "Верно! Пересборка для каждого окружения рискует внести различия; \"build once, deploy many\""
+        }
+      ],
+      "raw_description": "<p>Принцип \"immutable artifacts\" означает что...</p><ul>\n<li>Terraform state файл нельзя изменять [Нет — state файл изменяется при каждом apply; immutable artifacts о бинарниках/образах]</li>\n<li>Нельзя использовать latest тег для Docker образов [Это лучшая практика, но не определение immutable artifacts]</li>\n<li>Docker образы нельзя обновлять — нужно создавать новые [Частично верно, но смысл шире: тот же artifact везде]</li>\n<li>+Один artifact проходит dev, staging и prod [Верно! Пересборка для каждого окружения рискует внести различия; \"build once, deploy many\"]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

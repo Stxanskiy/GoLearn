@@ -1,0 +1,313 @@
+{
+  "n": 12,
+  "id": "ch_helm_quiz1",
+  "title": "Квиз: Helm",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Chart vs Release",
+      "taskid": "helm_quiz1_t1_chart_release",
+      "hint": "",
+      "question_html": "<p>В чём разница между Helm Chart и Helm Release?</p>",
+      "options": [
+        {
+          "text": "Chart — это namespace, Release — это Pod",
+          "correct": false,
+          "explanation": "Нет — Chart и Release не связаны с Kubernetes примитивами напрямую"
+        },
+        {
+          "text": "Release — это версия Chart",
+          "correct": false,
+          "explanation": "Нет — версия Chart хранится в Chart.yaml как version field"
+        },
+        {
+          "text": "Chart и Release — синонимы",
+          "correct": false,
+          "explanation": "Нет — Chart это упакованные шаблоны, Release это конкретная установка"
+        },
+        {
+          "text": "Chart — шаблон (переиспользуемый пакет); Release — установленный экземпляр Chart в конкретном кластере",
+          "correct": true,
+          "explanation": "Верно! Один Chart можно установить много раз с разными именами — каждый будет отдельным Release"
+        }
+      ],
+      "raw_description": "<p>В чём разница между Helm Chart и Helm Release?</p><ul>\n<li>Chart — это namespace, Release — это Pod [Нет — Chart и Release не связаны с Kubernetes примитивами напрямую]</li>\n<li>Release — это версия Chart [Нет — версия Chart хранится в Chart.yaml как version field]</li>\n<li>Chart и Release — синонимы [Нет — Chart это упакованные шаблоны, Release это конкретная установка]</li>\n<li>+Chart — шаблон (переиспользуемый пакет); Release — установленный экземпляр Chart в конкретном кластере [Верно! Один Chart можно установить много раз с разными именами — каждый будет отдельным Release]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "helm upgrade --install",
+      "taskid": "helm_quiz1_t2_upgrade_install",
+      "hint": "",
+      "question_html": "<p>Зачем в CI/CD используют helm upgrade --install вместо helm install?</p>",
+      "options": [
+        {
+          "text": "helm upgrade работает только с --install",
+          "correct": false,
+          "explanation": "Нет — helm upgrade работает с уже существующими релизами без --install"
+        },
+        {
+          "text": "Это единственный способ задать custom values",
+          "correct": false,
+          "explanation": "Нет — custom values можно задать обычным helm install -f"
+        },
+        {
+          "text": "Команда идемпотентна: устанавливает если релиза нет, обновляет если уже установлен — не нужно проверять состояние",
+          "correct": true,
+          "explanation": "Верно! Идемпотентность критична для CI/CD пайплайнов"
+        },
+        {
+          "text": "Флаг --install ускоряет установку",
+          "correct": false,
+          "explanation": "Нет — флаг меняет поведение при отсутствии релиза, а не скорость"
+        }
+      ],
+      "raw_description": "<p>Зачем в CI/CD используют helm upgrade --install вместо helm install?</p><ul>\n<li>helm upgrade работает только с --install [Нет — helm upgrade работает с уже существующими релизами без --install]</li>\n<li>Это единственный способ задать custom values [Нет — custom values можно задать обычным helm install -f]</li>\n<li>+Команда идемпотентна: устанавливает если релиза нет, обновляет если уже установлен — не нужно проверять состояние [Верно! Идемпотентность критична для CI/CD пайплайнов]</li>\n<li>Флаг --install ускоряет установку [Нет — флаг меняет поведение при отсутствии релиза, а не скорость]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "values приоритет",
+      "taskid": "helm_quiz1_t3_values_priority",
+      "hint": "",
+      "question_html": "<p>Если значение задано и в values.yaml и через --set, какое победит?</p>",
+      "options": [
+        {
+          "text": "Они объединяются и нельзя предсказать победителя",
+          "correct": false,
+          "explanation": "Нет — порядок приоритетов строго определён"
+        },
+        {
+          "text": "Последний --set в команде всегда проигрывает",
+          "correct": false,
+          "explanation": "Нет — последний --set побеждает все предыдущие --set"
+        },
+        {
+          "text": "--set имеет наивысший приоритет и перезаписывает любые файлы values",
+          "correct": true,
+          "explanation": "Верно! Порядок: defaults → values.yaml → -f файлы → --set"
+        },
+        {
+          "text": "values.yaml всегда приоритетнее — это «основная конфигурация»",
+          "correct": false,
+          "explanation": "Нет — --set специально сделан для override на лету"
+        }
+      ],
+      "raw_description": "<p>Если значение задано и в values.yaml и через --set, какое победит?</p><ul>\n<li>Они объединяются и нельзя предсказать победителя [Нет — порядок приоритетов строго определён]</li>\n<li>Последний --set в команде всегда проигрывает [Нет — последний --set побеждает все предыдущие --set]</li>\n<li>+--set имеет наивысший приоритет и перезаписывает любые файлы values [Верно! Порядок: defaults → values.yaml → -f файлы → --set]</li>\n<li>values.yaml всегда приоритетнее — это «основная конфигурация» [Нет — --set специально сделан для override на лету]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "helm rollback",
+      "taskid": "helm_quiz1_t4_rollback",
+      "hint": "",
+      "question_html": "<p>После helm rollback создаётся новая ревизия или восстанавливается старая?</p>",
+      "options": [
+        {
+          "text": "Восстанавливается старая ревизия, новые удаляются",
+          "correct": false,
+          "explanation": "Нет — история иммутабельна, старые ревизии не удаляются"
+        },
+        {
+          "text": "rollback невозможен если прошло более 24 часов",
+          "correct": false,
+          "explanation": "Нет — история хранится бессрочно (как Kubernetes Secrets)"
+        },
+        {
+          "text": "Создаётся новая ревизия с содержимым старой — история сохраняется полностью",
+          "correct": true,
+          "explanation": "Верно! helm rollback никогда не удаляет историю; rollback на revision 1 создаёт revision 4 с теми же значениями"
+        },
+        {
+          "text": "rollback просто перезапускает Pod'ы текущей версии",
+          "correct": false,
+          "explanation": "Нет — rollback применяет манифесты из указанной ревизии"
+        }
+      ],
+      "raw_description": "<p>После helm rollback создаётся новая ревизия или восстанавливается старая?</p><ul>\n<li>Восстанавливается старая ревизия, новые удаляются [Нет — история иммутабельна, старые ревизии не удаляются]</li>\n<li>rollback невозможен если прошло более 24 часов [Нет — история хранится бессрочно (как Kubernetes Secrets)]</li>\n<li>+Создаётся новая ревизия с содержимым старой — история сохраняется полностью [Верно! helm rollback никогда не удаляет историю; rollback на revision 1 создаёт revision 4 с теми же значениями]</li>\n<li>rollback просто перезапускает Pod'ы текущей версии [Нет — rollback применяет манифесты из указанной ревизии]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "_helpers.tpl",
+      "taskid": "helm_quiz1_t5_helpers",
+      "hint": "",
+      "question_html": "<p>Зачем в Helm Chart файл _helpers.tpl?</p>",
+      "options": [
+        {
+          "text": "Конфигурация для helm lint валидации",
+          "correct": false,
+          "explanation": "Нет — helm lint работает с Chart.yaml и структурой, не _helpers.tpl"
+        },
+        {
+          "text": "Хранит секреты и чувствительные данные",
+          "correct": false,
+          "explanation": "Нет — секреты в Helm хранятся через --set или внешние секрет-менеджеры"
+        },
+        {
+          "text": "Документация к chart — выводится в helm show readme",
+          "correct": false,
+          "explanation": "Нет — для этого используется README.md"
+        },
+        {
+          "text": "Хранит переиспользуемые именованные шаблоны (define/include) — DRY принцип",
+          "correct": true,
+          "explanation": "Верно! Файлы с _ префиксом не рендерятся как K8s манифесты; в _helpers.tpl хранят общие шаблоны имён, labels"
+        }
+      ],
+      "raw_description": "<p>Зачем в Helm Chart файл _helpers.tpl?</p><ul>\n<li>Конфигурация для helm lint валидации [Нет — helm lint работает с Chart.yaml и структурой, не _helpers.tpl]</li>\n<li>Хранит секреты и чувствительные данные [Нет — секреты в Helm хранятся через --set или внешние секрет-менеджеры]</li>\n<li>Документация к chart — выводится в helm show readme [Нет — для этого используется README.md]</li>\n<li>+Хранит переиспользуемые именованные шаблоны (define/include) — DRY принцип [Верно! Файлы с _ префиксом не рендерятся как K8s манифесты; в _helpers.tpl хранят общие шаблоны имён, labels]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "helm hooks delete policy",
+      "taskid": "helm_quiz1_t6_hooks",
+      "hint": "",
+      "question_html": "<p>Что делает аннотация helm.sh/hook-delete-policy: hook-succeeded?</p>",
+      "options": [
+        {
+          "text": "Hook выполняется только при успешном деплое",
+          "correct": false,
+          "explanation": "Нет — это политика удаления ресурса, не условие запуска"
+        },
+        {
+          "text": "Helm удалит hook при ошибке",
+          "correct": false,
+          "explanation": "Нет — hook-failed удаляет при ошибке, hook-succeeded — при успехе"
+        },
+        {
+          "text": "Job будет перезапущен если завершится с ошибкой",
+          "correct": false,
+          "explanation": "Нет — это контролируется в spec.template.spec.restartPolicy"
+        },
+        {
+          "text": "Job будет автоматически удалён Helm'ом после успешного выполнения",
+          "correct": true,
+          "explanation": "Верно! Без этой политики hook Job'ы накапливаются в кластере"
+        }
+      ],
+      "raw_description": "<p>Что делает аннотация helm.sh/hook-delete-policy: hook-succeeded?</p><ul>\n<li>Hook выполняется только при успешном деплое [Нет — это политика удаления ресурса, не условие запуска]</li>\n<li>Helm удалит hook при ошибке [Нет — hook-failed удаляет при ошибке, hook-succeeded — при успехе]</li>\n<li>Job будет перезапущен если завершится с ошибкой [Нет — это контролируется в spec.template.spec.restartPolicy]</li>\n<li>+Job будет автоматически удалён Helm'ом после успешного выполнения [Верно! Без этой политики hook Job'ы накапливаются в кластере]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "helm template vs install",
+      "taskid": "helm_quiz1_t7_template",
+      "hint": "",
+      "question_html": "<p>Что делает helm template в отличие от helm install?</p>",
+      "options": [
+        {
+          "text": "helm template работает только с локальными charts",
+          "correct": false,
+          "explanation": "Нет — helm template работает и с charts из репозиториев"
+        },
+        {
+          "text": "helm template рендерит YAML и выводит на stdout без отправки в кластер — только просмотр",
+          "correct": true,
+          "explanation": "Верно! Полезно для debug, проверки в CI перед реальным деплоем, и pipe в kubectl apply"
+        },
+        {
+          "text": "helm template проверяет chart на валидность (как lint)",
+          "correct": false,
+          "explanation": "Нет — для валидации используется helm lint"
+        },
+        {
+          "text": "helm template устанавливает chart без записи истории ревизий",
+          "correct": false,
+          "explanation": "Нет — это helm install --no-hooks или похожие флаги"
+        }
+      ],
+      "raw_description": "<p>Что делает helm template в отличие от helm install?</p><ul>\n<li>helm template работает только с локальными charts [Нет — helm template работает и с charts из репозиториев]</li>\n<li>+helm template рендерит YAML и выводит на stdout без отправки в кластер — только просмотр [Верно! Полезно для debug, проверки в CI перед реальным деплоем, и pipe в kubectl apply]</li>\n<li>helm template проверяет chart на валидность (как lint) [Нет — для валидации используется helm lint]</li>\n<li>helm template устанавливает chart без записи истории ревизий [Нет — это helm install --no-hooks или похожие флаги]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Chart версии",
+      "taskid": "helm_quiz1_t8_versions",
+      "hint": "",
+      "question_html": "<p>В чём разница между version и appVersion в Chart.yaml?</p>",
+      "options": [
+        {
+          "text": "version — версия самого chart (шаблонов); appVersion — версия приложения которое деплоит chart",
+          "correct": true,
+          "explanation": "Верно! Chart можно обновить (изменить templates) без изменения версии приложения и наоборот"
+        },
+        {
+          "text": "appVersion автоматически берётся из image tag",
+          "correct": false,
+          "explanation": "Нет — appVersion нужно обновлять вручную или через CI"
+        },
+        {
+          "text": "Они синонимы, используется любой",
+          "correct": false,
+          "explanation": "Нет — у каждого своё семантическое значение"
+        },
+        {
+          "text": "version — для development, appVersion — для production",
+          "correct": false,
+          "explanation": "Нет — оба используются в обоих окружениях"
+        }
+      ],
+      "raw_description": "<p>В чём разница между version и appVersion в Chart.yaml?</p><ul>\n<li>+version — версия самого chart (шаблонов); appVersion — версия приложения которое деплоит chart [Верно! Chart можно обновить (изменить templates) без изменения версии приложения и наоборот]</li>\n<li>appVersion автоматически берётся из image tag [Нет — appVersion нужно обновлять вручную или через CI]</li>\n<li>Они синонимы, используется любой [Нет — у каждого своё семантическое значение]</li>\n<li>version — для development, appVersion — для production [Нет — оба используются в обоих окружениях]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "helm package",
+      "taskid": "helm_quiz1_t9_package",
+      "hint": "",
+      "question_html": "<p>Зачем нужен helm package?</p>",
+      "options": [
+        {
+          "text": "Создаёт Docker образ из chart templates",
+          "correct": false,
+          "explanation": "Нет — chart это K8s манифесты, не Docker образы"
+        },
+        {
+          "text": "Упаковывает chart в .tgz архив для публикации в Helm репозиторий или передачи",
+          "correct": true,
+          "explanation": "Верно! Helm репозитории хранят упакованные .tgz charts с index.yaml"
+        },
+        {
+          "text": "Шифрует values.yaml перед отправкой",
+          "correct": false,
+          "explanation": "Нет — для шифрования есть helm-secrets плагин"
+        },
+        {
+          "text": "Сжимает кластер Kubernetes для экономии места",
+          "correct": false,
+          "explanation": "Нет — helm package работает только с локальными файлами chart"
+        }
+      ],
+      "raw_description": "<p>Зачем нужен helm package?</p><ul>\n<li>Создаёт Docker образ из chart templates [Нет — chart это K8s манифесты, не Docker образы]</li>\n<li>+Упаковывает chart в .tgz архив для публикации в Helm репозиторий или передачи [Верно! Helm репозитории хранят упакованные .tgz charts с index.yaml]</li>\n<li>Шифрует values.yaml перед отправкой [Нет — для шифрования есть helm-secrets плагин]</li>\n<li>Сжимает кластер Kubernetes для экономии места [Нет — helm package работает только с локальными файлами chart]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "когда не нужен Helm",
+      "taskid": "helm_quiz1_t10_when_not",
+      "hint": "",
+      "question_html": "<p>В каком случае Helm избыточен?</p>",
+      "options": [
+        {
+          "text": "Когда нужен rollback",
+          "correct": false,
+          "explanation": "Нет — rollback — одна из ключевых причин использовать Helm"
+        },
+        {
+          "text": "Деплой stateful приложений (база данных)",
+          "correct": false,
+          "explanation": "Нет — Helm отлично работает со StatefulSet; есть готовые charts для PostgreSQL, Redis"
+        },
+        {
+          "text": "Production окружения (слишком много накладных расходов)",
+          "correct": false,
+          "explanation": "Нет — Helm активно используется в production; overhead минимален"
+        },
+        {
+          "text": "Простой одноразовый деплой без многократного переиспользования или разных окружений",
+          "correct": true,
+          "explanation": "Верно! Helm окупается при многократном деплое, нескольких окружениях, или распространении chart"
+        }
+      ],
+      "raw_description": "<p>В каком случае Helm избыточен?</p><ul>\n<li>Когда нужен rollback [Нет — rollback — одна из ключевых причин использовать Helm]</li>\n<li>Деплой stateful приложений (база данных) [Нет — Helm отлично работает со StatefulSet; есть готовые charts для PostgreSQL, Redis]</li>\n<li>Production окружения (слишком много накладных расходов) [Нет — Helm активно используется в production; overhead минимален]</li>\n<li>+Простой одноразовый деплой без многократного переиспользования или разных окружений [Верно! Helm окупается при многократном деплое, нескольких окружениях, или распространении chart]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

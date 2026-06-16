@@ -32,6 +32,31 @@ func (r *SubmissionRepo) IsTaskPassed(ctx context.Context, taskID int) (bool, er
 	return exists, err
 }
 
+// LessonLabStatus returns, for every lesson that has tasks, whether all of its
+// tasks have at least one passed submission (i.e. the lab is complete).
+func (r *SubmissionRepo) LessonLabStatus(ctx context.Context) (map[int]bool, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT t.lesson_id,
+		       COUNT(*) total,
+		       COUNT(DISTINCT CASE WHEN s.passed THEN t.id END) passed
+		FROM tasks t LEFT JOIN submissions s ON s.task_id = t.id
+		GROUP BY t.lesson_id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	status := make(map[int]bool)
+	for rows.Next() {
+		var lessonID, total, passed int
+		if err := rows.Scan(&lessonID, &total, &passed); err != nil {
+			return nil, err
+		}
+		status[lessonID] = total > 0 && passed >= total
+	}
+	return status, rows.Err()
+}
+
 // AllLessonTasksPassed checks if all tasks in a lesson have at least one passed submission.
 func (r *SubmissionRepo) AllLessonTasksPassed(ctx context.Context, lessonID int) (bool, error) {
 	var totalTasks, passedTasks int

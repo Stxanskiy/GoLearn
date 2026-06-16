@@ -1,0 +1,265 @@
+{
+  "n": 10,
+  "id": "ch_exp_linux_lab1",
+  "title": "Практика: навигация и файлы",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Где я нахожусь?",
+      "taskid": "lin_lab1_t1_pwd_quiz",
+      "hint": "",
+      "question_html": "<p>Ты вошёл в систему как <code>root</code>. Что выведет команда <code>pwd</code>?</p>",
+      "options": [
+        {
+          "text": "/home/root",
+          "correct": false,
+          "explanation": "Нет — у root особый домашний каталог /root, а не /home/root"
+        },
+        {
+          "text": "/root",
+          "correct": true,
+          "explanation": "Верно! Домашний каталог пользователя root — это /root"
+        },
+        {
+          "text": "/usr/root",
+          "correct": false,
+          "explanation": "Нет — такого каталога нет"
+        },
+        {
+          "text": "/",
+          "correct": false,
+          "explanation": "Нет — это корневой каталог всей файловой системы, а не домашняя директория"
+        }
+      ],
+      "raw_description": "<p>Ты вошёл в систему как <code>root</code>. Что выведет команда <code>pwd</code>?</p><ul><li>/home/root [Нет — у root особый домашний каталог /root, а не /home/root]</li><li>+/root [Верно! Домашний каталог пользователя root — это /root]</li><li>/usr/root [Нет — такого каталога нет]</li><li>/ [Нет — это корневой каталог всей файловой системы, а не домашняя директория]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать директорию",
+      "taskid": "lin_lab1_t2_mkdir",
+      "hint": "<p>Выбери команду по действию задачи: для каталога обычно нужны <code>mkdir</code>, <code>ls</code>, <code>du</code> или <code>rm</code>. Если создаёшь вложенный путь, вспомни про parent-режим.</p>",
+      "question_html": "<p>Создай новую директорию для проекта.</p><p>Создай директорию <code>/root/myproject</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай новую директорию для проекта.</p><p>Создай директорию <code>/root/myproject</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать файл с текстом",
+      "taskid": "lin_lab1_t3_echo",
+      "hint": "<p>Используй <code>printf</code> или <code>echo</code> с перенаправлением <code>&gt;</code>: создай файл и запиши строку с точным регистром.</p>",
+      "question_html": "<p>Создай файл <code>/root/myproject/README.txt</code> и запиши в него строку <code>Hello DevOps</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/myproject/README.txt</code> и запиши в него строку <code>Hello DevOps</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Скрытые файлы",
+      "taskid": "lin_lab1_t4_hidden_quiz",
+      "hint": "",
+      "question_html": "<p>Команда <code>ls</code> не показывает скрытые файлы. Какой флаг нужно добавить, чтобы увидеть их?</p>",
+      "options": [
+        {
+          "text": "-l",
+          "correct": false,
+          "explanation": "Нет — этот флаг включает длинный формат вывода: права, размер, дата"
+        },
+        {
+          "text": "-h",
+          "correct": false,
+          "explanation": "Нет — этот флаг показывает размеры в читаемом формате: KB, MB"
+        },
+        {
+          "text": "-a",
+          "correct": true,
+          "explanation": "Верно! ls -a (all) показывает все файлы, включая скрытые — те, что начинаются с точки"
+        },
+        {
+          "text": "-r",
+          "correct": false,
+          "explanation": "Нет — этот флаг выводит список в обратном порядке"
+        }
+      ],
+      "raw_description": "<p>Команда <code>ls</code> не показывает скрытые файлы. Какой флаг нужно добавить, чтобы увидеть их?</p><ul><li>-l [Нет — этот флаг включает длинный формат вывода: права, размер, дата]</li><li>-h [Нет — этот флаг показывает размеры в читаемом формате: KB, MB]</li><li>+-a [Верно! ls -a (all) показывает все файлы, включая скрытые — те, что начинаются с точки]</li><li>-r [Нет — этот флаг выводит список в обратном порядке]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: какого файла нет?",
+      "taskid": "lin_lab1_t5_quiz",
+      "hint": "",
+      "question_html": "<p>В директории <code>/opt/devops/lab1</code> есть несколько файлов. Какого из перечисленных там <strong>нет</strong>?</p>",
+      "options": [
+        {
+          "text": "config.txt",
+          "correct": false,
+          "explanation": "Этот файл существует"
+        },
+        {
+          "text": ".secret",
+          "correct": false,
+          "explanation": "Этот скрытый файл существует — нужен флаг -a чтобы его увидеть"
+        },
+        {
+          "text": "readme.md",
+          "correct": false,
+          "explanation": "Этот файл существует"
+        },
+        {
+          "text": "install.sh",
+          "correct": true,
+          "explanation": "Правильно! Этого файла нет в lab1"
+        }
+      ],
+      "raw_description": "<p>В директории <code>/opt/devops/lab1</code> есть несколько файлов. Какого из перечисленных там <strong>нет</strong>?</p><ul><li>config.txt [Этот файл существует]</li><li>.secret [Этот скрытый файл существует — нужен флаг -a чтобы его увидеть]</li><li>readme.md [Этот файл существует]</li><li>+install.sh [Правильно! Этого файла нет в lab1]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Скопировать файл",
+      "taskid": "lin_lab1_t6_cp",
+      "hint": "<p>У <code>cp</code> первый аргумент — источник, второй — назначение.</p>",
+      "question_html": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в <code>/root/myproject/config.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в <code>/root/myproject/config.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переименовать файл",
+      "taskid": "lin_lab1_t7_mv",
+      "hint": "<p><code>mv</code> работает и для переименования, и для перемещения. Проверь, должен ли измениться только basename или весь путь.</p>",
+      "question_html": "<p>Переименуй файл <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>",
+      "options": [],
+      "raw_description": "<p>Переименуй файл <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Переход по директориям",
+      "taskid": "lin_lab1_t8_cd_quiz",
+      "hint": "",
+      "question_html": "<p>Ты находишься в <code>/root/myproject</code>. Что выведет <code>pwd</code> после команды <code>cd ..</code>?</p>",
+      "options": [
+        {
+          "text": "/root",
+          "correct": true,
+          "explanation": "Верно! cd .. переходит на один уровень вверх — из myproject в /root"
+        },
+        {
+          "text": "/home",
+          "correct": false,
+          "explanation": "Нет — cd .. поднимается только на один уровень за раз"
+        },
+        {
+          "text": "/root/myproject/..",
+          "correct": false,
+          "explanation": "Нет — pwd всегда показывает абсолютный путь, без .."
+        },
+        {
+          "text": "Команда вызовет ошибку",
+          "correct": false,
+          "explanation": "Нет — cd .. работает везде, кроме корня /"
+        }
+      ],
+      "raw_description": "<p>Ты находишься в <code>/root/myproject</code>. Что выведет <code>pwd</code> после команды <code>cd ..</code>?</p><ul><li>+/root [Верно! cd .. переходит на один уровень вверх — из myproject в /root]</li><li>/home [Нет — cd .. поднимается только на один уровень за раз]</li><li>/root/myproject/.. [Нет — pwd всегда показывает абсолютный путь, без ..]</li><li>Команда вызовет ошибку [Нет — cd .. работает везде, кроме корня /]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Прочитать скрытый файл",
+      "taskid": "lin_lab1_t9_secret",
+      "hint": "<p>Используй <code>ls</code> с режимом показа скрытых имён: файл с точкой в начале имени не виден в обычном списке.</p>",
+      "question_html": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/opt/devops/lab1</code> есть скрытый файл. Найди его и скопируй его содержимое в <code>/root/found_secret.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переместить файл в новую директорию",
+      "taskid": "lin_lab1_t10_move",
+      "hint": "<p>Используй <code>ls</code> для проверки, затем <code>mkdir</code> для <code>/root/configs</code> и <code>mv</code> для перемещения файла.</p>",
+      "question_html": "<p>Создай директорию <code>/root/configs</code> и перемести в неё файл <code>/root/myproject/myconfig.txt</code>, чтобы итоговый путь был <code>/root/configs/myconfig.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/configs</code> и перемести в неё файл <code>/root/myproject/myconfig.txt</code>, чтобы итоговый путь был <code>/root/configs/myconfig.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Викторина: ls -la",
+      "taskid": "lin_lab1_t11_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>ls -la</code>?</p>",
+      "options": [
+        {
+          "text": "Показывает только скрытые файлы",
+          "correct": false,
+          "explanation": "Нет — она показывает ВСЕ файлы, включая скрытые"
+        },
+        {
+          "text": "Выводит список файлов в длинном формате, включая скрытые",
+          "correct": true,
+          "explanation": "Флаг -l: длинный формат (права, размер, дата). Флаг -a: все файлы, включая начинающиеся с точки"
+        },
+        {
+          "text": "Удаляет все файлы в текущей директории",
+          "correct": false,
+          "explanation": "Нет — ls только показывает, rm удаляет"
+        },
+        {
+          "text": "Выводит список только директорий",
+          "correct": false,
+          "explanation": "Нет — ls показывает и файлы, и директории"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>ls -la</code>?</p><ul><li>Показывает только скрытые файлы [Нет — она показывает ВСЕ файлы, включая скрытые]</li><li>+Выводит список файлов в длинном формате, включая скрытые [Флаг -l: длинный формат (права, размер, дата). Флаг -a: все файлы, включая начинающиеся с точки]</li><li>Удаляет все файлы в текущей директории [Нет — ls только показывает, rm удаляет]</li><li>Выводит список только директорий [Нет — ls показывает и файлы, и директории]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Создать вложенную структуру",
+      "taskid": "lin_lab1_t12_mkdir_p_quiz",
+      "hint": "",
+      "question_html": "<p>Нужно создать путь <code>/root/app/src/components</code> одной командой. Какой флаг <code>mkdir</code> создаёт все промежуточные директории автоматически?</p>",
+      "options": [
+        {
+          "text": "-r",
+          "correct": false,
+          "explanation": "Нет — флаг -r нет у mkdir; он используется в cp и rm"
+        },
+        {
+          "text": "-v",
+          "correct": false,
+          "explanation": "Нет — флаг -v включает подробный вывод, но не решает проблему"
+        },
+        {
+          "text": "-p",
+          "correct": true,
+          "explanation": "Верно! mkdir -p создаёт всю цепочку директорий, включая промежуточные"
+        },
+        {
+          "text": "-a",
+          "correct": false,
+          "explanation": "Нет — у mkdir нет такого флага для этой цели"
+        }
+      ],
+      "raw_description": "<p>Нужно создать путь <code>/root/app/src/components</code> одной командой. Какой флаг <code>mkdir</code> создаёт все промежуточные директории автоматически?</p><ul><li>-r [Нет — флаг -r нет у mkdir; он используется в cp и rm]</li><li>-v [Нет — флаг -v включает подробный вывод, но не решает проблему]</li><li>+-p [Верно! mkdir -p создаёт всю цепочку директорий, включая промежуточные]</li><li>-a [Нет — у mkdir нет такого флага для этой цели]</li></ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить файл",
+      "taskid": "lin_lab1_t13_rm_file",
+      "hint": "<p>Перед удалением уточни тип цели: для файла используй <code>rm</code>, для пустой директории — <code>rmdir</code>, для дерева каталогов — <code>rm</code> с рекурсивным режимом.</p>",
+      "question_html": "<p>Удали файл <code>/root/myproject/README.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали файл <code>/root/myproject/README.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить директорию",
+      "taskid": "lin_lab1_t14_rm_dir",
+      "hint": "<p>Выбери команду по действию задачи: для каталога обычно нужны <code>mkdir</code>, <code>ls</code>, <code>du</code> или <code>rm</code>. Если создаёшь вложенный путь, вспомни про parent-режим.</p>",
+      "question_html": "<p>Удали директорию <code>/root/myproject</code> вместе со всем её содержимым.</p>",
+      "options": [],
+      "raw_description": "<p>Удали директорию <code>/root/myproject</code> вместе со всем её содержимым.</p>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module0_express/linux/lab1/setup.yaml"
+}

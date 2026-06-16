@@ -1,0 +1,121 @@
+{
+  "n": 11,
+  "id": "ch_helm_lab3",
+  "title": "Лабораторная 5: Создание своего chart",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "helm create",
+      "taskid": "helm_lab3_t1_create",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Создай заготовку нового chart <code>/root/myapp-chart</code> с помощью <code>helm create</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай заготовку нового chart <code>/root/myapp-chart</code> с помощью <code>helm create</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Изучить структуру chart",
+      "taskid": "helm_lab3_t2_structure",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Посмотри структуру созданного chart <code>/root/myapp-chart</code>.</p>\n<pre><code>find /root/myapp-chart -maxdepth 2 -type f | sort</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри структуру созданного chart <code>/root/myapp-chart</code>.</p>\n<pre><code>find /root/myapp-chart -maxdepth 2 -type f | sort</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Изменить Chart.yaml",
+      "taskid": "helm_lab3_t3_chart_yaml",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: Devops404 training chart</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: Devops404 training chart</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Настроить values.yaml",
+      "taskid": "helm_lab3_t4_values",
+      "hint": "<p>Редактируй исходный values-файл: параметр <code>replicaCount</code> должен стать <code>2</code>, а внутри секции <code>image</code> значение <code>tag</code> должно стать <code>alpine</code>.</p>",
+      "question_html": "<p>Настрой <code>/root/myapp-chart/values.yaml</code> для своего приложения: выставь <code>replicaCount: 2</code> и tag образа <code>image.tag: alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Настрой <code>/root/myapp-chart/values.yaml</code> для своего приложения: выставь <code>replicaCount: 2</code> и tag образа <code>image.tag: alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить Deployment template",
+      "taskid": "helm_lab3_t5_deployment",
+      "hint": "<p>Используй <code>helm template</code>: рендеринг chart не устанавливает release в кластер, а выводит итоговый YAML.</p>",
+      "question_html": "<p>Упрости Deployment template оставив только основное. Сохрани template в <code>/root/myapp-chart/templates/deployment.yaml</code> и проверь chart через <code>helm lint</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Упрости Deployment template оставив только основное. Сохрани template в <code>/root/myapp-chart/templates/deployment.yaml</code> и проверь chart через <code>helm lint</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Обновить Service template",
+      "taskid": "helm_lab3_t6_service",
+      "hint": "<p>Здесь не нужно создавать Service template с нуля. Важно увидеть связь: значения <code>service.type</code> и <code>service.port</code> лежат в <code>values.yaml</code>, а template подставляет их в итоговый Service при <code>helm template</code>.</p>",
+      "question_html": "<p>Файл <code>/root/myapp-chart/templates/service.yaml</code> уже создан командой <code>helm create</code>. Открой его и посмотри глазами, как Service берёт настройки из <code>values.yaml</code>: тип Service должен приходить из <code>.Values.service.type</code>, а порт — из <code>.Values.service.port</code>.</p>\n<p>Затем открой <code>/root/myapp-chart/values.yaml</code> и найди там блок <code>service</code>. Сопоставь значения из этого блока с тем, что используется в template.</p>",
+      "options": [],
+      "raw_description": "<p>Файл <code>/root/myapp-chart/templates/service.yaml</code> уже создан командой <code>helm create</code>. Открой его и посмотри глазами, как Service берёт настройки из <code>values.yaml</code>: тип Service должен приходить из <code>.Values.service.type</code>, а порт — из <code>.Values.service.port</code>.</p>\n<p>Затем открой <code>/root/myapp-chart/values.yaml</code> и найди там блок <code>service</code>. Сопоставь значения из этого блока с тем, что используется в template.</p>"
+    },
+    {
+      "type": "self",
+      "title": "helm template проверка",
+      "taskid": "helm_lab3_t7_template_check",
+      "hint": "<p><code>helm template</code> не устанавливает release, а только показывает итоговый Kubernetes YAML.</p>",
+      "question_html": "<p>Проверь, что <code>helm template</code> генерирует корректный YAML для твоего chart.</p>\n<pre><code>helm template my-release /root/myapp-chart</code></pre>\n<p>Если вывод большой, сохрани его в файл и посмотри через <code>less</code> или редактор:</p>\n<pre><code>helm template my-release /root/myapp-chart &gt; /root/rendered_yaml.txt</code></pre>\n<p>Обрати внимание, что в render есть <code>Deployment</code> и <code>Service</code>, а значения replicas и image пришли из <code>values.yaml</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что <code>helm template</code> генерирует корректный YAML для твоего chart.</p>\n<pre><code>helm template my-release /root/myapp-chart</code></pre>\n<p>Если вывод большой, сохрани его в файл и посмотри через <code>less</code> или редактор:</p>\n<pre><code>helm template my-release /root/myapp-chart &gt; /root/rendered_yaml.txt</code></pre>\n<p>Обрати внимание, что в render есть <code>Deployment</code> и <code>Service</code>, а значения replicas и image пришли из <code>values.yaml</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Установить свой chart",
+      "taskid": "helm_lab3_t8_install",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Установи свой chart <code>/root/myapp-chart</code> в кластер как release <code>my-custom-app</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install my-custom-app /root/myapp-chart</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи свой chart <code>/root/myapp-chart</code> в кластер как release <code>my-custom-app</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install my-custom-app /root/myapp-chart</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить условие в template",
+      "taskid": "helm_lab3_t9_condition",
+      "hint": "<p>Используй условие в template и проверь оба варианта через <code>helm template</code> и override через <code>--set</code>.</p>",
+      "question_html": "<p>Добавь в <code>/root/myapp-chart/values.yaml</code> поле <code>configmap.enabled: true</code> и используй его в условии <code>{{- if .Values.configmap.enabled }}</code> в template <code>/root/myapp-chart/templates/configmap.yaml</code>. При значении <code>true</code> chart должен рендерить <code>ConfigMap</code>, а при <code>--set configmap.enabled=false</code> — не рендерить его.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь в <code>/root/myapp-chart/values.yaml</code> поле <code>configmap.enabled: true</code> и используй его в условии <code>{{- if .Values.configmap.enabled }}</code> в template <code>/root/myapp-chart/templates/configmap.yaml</code>. При значении <code>true</code> chart должен рендерить <code>ConfigMap</code>, а при <code>--set configmap.enabled=false</code> — не рендерить его.</p>"
+    },
+    {
+      "type": "check",
+      "title": "helm package",
+      "taskid": "helm_lab3_t10_package",
+      "hint": "<p>Используй <code>helm repo</code>, <code>helm dependency</code> или <code>helm package</code> по цели задачи. Проверь Chart.yaml, lock-файл и локальный cache repo перед финальной командой.</p>",
+      "question_html": "<p>Упакуй chart <code>/root/myapp-chart</code> в <code>.tgz</code> архив для распространения. Архив должен появиться в директории <code>/root</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Упакуй chart <code>/root/myapp-chart</code> в <code>.tgz</code> архив для распространения. Архив должен появиться в директории <code>/root</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Установить из архива",
+      "taskid": "helm_lab3_t11_install_tgz",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Установи chart из упакованного файла <code>/root/myapp-chart-*.tgz</code> как release <code>from-package</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<p><code>from-package</code> здесь просто имя release. Мы выбираем такое имя, чтобы было видно: этот release установлен не из директории chart, а из готового архива.</p>\n<pre><code>helm install from-package /root/myapp-chart-*.tgz</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart из упакованного файла <code>/root/myapp-chart-*.tgz</code> как release <code>from-package</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<p><code>from-package</code> здесь просто имя release. Мы выбираем такое имя, чтобы было видно: этот release установлен не из директории chart, а из готового архива.</p>\n<pre><code>helm install from-package /root/myapp-chart-*.tgz</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить все релизы",
+      "taskid": "helm_lab3_t12_cleanup",
+      "hint": "<p>Используй <code>helm uninstall</code>: release удалится, но внешние данные могут остаться. После удаления проверь список release в нужном namespace.</p>",
+      "question_html": "<p>Удали созданные helm releases <code>my-custom-app</code> и <code>from-package</code> и проверь, что они больше не отображаются в списке releases.</p>",
+      "options": [],
+      "raw_description": "<p>Удали созданные helm releases <code>my-custom-app</code> и <code>from-package</code> и проверь, что они больше не отображаются в списке releases.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab3/setup.yaml"
+}

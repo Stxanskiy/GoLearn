@@ -3,6 +3,30 @@
 {{end}}
 
 {{define "content"}}
+<div class="lesson-layout">
+<aside class="lesson-toc">
+    <div class="toc-head">
+        <a href="/module/{{.Module.Slug}}" class="toc-course">{{.Module.Title}}</a>
+        <div class="toc-progress-row">
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:{{.ModuleProgress}}%;"></div></div>
+            <span class="toc-pct">{{.ModuleProgress}}%</span>
+        </div>
+        <div class="toc-count muted">Глава {{.CurrentIndex}} из {{len .Chapters}}</div>
+    </div>
+    <ol class="toc-list">
+        {{$slug := .Module.Slug}}
+        {{$cur := .Lesson.ID}}
+        {{range .Chapters}}
+        <li class="toc-item {{.Status}} {{if eq .ID $cur}}current{{end}}">
+            <a href="/module/{{$slug}}/lesson/{{.Slug}}">
+                <span class="toc-marker">{{if eq .Status "completed"}}✓{{else}}{{.OrderNum}}{{end}}</span>
+                <span class="toc-title">{{.Title}}</span>
+            </a>
+        </li>
+        {{end}}
+    </ol>
+</aside>
+<div class="lesson-main">
 <div class="breadcrumb">
     <a href="/">Дашборд</a> /
     <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
@@ -18,19 +42,40 @@
     {{end}}
 </div>
 
+{{if and (eq .Kind "sim") (not .ContentHTML)}}
+<div class="card" style="text-align:center;padding:48px;">
+    <div style="font-size:42px;">🎮</div>
+    <h2 style="margin:10px 0;">Симулятор</h2>
+    <p class="muted">Интерактивный бизнес-симулятор появится в следующем обновлении.</p>
+</div>
+{{else if .ContentHTML}}
 <div class="content-area lesson-content">
     {{safeHTML .ContentHTML}}
 </div>
+{{end}}
 
-<div class="row" style="margin-top:22px;">
-    {{if .HasQuiz}}<a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz" class="btn btn-primary">📝 Пройти квиз</a>{{end}}
-    {{if .HasTasks}}<a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/tasks" class="btn btn-outline">⌨️ Задания</a>{{end}}
+{{if .HasQuiz}}
+<script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>
+<div id="lesson-quiz" class="lesson-quiz" data-action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz"></div>
+{{end}}
+
+{{if .HasTasks}}
+<div class="lab-cta card">
+    <div>
+        <div style="font-weight:700;">🧪 Лабораторная работа</div>
+        <div class="muted" style="font-size:.88em;">Реальный терминал с автопроверкой заданий.</div>
+    </div>
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/tasks" class="btn btn-primary">Открыть лабораторию →</a>
 </div>
+{{end}}
 
 <style>
 .lesson-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
 .lesson-head h1 { font-size:1.7em; font-weight:800; line-height:1.25; }
 .lesson-content { max-width:840px; animation:lessonFade .4s ease; }
+.lesson-content img { max-width:100%; height:auto; border-radius:10px; display:block; margin:14px 0; }
+.lesson-content pre { max-width:100%; overflow-x:auto; }
+.lesson-content table { display:block; max-width:100%; overflow-x:auto; }
 @keyframes lessonFade { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
 </style>
 
@@ -457,4 +502,149 @@ function gtUpdateGraph(uid) {
         {{end}}
     </div>
 </div>
+</div><!-- /lesson-main -->
+</div><!-- /lesson-layout -->
+
+<style>
+.lesson-layout { display:grid; grid-template-columns:266px minmax(0,1fr); gap:28px; align-items:start; }
+.lesson-main { min-width:0; }
+
+.lesson-toc {
+    position:sticky; top:84px; background:var(--bg-card); border:1px solid var(--border);
+    border-radius:14px; padding:16px; max-height:calc(100vh - 104px); overflow-y:auto;
+}
+.toc-head { padding-bottom:12px; border-bottom:1px solid var(--border); margin-bottom:10px; }
+.toc-course { display:block; font-weight:700; font-size:.96em; color:var(--text); text-decoration:none; margin-bottom:10px; line-height:1.3; }
+.toc-course:hover { color:var(--accent); }
+.toc-progress-row { display:flex; align-items:center; gap:8px; }
+.toc-pct { font-size:.74em; font-weight:700; color:var(--text-muted); }
+.toc-count { font-size:.74em; margin-top:6px; }
+
+.toc-list { list-style:none; margin:0; padding:0; counter-reset:none; }
+.toc-item a { display:flex; align-items:flex-start; gap:9px; padding:7px 8px; border-radius:8px; text-decoration:none; color:var(--text-muted); font-size:.84em; line-height:1.35; transition:background .15s, color .15s; }
+.toc-item a:hover { background:var(--bg-elevated); color:var(--text); }
+.toc-marker {
+    flex-shrink:0; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:.72em; font-weight:700; background:var(--bg-elevated); color:var(--text-muted); border:1px solid var(--border);
+}
+.toc-item.completed .toc-marker { background:var(--green,#3fb950); color:#04210d; border-color:transparent; }
+.toc-item.completed .toc-title { color:var(--text); }
+.toc-item.in_progress .toc-marker { border-color:var(--accent); color:var(--accent); }
+.toc-item.current > a { background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--text); font-weight:600; }
+.toc-item.current .toc-marker { background:var(--accent); color:#0a0c10; border-color:transparent; }
+
+@media (max-width: 900px) {
+    .lesson-layout { grid-template-columns:1fr; }
+    .lesson-toc { position:static; max-height:none; order:2; }
+    .lesson-main { order:1; }
+}
+
+/* Lab CTA */
+.lab-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; flex-wrap:wrap; }
+
+/* Inline quiz */
+.lesson-quiz { margin-top:24px; }
+.lq-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+.lq-pills { display:flex; flex-wrap:wrap; gap:7px; }
+.lq-pill { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; }
+.lq-pill.current { outline:2px solid var(--accent); }
+.lq-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lq-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.lq-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:22px; }
+.lq-q { font-size:1.08em; font-weight:700; margin-bottom:16px; line-height:1.45; }
+.lq-q code, .lq-expl code { background:var(--code-bg); padding:1px 6px; border-radius:5px; font-size:.9em; }
+.lq-opt { display:block; width:100%; text-align:left; margin-bottom:10px; padding:13px 15px; border-radius:11px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.95em; cursor:pointer; transition:all .15s; }
+.lq-opt:hover:not(:disabled) { border-color:var(--accent); transform:translateX(2px); }
+.lq-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
+.lq-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.lq-expl { margin-top:13px; padding:13px 15px; border-radius:11px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.92em; line-height:1.55; }
+.lq-expl.ok { border-color:rgba(63,185,80,.4); } .lq-expl.no { border-color:rgba(248,81,73,.4); }
+.lq-foot { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; flex-wrap:wrap; }
+.lq-nav { display:flex; gap:8px; }
+</style>
+
+<script>
+(function () {
+    var root = document.getElementById('lesson-quiz');
+    if (!root) return;
+    var DATA = JSON.parse(document.getElementById('quiz-data').textContent);
+    var action = root.dataset.action;
+    var answers = new Array(DATA.length).fill(null);
+    var cur = 0, saved = false;
+
+    root.innerHTML =
+        '<div class="lq-head"><h3 style="font-size:1.15em;font-weight:800;">📝 Проверь себя</h3><div class="lq-pills"></div></div>' +
+        '<div class="lq-card" id="lq-card"></div>' +
+        '<div class="lq-foot"><div class="lq-nav">' +
+        '<button class="btn btn-outline" id="lq-prev">← Назад</button>' +
+        '<button class="btn btn-outline" id="lq-next">Вперёд →</button></div>' +
+        '<div style="display:flex;align-items:center;gap:10px;"><span class="muted" id="lq-progress"></span>' +
+        '<button class="btn btn-outline" id="lq-retry">↻ Заново</button>' +
+        '<button class="btn btn-success" id="lq-finish" disabled>Завершить</button></div></div>';
+
+    var pillsEl = root.querySelector('.lq-pills');
+    var cardEl = root.querySelector('#lq-card');
+    var progEl = root.querySelector('#lq-progress');
+    var finishBtn = root.querySelector('#lq-finish');
+
+    DATA.forEach(function (_, i) {
+        var b = document.createElement('button');
+        b.className = 'lq-pill'; b.textContent = i + 1;
+        b.onclick = function () { cur = i; render(); };
+        pillsEl.appendChild(b);
+    });
+    root.querySelector('#lq-prev').onclick = function () { cur = Math.max(0, cur - 1); render(); };
+    root.querySelector('#lq-next').onclick = function () { cur = Math.min(DATA.length - 1, cur + 1); render(); };
+    finishBtn.onclick = save;
+    root.querySelector('#lq-retry').onclick = function () {
+        answers = new Array(DATA.length).fill(null); cur = 0; saved = false;
+        finishBtn.textContent = 'Завершить'; render(); updateProgress();
+    };
+
+    function choose(i) { if (answers[cur] !== null) return; answers[cur] = i; render(); updateProgress(); }
+
+    function updateProgress() {
+        var done = answers.filter(function (a) { return a !== null; }).length;
+        var correct = answers.filter(function (a, i) { return a === DATA[i].c; }).length;
+        progEl.textContent = 'Отвечено ' + done + '/' + DATA.length + ' · верно ' + correct;
+        finishBtn.disabled = done < DATA.length || saved;
+    }
+
+    function render() {
+        var q = DATA[cur], ans = answers[cur];
+        root.querySelector('#lq-prev').disabled = cur === 0;
+        root.querySelector('#lq-next').disabled = cur === DATA.length - 1;
+        var html = '<div class="lq-q">' + q.q + '</div>';
+        q.o.forEach(function (opt, i) {
+            var cls = 'lq-opt';
+            if (ans !== null) { if (i === q.c) cls += ' correct'; else if (i === ans) cls += ' wrong'; }
+            html += '<button class="' + cls + '" data-i="' + i + '"' + (ans !== null ? ' disabled' : '') + '>' + opt + '</button>';
+        });
+        if (ans !== null) {
+            var ok = ans === q.c;
+            var expl = (q.e || '').replace(/^\s*верно[!,.\s]*/i, '');
+            html += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + expl + '</div>';
+        }
+        cardEl.innerHTML = html;
+        cardEl.querySelectorAll('.lq-opt').forEach(function (b) { b.onclick = function () { choose(parseInt(b.dataset.i, 10)); }; });
+        Array.prototype.forEach.call(pillsEl.children, function (p, i) {
+            p.classList.remove('current', 'correct', 'wrong');
+            if (i === cur) p.classList.add('current');
+            if (answers[i] !== null) p.classList.add(answers[i] === DATA[i].c ? 'correct' : 'wrong');
+        });
+    }
+
+    function save() {
+        if (saved) return;
+        var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&');
+        fetch(action, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
+            .then(function () {
+                saved = true; finishBtn.textContent = '✓ Сохранено'; finishBtn.disabled = true;
+            }).catch(function () { finishBtn.textContent = 'Ошибка'; });
+    }
+
+    function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    render(); updateProgress();
+})();
+</script>
 {{end}}

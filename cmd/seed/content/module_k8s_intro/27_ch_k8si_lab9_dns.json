@@ -1,0 +1,109 @@
+{
+  "n": 27,
+  "id": "ch_k8si_lab9_dns",
+  "title": "Лабораторная 7: DNS в кластере",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Подготовить Service для DNS",
+      "taskid": "k8sn_lab4_t1_coredns",
+      "hint": "<p>Используй <code>kubectl get svc,endpoints</code> и <code>kubectl describe</code>: проверь selector и порты. Service должен выбирать нужные Pod&#x27;ы, а targetPort — совпадать с портом контейнера.</p>",
+      "question_html": "<p>Создай Deployment <code>web-svc-app</code> с 2 репликами образа <code>nginx:alpine</code> и Service <code>web-svc</code> на port <code>80</code> с selector <code>app=web-svc-app</code>. Их имена будем резолвить через Kubernetes DNS.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Deployment <code>web-svc-app</code> с 2 репликами образа <code>nginx:alpine</code> и Service <code>web-svc</code> на port <code>80</code> с selector <code>app=web-svc-app</code>. Их имена будем резолвить через Kubernetes DNS.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить короткое DNS-имя Service",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Запусти отдельный debug Pod и из него проверь короткое имя <code>web-svc</code>. Мы хотим увидеть две вещи: DNS разрешает имя Service в ClusterIP, а HTTP-запрос по этому имени доходит до nginx.</p>\n<pre><code>kubectl run dns-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/dns-debug --timeout=120s</code></pre>\n<pre><code>kubectl get svc web-svc</code></pre>\n<pre><code>kubectl exec dns-debug -- nslookup web-svc</code></pre>\n<pre><code>kubectl exec dns-debug -- wget -qO- http://web-svc</code></pre>\n<p>Сравни IP из <code>nslookup web-svc</code> с <code>CLUSTER-IP</code> у Service. Для обычного ClusterIP Service DNS возвращает именно виртуальный IP Service, а не IP конкретного Pod.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти отдельный debug Pod и из него проверь короткое имя <code>web-svc</code>. Мы хотим увидеть две вещи: DNS разрешает имя Service в ClusterIP, а HTTP-запрос по этому имени доходит до nginx.</p>\n<pre><code>kubectl run dns-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl wait --for=condition=Ready pod/dns-debug --timeout=120s</code></pre>\n<pre><code>kubectl get svc web-svc</code></pre>\n<pre><code>kubectl exec dns-debug -- nslookup web-svc</code></pre>\n<pre><code>kubectl exec dns-debug -- wget -qO- http://web-svc</code></pre>\n<p>Сравни IP из <code>nslookup web-svc</code> с <code>CLUSTER-IP</code> у Service. Для обычного ClusterIP Service DNS возвращает именно виртуальный IP Service, а не IP конкретного Pod.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Полное DNS имя",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Проверь полное DNS-имя Service: <code>web-svc.&lt;namespace&gt;.svc.cluster.local</code>. Мы хотим увидеть, что короткое имя и FQDN указывают на один и тот же Service.</p>\n<pre><code>NS=$(kubectl get svc web-svc -o jsonpath='{.metadata.namespace}')</code></pre>\n<pre><code>echo \"$NS\"</code></pre>\n<pre><code>kubectl exec dns-debug -- nslookup web-svc.$NS.svc.cluster.local</code></pre>\n<pre><code>kubectl exec dns-debug -- wget -qO- http://web-svc.$NS.svc.cluster.local</code></pre>\n<p>FQDN полезен, когда приложение обращается к Service из другого namespace или когда нужно убрать неоднозначность короткого имени.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь полное DNS-имя Service: <code>web-svc.&lt;namespace&gt;.svc.cluster.local</code>. Мы хотим увидеть, что короткое имя и FQDN указывают на один и тот же Service.</p>\n<pre><code>NS=$(kubectl get svc web-svc -o jsonpath='{.metadata.namespace}')</code></pre>\n<pre><code>echo \"$NS\"</code></pre>\n<pre><code>kubectl exec dns-debug -- nslookup web-svc.$NS.svc.cluster.local</code></pre>\n<pre><code>kubectl exec dns-debug -- wget -qO- http://web-svc.$NS.svc.cluster.local</code></pre>\n<p>FQDN полезен, когда приложение обращается к Service из другого namespace или когда нужно убрать неоднозначность короткого имени.</p>"
+    },
+    {
+      "type": "self",
+      "title": "DNS Pod'а",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Посмотри DNS-настройки внутри debug Pod. Именно из-за <code>search</code> domains короткое имя <code>web-svc</code> может автоматически дополняться до имени внутри текущего namespace.</p>\n<pre><code>kubectl exec dns-debug -- cat /etc/resolv.conf</code></pre>\n<p>Найди строку <code>search</code>. Обычно в ней есть текущий namespace, <code>svc.cluster.local</code> и <code>cluster.local</code>. Поэтому внутри своего namespace можно писать коротко <code>web-svc</code>, а из другого namespace лучше использовать <code>web-svc.&lt;namespace&gt;</code> или полный FQDN.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри DNS-настройки внутри debug Pod. Именно из-за <code>search</code> domains короткое имя <code>web-svc</code> может автоматически дополняться до имени внутри текущего namespace.</p>\n<pre><code>kubectl exec dns-debug -- cat /etc/resolv.conf</code></pre>\n<p>Найди строку <code>search</code>. Обычно в ней есть текущий namespace, <code>svc.cluster.local</code> и <code>cluster.local</code>. Поэтому внутри своего namespace можно писать коротко <code>web-svc</code>, а из другого namespace лучше использовать <code>web-svc.&lt;namespace&gt;</code> или полный FQDN.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда нужен FQDN сервиса?",
+      "taskid": "k8sn_lab4_t5_quiz_fqdn",
+      "hint": "",
+      "question_html": "<p>В каком случае лучше использовать полное имя сервиса <code>service.namespace.svc.cluster.local</code>?</p>",
+      "options": [
+        {
+          "text": "Когда обращаешься к сервису из другого namespace",
+          "correct": true,
+          "explanation": "Верно! Короткое имя без namespace может не разрешиться как ожидается"
+        },
+        {
+          "text": "Когда сервис работает на NodePort",
+          "correct": false,
+          "explanation": "Нет — NodePort не меняет DNS-имя сервиса"
+        },
+        {
+          "text": "Только если Service находится в kube-system",
+          "correct": false,
+          "explanation": "Нет — FQDN применим для Service в любом namespace"
+        },
+        {
+          "text": "Только если Pod в CrashLoopBackOff",
+          "correct": false,
+          "explanation": "Нет — состояние Pod не связано с форматом DNS имени"
+        }
+      ],
+      "raw_description": "<p>В каком случае лучше использовать полное имя сервиса <code>service.namespace.svc.cluster.local</code>?</p><ul>\n<li>+Когда обращаешься к сервису из другого namespace [Верно! Короткое имя без namespace может не разрешиться как ожидается]</li>\n<li>Когда сервис работает на NodePort [Нет — NodePort не меняет DNS-имя сервиса]</li>\n<li>Только если Service находится в kube-system [Нет — FQDN применим для Service в любом namespace]</li>\n<li>Только если Pod в CrashLoopBackOff [Нет — состояние Pod не связано с форматом DNS имени]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему nslookup может не пройти?",
+      "taskid": "k8sn_lab4_t6_quiz_nslookup",
+      "hint": "",
+      "question_html": "<p>Ты запускаешь <code>nslookup web-svc</code>, но ответа нет. Что проверять в первую очередь?</p>",
+      "options": [
+        {
+          "text": "Сразу перезапускать kube-apiserver",
+          "correct": false,
+          "explanation": "Нет — это слишком радикально и почти никогда не первопричина"
+        },
+        {
+          "text": "Что сервис реально существует в текущем namespace и имя введено корректно",
+          "correct": true,
+          "explanation": "Верно! Самая частая причина — неверное имя/namespace"
+        },
+        {
+          "text": "Сразу удалять CoreDNS Deployment",
+          "correct": false,
+          "explanation": "Нет — сначала нужна диагностика, а не разрушение системных компонентов"
+        },
+        {
+          "text": "Увеличить replicas у приложения",
+          "correct": false,
+          "explanation": "Нет — DNS резолюция не зависит напрямую от числа реплик"
+        }
+      ],
+      "raw_description": "<p>Ты запускаешь <code>nslookup web-svc</code>, но ответа нет. Что проверять в первую очередь?</p><ul>\n<li>Сразу перезапускать kube-apiserver [Нет — это слишком радикально и почти никогда не первопричина]</li>\n<li>+Что сервис реально существует в текущем namespace и имя введено корректно [Верно! Самая частая причина — неверное имя/namespace]</li>\n<li>Сразу удалять CoreDNS Deployment [Нет — сначала нужна диагностика, а не разрушение системных компонентов]</li>\n<li>Увеличить replicas у приложения [Нет — DNS резолюция не зависит напрямую от числа реплик]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/net_lab4/setup.yaml"
+}

@@ -1,0 +1,229 @@
+{
+  "n": 6,
+  "id": "ch_lcore_lab3",
+  "title": "Лабораторная 3: Пайпы, cut, sed и awk",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Первое поле CSV",
+      "taskid": "lcore_lab3_t1_cut",
+      "hint": "",
+      "question_html": "<p>Извлеки первое поле (имя пользователя) из файла <code>/opt/devops/lab3/users.csv</code> (разделитель — запятая). Какое имя будет первым в выводе?</p>",
+      "options": [
+        {
+          "text": "<code>bob</code>",
+          "correct": false,
+          "explanation": "Нет — это вторая строка CSV"
+        },
+        {
+          "text": "<code>+alice</code>",
+          "correct": false,
+          "explanation": "Верно! Первая строка начинается с alice"
+        },
+        {
+          "text": "<code>carol</code>",
+          "correct": false,
+          "explanation": "Нет — это третья строка CSV"
+        },
+        {
+          "text": "<code>admin</code>",
+          "correct": false,
+          "explanation": "Нет — это второе поле первой строки"
+        }
+      ],
+      "raw_description": "<p>Извлеки первое поле (имя пользователя) из файла <code>/opt/devops/lab3/users.csv</code> (разделитель — запятая). Какое имя будет первым в выводе?</p>\n<ul>\n<li><code>bob</code> [Нет — это вторая строка CSV]</li>\n<li><code>+alice</code> [Верно! Первая строка начинается с alice]</li>\n<li><code>carol</code> [Нет — это третья строка CSV]</li>\n<li><code>admin</code> [Нет — это второе поле первой строки]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Замена host в конфиге",
+      "taskid": "lcore_lab3_t2_sed",
+      "hint": "<p>У <code>sed</code> есть режим изменения файла на месте (<code>-i</code>). Для замены всех совпадений в строке внутри выражения замены нужен отдельный флаг <code>g</code>; сначала можно проверить шаблон без записи в файл.</p>",
+      "question_html": "<p>В файле <code>/opt/devops/lab3/config.txt</code> замени все вхождения <code>localhost</code> на <code>db.internal</code> на месте.</p>",
+      "options": [],
+      "raw_description": "<p>В файле <code>/opt/devops/lab3/config.txt</code> замени все вхождения <code>localhost</code> на <code>db.internal</code> на месте.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Второй столбец",
+      "taskid": "lcore_lab3_t3_awk",
+      "hint": "<p>В <code>awk</code> поля доступны как <code>$1</code>, <code>$2</code> и дальше. Пробелы и табы используются как разделители по умолчанию; для другого разделителя вспоминай флаг <code>-F</code>.</p>",
+      "question_html": "<p>Используя <code>awk</code>, выведи второй столбец файла <code>/opt/devops/lab3/data.txt</code> (разделитель — пробел) и сохрани в <code>/root/column2.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Используя <code>awk</code>, выведи второй столбец файла <code>/opt/devops/lab3/data.txt</code> (разделитель — пробел) и сохрани в <code>/root/column2.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Строки с кодом 404",
+      "taskid": "lcore_lab3_t4_awk_filter",
+      "hint": "<p>Используй условие в <code>awk</code>: HTTP-код лучше сравнивать как отдельное поле, а не искать число по всей строке. Сначала посмотри пару строк лога и определи нужный номер поля.</p>",
+      "question_html": "<p>Из файла <code>/opt/devops/lab3/access.log</code> выведи строки с HTTP-кодом ответа <code>404</code> и сохрани в <code>/root/not_found.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Из файла <code>/opt/devops/lab3/access.log</code> выведи строки с HTTP-кодом ответа <code>404</code> и сохрани в <code>/root/not_found.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: sed -i",
+      "taskid": "lcore_lab3_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Что делает флаг <code>-i</code> у команды <code>sed</code>?</p>",
+      "options": [
+        {
+          "text": "Игнорировать регистр при поиске",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Работать только с целыми строками",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Изменять файл на месте (in-place), без создания копии</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Инвертировать замену",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что делает флаг <code>-i</code> у команды <code>sed</code>?</p>\n<ul>\n<li>Игнорировать регистр при поиске</li>\n<li>Работать только с целыми строками</li>\n<li><code>+Изменять файл на месте (in-place), без создания копии</code></li>\n<li>Инвертировать замену</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Количество уникальных IP",
+      "taskid": "lcore_lab3_t6_chain",
+      "hint": "",
+      "question_html": "<p>Подсчитай количество уникальных IP-адресов в <code>/opt/devops/lab3/access.log</code> и выбери правильный результат.</p>",
+      "options": [
+        {
+          "text": "<code>2</code>",
+          "correct": false,
+          "explanation": "Нет — один IP повторяется, но уникальных больше"
+        },
+        {
+          "text": "<code>3</code>",
+          "correct": false,
+          "explanation": "Нет — есть ещё один уникальный адрес"
+        },
+        {
+          "text": "<code>5</code>",
+          "correct": false,
+          "explanation": "Нет — это количество строк в access.log"
+        },
+        {
+          "text": "<code>+4</code>",
+          "correct": false,
+          "explanation": "Верно! В файле четыре уникальных IP-адреса"
+        }
+      ],
+      "raw_description": "<p>Подсчитай количество уникальных IP-адресов в <code>/opt/devops/lab3/access.log</code> и выбери правильный результат.</p>\n<ul>\n<li><code>2</code> [Нет — один IP повторяется, но уникальных больше]</li>\n<li><code>3</code> [Нет — есть ещё один уникальный адрес]</li>\n<li><code>5</code> [Нет — это количество строк в access.log]</li>\n<li><code>+4</code> [Верно! В файле четыре уникальных IP-адреса]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Верхний регистр",
+      "taskid": "lcore_lab3_t7_tr",
+      "hint": "<p><code>tr</code> работает с двумя наборами символов: что заменить и на что заменить. Диапазоны можно задавать компактно, например для нижнего и верхнего регистра; вход подай через <code>&lt;</code>, результат сохрани через <code>&gt;</code>.</p>",
+      "question_html": "<p>Преобразуй все буквы в файле <code>/opt/devops/lab3/words.txt</code> в верхний регистр и сохрани в <code>/root/upper.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Преобразуй все буквы в файле <code>/opt/devops/lab3/words.txt</code> в верхний регистр и сохрани в <code>/root/upper.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему пайпы удобны в Linux?",
+      "taskid": "lcore_lab3_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Почему конвейеры (<code>|</code>) считаются одной из самых сильных сторон CLI?</p>",
+      "options": [
+        {
+          "text": "<code>+Потому что позволяют собирать сложную обработку из простых команд по шагам</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что они работают только с текстом из одного файла</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что заменяют права доступа и sudo</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что автоматически исправляют ошибки в данных</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему конвейеры (<code>|</code>) считаются одной из самых сильных сторон CLI?</p>\n<ul>\n<li><code>+Потому что позволяют собирать сложную обработку из простых команд по шагам</code></li>\n<li><code>Потому что они работают только с текстом из одного файла</code></li>\n<li><code>Потому что заменяют права доступа и sudo</code></li>\n<li><code>Потому что автоматически исправляют ошибки в данных</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда нужен awk, а не cut?",
+      "taskid": "lcore_lab3_t9_quiz",
+      "hint": "",
+      "question_html": "<p>В каком случае <code>awk</code> обычно уместнее, чем <code>cut</code>?</p>",
+      "options": [
+        {
+          "text": "<code>Когда нужно только вывести фиксированное поле по простому разделителю</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Когда нужна фильтрация по условию и логика по нескольким полям</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Когда нужно создать директорию</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Когда нужно посмотреть запущенные процессы</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В каком случае <code>awk</code> обычно уместнее, чем <code>cut</code>?</p>\n<ul>\n<li><code>Когда нужно только вывести фиксированное поле по простому разделителю</code></li>\n<li><code>+Когда нужна фильтрация по условию и логика по нескольким полям</code></li>\n<li><code>Когда нужно создать директорию</code></li>\n<li><code>Когда нужно посмотреть запущенные процессы</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Безопасность при sed -i",
+      "taskid": "lcore_lab3_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему с <code>sed -i</code> полезно быть аккуратным?</p>",
+      "options": [
+        {
+          "text": "<code>Потому что sed -i всегда делает резервную копию</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что sed -i работает только на пустых файлах</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Потому что он изменяет файл сразу, и ошибочный шаблон может испортить содержимое</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>Потому что sed -i требует обязательный root</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Почему с <code>sed -i</code> полезно быть аккуратным?</p>\n<ul>\n<li><code>Потому что sed -i всегда делает резервную копию</code></li>\n<li><code>Потому что sed -i работает только на пустых файлах</code></li>\n<li><code>+Потому что он изменяет файл сразу, и ошибочный шаблон может испортить содержимое</code></li>\n<li><code>Потому что sed -i требует обязательный root</code></li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab3/setup.yaml"
+}

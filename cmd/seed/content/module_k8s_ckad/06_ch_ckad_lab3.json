@@ -1,0 +1,148 @@
+{
+  "n": 6,
+  "id": "ch_ckad_lab3",
+  "title": "Лабораторная 3: SecurityContext",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Pod с runAsUser",
+      "taskid": "ckad_lab3_t1_runasuser",
+      "hint": "<p>Используй YAML-манифест Pod с образом <code>nginx:alpine</code> и блоком <code>securityContext</code>. Применяй через <code>kubectl apply</code>, проверяй через <code>kubectl exec</code>.</p>",
+      "question_html": "<p>Создай Pod <code>secure-pod</code> на образе <code>nginx:alpine</code>, который запускается под непривилегированным пользователем: укажи <code>securityContext.runAsUser: 1000</code>.</p><p>Сохрани манифест в <code>/root/secure-pod.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>secure-pod</code> на образе <code>nginx:alpine</code>, который запускается под непривилегированным пользователем: укажи <code>securityContext.runAsUser: 1000</code>.</p><p>Сохрани манифест в <code>/root/secure-pod.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Проверить UID в Pod'е",
+      "taskid": "ckad_lab3_t2_uid",
+      "hint": "",
+      "question_html": "<p>Выполни команду и посмотри под каким пользователем работает процесс:</p>\n<pre><code>kubectl exec secure-pod -- id</code></pre>\n<p>Какой uid у процесса?</p>",
+      "options": [
+        {
+          "text": "uid=0 (root)",
+          "correct": false,
+          "explanation": "Нет — root запрещён через runAsUser: 1000"
+        },
+        {
+          "text": "uid=3000",
+          "correct": false,
+          "explanation": "Нет — это fsGroup, не UID процесса"
+        },
+        {
+          "text": "uid=65534 (nobody)",
+          "correct": false,
+          "explanation": "Нет — nobody используется только если runAsNonRoot без runAsUser"
+        },
+        {
+          "text": "uid=1000",
+          "correct": true,
+          "explanation": "Верно! securityContext.runAsUser: 1000 задаёт UID процесса"
+        }
+      ],
+      "raw_description": "<p>Выполни команду и посмотри под каким пользователем работает процесс:</p>\n<pre><code>kubectl exec secure-pod -- id</code></pre>\n<p>Какой uid у процесса?</p><ul>\n<li>uid=0 (root) [Нет — root запрещён через runAsUser: 1000]</li>\n<li>uid=3000 [Нет — это fsGroup, не UID процесса]</li>\n<li>uid=65534 (nobody) [Нет — nobody используется только если runAsNonRoot без runAsUser]</li>\n<li>+uid=1000 [Верно! securityContext.runAsUser: 1000 задаёт UID процесса]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "readOnlyRootFilesystem",
+      "taskid": "ckad_lab3_t3_readonly",
+      "hint": "<p>Используй YAML-манифест Pod с образом <code>nginx:alpine</code>, <code>readOnlyRootFilesystem: true</code>, <code>emptyDir</code> и mount в <code>/tmp</code>.</p>\n<pre><code>volumeMounts:\n- name: tmp\n  mountPath: /tmp\nvolumes:\n- name: tmp\n  emptyDir: {}</code></pre>",
+      "question_html": "<p>Создай Pod <code>readonly-pod</code> с контейнером <code>app</code> на образе <code>nginx:alpine</code>, у которого <code>securityContext.readOnlyRootFilesystem: true</code>. Запись должна быть разрешена только в <code>/tmp</code> через <code>emptyDir</code>.</p><p>Сохрани манифест в <code>/root/readonly-pod.yaml</code> и примени его в кластер.</p>\n<p>Используй такую команду контейнера:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo tmp writable &gt; /tmp/ok.txt; cat /tmp/ok.txt; sleep 3600\"]</code></pre>\n<p>Почему запись в <code>/tmp</code> будет работать: <code>readOnlyRootFilesystem: true</code> делает read-only корневую файловую систему контейнера, которая пришла из image. Но <code>/tmp</code> будет отдельным volume mount поверх этого пути. <code>emptyDir</code> создаётся Kubernetes для Pod'а и остаётся writable, даже если root filesystem контейнера read-only.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>readonly-pod</code> с контейнером <code>app</code> на образе <code>nginx:alpine</code>, у которого <code>securityContext.readOnlyRootFilesystem: true</code>. Запись должна быть разрешена только в <code>/tmp</code> через <code>emptyDir</code>.</p><p>Сохрани манифест в <code>/root/readonly-pod.yaml</code> и примени его в кластер.</p>\n<p>Используй такую команду контейнера:</p>\n<pre><code>command: [\"sh\", \"-c\", \"echo tmp writable &gt; /tmp/ok.txt; cat /tmp/ok.txt; sleep 3600\"]</code></pre>\n<p>Почему запись в <code>/tmp</code> будет работать: <code>readOnlyRootFilesystem: true</code> делает read-only корневую файловую систему контейнера, которая пришла из image. Но <code>/tmp</code> будет отдельным volume mount поверх этого пути. <code>emptyDir</code> создаётся Kubernetes для Pod'а и остаётся writable, даже если root filesystem контейнера read-only.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Проверить readonly filesystem",
+      "taskid": "ckad_lab3_t4_readonly_check",
+      "hint": "",
+      "question_html": "<p>Попробуй записать в корень файловой системы:</p>\n<pre><code>kubectl exec readonly-pod -- sh -c 'echo \"test\" > /blocked.txt 2>&1; echo $?'</code></pre>\n<p>Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "Ошибка \"Read-only file system\", exit code 1",
+          "correct": true,
+          "explanation": "Верно! readOnlyRootFilesystem: true блокирует запись в корень"
+        },
+        {
+          "text": "Файл /blocked.txt успешно создан",
+          "correct": false,
+          "explanation": "Нет — запись в корень заблокирована"
+        },
+        {
+          "text": "Pod перезапустится",
+          "correct": false,
+          "explanation": "Нет — livenessProbe не настроен для этого случая"
+        },
+        {
+          "text": "Команда зависнет без вывода",
+          "correct": false,
+          "explanation": "Нет — ошибка возвращается немедленно"
+        }
+      ],
+      "raw_description": "<p>Попробуй записать в корень файловой системы:</p>\n<pre><code>kubectl exec readonly-pod -- sh -c 'echo \"test\" > /blocked.txt 2>&1; echo $?'</code></pre>\n<p>Что произойдёт?</p><ul>\n<li>+Ошибка \"Read-only file system\", exit code 1 [Верно! readOnlyRootFilesystem: true блокирует запись в корень]</li>\n<li>Файл /blocked.txt успешно создан [Нет — запись в корень заблокирована]</li>\n<li>Pod перезапустится [Нет — livenessProbe не настроен для этого случая]</li>\n<li>Команда зависнет без вывода [Нет — ошибка возвращается немедленно]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "allowPrivilegeEscalation",
+      "taskid": "ckad_lab3_t5_nopriv",
+      "hint": "<p>Используй YAML-манифест Pod с образом <code>nginx:alpine</code>. Настройки <code>allowPrivilegeEscalation</code> и <code>capabilities.drop</code> задаются в <code>containers[].securityContext</code>.</p>",
+      "question_html": "<p>Создай Pod <code>noprivilege-pod</code> с контейнером <code>app</code> на образе <code>nginx:alpine</code>: запрети повышение привилегий через <code>allowPrivilegeEscalation: false</code> и сбрось capabilities через <code>drop: [ALL]</code>.</p><p>Сохрани манифест в <code>/root/noprivilege-pod.yaml</code> и примени его в кластер.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Pod <code>noprivilege-pod</code> с контейнером <code>app</code> на образе <code>nginx:alpine</code>: запрети повышение привилегий через <code>allowPrivilegeEscalation: false</code> и сбрось capabilities через <code>drop: [ALL]</code>.</p><p>Сохрани манифест в <code>/root/noprivilege-pod.yaml</code> и примени его в кластер.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть SecurityContext Pod'ов",
+      "taskid": "ckad_lab3_t6_describe",
+      "hint": "",
+      "question_html": "<p>Посмотри SecurityContext всех созданных Pod'ов:</p>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl get pod secure-pod -o jsonpath='{.spec.securityContext.runAsUser}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get pod readonly-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].securityContext.readOnlyRootFilesystem}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get pod noprivilege-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].securityContext.allowPrivilegeEscalation}{\"\\n\"}{.spec.containers[?(@.name==\"app\")].securityContext.capabilities.drop[*]}{\"\\n\"}'</code></pre>\n<p>Ожидаемо: все три Pod'а запущены, у <code>secure-pod</code> выводится <code>1000</code>, у <code>readonly-pod</code> — <code>true</code>, а у <code>noprivilege-pod</code> — <code>false</code> и <code>ALL</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри SecurityContext всех созданных Pod'ов:</p>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl get pod secure-pod -o jsonpath='{.spec.securityContext.runAsUser}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get pod readonly-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].securityContext.readOnlyRootFilesystem}{\"\\n\"}'</code></pre>\n<pre><code>kubectl get pod noprivilege-pod -o jsonpath='{.spec.containers[?(@.name==\"app\")].securityContext.allowPrivilegeEscalation}{\"\\n\"}{.spec.containers[?(@.name==\"app\")].securityContext.capabilities.drop[*]}{\"\\n\"}'</code></pre>\n<p>Ожидаемо: все три Pod'а запущены, у <code>secure-pod</code> выводится <code>1000</code>, у <code>readonly-pod</code> — <code>true</code>, а у <code>noprivilege-pod</code> — <code>false</code> и <code>ALL</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем runAsNonRoot?",
+      "taskid": "ckad_lab3_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Зачем ставить runAsNonRoot: true если у процесса нет прав root внутри контейнера и так ограниченных namespaces?</p>",
+      "options": [
+        {
+          "text": "Ускорение запуска контейнера",
+          "correct": false,
+          "explanation": "Нет — UID не влияет на скорость"
+        },
+        {
+          "text": "Защита при container escape: если атакующий выйдет из контейнера — на хосте у него будет UID не 0",
+          "correct": true,
+          "explanation": "Верно! Root в контейнере при escape = root на хосте. Non-root = ограниченный доступ на хосте"
+        },
+        {
+          "text": "Запрет использования сети в контейнере",
+          "correct": false,
+          "explanation": "Нет — UID не связан с сетью"
+        },
+        {
+          "text": "Только декларативный best practice без реальной пользы",
+          "correct": false,
+          "explanation": "Нет — это реальная защита при container escape"
+        }
+      ],
+      "raw_description": "<p>Зачем ставить runAsNonRoot: true если у процесса нет прав root внутри контейнера и так ограниченных namespaces?</p><ul>\n<li>Ускорение запуска контейнера [Нет — UID не влияет на скорость]</li>\n<li>+Защита при container escape: если атакующий выйдет из контейнера — на хосте у него будет UID не 0 [Верно! Root в контейнере при escape = root на хосте. Non-root = ограниченный доступ на хосте]</li>\n<li>Запрет использования сети в контейнере [Нет — UID не связан с сетью]</li>\n<li>Только декларативный best practice без реальной пользы [Нет — это реальная защита при container escape]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Pod'ы",
+      "taskid": "ckad_lab3_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code>, затем проверь очистку через <code>kubectl get pods</code>.</p>",
+      "question_html": "<p>Удали тестовые Pod'ы <code>secure-pod</code>, <code>readonly-pod</code> и <code>noprivilege-pod</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали тестовые Pod'ы <code>secure-pod</code>, <code>readonly-pod</code> и <code>noprivilege-pod</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/lab3/setup.yaml"
+}

@@ -1,0 +1,85 @@
+{
+  "n": 14,
+  "id": "ch_k8si_lab8_service_manifests",
+  "title": "Лабораторная: Service и Endpoints в готовых манифестах",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить Deployment и Service manifests",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/service-manifests</code> лежат два готовых файла: Deployment приложения и Service перед ним. Service специально содержит ошибки, которые будем находить по симптомам.</p>\n<pre><code>cd /root/service-manifests</code></pre>\n<pre><code>cat deployment.yaml</code></pre>\n<pre><code>cat service.yaml</code></pre>\n<p>Сравни labels Pod template в Deployment и selector в Service. Также посмотри на пару <code>port</code>/<code>targetPort</code>: Service принимает запрос на <code>port</code>, а отправляет его в Pod на <code>targetPort</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/service-manifests</code> лежат два готовых файла: Deployment приложения и Service перед ним. Service специально содержит ошибки, которые будем находить по симптомам.</p>\n<pre><code>cd /root/service-manifests</code></pre>\n<pre><code>cat deployment.yaml</code></pre>\n<pre><code>cat service.yaml</code></pre>\n<p>Сравни labels Pod template в Deployment и selector в Service. Также посмотри на пару <code>port</code>/<code>targetPort</code>: Service принимает запрос на <code>port</code>, а отправляет его в Pod на <code>targetPort</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Применить сломанный Service и увидеть пустые Endpoints",
+      "taskid": "k8si_manifest3_t2_apply_broken",
+      "hint": "<p>Используй <code>kubectl apply -f</code>, затем проверь <code>kubectl get endpoints store-svc</code>. Если Endpoints пустые, сравни <code>spec.selector</code> Service и labels Pod'ов.</p>",
+      "question_html": "<p>Примени <code>deployment.yaml</code> и <code>service.yaml</code>. Deployment <code>store-web</code> должен подняться, Service <code>store-svc</code> должен существовать, но Endpoints у Service пока должны быть пустыми.</p>\n<p>Это нормальный учебный симптом: Service создан, но selector не нашёл подходящие Pod'ы.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>deployment.yaml</code> и <code>service.yaml</code>. Deployment <code>store-web</code> должен подняться, Service <code>store-svc</code> должен существовать, но Endpoints у Service пока должны быть пустыми.</p>\n<p>Это нормальный учебный симптом: Service создан, но selector не нашёл подходящие Pod'ы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить selector Service",
+      "taskid": "k8si_manifest3_t3_fix_selector",
+      "hint": "<p>В Service ищи <code>spec.selector.app</code>. После <code>apply</code> проверь <code>kubectl get endpoints store-svc</code>.</p>",
+      "question_html": "<p>Исправь selector в <code>/root/service-manifests/service.yaml</code>, чтобы Service <code>store-svc</code> выбирал Pod'ы Deployment <code>store-web</code>. Нужный label: <code>app=store</code>.</p>\n<p>После применения Endpoints должны появиться.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь selector в <code>/root/service-manifests/service.yaml</code>, чтобы Service <code>store-svc</code> выбирал Pod'ы Deployment <code>store-web</code>. Нужный label: <code>app=store</code>.</p>\n<p>После применения Endpoints должны появиться.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Увидеть проблему targetPort",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>Теперь Endpoints появились, но Service всё ещё может не отвечать HTTP-запросом: в manifest указан неверный <code>targetPort</code>. Посмотри текущие порты Service:</p>\n<pre><code>kubectl get svc store-svc -o yaml</code></pre>\n<pre><code>kubectl get endpoints store-svc -o wide</code></pre>\n<p>Deployment запускает <code>nginx:alpine</code>, nginx внутри контейнера слушает порт <code>80</code>. Если Service отправляет трафик на <code>targetPort: 8080</code>, запрос уходит не туда.</p>",
+      "options": [],
+      "raw_description": "<p>Теперь Endpoints появились, но Service всё ещё может не отвечать HTTP-запросом: в manifest указан неверный <code>targetPort</code>. Посмотри текущие порты Service:</p>\n<pre><code>kubectl get svc store-svc -o yaml</code></pre>\n<pre><code>kubectl get endpoints store-svc -o wide</code></pre>\n<p>Deployment запускает <code>nginx:alpine</code>, nginx внутри контейнера слушает порт <code>80</code>. Если Service отправляет трафик на <code>targetPort: 8080</code>, запрос уходит не туда.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить targetPort Service",
+      "taskid": "k8si_manifest3_t5_fix_targetport",
+      "hint": "<p><code>port</code> — порт Service, <code>targetPort</code> — порт контейнера в Pod. Для nginx здесь оба значения должны быть <code>80</code>.</p>",
+      "question_html": "<p>Исправь <code>targetPort</code> в <code>/root/service-manifests/service.yaml</code> на <code>80</code>, примени manifest и проверь Service.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь <code>targetPort</code> в <code>/root/service-manifests/service.yaml</code> на <code>80</code>, примени manifest и проверь Service.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить HTTP через Service изнутри кластера",
+      "taskid": "k8si_manifest3_t6_http",
+      "hint": "<p>Если wget не отвечает или в файле нет <code>Welcome to nginx</code>, проверь три вещи: selector Service, Endpoints и <code>targetPort</code>.</p>",
+      "question_html": "<p>Запусти временный Pod-клиент и обратись к Service <code>store-svc</code> по имени. Сохрани HTML-ответ в <code>/root/store_http.txt</code>; в корректном ответе будет текст <code>Welcome to nginx</code>.</p>\n<pre><code>kubectl run store-client --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl exec store-client -- wget -qO- http://store-svc</code></pre>\n<p>Так мы проверяем путь: Pod-клиент → DNS/Service <code>store-svc</code> → Endpoints → Pod'ы <code>store-web</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти временный Pod-клиент и обратись к Service <code>store-svc</code> по имени. Сохрани HTML-ответ в <code>/root/store_http.txt</code>; в корректном ответе будет текст <code>Welcome to nginx</code>.</p>\n<pre><code>kubectl run store-client --image=busybox:1.28 --restart=Never --command -- sleep 3600</code></pre>\n<pre><code>kubectl exec store-client -- wget -qO- http://store-svc</code></pre>\n<p>Так мы проверяем путь: Pod-клиент → DNS/Service <code>store-svc</code> → Endpoints → Pod'ы <code>store-web</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Масштабировать Deployment через manifest",
+      "taskid": "k8si_manifest3_t7_scale",
+      "hint": "<p>После изменения Deployment дождись rollout. Затем проверь Endpoints: количество адресов должно соответствовать количеству Ready Pod'ов.</p>",
+      "question_html": "<p>В <code>/root/service-manifests/deployment.yaml</code> измени <code>replicas</code> с <code>2</code> на <code>3</code>, примени manifest и проверь, что у Service <code>store-svc</code> стало 3 Endpoints.</p>",
+      "options": [],
+      "raw_description": "<p>В <code>/root/service-manifests/deployment.yaml</code> измени <code>replicas</code> с <code>2</code> на <code>3</code>, примени manifest и проверь, что у Service <code>store-svc</code> стало 3 Endpoints.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы лабораторной",
+      "taskid": "k8si_manifest3_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete service</code>, <code>kubectl delete deployment</code> и <code>kubectl delete pod</code>.</p>",
+      "question_html": "<p>Удали Service <code>store-svc</code>, Deployment <code>store-web</code> и временный Pod <code>store-client</code>, если он остался.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Service <code>store-svc</code>, Deployment <code>store-web</code> и временный Pod <code>store-client</code>, если он остался.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/manifest_lab3/setup.yaml"
+}

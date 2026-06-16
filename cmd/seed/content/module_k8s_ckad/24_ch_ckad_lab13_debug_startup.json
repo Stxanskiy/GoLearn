@@ -1,0 +1,103 @@
+{
+  "n": 24,
+  "id": "ch_ckad_lab13_debug_startup",
+  "title": "Лабораторная 9: Debug Pod'ов и Deployment",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Исследовать первый Pod",
+      "taskid": "k8sdbg_lab1_t1_image_diagnosis",
+      "hint": "<p>Начни с <code>kubectl get pods</code>, затем открой <code>describe</code>. В Events обычно видно, на каком шаге Kubernetes остановился.</p>",
+      "question_html": "<p>В каталоге <code>/root/debug-workloads</code> лежит подготовленный манифест <code>app-a.yaml</code>. Примени его и разберись, почему Pod не переходит в рабочее состояние:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-a.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<p>Обрати внимание на статус Pod'а, описание контейнера и Events внизу <code>describe</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В каталоге <code>/root/debug-workloads</code> лежит подготовленный манифест <code>app-a.yaml</code>. Примени его и разберись, почему Pod не переходит в рабочее состояние:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-a.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<p>Обрати внимание на статус Pod'а, описание контейнера и Events внизу <code>describe</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить первый Pod",
+      "taskid": "k8sdbg_lab1_t2_fix_image",
+      "hint": "<p>После изменения манифеста пересоздай Pod из того же файла и проверь <code>kubectl wait --for=condition=Ready pod/&lt;pod-name&gt;</code>.</p>",
+      "question_html": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-a.yaml</code>. Примени исправленный манифест и дождись, что Pod станет Ready.</p>\n<p>У Pod часть полей нельзя изменить на месте. Если <code>kubectl apply</code> ругается на immutable field, удали старый Pod и примени YAML заново.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-a.yaml</code>. Примени исправленный манифест и дождись, что Pod станет Ready.</p>\n<p>У Pod часть полей нельзя изменить на месте. Если <code>kubectl apply</code> ругается на immutable field, удали старый Pod и примени YAML заново.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать второй Pod",
+      "taskid": "k8sdbg_lab1_t3_crash_reason",
+      "hint": "<p><code>kubectl logs --previous</code> показывает логи предыдущей попытки запуска контейнера и часто помогает увидеть причину завершения процесса.</p>",
+      "question_html": "<p>Примени <code>/root/debug-workloads/app-b.yaml</code>. Разбери состояние Pod'а через <code>get</code>, <code>describe</code> и логи контейнера:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-b.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; --previous</code></pre>\n<p>Найди в логах причину, по которой процесс внутри контейнера завершается.</p>\n<p>В этом сценарии <code>command</code> имитирует стартовую команду уже собранного приложения внутри image. Считай её частью приложения: не переписывай <code>command</code> как обходной путь, а разбирайся, какую конфигурацию ожидает процесс.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-workloads/app-b.yaml</code>. Разбери состояние Pod'а через <code>get</code>, <code>describe</code> и логи контейнера:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-b.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; --previous</code></pre>\n<p>Найди в логах причину, по которой процесс внутри контейнера завершается.</p>\n<p>В этом сценарии <code>command</code> имитирует стартовую команду уже собранного приложения внутри image. Считай её частью приложения: не переписывай <code>command</code> как обходной путь, а разбирайся, какую конфигурацию ожидает процесс.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить второй Pod",
+      "taskid": "k8sdbg_lab1_t4_fix_crash",
+      "hint": "<p>Исправь манифест, удали старый Pod, примени YAML заново и проверь страницу через <code>kubectl exec</code>.</p>",
+      "question_html": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-b.yaml</code>. После исправления пересоздай Pod, дождись Ready и проверь, что приложение отвечает.</p>\n<p>Не меняй <code>command</code>: здесь он показывает поведение уже собранного приложения. Сравни логи контейнера с его переменными окружения и исправь конфигурацию, которую ожидает процесс.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-b.yaml</code>. После исправления пересоздай Pod, дождись Ready и проверь, что приложение отвечает.</p>\n<p>Не меняй <code>command</code>: здесь он показывает поведение уже собранного приложения. Сравни логи контейнера с его переменными окружения и исправь конфигурацию, которую ожидает процесс.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать третий Pod",
+      "taskid": "k8sdbg_lab1_t5_init_logs",
+      "hint": "<p>Если основной контейнер ещё не стартовал, смотри логи контейнера, который выполняется перед ним. Для такого сценария полезно сравнить <code>command</code>, <code>volumeMounts</code> и блок <code>volumes</code>.</p>",
+      "question_html": "<p>Примени <code>/root/debug-workloads/app-c.yaml</code>. Посмотри состояние Pod'а и логи контейнера, который выполняется до основного приложения:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-c.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; -c prepare-config</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; -c prepare-config --previous</code></pre>\n<p>В этом сценарии init container копирует конфиг из подключённого <code>ConfigMap</code> в общий <code>emptyDir</code>, а основной контейнер потом использует подготовленный файл. Обрати внимание, какой путь читает init container и куда на самом деле смонтирован volume с конфигурацией.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-workloads/app-c.yaml</code>. Посмотри состояние Pod'а и логи контейнера, который выполняется до основного приложения:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-c.yaml</code></pre>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl describe pod &lt;pod-name&gt;</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; -c prepare-config</code></pre>\n<pre><code>kubectl logs &lt;pod-name&gt; -c prepare-config --previous</code></pre>\n<p>В этом сценарии init container копирует конфиг из подключённого <code>ConfigMap</code> в общий <code>emptyDir</code>, а основной контейнер потом использует подготовленный файл. Обрати внимание, какой путь читает init container и куда на самом деле смонтирован volume с конфигурацией.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить третий Pod",
+      "taskid": "k8sdbg_lab1_t6_fix_init",
+      "hint": "<p>Посмотри команду контейнера <code>prepare-config</code>, его <code>volumeMounts</code>, общий volume и volume с ConfigMap. Исправление должно позволить предварительному шагу завершиться успешно.</p>",
+      "question_html": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-c.yaml</code>. Пересоздай Pod и дождись Ready.</p>\n<p>Не переписывай <code>command</code> init container как обходной путь: считай его init-скриптом внутри уже собранного image. Исправь подключение конфигурации так, чтобы init container нашёл файл там, где он его ожидает.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в <code>/root/debug-workloads/app-c.yaml</code>. Пересоздай Pod и дождись Ready.</p>\n<p>Не переписывай <code>command</code> init container как обходной путь: считай его init-скриптом внутри уже собранного image. Исправь подключение конфигурации так, чтобы init container нашёл файл там, где он его ожидает.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Исследовать Deployment",
+      "taskid": "k8sdbg_lab1_t7_readiness_diagnosis",
+      "hint": "<p>Если контейнер запущен, но Pod не Ready, смотри проверки готовности контейнера и Events. Healthcheck убирать нельзя: он нужен, чтобы Kubernetes понимал, можно ли отправлять трафик в Pod.</p>",
+      "question_html": "<p>Примени <code>/root/debug-workloads/app-d.yaml</code>. Deployment создаст Pod, но rollout не завершится успешно. Разбери состояние Deployment и Pod'а:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-d.yaml</code></pre>\n<pre><code>kubectl get deploy,pods</code></pre>\n<pre><code>kubectl rollout status deployment/catalog-api --timeout=30s</code></pre>\n<pre><code>kubectl describe pod -l app=catalog-api</code></pre>\n<p>В этом сценарии приложение уже отдаёт health endpoint по <code>/healthz</code>, но Pod всё равно не становится Ready. Найди в Events причину, почему проверка готовности не проходит.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/debug-workloads/app-d.yaml</code>. Deployment создаст Pod, но rollout не завершится успешно. Разбери состояние Deployment и Pod'а:</p>\n<pre><code>kubectl apply -f /root/debug-workloads/app-d.yaml</code></pre>\n<pre><code>kubectl get deploy,pods</code></pre>\n<pre><code>kubectl rollout status deployment/catalog-api --timeout=30s</code></pre>\n<pre><code>kubectl describe pod -l app=catalog-api</code></pre>\n<p>В этом сценарии приложение уже отдаёт health endpoint по <code>/healthz</code>, но Pod всё равно не становится Ready. Найди в Events причину, почему проверка готовности не проходит.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Исправить Deployment",
+      "taskid": "k8sdbg_lab1_t8_fix_readiness",
+      "hint": "<p>Можно исправить исходный файл <code>app-d.yaml</code> и выполнить <code>kubectl apply</code>, либо использовать <code>kubectl patch deployment</code>. После изменения проверь rollout.</p>",
+      "question_html": "<p>Исправь найденную проблему в Deployment <code>catalog-api</code>. Примени исправление и дождись успешного rollout.</p>\n<p>Не удаляй <code>readinessProbe</code> и не отключай healthcheck. Исправь проверку так, чтобы она обращалась к тому endpoint, который реально отдаёт приложение.</p>",
+      "options": [],
+      "raw_description": "<p>Исправь найденную проблему в Deployment <code>catalog-api</code>. Примени исправление и дождись успешного rollout.</p>\n<p>Не удаляй <code>readinessProbe</code> и не отключай healthcheck. Исправь проверку так, чтобы она обращалась к тому endpoint, который реально отдаёт приложение.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Самопроверка debug-сценариев",
+      "taskid": "k8sdbg_lab1_t9_report",
+      "hint": "<p>В реальной отладке важно не только исправить YAML, но и понять, какая команда показала причину проблемы.</p>",
+      "question_html": "<p>Проверь итоговое состояние ресурсов и проговори для себя цепочку по каждому сценарию: симптом → команда диагностики → причина → исправление → проверка.</p>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl get deployment catalog-api</code></pre>\n<pre><code>kubectl describe pod frontend-api</code></pre>\n<pre><code>kubectl logs worker-api</code></pre>\n<pre><code>kubectl logs billing-api -c prepare-config</code></pre>\n<p>К этому моменту ты должен понимать, какая команда помогла найти причину в каждом сценарии.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь итоговое состояние ресурсов и проговори для себя цепочку по каждому сценарию: симптом → команда диагностики → причина → исправление → проверка.</p>\n<pre><code>kubectl get pods</code></pre>\n<pre><code>kubectl get deployment catalog-api</code></pre>\n<pre><code>kubectl describe pod frontend-api</code></pre>\n<pre><code>kubectl logs worker-api</code></pre>\n<pre><code>kubectl logs billing-api -c prepare-config</code></pre>\n<p>К этому моменту ты должен понимать, какая команда помогла найти причину в каждом сценарии.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить debug-ресурсы",
+      "taskid": "k8sdbg_lab1_t10_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod ... --ignore-not-found</code> и <code>kubectl delete deployment catalog-api --ignore-not-found</code>.</p>",
+      "question_html": "<p>Удали ресурсы этой лабораторной: созданные Pod'ы, ConfigMap <code>billing-config</code> и Deployment <code>catalog-api</code>.</p>\n<p>После cleanup в namespace не должно остаться ресурсов из этой лабораторной.</p>",
+      "options": [],
+      "raw_description": "<p>Удали ресурсы этой лабораторной: созданные Pod'ы, ConfigMap <code>billing-config</code> и Deployment <code>catalog-api</code>.</p>\n<p>После cleanup в namespace не должно остаться ресурсов из этой лабораторной.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/debug_lab1/setup.yaml"
+}

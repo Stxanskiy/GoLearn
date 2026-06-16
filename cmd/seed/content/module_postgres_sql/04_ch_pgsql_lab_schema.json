@@ -1,0 +1,85 @@
+{
+  "n": 4,
+  "id": "ch_pgsql_lab_schema",
+  "title": "Лабораторная 1: создать базу, схему и таблицы",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Войти в psql через терминал",
+      "taskid": "pgsql_schema_t1_enter_psql",
+      "hint": "<p>Если команда не открывает <code>psql</code>, проверь, что setup лабораторной завершился и PostgreSQL запущен.</p>",
+      "question_html": "<p>Открой <code>psql</code> на учебной VM. В этой лабораторной мы специально работаем из терминала.</p>\n<pre><code>psql -U student -d postgres</code></pre>\n<p>Если видишь приглашение <code>postgres=#</code> или <code>postgres=&gt;</code>, ты внутри PostgreSQL.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>psql</code> на учебной VM. В этой лабораторной мы специально работаем из терминала.</p>\n<pre><code>psql -U student -d postgres</code></pre>\n<p>Если видишь приглашение <code>postgres=#</code> или <code>postgres=&gt;</code>, ты внутри PostgreSQL.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть базы и текущее подключение",
+      "taskid": "pgsql_schema_t2_list_databases",
+      "hint": "<p><code>\\l</code> показывает базы данных, а <code>\\conninfo</code> показывает, куда ты сейчас подключён.</p>\n<pre><code>\\l\n\\conninfo</code></pre>",
+      "question_html": "<p>Внутри <code>psql</code> посмотри список баз данных и текущее подключение.</p>\n<p>Найди базу <code>postgres</code>. Базы <code>training_shop</code> пока быть не должно.</p>",
+      "options": [],
+      "raw_description": "<p>Внутри <code>psql</code> посмотри список баз данных и текущее подключение.</p>\n<p>Найди базу <code>postgres</code>. Базы <code>training_shop</code> пока быть не должно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать базу training_shop",
+      "taskid": "pgsql_schema_t3_create_database",
+      "hint": "<p>Сначала обычный SQL-запрос для создания базы:</p>\n<pre><code>CREATE DATABASE training_shop;</code></pre>\n<p>Затем psql-команды для просмотра баз и подключения:</p>\n<pre><code>\\l\n\\c training_shop\n\\conninfo</code></pre>\n<p>Если база уже создана, просто подключись к ней через <code>\\c training_shop</code>.</p>",
+      "question_html": "<p>Создай учебную базу данных <code>training_shop</code>.</p>\n<p>Потом посмотри список баз, подключись к новой базе и проверь текущее подключение.</p>",
+      "options": [],
+      "raw_description": "<p>Создай учебную базу данных <code>training_shop</code>.</p>\n<p>Потом посмотри список баз, подключись к новой базе и проверь текущее подключение.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать схему store",
+      "taskid": "pgsql_schema_t4_create_schema",
+      "hint": "<p>Схема (schema) — пространство имён внутри базы. Проверка ждёт схему с точным именем <code>store</code>.</p>\n<p>Сначала обычный SQL-запрос:</p>\n<pre><code>CREATE SCHEMA store;</code></pre>\n<p>Затем psql-команда для списка схем:</p>\n<pre><code>\\dn</code></pre>",
+      "question_html": "<p>В базе <code>training_shop</code> создай схему <code>store</code>.</p>\n<p>После этого посмотри список схем и убедись, что <code>store</code> появилась.</p>",
+      "options": [],
+      "raw_description": "<p>В базе <code>training_shop</code> создай схему <code>store</code>.</p>\n<p>После этого посмотри список схем и убедись, что <code>store</code> появилась.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать таблицу store.customers",
+      "taskid": "pgsql_schema_t5_create_customers",
+      "hint": "<p><code>PRIMARY KEY</code> — первичный ключ (primary key), уникальный идентификатор строки.</p>\n<pre><code>CREATE TABLE store.customers (\n  id serial PRIMARY KEY,\n  full_name text NOT NULL,\n  email text NOT NULL UNIQUE,\n  registered_at date NOT NULL DEFAULT current_date\n);</code></pre>\n<p>Затем psql-команда для просмотра структуры:</p>\n<pre><code>\\d store.customers</code></pre>",
+      "question_html": "<p>Создай таблицу клиентов <code>store.customers</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>full_name</code>, уникальный <code>email</code> и дата регистрации <code>registered_at</code> со значением по умолчанию.</p>\n<p>После создания посмотри структуру таблицы.</p>",
+      "options": [],
+      "raw_description": "<p>Создай таблицу клиентов <code>store.customers</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>full_name</code>, уникальный <code>email</code> и дата регистрации <code>registered_at</code> со значением по умолчанию.</p>\n<p>После создания посмотри структуру таблицы.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать таблицу store.products",
+      "taskid": "pgsql_schema_t6_create_products",
+      "hint": "<p><code>CHECK</code> проверяет условие. Здесь цена и остаток не должны быть отрицательными.</p>\n<pre><code>CREATE TABLE store.products (\n  id serial PRIMARY KEY,\n  name text NOT NULL,\n  category text NOT NULL,\n  price numeric(10,2) NOT NULL CHECK (price &gt;= 0),\n  in_stock integer NOT NULL CHECK (in_stock &gt;= 0)\n);</code></pre>\n<p>Затем psql-команда для просмотра структуры:</p>\n<pre><code>\\d store.products</code></pre>",
+      "question_html": "<p>Создай таблицу товаров <code>store.products</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>name</code>, <code>category</code>, цена <code>price</code> и остаток <code>in_stock</code>. Цена и остаток не должны быть отрицательными.</p>\n<p>После создания посмотри структуру таблицы и ограничения.</p>",
+      "options": [],
+      "raw_description": "<p>Создай таблицу товаров <code>store.products</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>name</code>, <code>category</code>, цена <code>price</code> и остаток <code>in_stock</code>. Цена и остаток не должны быть отрицательными.</p>\n<p>После создания посмотри структуру таблицы и ограничения.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать таблицу store.orders с внешним ключом",
+      "taskid": "pgsql_schema_t7_create_orders",
+      "hint": "<p><code>REFERENCES store.customers(id)</code> создаёт внешний ключ (foreign key) для колонки <code>customer_id</code>.</p>\n<pre><code>CREATE TABLE store.orders (\n  id serial PRIMARY KEY,\n  customer_id integer NOT NULL REFERENCES store.customers(id),\n  status text NOT NULL,\n  created_at date NOT NULL DEFAULT current_date\n);</code></pre>\n<p>Затем psql-команда для просмотра структуры:</p>\n<pre><code>\\d store.orders</code></pre>",
+      "question_html": "<p>Создай таблицу заказов <code>store.orders</code>. В каждом заказе будет <code>customer_id</code> - номер клиента из таблицы <code>store.customers</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>customer_id</code> как внешний ключ, <code>status</code> и дата создания <code>created_at</code> со значением по умолчанию.</p>\n<p>После создания посмотри структуру таблицы.</p>\n<p>Найди в выводе внешний ключ (foreign key): PostgreSQL должен показать, что значения <code>customer_id</code> проверяются по колонке <code>store.customers(id)</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай таблицу заказов <code>store.orders</code>. В каждом заказе будет <code>customer_id</code> - номер клиента из таблицы <code>store.customers</code>.</p>\n<p>Нужны колонки: <code>id</code> как первичный ключ, <code>customer_id</code> как внешний ключ, <code>status</code> и дата создания <code>created_at</code> со значением по умолчанию.</p>\n<p>После создания посмотри структуру таблицы.</p>\n<p>Найди в выводе внешний ключ (foreign key): PostgreSQL должен показать, что значения <code>customer_id</code> проверяются по колонке <code>store.customers(id)</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Осмотреть все созданные объекты",
+      "taskid": "pgsql_schema_t8_inspect_objects",
+      "hint": "<p>Если список таблиц пустой, проверь, что ты подключён к <code>training_shop</code>, а не к <code>postgres</code>.</p>\n<pre><code>\\conninfo\n\\dn\n\\dt store.*\n\\d store.customers\n\\d store.products\n\\d store.orders</code></pre>",
+      "question_html": "<p>Сделай финальную проверку созданной структуры.</p>\n<p>Убедись, что подключён к <code>training_shop</code>, схема <code>store</code> есть в списке схем, а в ней есть таблицы <code>customers</code>, <code>products</code> и <code>orders</code>.</p>\n<p>В структуре <code>store.orders</code> найди внешний ключ на <code>store.customers(id)</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай финальную проверку созданной структуры.</p>\n<p>Убедись, что подключён к <code>training_shop</code>, схема <code>store</code> есть в списке схем, а в ней есть таблицы <code>customers</code>, <code>products</code> и <code>orders</code>.</p>\n<p>В структуре <code>store.orders</code> найди внешний ключ на <code>store.customers(id)</code>.</p>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab_schema/setup.yaml"
+}

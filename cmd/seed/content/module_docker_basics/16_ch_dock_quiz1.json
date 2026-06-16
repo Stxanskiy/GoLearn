@@ -1,0 +1,313 @@
+{
+  "n": 16,
+  "id": "ch_dock_quiz1",
+  "title": "Проверка: Docker CLI, контейнеры, сети, volumes и сборка",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что такое namespace?",
+      "taskid": "dock_quiz1_t1_ns",
+      "hint": "",
+      "question_html": "<p>Что обеспечивает изоляцию процессов в Docker-контейнере?</p>",
+      "options": [
+        {
+          "text": "Docker daemon",
+          "correct": false,
+          "explanation": "Нет — daemon управляет контейнерами, но не обеспечивает изоляцию напрямую"
+        },
+        {
+          "text": "cgroups",
+          "correct": false,
+          "explanation": "Нет — cgroups ограничивают ресурсы (CPU, RAM), а не изолируют пространство имён"
+        },
+        {
+          "text": "Namespaces Linux — изолируют PID, сеть, файловую систему",
+          "correct": true,
+          "explanation": "Верно! Namespaces создают изолированные \"пространства имён\" для разных ресурсов ядра"
+        },
+        {
+          "text": "Гипервизор виртуальной машины",
+          "correct": false,
+          "explanation": "Нет — Docker не использует гипервизор, контейнеры работают на общем ядре"
+        }
+      ],
+      "raw_description": "<p>Что обеспечивает изоляцию процессов в Docker-контейнере?</p><ul>\n<li>Docker daemon [Нет — daemon управляет контейнерами, но не обеспечивает изоляцию напрямую]</li>\n<li>cgroups [Нет — cgroups ограничивают ресурсы (CPU, RAM), а не изолируют пространство имён]</li>\n<li>+Namespaces Linux — изолируют PID, сеть, файловую систему [Верно! Namespaces создают изолированные \"пространства имён\" для разных ресурсов ядра]</li>\n<li>Гипервизор виртуальной машины [Нет — Docker не использует гипервизор, контейнеры работают на общем ядре]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает docker run -d?",
+      "taskid": "dock_quiz1_t2_detach",
+      "hint": "",
+      "question_html": "<p>Что означает флаг <code>-d</code> в команде <code>docker run -d nginx:alpine</code>?</p>",
+      "options": [
+        {
+          "text": "Удалить образ после запуска",
+          "correct": false,
+          "explanation": "Нет — для автоудаления контейнера используют --rm"
+        },
+        {
+          "text": "Запустить контейнер в detached mode (фоновом режиме)",
+          "correct": true,
+          "explanation": "Верно! Контейнер работает в фоне, терминал остаётся свободным"
+        },
+        {
+          "text": "Запустить с правами debug",
+          "correct": false,
+          "explanation": "Нет — для отладки используют DOCKER_DEBUG=1 или --debug"
+        },
+        {
+          "text": "Запустить в dry-run режиме без реального создания",
+          "correct": false,
+          "explanation": "Нет — такого режима нет"
+        }
+      ],
+      "raw_description": "<p>Что означает флаг <code>-d</code> в команде <code>docker run -d nginx:alpine</code>?</p><ul>\n<li>Удалить образ после запуска [Нет — для автоудаления контейнера используют --rm]</li>\n<li>+Запустить контейнер в detached mode (фоновом режиме) [Верно! Контейнер работает в фоне, терминал остаётся свободным]</li>\n<li>Запустить с правами debug [Нет — для отладки используют DOCKER_DEBUG=1 или --debug]</li>\n<li>Запустить в dry-run режиме без реального создания [Нет — такого режима нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое Docker image?",
+      "taskid": "dock_quiz1_t3_image",
+      "hint": "",
+      "question_html": "<p>Что такое Docker image (образ)?</p>",
+      "options": [
+        {
+          "text": "Виртуальный диск с установленной ОС",
+          "correct": false,
+          "explanation": "Нет — это описание VM, не контейнера"
+        },
+        {
+          "text": "Неизменяемый шаблон из слоёв файловой системы для создания контейнеров",
+          "correct": true,
+          "explanation": "Верно! Образ read-only, контейнер добавляет поверх него записываемый слой"
+        },
+        {
+          "text": "Запущенный контейнер",
+          "correct": false,
+          "explanation": "Нет — запущенный контейнер это container, не image"
+        },
+        {
+          "text": "Файл конфигурации Docker-демона",
+          "correct": false,
+          "explanation": "Нет — конфигурация демона в /etc/docker/daemon.json"
+        }
+      ],
+      "raw_description": "<p>Что такое Docker image (образ)?</p><ul>\n<li>Виртуальный диск с установленной ОС [Нет — это описание VM, не контейнера]</li>\n<li>+Неизменяемый шаблон из слоёв файловой системы для создания контейнеров [Верно! Образ read-only, контейнер добавляет поверх него записываемый слой]</li>\n<li>Запущенный контейнер [Нет — запущенный контейнер это container, не image]</li>\n<li>Файл конфигурации Docker-демона [Нет — конфигурация демона в /etc/docker/daemon.json]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Для чего COPY в Dockerfile?",
+      "taskid": "dock_quiz1_t4_copy",
+      "hint": "",
+      "question_html": "<p>Чем отличается инструкция <code>COPY</code> от <code>ADD</code> в Dockerfile?</p>",
+      "options": [
+        {
+          "text": "ADD поддерживает только локальные файлы",
+          "correct": false,
+          "explanation": "Нет — наоборот: ADD может скачивать по URL"
+        },
+        {
+          "text": "COPY работает быстрее ADD",
+          "correct": false,
+          "explanation": "Нет — скорость не отличается принципиально"
+        },
+        {
+          "text": "COPY просто копирует файлы; ADD дополнительно умеет распаковывать архивы",
+          "correct": true,
+          "explanation": "Верно! Рекомендуется использовать COPY — предсказуемее. ADD нужен только для tar-архивов"
+        },
+        {
+          "text": "Разницы нет, это синонимы",
+          "correct": false,
+          "explanation": "Нет — они отличаются поведением при архивах и URL"
+        }
+      ],
+      "raw_description": "<p>Чем отличается инструкция <code>COPY</code> от <code>ADD</code> в Dockerfile?</p><ul>\n<li>ADD поддерживает только локальные файлы [Нет — наоборот: ADD может скачивать по URL]</li>\n<li>COPY работает быстрее ADD [Нет — скорость не отличается принципиально]</li>\n<li>+COPY просто копирует файлы; ADD дополнительно умеет распаковывать архивы [Верно! Рекомендуется использовать COPY — предсказуемее. ADD нужен только для tar-архивов]</li>\n<li>Разницы нет, это синонимы [Нет — они отличаются поведением при архивах и URL]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Куда сохраняются изменения?",
+      "taskid": "dock_quiz1_t5_layer",
+      "hint": "",
+      "question_html": "<p>Контейнер запущен и вы создали в нём файл <code>/tmp/test.txt</code>. Где хранится этот файл?</p>",
+      "options": [
+        {
+          "text": "На хосте в /var/lib/docker/images/",
+          "correct": false,
+          "explanation": "Нет — образы там, но изменения контейнера в overlay2"
+        },
+        {
+          "text": "В записываемом слое (container layer) контейнера",
+          "correct": true,
+          "explanation": "Верно! Образ read-only, все изменения идут в тонкий записываемый слой контейнера"
+        },
+        {
+          "text": "В named volume",
+          "correct": false,
+          "explanation": "Нет — если volume не подключён, данные в container layer"
+        },
+        {
+          "text": "В базовом образе",
+          "correct": false,
+          "explanation": "Нет — образ неизменяем (read-only)"
+        }
+      ],
+      "raw_description": "<p>Контейнер запущен и вы создали в нём файл <code>/tmp/test.txt</code>. Где хранится этот файл?</p><ul>\n<li>На хосте в /var/lib/docker/images/ [Нет — образы там, но изменения контейнера в overlay2]</li>\n<li>+В записываемом слое (container layer) контейнера [Верно! Образ read-only, все изменения идут в тонкий записываемый слой контейнера]</li>\n<li>В named volume [Нет — если volume не подключён, данные в container layer]</li>\n<li>В базовом образе [Нет — образ неизменяем (read-only)]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает docker exec?",
+      "taskid": "dock_quiz1_t6_exec",
+      "hint": "",
+      "question_html": "<p>Что делает команда <code>docker exec -it mycontainer bash</code>?</p>",
+      "options": [
+        {
+          "text": "Копирует bash из хоста в контейнер",
+          "correct": false,
+          "explanation": "Нет — exec выполняет bash, который уже есть в образе"
+        },
+        {
+          "text": "Создаёт новый контейнер из образа mycontainer",
+          "correct": false,
+          "explanation": "Нет — для этого docker run"
+        },
+        {
+          "text": "Запускает bash в уже работающем контейнере mycontainer в интерактивном режиме",
+          "correct": true,
+          "explanation": "Верно! exec выполняет команду внутри работающего контейнера. -it: -i интерактивный, -t псевдотерминал"
+        },
+        {
+          "text": "Останавливает контейнер и открывает bash",
+          "correct": false,
+          "explanation": "Нет — exec не останавливает контейнер"
+        }
+      ],
+      "raw_description": "<p>Что делает команда <code>docker exec -it mycontainer bash</code>?</p><ul>\n<li>Копирует bash из хоста в контейнер [Нет — exec выполняет bash, который уже есть в образе]</li>\n<li>Создаёт новый контейнер из образа mycontainer [Нет — для этого docker run]</li>\n<li>+Запускает bash в уже работающем контейнере mycontainer в интерактивном режиме [Верно! exec выполняет команду внутри работающего контейнера. -it: -i интерактивный, -t псевдотерминал]</li>\n<li>Останавливает контейнер и открывает bash [Нет — exec не останавливает контейнер]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что такое multi-stage build?",
+      "taskid": "dock_quiz1_t7_multistage",
+      "hint": "",
+      "question_html": "<p>Зачем использовать multi-stage build в Dockerfile?</p>",
+      "options": [
+        {
+          "text": "Чтобы ускорить сборку",
+          "correct": false,
+          "explanation": "Нет — multi-stage не ускоряет, но уменьшает размер"
+        },
+        {
+          "text": "Чтобы запустить несколько сервисов в одном контейнере",
+          "correct": false,
+          "explanation": "Нет — для этого docker-compose или supervisor"
+        },
+        {
+          "text": "Чтобы поддерживать несколько архитектур",
+          "correct": false,
+          "explanation": "Нет — для этого buildx и --platform"
+        },
+        {
+          "text": "Чтобы уменьшить итоговый образ: инструменты сборки не попадают в production",
+          "correct": true,
+          "explanation": "Верно! Builder stage компилирует, final stage содержит только результат"
+        }
+      ],
+      "raw_description": "<p>Зачем использовать multi-stage build в Dockerfile?</p><ul>\n<li>Чтобы ускорить сборку [Нет — multi-stage не ускоряет, но уменьшает размер]</li>\n<li>Чтобы запустить несколько сервисов в одном контейнере [Нет — для этого docker-compose или supervisor]</li>\n<li>Чтобы поддерживать несколько архитектур [Нет — для этого buildx и --platform]</li>\n<li>+Чтобы уменьшить итоговый образ: инструменты сборки не попадают в production [Верно! Builder stage компилирует, final stage содержит только результат]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что хранит named volume?",
+      "taskid": "dock_quiz1_t8_volume",
+      "hint": "",
+      "question_html": "<p>Что происходит с данными в named volume после команды <code>docker rm mycontainer</code>?</p>",
+      "options": [
+        {
+          "text": "Данные в volume остаются — docker rm удаляет только контейнер",
+          "correct": true,
+          "explanation": "Верно! Volume живёт независимо. Удалить его можно только через docker volume rm"
+        },
+        {
+          "text": "Docker спросит подтверждение",
+          "correct": false,
+          "explanation": "Нет — docker rm не спрашивает про volumes"
+        },
+        {
+          "text": "Данные копируются на хост",
+          "correct": false,
+          "explanation": "Нет — данные остаются в volume"
+        },
+        {
+          "text": "Данные удаляются вместе с контейнером",
+          "correct": false,
+          "explanation": "Нет — только с docker rm -v или docker volume rm"
+        }
+      ],
+      "raw_description": "<p>Что происходит с данными в named volume после команды <code>docker rm mycontainer</code>?</p><ul>\n<li>+Данные в volume остаются — docker rm удаляет только контейнер [Верно! Volume живёт независимо. Удалить его можно только через docker volume rm]</li>\n<li>Docker спросит подтверждение [Нет — docker rm не спрашивает про volumes]</li>\n<li>Данные копируются на хост [Нет — данные остаются в volume]</li>\n<li>Данные удаляются вместе с контейнером [Нет — только с docker rm -v или docker volume rm]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DNS в пользовательской сети",
+      "taskid": "dock_quiz1_t9_dns",
+      "hint": "",
+      "question_html": "<p>В чём преимущество пользовательской bridge-сети перед сетью <code>bridge</code> по умолчанию?</p>",
+      "options": [
+        {
+          "text": "В пользовательской сети контейнеры изолированы от хоста",
+          "correct": false,
+          "explanation": "Нет — в обоих типах одинаковая изоляция"
+        },
+        {
+          "text": "Пользовательская сеть быстрее",
+          "correct": false,
+          "explanation": "Нет — скорость одинакова"
+        },
+        {
+          "text": "В пользовательской сети работает DNS по имени контейнера",
+          "correct": true,
+          "explanation": "Верно! В default bridge только по IP. В user-defined bridge можно: curl http://web2"
+        },
+        {
+          "text": "Пользовательскую сеть не нужно создавать вручную",
+          "correct": false,
+          "explanation": "Нет — создаётся через docker network create"
+        }
+      ],
+      "raw_description": "<p>В чём преимущество пользовательской bridge-сети перед сетью <code>bridge</code> по умолчанию?</p><ul>\n<li>В пользовательской сети контейнеры изолированы от хоста [Нет — в обоих типах одинаковая изоляция]</li>\n<li>Пользовательская сеть быстрее [Нет — скорость одинакова]</li>\n<li>+В пользовательской сети работает DNS по имени контейнера [Верно! В default bridge только по IP. В user-defined bridge можно: curl http://web2]</li>\n<li>Пользовательскую сеть не нужно создавать вручную [Нет — создаётся через docker network create]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает docker system prune?",
+      "taskid": "dock_quiz1_t10_prune",
+      "hint": "",
+      "question_html": "<p>Что удаляет команда <code>docker system prune</code>?</p>",
+      "options": [
+        {
+          "text": "Удаляет Docker полностью с системы",
+          "correct": false,
+          "explanation": "Нет — это не деинсталляция"
+        },
+        {
+          "text": "Только остановленные контейнеры",
+          "correct": false,
+          "explanation": "Нет — это делает docker container prune"
+        },
+        {
+          "text": "Остановленные контейнеры, неиспользуемые сети, висячие образы и кэш сборки",
+          "correct": true,
+          "explanation": "Верно! Это удобный способ освободить место. Флаг -a удаляет также неиспользуемые образы"
+        },
+        {
+          "text": "Только неиспользуемые образы",
+          "correct": false,
+          "explanation": "Нет — это делает docker image prune"
+        }
+      ],
+      "raw_description": "<p>Что удаляет команда <code>docker system prune</code>?</p><ul>\n<li>Удаляет Docker полностью с системы [Нет — это не деинсталляция]</li>\n<li>Только остановленные контейнеры [Нет — это делает docker container prune]</li>\n<li>+Остановленные контейнеры, неиспользуемые сети, висячие образы и кэш сборки [Верно! Это удобный способ освободить место. Флаг -a удаляет также неиспользуемые образы]</li>\n<li>Только неиспользуемые образы [Нет — это делает docker image prune]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

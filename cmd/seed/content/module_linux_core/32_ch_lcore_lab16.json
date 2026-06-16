@@ -1,0 +1,208 @@
+{
+  "n": 32,
+  "id": "ch_lcore_lab16",
+  "title": "Лабораторная 16: Переменные окружения и shell",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Просмотр переменных",
+      "taskid": "lcore_lab16_t1",
+      "hint": "<p><code>env</code> выводит все переменные, поэтому удобно отфильтровать нужную строку через <code>grep</code>. Якорь начала строки поможет не поймать похожие имена.</p>",
+      "question_html": "<p>Выполни команду <code>env | grep '^PATH='</code>, чтобы вывести значение переменной окружения <code>PATH</code> из текущей сессии.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>env | grep '^PATH='</code>, чтобы вывести значение переменной окружения <code>PATH</code> из текущей сессии.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Установить переменную",
+      "taskid": "lcore_lab16_t2",
+      "hint": "<p><code>export</code> делает переменную доступной дочерним процессам текущей shell. Для проверки значения используй вывод переменной, не забывая про <code>$</code> перед именем.</p>",
+      "question_html": "<p>Выполни команду <code>export APP_ENV=production</code>, чтобы установить переменную окружения в текущей shell-сессии. Затем выполни <code>echo \"$APP_ENV\"</code> и проверь, что выводится <code>production</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>export APP_ENV=production</code>, чтобы установить переменную окружения в текущей shell-сессии. Затем выполни <code>echo \"$APP_ENV\"</code> и проверь, что выводится <code>production</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Код возврата",
+      "taskid": "lcore_lab16_t3",
+      "hint": "",
+      "question_html": "<p>Выполни команду <code>ls /opt/devops/lab16/</code> и выбери её код возврата.</p>\n<p>Код возврата хранится в переменной <code>$?</code>. 0 = успех, любое другое значение = ошибка.</p>",
+      "options": [
+        {
+          "text": "1",
+          "correct": false,
+          "explanation": "Нет — это общий код ошибки, но здесь ошибки нет"
+        },
+        {
+          "text": "2",
+          "correct": false,
+          "explanation": "Нет — такой код был бы при отсутствующем пути"
+        },
+        {
+          "text": "0",
+          "correct": true,
+          "explanation": "Верно! Каталог существует, команда завершается успешно"
+        },
+        {
+          "text": "127",
+          "correct": false,
+          "explanation": "Нет — это обычно команда не найдена"
+        }
+      ],
+      "raw_description": "<p>Выполни команду <code>ls /opt/devops/lab16/</code> и выбери её код возврата.</p>\n<p>Код возврата хранится в переменной <code>$?</code>. 0 = успех, любое другое значение = ошибка.</p>\n<ul>\n<li>1 [Нет — это общий код ошибки, но здесь ошибки нет]</li>\n<li>2 [Нет — такой код был бы при отсутствующем пути]</li>\n<li>+0 [Верно! Каталог существует, команда завершается успешно]</li>\n<li>127 [Нет — это обычно команда не найдена]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Оператор &&",
+      "taskid": "lcore_lab16_t4",
+      "hint": "<p>Слева от <code>&amp;&amp;</code> поставь действие, от которого зависит второе. Справа — запись в файл; перенаправление <code>&gt;</code> создаст или перезапишет файл.</p>",
+      "question_html": "<p>Создай директорию <code>/root/app_data</code> и сразу создай в ней файл <code>config.txt</code> с любой непустой строкой — в одной строке через <code>&&</code>.</p>\n<p>Оператор <code>&&</code> выполняет вторую команду только если первая завершилась успешно (код 0).</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/app_data</code> и сразу создай в ней файл <code>config.txt</code> с любой непустой строкой — в одной строке через <code>&&</code>.</p>\n<p>Оператор <code>&&</code> выполняет вторую команду только если первая завершилась успешно (код 0).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "$$? и условие",
+      "taskid": "lcore_lab16_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Что выведет следующая команда, если файл <code>/etc/nonexistent</code> не существует?<br><code>ls /etc/nonexistent || echo \"File not found\"</code></p>",
+      "options": [
+        {
+          "text": "Ничего не выведет",
+          "correct": false,
+          "explanation": "Нет — || выполнит echo при ошибке ls"
+        },
+        {
+          "text": "Ошибку ls и \"File not found\"",
+          "correct": false,
+          "explanation": "Нет — stderr от ls появится, но echo тоже выполнится"
+        },
+        {
+          "text": "Зависит от версии bash",
+          "correct": false,
+          "explanation": "Нет — поведение || стандартно для всех POSIX-совместимых оболочек"
+        },
+        {
+          "text": "File not found",
+          "correct": true,
+          "explanation": "Верно! || (OR) выполняет правую команду только если левая ЗАВЕРШИЛАСЬ С ОШИБКОЙ (код != 0). ls на несуществующем файле даёт код 2"
+        }
+      ],
+      "raw_description": "<p>Что выведет следующая команда, если файл <code>/etc/nonexistent</code> не существует?<br><code>ls /etc/nonexistent || echo \"File not found\"</code></p><ul>\n<li>Ничего не выведет [Нет — || выполнит echo при ошибке ls]</li>\n<li>Ошибку ls и \"File not found\" [Нет — stderr от ls появится, но echo тоже выполнится]</li>\n<li>Зависит от версии bash [Нет — поведение || стандартно для всех POSIX-совместимых оболочек]</li>\n<li>+File not found [Верно! || (OR) выполняет правую команду только если левая ЗАВЕРШИЛАСЬ С ОШИБКОЙ (код != 0). ls на несуществующем файле даёт код 2]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "PATH",
+      "taskid": "lcore_lab16_t6",
+      "hint": "<p>Важно не заменить старый <code>PATH</code>, а добавить новый каталог к существующему значению через двоеточие. После <code>export</code> выведи итоговое значение и сохрани его.</p>",
+      "question_html": "<p>Добавь директорию <code>/opt/devops/lab16/bin</code> в переменную <code>PATH</code> и запиши новое значение PATH в <code>/root/new_path.txt</code>.</p>\n<p>Конвенция: <code>export PATH=\"$PATH:/new/directory\"</code> — добавляет в конец.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь директорию <code>/opt/devops/lab16/bin</code> в переменную <code>PATH</code> и запиши новое значение PATH в <code>/root/new_path.txt</code>.</p>\n<p>Конвенция: <code>export PATH=\"$PATH:/new/directory\"</code> — добавляет в конец.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Передать переменную скрипту",
+      "taskid": "lcore_lab16_t7",
+      "hint": "<p>Передай переменную окружения прямо перед запуском скрипта: формат такой же, как <code>VAR=value command</code>.</p>",
+      "question_html": "<p>Выполни команду <code>SECRET_KEY=mysecret123 /opt/devops/lab16/check_env.sh</code>, чтобы запустить скрипт с переменной окружения <code>SECRET_KEY</code>, и проверь вывод.</p>\n<p>Переменную можно передать без export, прямо перед командой: <code>VAR=value command</code></p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>SECRET_KEY=mysecret123 /opt/devops/lab16/check_env.sh</code>, чтобы запустить скрипт с переменной окружения <code>SECRET_KEY</code>, и проверь вывод.</p>\n<p>Переменную можно передать без export, прямо перед командой: <code>VAR=value command</code></p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему порядок PATH важен?",
+      "taskid": "lcore_lab16_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Почему порядок директорий в переменной <code>PATH</code> имеет значение?</p>",
+      "options": [
+        {
+          "text": "Shell ищет исполняемый файл слева направо и запускает первое совпадение",
+          "correct": true,
+          "explanation": "Верно! Поэтому одинаковые имена команд могут разрешаться по-разному"
+        },
+        {
+          "text": "Потому что последняя директория в <code>PATH</code> всегда становится домашней",
+          "correct": false,
+          "explanation": "Нет — домашняя директория задаётся отдельно"
+        },
+        {
+          "text": "Потому что <code>PATH</code> меняет права на файлы",
+          "correct": false,
+          "explanation": "Нет — права не меняются"
+        },
+        {
+          "text": "Потому что <code>PATH</code> хранит код возврата последней команды",
+          "correct": false,
+          "explanation": "Нет — это переменная <code>$?</code>"
+        }
+      ],
+      "raw_description": "<p>Почему порядок директорий в переменной <code>PATH</code> имеет значение?</p><ul><li>+Shell ищет исполняемый файл слева направо и запускает первое совпадение [Верно! Поэтому одинаковые имена команд могут разрешаться по-разному]</li><li>Потому что последняя директория в <code>PATH</code> всегда становится домашней [Нет — домашняя директория задаётся отдельно]</li><li>Потому что <code>PATH</code> меняет права на файлы [Нет — права не меняются]</li><li>Потому что <code>PATH</code> хранит код возврата последней команды [Нет — это переменная <code>$?</code>]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем VAR=value command отличается от export?",
+      "taskid": "lcore_lab16_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Чем запись <code>SECRET_KEY=value command</code> отличается от <code>export SECRET_KEY=value</code>?</p>",
+      "options": [
+        {
+          "text": "Первая передаёт переменную только одному запускаемому процессу, а <code>export</code> делает её доступной дочерним процессам текущей shell",
+          "correct": true,
+          "explanation": "Верно! Область действия разная"
+        },
+        {
+          "text": "Первая навсегда записывает переменную в <code>/etc/environment</code>",
+          "correct": false,
+          "explanation": "Нет — это только запуск одной команды"
+        },
+        {
+          "text": "<code>export</code> работает только для root",
+          "correct": false,
+          "explanation": "Нет — обычный пользователь тоже может экспортировать переменные своей shell"
+        },
+        {
+          "text": "Обе записи всегда меняют <code>PATH</code>",
+          "correct": false,
+          "explanation": "Нет — они работают с указанной переменной"
+        }
+      ],
+      "raw_description": "<p>Чем запись <code>SECRET_KEY=value command</code> отличается от <code>export SECRET_KEY=value</code>?</p><ul><li>+Первая передаёт переменную только одному запускаемому процессу, а <code>export</code> делает её доступной дочерним процессам текущей shell [Верно! Область действия разная]</li><li>Первая навсегда записывает переменную в <code>/etc/environment</code> [Нет — это только запуск одной команды]</li><li><code>export</code> работает только для root [Нет — обычный пользователь тоже может экспортировать переменные своей shell]</li><li>Обе записи всегда меняют <code>PATH</code> [Нет — они работают с указанной переменной]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему $? проверяют сразу?",
+      "taskid": "lcore_lab16_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему значение <code>$?</code> нужно смотреть сразу после интересующей команды?</p>",
+      "options": [
+        {
+          "text": "Следующая команда перезапишет <code>$?</code> своим кодом возврата",
+          "correct": true,
+          "explanation": "Верно! Это переменная последнего завершённого процесса"
+        },
+        {
+          "text": "<code>$?</code> хранит код возврата всех команд за день",
+          "correct": false,
+          "explanation": "Нет — только последней"
+        },
+        {
+          "text": "<code>$?</code> показывает содержимое переменной <code>PATH</code>",
+          "correct": false,
+          "explanation": "Нет — это код возврата"
+        },
+        {
+          "text": "<code>$?</code> работает только внутри cron",
+          "correct": false,
+          "explanation": "Нет — это обычная переменная shell"
+        }
+      ],
+      "raw_description": "<p>Почему значение <code>$?</code> нужно смотреть сразу после интересующей команды?</p><ul><li>+Следующая команда перезапишет <code>$?</code> своим кодом возврата [Верно! Это переменная последнего завершённого процесса]</li><li><code>$?</code> хранит код возврата всех команд за день [Нет — только последней]</li><li><code>$?</code> показывает содержимое переменной <code>PATH</code> [Нет — это код возврата]</li><li><code>$?</code> работает только внутри cron [Нет — это обычная переменная shell]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab16/setup.yaml"
+}

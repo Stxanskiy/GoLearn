@@ -1,0 +1,163 @@
+{
+  "n": 7,
+  "id": "ch_k8si_lab2",
+  "title": "Лабораторная 2: Deployment и ReplicaSet",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать Deployment",
+      "taskid": "k8si_lab2_t1_deploy",
+      "hint": "<p>Используй <code>kubectl create deployment</code> и флаг для числа реплик. Для проверки подойдёт <code>kubectl get deployment</code>.</p>",
+      "question_html": "<p>Создай Deployment <code>nginx-deploy</code> с 2 репликами образа <code>nginx:alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай Deployment <code>nginx-deploy</code> с 2 репликами образа <code>nginx:alpine</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Посмотреть статус Deployment",
+      "taskid": "k8si_lab2_t2_status",
+      "hint": "<p>Используй <code>kubectl rollout status</code>, затем проверь результат через <code>kubectl get deployment</code>.</p>",
+      "question_html": "<p>Дождись что все реплики Deployment <code>nginx-deploy</code> готовы:</p>",
+      "options": [],
+      "raw_description": "<p>Дождись что все реплики Deployment <code>nginx-deploy</code> готовы:</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть Pod'ы Deployment",
+      "taskid": "k8si_lab2_t3_pods",
+      "hint": "",
+      "question_html": "<p>Посмотри все Pod'ы созданные Deployment'ом:</p>\n<pre><code>kubectl get pods -l app=nginx-deploy</code></pre>\n<p>Обрати внимание на лейбл <code>app=nginx-deploy</code> — он позволяет фильтровать Pod'ы конкретного Deployment'а.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри все Pod'ы созданные Deployment'ом:</p>\n<pre><code>kubectl get pods -l app=nginx-deploy</code></pre>\n<p>Обрати внимание на лейбл <code>app=nginx-deploy</code> — он позволяет фильтровать Pod'ы конкретного Deployment'а.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Масштабировать Deployment",
+      "taskid": "k8si_lab2_t4_scale",
+      "hint": "<p>Используй <code>kubectl scale</code>, затем проверь готовность через <code>kubectl rollout status</code>.</p>",
+      "question_html": "<p>Масштабируй Deployment <code>nginx-deploy</code> до 1 реплики. Для тренировки команды достаточно небольшого числа Pod'ов.</p>",
+      "options": [],
+      "raw_description": "<p>Масштабируй Deployment <code>nginx-deploy</code> до 1 реплики. Для тренировки команды достаточно небольшого числа Pod'ов.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Настроить тип обновления",
+      "taskid": "k8si_lab2_t5_strategy",
+      "hint": "<p>Проще всего открыть объект как YAML через <code>kubectl edit deployment nginx-deploy</code> и добавить/исправить блок <code>spec.strategy</code>. В нём должны быть <code>type: RollingUpdate</code>, <code>maxSurge: 1</code> и <code>maxUnavailable: 0</code>.</p>",
+      "question_html": "<p>Настрой Deployment <code>nginx-deploy</code> на стратегию обновления <code>RollingUpdate</code>: <code>maxSurge=1</code> и <code>maxUnavailable=0</code>.</p>\n<p>Так Kubernetes сможет во время обновления сначала поднять новый Pod, а уже потом убрать старый.</p>",
+      "options": [],
+      "raw_description": "<p>Настрой Deployment <code>nginx-deploy</code> на стратегию обновления <code>RollingUpdate</code>: <code>maxSurge=1</code> и <code>maxUnavailable=0</code>.</p>\n<p>Так Kubernetes сможет во время обновления сначала поднять новый Pod, а уже потом убрать старый.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Обновить образ (Rolling Update)",
+      "taskid": "k8si_lab2_t5_update",
+      "hint": "<p>Используй <code>kubectl set image</code>, затем дождись обновления через <code>kubectl rollout status</code>.</p>",
+      "question_html": "<p>Обнови образ Deployment <code>nginx-deploy</code> на <code>nginx:1.25-alpine</code> и дождись завершения rollout.</p>\n<p>Во время обновления Deployment создаёт новый ReplicaSet для новой версии и постепенно переводит Pod'ы на него.</p>",
+      "options": [],
+      "raw_description": "<p>Обнови образ Deployment <code>nginx-deploy</code> на <code>nginx:1.25-alpine</code> и дождись завершения rollout.</p>\n<p>Во время обновления Deployment создаёт новый ReplicaSet для новой версии и постепенно переводит Pod'ы на него.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть, как прошёл rollout",
+      "taskid": "k8si_lab2_t7_rollout_view",
+      "hint": "",
+      "question_html": "<p>Посмотри, что изменилось после rolling update:</p>\n<pre><code>kubectl rollout history deployment/nginx-deploy</code></pre>\n<pre><code>kubectl get rs -o wide</code></pre>\n<pre><code>kubectl describe deployment nginx-deploy</code></pre>\n<p>Обрати внимание: после обновления обычно видно несколько ReplicaSet. Новый ReplicaSet держит актуальные Pod'ы, старый остаётся с нулём реплик для возможного rollback.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри, что изменилось после rolling update:</p>\n<pre><code>kubectl rollout history deployment/nginx-deploy</code></pre>\n<pre><code>kubectl get rs -o wide</code></pre>\n<pre><code>kubectl describe deployment nginx-deploy</code></pre>\n<p>Обрати внимание: после обновления обычно видно несколько ReplicaSet. Новый ReplicaSet держит актуальные Pod'ы, старый остаётся с нулём реплик для возможного rollback.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Откат на предыдущую версию",
+      "taskid": "k8si_lab2_t6_rollback",
+      "hint": "<p>Используй <code>kubectl rollout undo</code>, затем проверь завершение через <code>kubectl rollout status</code>.</p>",
+      "question_html": "<p>Откати Deployment <code>nginx-deploy</code> на предыдущую версию с образом <code>nginx:alpine</code> и убедись что откат завершён.</p>",
+      "options": [],
+      "raw_description": "<p>Откати Deployment <code>nginx-deploy</code> на предыдущую версию с образом <code>nginx:alpine</code> и убедись что откат завершён.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что делает Deployment при падении Pod'а?",
+      "taskid": "k8si_lab2_t7_quiz",
+      "hint": "",
+      "question_html": "<p>Ты удалил один Pod из Deployment с <code>replicas: 2</code>. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "Kubernetes автоматически создаст новый Pod чтобы поддержать 2 реплики",
+          "correct": true,
+          "explanation": "Верно! ReplicaSet Controller следит что количество Pod'ов совпадает с replicas"
+        },
+        {
+          "text": "Pod не будет восстановлен — нужно вручную пересоздать",
+          "correct": false,
+          "explanation": "Нет — Deployment именно для этого и нужен"
+        },
+        {
+          "text": "Весь Deployment будет перезапущен",
+          "correct": false,
+          "explanation": "Нет — только конкретный Pod будет пересоздан"
+        },
+        {
+          "text": "Kubernetes уменьшит replicas до 2",
+          "correct": false,
+          "explanation": "Нет — replicas в spec — это желаемое состояние, оно не меняется"
+        }
+      ],
+      "raw_description": "<p>Ты удалил один Pod из Deployment с <code>replicas: 2</code>. Что произойдёт?</p><ul>\n<li>+Kubernetes автоматически создаст новый Pod чтобы поддержать 2 реплики [Верно! ReplicaSet Controller следит что количество Pod'ов совпадает с replicas]</li>\n<li>Pod не будет восстановлен — нужно вручную пересоздать [Нет — Deployment именно для этого и нужен]</li>\n<li>Весь Deployment будет перезапущен [Нет — только конкретный Pod будет пересоздан]</li>\n<li>Kubernetes уменьшит replicas до 2 [Нет — replicas в spec — это желаемое состояние, оно не меняется]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть ReplicaSet",
+      "taskid": "k8si_lab2_t8_rs",
+      "hint": "",
+      "question_html": "<p>Посмотри ReplicaSet созданные Deployment'ом:</p>\n<pre><code>kubectl get replicasets</code></pre>\n<p>После rolling update ты увидишь несколько ReplicaSet — старые хранятся для rollback. Обрати внимание на столбцы DESIRED/CURRENT/READY.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри ReplicaSet созданные Deployment'ом:</p>\n<pre><code>kubectl get replicasets</code></pre>\n<p>После rolling update ты увидишь несколько ReplicaSet — старые хранятся для rollback. Обрати внимание на столбцы DESIRED/CURRENT/READY.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Манифест Deployment",
+      "taskid": "k8si_lab2_t9_yaml",
+      "hint": "",
+      "question_html": "<p>Посмотри манифест Deployment'а:</p>\n<pre><code>kubectl get deployment nginx-deploy -o yaml | grep -E \"replicas:|strategy:|image:\"</code></pre>\n<p>В каком поле Deployment задаётся число реплик?</p>",
+      "options": [
+        {
+          "text": "status.readyReplicas",
+          "correct": false,
+          "explanation": "Нет — status это фактическое состояние, а не желаемое"
+        },
+        {
+          "text": "spec.replicas",
+          "correct": true,
+          "explanation": "Верно! spec описывает желаемое состояние; replicas — желаемое число Pod'ов"
+        },
+        {
+          "text": "spec.template.replicas",
+          "correct": false,
+          "explanation": "Нет — template описывает шаблон Pod'а, не число экземпляров"
+        },
+        {
+          "text": "metadata.replicas",
+          "correct": false,
+          "explanation": "Нет — metadata содержит имя, лейблы, аннотации"
+        }
+      ],
+      "raw_description": "<p>Посмотри манифест Deployment'а:</p>\n<pre><code>kubectl get deployment nginx-deploy -o yaml | grep -E \"replicas:|strategy:|image:\"</code></pre>\n<p>В каком поле Deployment задаётся число реплик?</p><ul>\n<li>status.readyReplicas [Нет — status это фактическое состояние, а не желаемое]</li>\n<li>+spec.replicas [Верно! spec описывает желаемое состояние; replicas — желаемое число Pod'ов]</li>\n<li>spec.template.replicas [Нет — template описывает шаблон Pod'а, не число экземпляров]</li>\n<li>metadata.replicas [Нет — metadata содержит имя, лейблы, аннотации]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить Deployment",
+      "taskid": "k8si_lab2_t10_del",
+      "hint": "<p>Используй <code>kubectl delete deployment</code>. После удаления проверь Pod'ы через <code>kubectl get pods -l</code>.</p>",
+      "question_html": "<p>Удали Deployment <code>nginx-deploy</code> и убедись что все его Pod'ы тоже удалены.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Deployment <code>nginx-deploy</code> и убедись что все его Pod'ы тоже удалены.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/lab2/setup.yaml"
+}

@@ -1,0 +1,313 @@
+{
+  "n": 22,
+  "id": "ch_k8si_quiz1",
+  "title": "Проверка: Основы Kubernetes",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Роль API Server",
+      "taskid": "k8si_quiz1_t1",
+      "hint": "",
+      "question_html": "<p>Что является единственной точкой взаимодействия со всеми компонентами кластера Kubernetes?</p>",
+      "options": [
+        {
+          "text": "etcd — хранилище всего состояния",
+          "correct": false,
+          "explanation": "Нет — etcd хранит данные, но не является API для внешних запросов"
+        },
+        {
+          "text": "kubelet — агент на каждом узле",
+          "correct": false,
+          "explanation": "Нет — kubelet получает задания от API Server, не наоборот"
+        },
+        {
+          "text": "Scheduler — распределяет Pod'ы",
+          "correct": false,
+          "explanation": "Нет — Scheduler сам является клиентом API Server"
+        },
+        {
+          "text": "API Server — все запросы (kubectl, CI/CD, контроллеры) идут через него",
+          "correct": true,
+          "explanation": "Верно! API Server — центральная точка, он валидирует и применяет изменения"
+        }
+      ],
+      "raw_description": "<p>Что является единственной точкой взаимодействия со всеми компонентами кластера Kubernetes?</p><ul>\n<li>etcd — хранилище всего состояния [Нет — etcd хранит данные, но не является API для внешних запросов]</li>\n<li>kubelet — агент на каждом узле [Нет — kubelet получает задания от API Server, не наоборот]</li>\n<li>Scheduler — распределяет Pod'ы [Нет — Scheduler сам является клиентом API Server]</li>\n<li>+API Server — все запросы (kubectl, CI/CD, контроллеры) идут через него [Верно! API Server — центральная точка, он валидирует и применяет изменения]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что хранит etcd?",
+      "taskid": "k8si_quiz1_t2",
+      "hint": "",
+      "question_html": "<p>Что произойдёт с кластером если etcd будет безвозвратно удалён без бэкапа?</p>",
+      "options": [
+        {
+          "text": "Ничего страшного, данные дублируются в Worker Nodes",
+          "correct": false,
+          "explanation": "Нет — Worker Nodes не хранят состояние кластера"
+        },
+        {
+          "text": "Только Secret'ы потеряются",
+          "correct": false,
+          "explanation": "Нет — теряется абсолютно всё состояние"
+        },
+        {
+          "text": "Кластер потеряет всё состояние: Pod'ы, Deployment'ы, секреты — всё нужно восстанавливать",
+          "correct": true,
+          "explanation": "Верно! etcd — единственное хранилище состояния; без него кластер не восстановить"
+        },
+        {
+          "text": "Новые Pod'ы не смогут создаваться, существующие продолжат работу",
+          "correct": false,
+          "explanation": "Нет — без etcd API Server не функционирует, кластер нерабочий"
+        }
+      ],
+      "raw_description": "<p>Что произойдёт с кластером если etcd будет безвозвратно удалён без бэкапа?</p><ul>\n<li>Ничего страшного, данные дублируются в Worker Nodes [Нет — Worker Nodes не хранят состояние кластера]</li>\n<li>Только Secret'ы потеряются [Нет — теряется абсолютно всё состояние]</li>\n<li>+Кластер потеряет всё состояние: Pod'ы, Deployment'ы, секреты — всё нужно восстанавливать [Верно! etcd — единственное хранилище состояния; без него кластер не восстановить]</li>\n<li>Новые Pod'ы не смогут создаваться, существующие продолжат работу [Нет — без etcd API Server не функционирует, кластер нерабочий]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем Deployment вместо Pod?",
+      "taskid": "k8si_quiz1_t3",
+      "hint": "",
+      "question_html": "<p>Почему для production-приложений рекомендуется использовать Deployment вместо прямого создания Pod?</p>",
+      "options": [
+        {
+          "text": "Deployment автоматически восстанавливает упавшие Pod'ы и поддерживает нужное количество реплик",
+          "correct": true,
+          "explanation": "Верно! Pod без контроллера — эфемерный объект; Deployment — гарантия надёжности"
+        },
+        {
+          "text": "Deployment обязателен для использования Service",
+          "correct": false,
+          "explanation": "Нет — Service работает с любыми Pod'ами через selector"
+        },
+        {
+          "text": "Deployment быстрее запускается чем Pod",
+          "correct": false,
+          "explanation": "Нет — скорость запуска контейнера одинакова"
+        },
+        {
+          "text": "Pod нельзя использовать с ConfigMap",
+          "correct": false,
+          "explanation": "Нет — Pod поддерживает всё то же самое что и Deployment"
+        }
+      ],
+      "raw_description": "<p>Почему для production-приложений рекомендуется использовать Deployment вместо прямого создания Pod?</p><ul>\n<li>+Deployment автоматически восстанавливает упавшие Pod'ы и поддерживает нужное количество реплик [Верно! Pod без контроллера — эфемерный объект; Deployment — гарантия надёжности]</li>\n<li>Deployment обязателен для использования Service [Нет — Service работает с любыми Pod'ами через selector]</li>\n<li>Deployment быстрее запускается чем Pod [Нет — скорость запуска контейнера одинакова]</li>\n<li>Pod нельзя использовать с ConfigMap [Нет — Pod поддерживает всё то же самое что и Deployment]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Тип Service для внешнего доступа",
+      "taskid": "k8si_quiz1_t4",
+      "hint": "",
+      "question_html": "<p>Какой тип Service даёт внешний доступ к приложению через порт на каждом Node?</p>",
+      "options": [
+        {
+          "text": "NodePort — пробрасывает порт 30000-32767 на каждый Node",
+          "correct": true,
+          "explanation": "Верно! NodePort доступен снаружи через IP любого Node"
+        },
+        {
+          "text": "ExternalName — DNS-псевдоним на внешний сервис",
+          "correct": false,
+          "explanation": "Нет — ExternalName нужен для доступа к внешним сервисам из кластера"
+        },
+        {
+          "text": "Headless — Service без ClusterIP",
+          "correct": false,
+          "explanation": "Нет — Headless используется для StatefulSet DNS"
+        },
+        {
+          "text": "ClusterIP — внутренний IP кластера",
+          "correct": false,
+          "explanation": "Нет — ClusterIP доступен только внутри кластера"
+        }
+      ],
+      "raw_description": "<p>Какой тип Service даёт внешний доступ к приложению через порт на каждом Node?</p><ul>\n<li>+NodePort — пробрасывает порт 30000-32767 на каждый Node [Верно! NodePort доступен снаружи через IP любого Node]</li>\n<li>ExternalName — DNS-псевдоним на внешний сервис [Нет — ExternalName нужен для доступа к внешним сервисам из кластера]</li>\n<li>Headless — Service без ClusterIP [Нет — Headless используется для StatefulSet DNS]</li>\n<li>ClusterIP — внутренний IP кластера [Нет — ClusterIP доступен только внутри кластера]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Secret vs ConfigMap",
+      "taskid": "k8si_quiz1_t5",
+      "hint": "",
+      "question_html": "<p>Когда использовать Secret вместо ConfigMap?</p>",
+      "options": [
+        {
+          "text": "Для переменных окружения",
+          "correct": false,
+          "explanation": "Нет — переменные окружения можно хранить в обоих"
+        },
+        {
+          "text": "Для файлов конфигурации nginx",
+          "correct": false,
+          "explanation": "Нет — nginx.conf — не секрет, подходит ConfigMap"
+        },
+        {
+          "text": "Для чувствительных данных: пароли, токены, сертификаты",
+          "correct": true,
+          "explanation": "Верно! Secret предназначен для конфиденциальных данных; RBAC позволяет ограничить доступ"
+        },
+        {
+          "text": "Для больших конфигурационных файлов",
+          "correct": false,
+          "explanation": "Нет — размер не является критерием; для секретности используется Secret"
+        }
+      ],
+      "raw_description": "<p>Когда использовать Secret вместо ConfigMap?</p><ul>\n<li>Для переменных окружения [Нет — переменные окружения можно хранить в обоих]</li>\n<li>Для файлов конфигурации nginx [Нет — nginx.conf — не секрет, подходит ConfigMap]</li>\n<li>+Для чувствительных данных: пароли, токены, сертификаты [Верно! Secret предназначен для конфиденциальных данных; RBAC позволяет ограничить доступ]</li>\n<li>Для больших конфигурационных файлов [Нет — размер не является критерием; для секретности используется Secret]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Роль Scheduler",
+      "taskid": "k8si_quiz1_t6",
+      "hint": "",
+      "question_html": "<p>Что делает Kubernetes Scheduler?</p>",
+      "options": [
+        {
+          "text": "Следит за состоянием и перезапускает упавшие Pod'ы",
+          "correct": false,
+          "explanation": "Нет — это делает ReplicaSet Controller"
+        },
+        {
+          "text": "Балансирует нагрузку между Pod'ами",
+          "correct": false,
+          "explanation": "Нет — балансировку делает Service через kube-proxy"
+        },
+        {
+          "text": "Выбирает на какой Node запустить новый Pod на основе ресурсов и constraints",
+          "correct": true,
+          "explanation": "Верно! Scheduler смотрит свободные ресурсы, affinity, taints и назначает Pod'у Node"
+        },
+        {
+          "text": "Запускает контейнеры через containerd",
+          "correct": false,
+          "explanation": "Нет — это делает kubelet"
+        }
+      ],
+      "raw_description": "<p>Что делает Kubernetes Scheduler?</p><ul>\n<li>Следит за состоянием и перезапускает упавшие Pod'ы [Нет — это делает ReplicaSet Controller]</li>\n<li>Балансирует нагрузку между Pod'ами [Нет — балансировку делает Service через kube-proxy]</li>\n<li>+Выбирает на какой Node запустить новый Pod на основе ресурсов и constraints [Верно! Scheduler смотрит свободные ресурсы, affinity, taints и назначает Pod'у Node]</li>\n<li>Запускает контейнеры через containerd [Нет — это делает kubelet]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Изоляция namespace",
+      "taskid": "k8si_quiz1_t7",
+      "hint": "",
+      "question_html": "<p>Два Pod'а находятся в разных namespace. Могут ли они обращаться друг к другу по сети?</p>",
+      "options": [
+        {
+          "text": "Только если оба в namespace default",
+          "correct": false,
+          "explanation": "Нет — namespace не влияет на сетевую связность"
+        },
+        {
+          "text": "Да, если нет NetworkPolicy блокирующей трафик — namespace не изолирует сеть",
+          "correct": true,
+          "explanation": "Верно! Namespace — логическая изоляция, не сетевая. Для сетевой изоляции нужен NetworkPolicy"
+        },
+        {
+          "text": "Нет, Pod'ы в разных namespace не видят друг друга",
+          "correct": false,
+          "explanation": "Нет — без NetworkPolicy все Pod'ы в кластере могут обращаться друг к другу"
+        },
+        {
+          "text": "Только через Service типа NodePort",
+          "correct": false,
+          "explanation": "Нет — ClusterIP Service тоже доступен между namespace'ами"
+        }
+      ],
+      "raw_description": "<p>Два Pod'а находятся в разных namespace. Могут ли они обращаться друг к другу по сети?</p><ul>\n<li>Только если оба в namespace default [Нет — namespace не влияет на сетевую связность]</li>\n<li>+Да, если нет NetworkPolicy блокирующей трафик — namespace не изолирует сеть [Верно! Namespace — логическая изоляция, не сетевая. Для сетевой изоляции нужен NetworkPolicy]</li>\n<li>Нет, Pod'ы в разных namespace не видят друг друга [Нет — без NetworkPolicy все Pod'ы в кластере могут обращаться друг к другу]</li>\n<li>Только через Service типа NodePort [Нет — ClusterIP Service тоже доступен между namespace'ами]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Rolling Update",
+      "taskid": "k8si_quiz1_t8",
+      "hint": "",
+      "question_html": "<p>Что происходит при <code>kubectl set image deployment/app app=v2</code>?</p>",
+      "options": [
+        {
+          "text": "Образ обновляется в работающих контейнерах без перезапуска",
+          "correct": false,
+          "explanation": "Нет — в Docker/k8s образ нельзя обновить без пересоздания контейнера"
+        },
+        {
+          "text": "Создаётся новый Deployment параллельно со старым",
+          "correct": false,
+          "explanation": "Нет — Deployment обновляет свой ReplicaSet"
+        },
+        {
+          "text": "Kubernetes постепенно заменяет старые Pod'ы на новые — по одному (или по maxSurge)",
+          "correct": true,
+          "explanation": "Верно! Rolling Update — плавная замена без даунтайма"
+        },
+        {
+          "text": "Все Pod'ы удаляются и создаются новые одновременно",
+          "correct": false,
+          "explanation": "Нет — это был бы Recreate strategy с даунтаймом"
+        }
+      ],
+      "raw_description": "<p>Что происходит при <code>kubectl set image deployment/app app=v2</code>?</p><ul>\n<li>Образ обновляется в работающих контейнерах без перезапуска [Нет — в Docker/k8s образ нельзя обновить без пересоздания контейнера]</li>\n<li>Создаётся новый Deployment параллельно со старым [Нет — Deployment обновляет свой ReplicaSet]</li>\n<li>+Kubernetes постепенно заменяет старые Pod'ы на новые — по одному (или по maxSurge) [Верно! Rolling Update — плавная замена без даунтайма]</li>\n<li>Все Pod'ы удаляются и создаются новые одновременно [Нет — это был бы Recreate strategy с даунтаймом]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Label selector в Service",
+      "taskid": "k8si_quiz1_t9",
+      "hint": "",
+      "question_html": "<p>Service имеет selector <code>app: myapp</code>. Ты создаёшь новый Pod с label <code>app: myapp, env: test</code>. Что произойдёт?</p>",
+      "options": [
+        {
+          "text": "Нужно вручную добавить Pod в Service",
+          "correct": false,
+          "explanation": "Нет — Endpoints обновляются автоматически через controller"
+        },
+        {
+          "text": "Новый Pod автоматически добавится в Endpoints Service — selector работает как AND",
+          "correct": true,
+          "explanation": "Верно! Pod удовлетворяет selector (app=myapp есть), лишние labels игнорируются"
+        },
+        {
+          "text": "Service нужно перезапустить",
+          "correct": false,
+          "explanation": "Нет — изменения в Endpoints отслеживаются непрерывно"
+        },
+        {
+          "text": "Pod не добавится — у него лишний label env: test",
+          "correct": false,
+          "explanation": "Нет — selector ищет совпадение по указанным labels, лишние labels не мешают"
+        }
+      ],
+      "raw_description": "<p>Service имеет selector <code>app: myapp</code>. Ты создаёшь новый Pod с label <code>app: myapp, env: test</code>. Что произойдёт?</p><ul>\n<li>Нужно вручную добавить Pod в Service [Нет — Endpoints обновляются автоматически через controller]</li>\n<li>+Новый Pod автоматически добавится в Endpoints Service — selector работает как AND [Верно! Pod удовлетворяет selector (app=myapp есть), лишние labels игнорируются]</li>\n<li>Service нужно перезапустить [Нет — изменения в Endpoints отслеживаются непрерывно]</li>\n<li>Pod не добавится — у него лишний label env: test [Нет — selector ищет совпадение по указанным labels, лишние labels не мешают]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Kubectl get -o yaml",
+      "taskid": "k8si_quiz1_t10",
+      "hint": "",
+      "question_html": "<p>Зачем использовать <code>kubectl get deployment myapp -o yaml</code>?</p>",
+      "options": [
+        {
+          "text": "Удалить объект",
+          "correct": false,
+          "explanation": "Нет — для удаления kubectl delete"
+        },
+        {
+          "text": "Получить полный манифест объекта включая текущее состояние (status) для анализа",
+          "correct": true,
+          "explanation": "Верно! -o yaml показывает spec + status, полезно для отладки и создания копий"
+        },
+        {
+          "text": "Зашифровать манифест",
+          "correct": false,
+          "explanation": "Нет — YAML-вывод не шифруется"
+        },
+        {
+          "text": "Сохранить изменения в API Server",
+          "correct": false,
+          "explanation": "Нет — get только читает, для записи нужен apply/patch"
+        }
+      ],
+      "raw_description": "<p>Зачем использовать <code>kubectl get deployment myapp -o yaml</code>?</p><ul>\n<li>Удалить объект [Нет — для удаления kubectl delete]</li>\n<li>+Получить полный манифест объекта включая текущее состояние (status) для анализа [Верно! -o yaml показывает spec + status, полезно для отладки и создания копий]</li>\n<li>Зашифровать манифест [Нет — YAML-вывод не шифруется]</li>\n<li>Сохранить изменения в API Server [Нет — get только читает, для записи нужен apply/patch]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

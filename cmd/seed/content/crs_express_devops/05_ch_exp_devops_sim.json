@@ -1,0 +1,12 @@
+{
+  "n": 5,
+  "id": "ch_exp_devops_sim",
+  "title": "Симулятор: погружение в DevOps",
+  "type": "simulator",
+  "isFree": true,
+  "kind": "other",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

@@ -1,0 +1,85 @@
+{
+  "n": 21,
+  "id": "ch_k8si_lab4_manifests",
+  "title": "Лабораторная: ConfigMap и Secret из манифестов",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Изучить набор манифестов приложения",
+      "taskid": "",
+      "hint": "",
+      "question_html": "<p>В директории <code>/root/config-manifests</code> лежит небольшой набор YAML-файлов: ConfigMap, Secret и Pod, который читает настройки через <code>envFrom</code>.</p>\n<pre><code>cd /root/config-manifests</code></pre>\n<pre><code>cat app-config.yaml</code></pre>\n<pre><code>cat app-secret.yaml</code></pre>\n<pre><code>cat app-pod.yaml</code></pre>\n<p>Обрати внимание на разницу: ConfigMap хранит обычные настройки, Secret хранит чувствительные значения, а Pod только ссылается на них по имени.</p>",
+      "options": [],
+      "raw_description": "<p>В директории <code>/root/config-manifests</code> лежит небольшой набор YAML-файлов: ConfigMap, Secret и Pod, который читает настройки через <code>envFrom</code>.</p>\n<pre><code>cd /root/config-manifests</code></pre>\n<pre><code>cat app-config.yaml</code></pre>\n<pre><code>cat app-secret.yaml</code></pre>\n<pre><code>cat app-pod.yaml</code></pre>\n<p>Обрати внимание на разницу: ConfigMap хранит обычные настройки, Secret хранит чувствительные значения, а Pod только ссылается на них по имени.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Применить ConfigMap и Secret",
+      "taskid": "k8si_manifest2_t2_apply_config",
+      "hint": "<p>Используй <code>kubectl apply -f</code> для каждого файла или для директории. Затем посмотри <code>kubectl get configmap manifest-config</code> и <code>kubectl get secret manifest-secret</code>.</p>",
+      "question_html": "<p>Примени <code>app-config.yaml</code> и <code>app-secret.yaml</code>. Проверь, что в кластере появились <code>manifest-config</code> и <code>manifest-secret</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>app-config.yaml</code> и <code>app-secret.yaml</code>. Проверь, что в кластере появились <code>manifest-config</code> и <code>manifest-secret</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить Pod, который читает настройки",
+      "taskid": "k8si_manifest2_t3_apply_pod",
+      "hint": "<p>После <code>kubectl apply -f app-pod.yaml</code> используй <code>kubectl wait --for=condition=Ready pod/manifest-config-app</code>. Если Pod не стартует, смотри <code>kubectl describe pod manifest-config-app</code>.</p>",
+      "question_html": "<p>Примени <code>/root/config-manifests/app-pod.yaml</code> и дождись, когда Pod <code>manifest-config-app</code> станет Running.</p>",
+      "options": [],
+      "raw_description": "<p>Примени <code>/root/config-manifests/app-pod.yaml</code> и дождись, когда Pod <code>manifest-config-app</code> станет Running.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить переменные внутри Pod",
+      "taskid": "",
+      "hint": "<p>Можно выполнить shell-команду внутри Pod: <code>kubectl exec manifest-config-app -- sh -c 'echo \"$APP_ENV:$FEATURE_FLAG\"'</code>.</p>",
+      "question_html": "<p>Зайди в Pod через <code>kubectl exec</code> и посмотри переменные <code>APP_ENV</code> и <code>FEATURE_FLAG</code>. </p>",
+      "options": [],
+      "raw_description": "<p>Зайди в Pod через <code>kubectl exec</code> и посмотри переменные <code>APP_ENV</code> и <code>FEATURE_FLAG</code>. </p>"
+    },
+    {
+      "type": "check",
+      "title": "Изменить ConfigMap manifest",
+      "taskid": "k8si_manifest2_t5_update_config",
+      "hint": "<p>Измени YAML-файл, затем снова выполни <code>kubectl apply -f /root/config-manifests/app-config.yaml</code>. Проверь значения через <code>kubectl get configmap manifest-config -o yaml</code>.</p>",
+      "question_html": "<p>Открой <code>/root/config-manifests/app-config.yaml</code> и измени настройки: <code>APP_ENV</code> должен стать <code>production</code>, а <code>FEATURE_FLAG</code> должен стать <code>enabled</code>. Примени manifest.</p>\n<p>Важно: объект ConfigMap обновится сразу, но переменные окружения в уже запущенном Pod не поменяются до пересоздания Pod.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>/root/config-manifests/app-config.yaml</code> и измени настройки: <code>APP_ENV</code> должен стать <code>production</code>, а <code>FEATURE_FLAG</code> должен стать <code>enabled</code>. Примени manifest.</p>\n<p>Важно: объект ConfigMap обновится сразу, но переменные окружения в уже запущенном Pod не поменяются до пересоздания Pod.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Пересоздать Pod и увидеть новые env",
+      "taskid": "k8si_manifest2_t6_restart_pod",
+      "hint": "<p>Для обычного Pod проще удалить его и снова применить YAML. После <code>kubectl wait</code> можно проверить env командой <code>kubectl exec manifest-config-app -- sh -c 'echo \"$APP_ENV:$FEATURE_FLAG\"'</code>. Сохранять вывод в файл не нужно.</p>",
+      "question_html": "<p>Пересоздай Pod <code>manifest-config-app</code> из того же <code>app-pod.yaml</code>, чтобы он перечитал обновлённый ConfigMap. После старта зайди в Pod через <code>kubectl exec</code> и проверь, что теперь внутри видно <code>production:enabled</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Пересоздай Pod <code>manifest-config-app</code> из того же <code>app-pod.yaml</code>, чтобы он перечитал обновлённый ConfigMap. После старта зайди в Pod через <code>kubectl exec</code> и проверь, что теперь внутри видно <code>production:enabled</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Задеплоить и отладить Pod из манифеста",
+      "taskid": "k8si_manifest2_t7_fix_secret_ref",
+      "hint": "<p>Для диагностики используй <code>kubectl get pod secret-broken-app</code>, <code>kubectl describe pod secret-broken-app</code> и <code>kubectl get events --sort-by=.lastTimestamp</code>. После исправления YAML снова выполни <code>kubectl apply -f</code> и дождись Ready.</p>",
+      "question_html": "<p>Примени манифест <code>/root/config-manifests/broken-secret-pod.yaml</code> и дождись Pod <code>secret-broken-app</code>. Если Pod не запускается, посмотри ошибки, исправь манифест и примени его снова.</p>",
+      "options": [],
+      "raw_description": "<p>Примени манифест <code>/root/config-manifests/broken-secret-pod.yaml</code> и дождись Pod <code>secret-broken-app</code>. Если Pod не запускается, посмотри ошибки, исправь манифест и примени его снова.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы лабораторной",
+      "taskid": "k8si_manifest2_t8_cleanup",
+      "hint": "<p>Используй <code>kubectl delete pod</code>, <code>kubectl delete configmap</code> и <code>kubectl delete secret</code>. После удаления проверь <code>kubectl get</code> по именам.</p>",
+      "question_html": "<p>Удали Pod'ы <code>manifest-config-app</code>, <code>secret-broken-app</code>, ConfigMap <code>manifest-config</code> и Secret <code>manifest-secret</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Удали Pod'ы <code>manifest-config-app</code>, <code>secret-broken-app</code>, ConfigMap <code>manifest-config</code> и Secret <code>manifest-secret</code>.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_intro/k8s_intro/manifest_lab2/setup.yaml"
+}

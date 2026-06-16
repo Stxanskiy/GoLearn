@@ -1,0 +1,161 @@
+{
+  "n": 19,
+  "id": "ch_ladv_lab12",
+  "title": "Лабораторная 12: Сетевая диагностика",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>В рабочей диагностике важно не просто выполнить команды, а оставить короткий отчёт: симптом, факты и вывод. Такой отчёт можно приложить к заявке, отправить разработчику или использовать как основу для следующего шага расследования. Это экономит время: вместо \"сайт не работает\" команда сразу видит, что сеть и frontend живы, а проблема локализована ближе к <code>orders-api</code> или его зависимости.</p>\n<p>Собери отчёт в файл:</p>\n<pre><code class=\"language-bash\">cat &gt; /root/network_report.txt &lt;&lt;'EOF'\nСимптом:\n- Web-страница открывается, но orders API работает с ошибкой.\n\nФакты:\n- ss показывает, что python3 слушает 0.0.0.0:80.\n- GET /health возвращает 200.\n- GET /missing возвращает 404: сервер доступен, но такого пути нет.\n- GET /api/orders возвращает 503 и X-Backend-Status: degraded.\n- В теле ответа указана причина: database timeout.\n\nВывод:\n- Сетевой путь до порта 80 работает.\n- Frontend здоров.\n- Проблема локализована в orders-api или его database dependency.\n\nЧто передать дальше:\n- Приложить этот файл к заявке или инциденту.\n- Указать команды, которыми проверялись факты.\n- Попросить владельца orders-api проверить логи приложения и состояние базы.\nEOF\n\ncat /root/network_report.txt\n</code></pre>\n<p>На обычной работе это выглядит примерно так: ты заводишь задачу или комментарий в инциденте, прикладываешь <code>/root/network_report.txt</code>, добавляешь пару ключевых команд и пишешь короткую гипотезу. После этого разработчик или владелец сервиса не начинает с нуля, а сразу идёт смотреть логи <code>orders-api</code>, подключение к базе, таймауты и метрики конкретной зависимости.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L24\",null,{}],[\"$\",\"$L25\",null,{\"initialData\":{\"id\":\"ch_ladv_lab12\",\"title\":\"Лабораторная 12: Сетевая диагностика\",\"type\":\"lab\",\"description\":null,\"task_id\":null,\"vm_image\":\"base\",\"vm_init\":\"module_linux_advanced/linux_adv/lab12/setup.yaml\",\"labs\":[{\"url\":\"\",\"hint\":\"\",\"type\":\"self\",\"title\":\"Быстрый снимок сетевого контекста\",\"taskid\":\"ladv_lab12_t1_snapshot\",\"description\":\"<p>Начни не с исправлений, а с короткого снимка окружения:</p>\\n<pre><code class=\\\"language-bash\\\">ip -br addr\\nip route\\nss -tlnp\\n</code></pre>\\n<p>Что ты должен увидеть:</p>\\n<ul>\\n<li><code>lo</code> с адресом <code>127.0.0.1/8</code> — локальный loopback интерфейс;</li>\\n<li>строку <code>default via ...</code> в <cod",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Быстрый снимок сетевого контекста",
+      "taskid": "ladv_lab12_t1_snapshot",
+      "hint": "",
+      "question_html": "<p>Начни не с исправлений, а с короткого снимка окружения:</p>\n<pre><code class=\"language-bash\">ip -br addr\nip route\nss -tlnp\n</code></pre>\n<p>Что ты должен увидеть:</p>\n\n<p>Если в <code>ss</code> нет <code>:80</code>, значит HTTP-сервис не стартовал. Тогда полезно посмотреть:</p>\n<pre><code class=\"language-bash\">cat /tmp/lab12-http.log\n</code></pre>\n<p>В нормальном состоянии дальше можно идти на HTTP-уровень.</p>",
+      "options": [
+        {
+          "text": "<code>lo</code> с адресом <code>127.0.0.1/8</code> — локальный loopback интерфейс;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "строку <code>default via ...</code> в <code>ip route</code> — маршрут по умолчанию;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "слушающий порт <code>80</code> в <code>ss -tlnp</code> — учебный HTTP-сервис lab12.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Начни не с исправлений, а с короткого снимка окружения:</p>\n<pre><code class=\"language-bash\">ip -br addr\nip route\nss -tlnp\n</code></pre>\n<p>Что ты должен увидеть:</p>\n<ul>\n<li><code>lo</code> с адресом <code>127.0.0.1/8</code> — локальный loopback интерфейс;</li>\n<li>строку <code>default via ...</code> в <code>ip route</code> — маршрут по умолчанию;</li>\n<li>слушающий порт <code>80</code> в <code>ss -tlnp</code> — учебный HTTP-сервис lab12.</li>\n</ul>\n<p>Если в <code>ss</code> нет <code>:80</code>, значит HTTP-сервис не стартовал. Тогда полезно посмотреть:</p>\n<pre><code class=\"language-bash\">cat /tmp/lab12-http.log\n</code></pre>\n<p>В нормальном состоянии дальше можно идти на HTTP-уровень.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Кто слушает порт 80 и на каком адресе",
+      "taskid": "ladv_lab12_t2_port80",
+      "hint": "",
+      "question_html": "<p>Сузь вывод до одного порта:</p>\n<pre><code class=\"language-bash\">ss -tlnp 'sport = :80'\n</code></pre>\n<p>Ожидаемый смысл вывода:</p>\n<pre><code class=\"language-text\">LISTEN ... 0.0.0.0:80 ... users:((&quot;python3&quot;,pid=...))\n</code></pre>\n<p><code>0.0.0.0:80</code> означает, что процесс слушает порт <code>80</code> на всех IPv4-интерфейсах. <code>python3</code> — это учебный HTTP-сервис. Если бы сервис слушал только <code>127.0.0.1:80</code>, локальный <code>curl http://localhost/</code> работал бы, но внешний клиент мог бы не подключиться.</p>",
+      "options": [],
+      "raw_description": "<p>Сузь вывод до одного порта:</p>\n<pre><code class=\"language-bash\">ss -tlnp 'sport = :80'\n</code></pre>\n<p>Ожидаемый смысл вывода:</p>\n<pre><code class=\"language-text\">LISTEN ... 0.0.0.0:80 ... users:((&quot;python3&quot;,pid=...))\n</code></pre>\n<p><code>0.0.0.0:80</code> означает, что процесс слушает порт <code>80</code> на всех IPv4-интерфейсах. <code>python3</code> — это учебный HTTP-сервис. Если бы сервис слушал только <code>127.0.0.1:80</code>, локальный <code>curl http://localhost/</code> работал бы, но внешний клиент мог бы не подключиться.</p>"
+    },
+    {
+      "type": "self",
+      "title": "`Web Preview` и тот же ответ через curl",
+      "taskid": "ladv_lab12_t3_preview_curl",
+      "hint": "",
+      "question_html": "<p>Открой <code>Web Preview</code>. Ты должен увидеть страницу <code>Advanced HTTP diagnostics</code>: это пользовательское представление.</p>\n<p>Теперь посмотри тот же HTTP-сервис из терминала:</p>\n<pre><code class=\"language-bash\">curl http://localhost/ | head\ncurl -fsS http://localhost/health\ncurl -s -o /dev/null -w &quot;%{http_code}\\n&quot; http://localhost/health\n</code></pre>\n<p>Что ты должен увидеть:</p>\n\n<p>Вывод: frontend и health endpoint работают. Это ещё не означает, что все API и зависимости здоровы.</p>",
+      "options": [
+        {
+          "text": "в HTML есть <code>Advanced HTTP diagnostics</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>/health</code> возвращает JSON вроде <code>{\"status\": \"ok\", \"service\": \"frontend\"}</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "короткая проверка статуса печатает <code>200</code>.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Открой <code>Web Preview</code>. Ты должен увидеть страницу <code>Advanced HTTP diagnostics</code>: это пользовательское представление.</p>\n<p>Теперь посмотри тот же HTTP-сервис из терминала:</p>\n<pre><code class=\"language-bash\">curl http://localhost/ | head\ncurl -fsS http://localhost/health\ncurl -s -o /dev/null -w &quot;%{http_code}\\n&quot; http://localhost/health\n</code></pre>\n<p>Что ты должен увидеть:</p>\n<ul>\n<li>в HTML есть <code>Advanced HTTP diagnostics</code>;</li>\n<li><code>/health</code> возвращает JSON вроде <code>{\"status\": \"ok\", \"service\": \"frontend\"}</code>;</li>\n<li>короткая проверка статуса печатает <code>200</code>.</li>\n</ul>\n<p>Вывод: frontend и health endpoint работают. Это ещё не означает, что все API и зависимости здоровы.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Заголовки ответа и что браузер делает автоматически",
+      "taskid": "ladv_lab12_t4_headers",
+      "hint": "",
+      "question_html": "<p>Браузер при открытии страницы сам отправляет HTTP-заголовки, включая <code>Host</code>. <code>curl</code> тоже формирует заголовки автоматически из URL, но мы можем вывести их явно.</p>\n<p>Сначала посмотри заголовки ответа:</p>\n<pre><code class=\"language-bash\">curl -sI http://localhost/\n</code></pre>\n<p>Ожидаемые важные строки:</p>\n<pre><code class=\"language-text\">HTTP/1.0 200 OK\nContent-Type: text/html; charset=utf-8\nCache-Control: no-store\nX-App-Name: devops404-lab12\n</code></pre>\n<p>Теперь посмотри сам запрос через verbose:</p>\n<pre><code class=\"language-bash\">curl -v http://localhost/ &gt;/dev/null\n</code></pre>\n<p>В verbose-выводе строки с <code>&gt;</code> — это то, что отправил клиент. Ты увидишь примерно:</p>\n<pre><code class=\"language-text\">&gt; GET / HTTP/1.1\n&gt; Host: localhost\n&gt; User-Agent: curl/...\n&gt; Accept: */*\n</code></pre>\n<p>Вывод: браузер и <code>curl</code> не просто \"открывают порт\", а отправляют HTTP-запрос с методом, путём и заголовками.</p>",
+      "options": [],
+      "raw_description": "<p>Браузер при открытии страницы сам отправляет HTTP-заголовки, включая <code>Host</code>. <code>curl</code> тоже формирует заголовки автоматически из URL, но мы можем вывести их явно.</p>\n<p>Сначала посмотри заголовки ответа:</p>\n<pre><code class=\"language-bash\">curl -sI http://localhost/\n</code></pre>\n<p>Ожидаемые важные строки:</p>\n<pre><code class=\"language-text\">HTTP/1.0 200 OK\nContent-Type: text/html; charset=utf-8\nCache-Control: no-store\nX-App-Name: devops404-lab12\n</code></pre>\n<p>Теперь посмотри сам запрос через verbose:</p>\n<pre><code class=\"language-bash\">curl -v http://localhost/ &gt;/dev/null\n</code></pre>\n<p>В verbose-выводе строки с <code>&gt;</code> — это то, что отправил клиент. Ты увидишь примерно:</p>\n<pre><code class=\"language-text\">&gt; GET / HTTP/1.1\n&gt; Host: localhost\n&gt; User-Agent: curl/...\n&gt; Accept: */*\n</code></pre>\n<p>Вывод: браузер и <code>curl</code> не просто \"открывают порт\", а отправляют HTTP-запрос с методом, путём и заголовками.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Измерить latency через curl -w",
+      "taskid": "ladv_lab12_t5_latency",
+      "hint": "",
+      "question_html": "<p>Endpoint <code>/slow</code> специально отвечает медленнее обычного. Проверь его:</p>\n<pre><code class=\"language-bash\">curl -s -o /dev/null -w &quot;code=%{http_code} time=%{time_total} size=%{size_download}\\n&quot; http://localhost/slow\n</code></pre>\n<p>Ожидаемый смысл вывода:</p>\n<pre><code class=\"language-text\">code=200 time=0.35... size=17\n</code></pre>\n<p><code>time_total</code> — это полное время HTTP-запроса: соединение, ожидание ответа и получение тела. Это не то же самое, что <code>ping</code>. Для диагностики сервиса <code>time_total</code> часто полезнее, потому что показывает время ответа приложения.</p>",
+      "options": [],
+      "raw_description": "<p>Endpoint <code>/slow</code> специально отвечает медленнее обычного. Проверь его:</p>\n<pre><code class=\"language-bash\">curl -s -o /dev/null -w &quot;code=%{http_code} time=%{time_total} size=%{size_download}\\n&quot; http://localhost/slow\n</code></pre>\n<p>Ожидаемый смысл вывода:</p>\n<pre><code class=\"language-text\">code=200 time=0.35... size=17\n</code></pre>\n<p><code>time_total</code> — это полное время HTTP-запроса: соединение, ожидание ответа и получение тела. Это не то же самое, что <code>ping</code>. Для диагностики сервиса <code>time_total</code> часто полезнее, потому что показывает время ответа приложения.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Локальное DNS-имя и автоматический Host",
+      "taskid": "ladv_lab12_t6_dns_host",
+      "hint": "",
+      "question_html": "<p>В setup добавлено локальное имя <code>app.internal</code>. Сначала проверь, куда оно резолвится:</p>\n<pre><code class=\"language-bash\">getent hosts app.internal\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">127.0.0.1 app.internal\n</code></pre>\n<p>Теперь сделай запрос по имени:</p>\n<pre><code class=\"language-bash\">curl -v http://app.internal/vhost\n</code></pre>\n<p>В выводе ты увидишь, что <code>curl</code> сам отправил:</p>\n<pre><code class=\"language-text\">&gt; Host: app.internal\n</code></pre>\n<p>А тело ответа должно быть:</p>\n<pre><code class=\"language-text\">vhost ok: app.internal\n</code></pre>\n<p>Вывод: когда URL содержит имя <code>app.internal</code>, клиент сам передаёт это имя в HTTP-заголовке <code>Host</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В setup добавлено локальное имя <code>app.internal</code>. Сначала проверь, куда оно резолвится:</p>\n<pre><code class=\"language-bash\">getent hosts app.internal\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">127.0.0.1 app.internal\n</code></pre>\n<p>Теперь сделай запрос по имени:</p>\n<pre><code class=\"language-bash\">curl -v http://app.internal/vhost\n</code></pre>\n<p>В выводе ты увидишь, что <code>curl</code> сам отправил:</p>\n<pre><code class=\"language-text\">&gt; Host: app.internal\n</code></pre>\n<p>А тело ответа должно быть:</p>\n<pre><code class=\"language-text\">vhost ok: app.internal\n</code></pre>\n<p>Вывод: когда URL содержит имя <code>app.internal</code>, клиент сам передаёт это имя в HTTP-заголовке <code>Host</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Явно подменить Host header",
+      "taskid": "ladv_lab12_t7_manual_host",
+      "hint": "",
+      "question_html": "<p>Теперь подключись к IP <code>127.0.0.1</code>, но вручную передай нужный <code>Host</code>:</p>\n<pre><code class=\"language-bash\">curl -sS -H &quot;Host: app.internal&quot; http://127.0.0.1/vhost\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">vhost ok: app.internal\n</code></pre>\n<p>Теперь передай неправильный <code>Host</code>:</p>\n<pre><code class=\"language-bash\">curl -i -H &quot;Host: wrong.internal&quot; http://127.0.0.1/vhost\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">HTTP/1.0 421 Misdirected Request\nX-VHost-Expected: app.internal\n\nwrong host header\n</code></pre>\n<p>Вывод: IP и порт те же самые, но приложение ведёт себя по-разному из-за HTTP-заголовка <code>Host</code>. Так работают virtual host сценарии в nginx, ingress и приложениях.</p>",
+      "options": [],
+      "raw_description": "<p>Теперь подключись к IP <code>127.0.0.1</code>, но вручную передай нужный <code>Host</code>:</p>\n<pre><code class=\"language-bash\">curl -sS -H &quot;Host: app.internal&quot; http://127.0.0.1/vhost\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">vhost ok: app.internal\n</code></pre>\n<p>Теперь передай неправильный <code>Host</code>:</p>\n<pre><code class=\"language-bash\">curl -i -H &quot;Host: wrong.internal&quot; http://127.0.0.1/vhost\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">HTTP/1.0 421 Misdirected Request\nX-VHost-Expected: app.internal\n\nwrong host header\n</code></pre>\n<p>Вывод: IP и порт те же самые, но приложение ведёт себя по-разному из-за HTTP-заголовка <code>Host</code>. Так работают virtual host сценарии в nginx, ingress и приложениях.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Неработающий URL: 404 не равно \"сеть сломалась\"",
+      "taskid": "ladv_lab12_t8_404",
+      "hint": "",
+      "question_html": "<p>Проверь путь, которого в приложении нет:</p>\n<pre><code class=\"language-bash\">curl -i http://localhost/missing\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">HTTP/1.0 404 Not Found\n\nnot found\n</code></pre>\n<p>Что это значит:</p>\n\n<p><code>404</code> — это \"сервер жив, но такого ресурса нет\". Это принципиально отличается от <code>Connection refused</code>, где порт не слушается, и от DNS-ошибки, где имя не резолвится.</p>",
+      "options": [
+        {
+          "text": "DNS не нужен, потому что запрос идёт на <code>localhost</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "TCP-соединение открылось, иначе ты бы не получил HTTP-ответ;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "процесс на порту <code>80</code> жив;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "HTTP-сервер обработал запрос;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "проблема не в сети, а в том, что такого URL/path нет в приложении.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Проверь путь, которого в приложении нет:</p>\n<pre><code class=\"language-bash\">curl -i http://localhost/missing\n</code></pre>\n<p>Ожидаемо:</p>\n<pre><code class=\"language-text\">HTTP/1.0 404 Not Found\n\nnot found\n</code></pre>\n<p>Что это значит:</p>\n<ul>\n<li>DNS не нужен, потому что запрос идёт на <code>localhost</code>;</li>\n<li>TCP-соединение открылось, иначе ты бы не получил HTTP-ответ;</li>\n<li>процесс на порту <code>80</code> жив;</li>\n<li>HTTP-сервер обработал запрос;</li>\n<li>проблема не в сети, а в том, что такого URL/path нет в приложении.</li>\n</ul>\n<p><code>404</code> — это \"сервер жив, но такого ресурса нет\". Это принципиально отличается от <code>Connection refused</code>, где порт не слушается, и от DNS-ошибки, где имя не резолвится.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Сайт открыт, но API отдаёт 503",
+      "taskid": "ladv_lab12_t9_api_503",
+      "hint": "",
+      "question_html": "<p>На странице в <code>Web Preview</code> frontend открывается, но блок API показывает ошибку. Проверь тот же симптом через терминал:</p>\n<pre><code class=\"language-bash\">curl -i http://localhost/api/orders\n</code></pre>\n<p>Ожидаемые важные строки:</p>\n<pre><code class=\"language-text\">HTTP/1.0 503 Service Unavailable\nContent-Type: application/json; charset=utf-8\nX-Backend-Status: degraded\nRetry-After: 30\n\n{&quot;status&quot;: &quot;error&quot;, &quot;service&quot;: &quot;orders-api&quot;, &quot;error&quot;: &quot;database timeout&quot;}\n</code></pre>\n<p>Вывод: сайт доступен, порт открыт, frontend отвечает, но конкретный backend endpoint деградировал. Это уже не \"сеть не работает\", а проблема приложения или зависимости за endpoint <code>/api/orders</code>.</p>",
+      "options": [],
+      "raw_description": "<p>На странице в <code>Web Preview</code> frontend открывается, но блок API показывает ошибку. Проверь тот же симптом через терминал:</p>\n<pre><code class=\"language-bash\">curl -i http://localhost/api/orders\n</code></pre>\n<p>Ожидаемые важные строки:</p>\n<pre><code class=\"language-text\">HTTP/1.0 503 Service Unavailable\nContent-Type: application/json; charset=utf-8\nX-Backend-Status: degraded\nRetry-After: 30\n\n{&quot;status&quot;: &quot;error&quot;, &quot;service&quot;: &quot;orders-api&quot;, &quot;error&quot;: &quot;database timeout&quot;}\n</code></pre>\n<p>Вывод: сайт доступен, порт открыт, frontend отвечает, но конкретный backend endpoint деградировал. Это уже не \"сеть не работает\", а проблема приложения или зависимости за endpoint <code>/api/orders</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Собрать короткий troubleshooting-отчёт",
+      "taskid": "ladv_lab12_t10_report",
+      "hint": "",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_advanced/linux_adv/lab12/setup.yaml"
+}

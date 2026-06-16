@@ -1,0 +1,208 @@
+{
+  "n": 15,
+  "id": "ch_lcore_lab7",
+  "title": "Лабораторная 7: Пользователи и sudo",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: /etc/passwd",
+      "taskid": "lcore_lab7_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Что хранится в файле <code>/etc/passwd</code>?</p>",
+      "options": [
+        {
+          "text": "Хэши паролей всех пользователей",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Список разрешённых sudo-команд",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Текущие сессии пользователей",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+Информация о пользователях: логин, UID, GID, домашняя директория, оболочка (но не пароли)</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Что хранится в файле <code>/etc/passwd</code>?</p>\n<ul>\n<li>Хэши паролей всех пользователей</li>\n<li>Список разрешённых sudo-команд</li>\n<li>Текущие сессии пользователей</li>\n<li><code>+Информация о пользователях: логин, UID, GID, домашняя директория, оболочка (но не пароли)</code></li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "UID, GID и группы",
+      "taskid": "lcore_lab7_t2_id",
+      "hint": "",
+      "question_html": "<p>Узнай UID, GID и группы пользователя <code>devuser</code>. Какая команда показывает эти поля одной строкой?</p>",
+      "options": [
+        {
+          "text": "<code>+id devuser</code>",
+          "correct": false,
+          "explanation": "Верно! <code>id</code> показывает UID, GID и группы пользователя"
+        },
+        {
+          "text": "<code>who devuser</code>",
+          "correct": false,
+          "explanation": "Нет — <code>who</code> показывает активные сессии"
+        },
+        {
+          "text": "<code>groups --all devuser</code>",
+          "correct": false,
+          "explanation": "Нет — это не покажет UID"
+        },
+        {
+          "text": "<code>cat /etc/shadow devuser</code>",
+          "correct": false,
+          "explanation": "Нет — так не смотрят UID/GID, и файл с хэшами паролей не нужен"
+        }
+      ],
+      "raw_description": "<p>Узнай UID, GID и группы пользователя <code>devuser</code>. Какая команда показывает эти поля одной строкой?</p>\n<ul>\n<li><code>+id devuser</code> [Верно! <code>id</code> показывает UID, GID и группы пользователя]</li>\n<li><code>who devuser</code> [Нет — <code>who</code> показывает активные сессии]</li>\n<li><code>groups --all devuser</code> [Нет — это не покажет UID]</li>\n<li><code>cat /etc/shadow devuser</code> [Нет — так не смотрят UID/GID, и файл с хэшами паролей не нужен]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Текущие сессии пользователей",
+      "taskid": "lcore_lab7_t3_who",
+      "hint": "<p>Используй <code>who</code>: команда показывает активные пользовательские сессии.</p>",
+      "question_html": "<p>Выполни команду <code>who</code>, чтобы вывести текущие пользовательские сессии, и посмотри колонки вывода.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>who</code>, чтобы вывести текущие пользовательские сессии, и посмотри колонки вывода.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать пользователя",
+      "taskid": "lcore_lab7_t4_useradd",
+      "hint": "<p>У <code>useradd</code> флаг <code>-m</code> создаёт домашнюю директорию вместе с пользователем. После создания можно проверить запись пользователя и каталог.</p>",
+      "question_html": "<p>Создай нового пользователя <code>testuser</code> с домашней директорией.</p>",
+      "options": [],
+      "raw_description": "<p>Создай нового пользователя <code>testuser</code> с домашней директорией.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить в sudo-группу",
+      "taskid": "lcore_lab7_t5_usermod",
+      "hint": "<p>В <code>usermod</code> важно сочетание append и groups: <code>-a</code> не стирает старые дополнительные группы, а <code>-G</code> задаёт список новых дополнительных групп.</p>",
+      "question_html": "<p>Добавь пользователя <code>devuser</code> в группу <code>sudo</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь пользователя <code>devuser</code> в группу <code>sudo</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Команда от имени devuser",
+      "taskid": "lcore_lab7_t6_su",
+      "hint": "",
+      "question_html": "<p>Переключись на пользователя <code>devuser</code> командой <code>su devuser</code>, затем выполни <code>whoami</code> и проверь, что команда показывает <code>devuser</code>. После проверки вернись в предыдущую shell-сессию командой <code>exit</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Переключись на пользователя <code>devuser</code> командой <code>su devuser</code>, затем выполни <code>whoami</code> и проверь, что команда показывает <code>devuser</code>. После проверки вернись в предыдущую shell-сессию командой <code>exit</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить sudo-группу",
+      "taskid": "lcore_lab7_t7_sudol",
+      "hint": "",
+      "question_html": "<p>Выполни команду <code>groups devuser</code> и проверь, что среди групп пользователя есть <code>sudo</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>groups devuser</code> и проверь, что среди групп пользователя есть <code>sudo</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что показывают UID и GID?",
+      "taskid": "lcore_lab7_t8_quiz",
+      "hint": "",
+      "question_html": "<p>Что показывают UID и GID в Linux?</p>",
+      "options": [
+        {
+          "text": "Числовые идентификаторы пользователя и его основной группы",
+          "correct": true,
+          "explanation": "Верно! Именно эти значения ядро использует для проверки прав"
+        },
+        {
+          "text": "HTTP-код ответа и порт сервиса",
+          "correct": false,
+          "explanation": "Нет — это сетевые сущности"
+        },
+        {
+          "text": "Размер домашней директории и количество файлов",
+          "correct": false,
+          "explanation": "Нет — это не идентификаторы доступа"
+        },
+        {
+          "text": "Имя текущего shell и историю команд",
+          "correct": false,
+          "explanation": "Нет — UID/GID относятся к пользователю и группе"
+        }
+      ],
+      "raw_description": "<p>Что показывают UID и GID в Linux?</p><ul><li>+Числовые идентификаторы пользователя и его основной группы [Верно! Именно эти значения ядро использует для проверки прав]</li><li>HTTP-код ответа и порт сервиса [Нет — это сетевые сущности]</li><li>Размер домашней директории и количество файлов [Нет — это не идентификаторы доступа]</li><li>Имя текущего shell и историю команд [Нет — UID/GID относятся к пользователю и группе]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему важен флаг -aG у usermod?",
+      "taskid": "lcore_lab7_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Почему для добавления пользователя в дополнительную группу обычно используют <code>usermod -aG sudo devuser</code>, а не просто <code>-G sudo</code>?</p>",
+      "options": [
+        {
+          "text": "<code>-a</code> добавляет группу к существующим дополнительным группам, не затирая их список",
+          "correct": true,
+          "explanation": "Верно! Без -a можно случайно убрать другие группы"
+        },
+        {
+          "text": "<code>-a</code> делает пользователя root",
+          "correct": false,
+          "explanation": "Нет — он только включает режим append"
+        },
+        {
+          "text": "<code>-G</code> меняет домашнюю директорию пользователя",
+          "correct": false,
+          "explanation": "Нет — для этого другие параметры"
+        },
+        {
+          "text": "<code>sudo</code> можно добавить только через ручное редактирование <code>/etc/passwd</code>",
+          "correct": false,
+          "explanation": "Нет — <code>usermod</code> как раз подходит"
+        }
+      ],
+      "raw_description": "<p>Почему для добавления пользователя в дополнительную группу обычно используют <code>usermod -aG sudo devuser</code>, а не просто <code>-G sudo</code>?</p><ul><li>+<code>-a</code> добавляет группу к существующим дополнительным группам, не затирая их список [Верно! Без -a можно случайно убрать другие группы]</li><li><code>-a</code> делает пользователя root [Нет — он только включает режим append]</li><li><code>-G</code> меняет домашнюю директорию пользователя [Нет — для этого другие параметры]</li><li><code>sudo</code> можно добавить только через ручное редактирование <code>/etc/passwd</code> [Нет — <code>usermod</code> как раз подходит]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему пароли не хранят в /etc/passwd?",
+      "taskid": "lcore_lab7_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Почему в современных Linux-системах хэши паролей не хранят прямо в <code>/etc/passwd</code>?</p>",
+      "options": [
+        {
+          "text": "<code>/etc/passwd</code> доступен для чтения многим программам, поэтому хэши вынесены в более закрытый <code>/etc/shadow</code>",
+          "correct": true,
+          "explanation": "Верно! Это снижает риск утечки хэшей"
+        },
+        {
+          "text": "Потому что <code>/etc/passwd</code> хранит только сетевые порты",
+          "correct": false,
+          "explanation": "Нет — там информация о пользователях"
+        },
+        {
+          "text": "Потому что файл <code>/etc/passwd</code> нельзя читать обычным пользователям",
+          "correct": false,
+          "explanation": "Нет — обычно читать можно"
+        },
+        {
+          "text": "Потому что sudo-группа хранится только в <code>/etc/passwd</code>",
+          "correct": false,
+          "explanation": "Нет — группы хранятся в <code>/etc/group</code>"
+        }
+      ],
+      "raw_description": "<p>Почему в современных Linux-системах хэши паролей не хранят прямо в <code>/etc/passwd</code>?</p><ul><li>+<code>/etc/passwd</code> доступен для чтения многим программам, поэтому хэши вынесены в более закрытый <code>/etc/shadow</code> [Верно! Это снижает риск утечки хэшей]</li><li>Потому что <code>/etc/passwd</code> хранит только сетевые порты [Нет — там информация о пользователях]</li><li>Потому что файл <code>/etc/passwd</code> нельзя читать обычным пользователям [Нет — обычно читать можно]</li><li>Потому что sudo-группа хранится только в <code>/etc/passwd</code> [Нет — группы хранятся в <code>/etc/group</code>]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab7/setup.yaml"
+}

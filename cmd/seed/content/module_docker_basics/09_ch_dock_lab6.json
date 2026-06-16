@@ -1,0 +1,166 @@
+{
+  "n": 9,
+  "id": "ch_dock_lab6",
+  "title": "Лабораторная 4: Volumes и bind mounts",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Изучить volumes",
+      "taskid": "dock_lab6_t1_ls",
+      "hint": "<p>Volumes — это механизм для хранения данных контейнера <strong>вне</strong> его записываемого слоя. Данные в volume переживают пересоздание контейнера. Это ключевой инструмент для stateful-приложений: баз данных, хранилищ файлов.</p>",
+      "question_html": "<p>Выполни <code>docker volume ls</code>. Какой столбец показывает драйвер volume?</p>\n<pre><code>docker volume ls</code></pre>",
+      "options": [
+        {
+          "text": "VOLUME NAME",
+          "correct": false,
+          "explanation": "Нет — это имя volume"
+        },
+        {
+          "text": "DRIVER",
+          "correct": true,
+          "explanation": "Верно! Обычно для локальных volumes это local"
+        },
+        {
+          "text": "MOUNTPOINT",
+          "correct": false,
+          "explanation": "Нет — mountpoint виден в docker volume inspect"
+        },
+        {
+          "text": "STATUS",
+          "correct": false,
+          "explanation": "Нет — такого столбца в docker volume ls нет"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker volume ls</code>. Какой столбец показывает драйвер volume?</p>\n<pre><code>docker volume ls</code></pre>\n<ul>\n<li>VOLUME NAME [Нет — это имя volume]</li>\n<li>+DRIVER [Верно! Обычно для локальных volumes это local]</li>\n<li>MOUNTPOINT [Нет — mountpoint виден в docker volume inspect]</li>\n<li>STATUS [Нет — такого столбца в docker volume ls нет]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать volume",
+      "taskid": "dock_lab6_t2_create",
+      "hint": "<p>Используй <code>docker volume</code> и <code>docker inspect</code>: сначала проверь точку монтирования и направление данных. Разные задачи требуют либо исправить mount, либо прочитать путь из inspect.</p>\n<p>Named volume управляется Docker: Docker сам определяет, где хранить данные (обычно <code>/var/lib/docker/volumes/</code>). Имя volume можно использовать при запуске контейнера.</p>",
+      "question_html": "<p>Создай named volume с именем <code>mydata</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай named volume с именем <code>mydata</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить контейнер с volume",
+      "taskid": "dock_lab6_t3_mount",
+      "hint": "<p>Используй <code>docker run</code> с монтированием через <code>-v</code>. Слева укажи имя volume, справа — путь внутри контейнера.</p>\n<p>Синтаксис: <code>-v имя_volume:/путь_в_контейнере</code>. Контейнер запускаем так <code>alpine:latest sleep 3600</code>, чтобы он не завершался.</p>",
+      "question_html": "<p>Запусти контейнер <code>vol_test</code> из образа <code>alpine:latest</code> с монтированием volume <code>mydata</code> в директорию <code>/data</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер <code>vol_test</code> из образа <code>alpine:latest</code> с монтированием volume <code>mydata</code> в директорию <code>/data</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Записать данные в volume",
+      "taskid": "dock_lab6_t4_write",
+      "hint": "<p>Используй <code>docker exec vol_test sh -c</code>, чтобы выполнить команду внутри контейнера, например записать текст через перенаправление в <code>/data/test.txt</code>.</p>",
+      "question_html": "<p>Запиши строку <code>persistent data</code> в файл <code>/data/test.txt</code> внутри контейнера <code>vol_test</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запиши строку <code>persistent data</code> в файл <code>/data/test.txt</code> внутри контейнера <code>vol_test</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Bind mount vs named volume",
+      "taskid": "dock_lab6_t5_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между bind mount и named volume?</p>",
+      "options": [
+        {
+          "text": "Named volume быстрее bind mount",
+          "correct": false,
+          "explanation": "Нет — производительность сопоставима"
+        },
+        {
+          "text": "Bind mount сохраняет данные при docker rm, named volume нет",
+          "correct": false,
+          "explanation": "Нет — оба сохраняют данные при rm контейнера"
+        },
+        {
+          "text": "Bind mount монтирует конкретный путь хоста, named volume — Docker-managed хранилище",
+          "correct": true,
+          "explanation": "Верно! Bind mount: -v /host/path:/container/path; named volume: -v mydata:/container/path"
+        },
+        {
+          "text": "Named volume можно использовать только на Linux",
+          "correct": false,
+          "explanation": "Нет — работает на всех ОС"
+        }
+      ],
+      "raw_description": "<p>В чём разница между bind mount и named volume?</p><ul>\n<li>Named volume быстрее bind mount [Нет — производительность сопоставима]</li>\n<li>Bind mount сохраняет данные при docker rm, named volume нет [Нет — оба сохраняют данные при rm контейнера]</li>\n<li>+Bind mount монтирует конкретный путь хоста, named volume — Docker-managed хранилище [Верно! Bind mount: -v /host/path:/container/path; named volume: -v mydata:/container/path]</li>\n<li>Named volume можно использовать только на Linux [Нет — работает на всех ОС]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить персистентность данных",
+      "taskid": "dock_lab6_t6_persist",
+      "hint": "<p>Сначала выполни <code>docker stop vol_test</code> и <code>docker rm vol_test</code>. Затем запусти <code>vol_reader</code> из образа <code>alpine:latest</code> и подключи <code>mydata</code> в <code>/data</code>.</p>\n<p>Проверка не будет запускать контейнер за тебя: она проверит, что <code>vol_test</code> удалён, <code>vol_reader</code> создан с volume <code>mydata</code>, а файл в volume всё ещё содержит нужный текст.</p>",
+      "question_html": "<p>Останови и удали контейнер <code>vol_test</code>, затем создай новый контейнер <code>vol_reader</code> с тем же volume <code>mydata</code> и прочитай данные.</p>\n<p>Запусти новый контейнер без <code>-d</code>, чтобы команда сразу вывела содержимое файла в терминал:</p>\n<pre><code>docker run --name vol_reader -v mydata:/data alpine:latest cat /data/test.txt</code></pre>\n<p>В выводе должно быть <code>persistent data</code>. Это показывает, что файл пережил удаление старого контейнера, потому что лежал в volume, а не в writable layer контейнера.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнер <code>vol_test</code>, затем создай новый контейнер <code>vol_reader</code> с тем же volume <code>mydata</code> и прочитай данные.</p>\n<p>Запусти новый контейнер без <code>-d</code>, чтобы команда сразу вывела содержимое файла в терминал:</p>\n<pre><code>docker run --name vol_reader -v mydata:/data alpine:latest cat /data/test.txt</code></pre>\n<p>В выводе должно быть <code>persistent data</code>. Это показывает, что файл пережил удаление старого контейнера, потому что лежал в volume, а не в writable layer контейнера.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Bind mount с nginx",
+      "taskid": "dock_lab6_t7_bind",
+      "hint": "<p>Используй <code>docker run</code> с образом <code>nginx:alpine</code>, bind mount и публикацией порта. После запуска проверь контейнер через <code>docker inspect</code> или <code>docker ps</code>.</p>\n<p>В директории <code>/root/html/</code> уже подготовлена страница. Bind mount позволяет изменять файлы на хосте и сразу видеть изменения в контейнере — удобно для разработки.</p>\n<p>Порт нужен именно <code>80:80</code>, потому что <code>Web Preview</code> смотрит на порт 80 VM.</p>",
+      "question_html": "<p>Запусти контейнер <code>nginx_bind</code> из образа <code>nginx:alpine</code> с bind mount: примонтируй директорию <code>/root/html/</code> хоста в <code>/usr/share/nginx/html</code> контейнера.</p>\n<p>Опубликуй порт контейнера <code>80</code> на порт VM <code>80</code>. После запуска можно открыть кнопку <code>Web Preview</code> и увидеть страницу в браузере. В терминале то же самое быстрее проверяется через <code>curl http://localhost/</code>; страница должна содержать текст <code>Hello Docker Volume</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер <code>nginx_bind</code> из образа <code>nginx:alpine</code> с bind mount: примонтируй директорию <code>/root/html/</code> хоста в <code>/usr/share/nginx/html</code> контейнера.</p>\n<p>Опубликуй порт контейнера <code>80</code> на порт VM <code>80</code>. После запуска можно открыть кнопку <code>Web Preview</code> и увидеть страницу в браузере. В терминале то же самое быстрее проверяется через <code>curl http://localhost/</code>; страница должна содержать текст <code>Hello Docker Volume</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Инспектировать volume",
+      "taskid": "dock_lab6_t8_inspect",
+      "hint": "<p>В <code>docker inspect</code> нужные данные лежат в разных разделах JSON: State, Mounts, NetworkSettings. Сначала найди раздел по смыслу задачи, потом извлеки поле.</p>\n<p><code>docker volume inspect</code> показывает тип драйвера, точку монтирования на хосте и метаданные.</p>\n<p>В файл нужно записать только значение Mountpoint, а не весь JSON.</p>",
+      "question_html": "<p>Получи детальную информацию о volume <code>mydata</code>, найди его путь на хосте (Mountpoint) и сохрани только этот путь в <code>/root/mydata_mountpoint.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи детальную информацию о volume <code>mydata</code>, найди его путь на хосте (Mountpoint) и сохрани только этот путь в <code>/root/mydata_mountpoint.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что будет с данными при docker rm?",
+      "taskid": "dock_lab6_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Контейнер использует named volume <code>mydata</code>. Что произойдёт с данными в volume после команды <code>docker rm контейнер</code>?</p>",
+      "options": [
+        {
+          "text": "Данные удалятся вместе с контейнером",
+          "correct": false,
+          "explanation": "Нет — только контейнер, данные остаются"
+        },
+        {
+          "text": "Данные переместятся в /tmp",
+          "correct": false,
+          "explanation": "Нет — данные остаются в том же volume"
+        },
+        {
+          "text": "Произойдёт ошибка: нельзя удалить контейнер с volume",
+          "correct": false,
+          "explanation": "Нет — можно удалять свободно"
+        },
+        {
+          "text": "Данные в named volume сохранятся — volume не удаляется при rm контейнера",
+          "correct": true,
+          "explanation": "Верно! docker rm удаляет только контейнер. Volume удаляется только явно: docker volume rm или docker rm -v"
+        }
+      ],
+      "raw_description": "<p>Контейнер использует named volume <code>mydata</code>. Что произойдёт с данными в volume после команды <code>docker rm контейнер</code>?</p><ul>\n<li>Данные удалятся вместе с контейнером [Нет — только контейнер, данные остаются]</li>\n<li>Данные переместятся в /tmp [Нет — данные остаются в том же volume]</li>\n<li>Произойдёт ошибка: нельзя удалить контейнер с volume [Нет — можно удалять свободно]</li>\n<li>+Данные в named volume сохранятся — volume не удаляется при rm контейнера [Верно! docker rm удаляет только контейнер. Volume удаляется только явно: docker volume rm или docker rm -v]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Очистка",
+      "taskid": "dock_lab6_t10_cleanup",
+      "hint": "<p>Используй <code>docker volume</code> и <code>docker inspect</code>: сначала проверь точку монтирования и направление данных. Разные задачи требуют либо исправить mount, либо прочитать путь из inspect.</p>\n<p>Volume нельзя удалить, пока он привязан к контейнеру. Даже остановленный <code>vol_reader</code> нужно удалить перед <code>docker volume rm mydata</code>.</p>",
+      "question_html": "<p>Останови и удали контейнеры <code>nginx_bind</code> и <code>vol_reader</code>, затем удали volume <code>mydata</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнеры <code>nginx_bind</code> и <code>vol_reader</code>, затем удали volume <code>mydata</code>.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab6/setup.yaml"
+}

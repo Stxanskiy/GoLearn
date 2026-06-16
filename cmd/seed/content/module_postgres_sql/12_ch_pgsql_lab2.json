@@ -1,0 +1,110 @@
+{
+  "n": 12,
+  "id": "ch_pgsql_lab2",
+  "title": "Лабораторная 4: фильтры и отчёты",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Войти в psql",
+      "taskid": "pgsql_lab2_t1_enter",
+      "hint": "<p>Клавиша <code>q</code> закрывает экран просмотра длинного вывода и возвращает к приглашению <code>psql</code>.</p>",
+      "question_html": "<p>Открой <code>psql</code> в базе <code>shop</code>.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>В этой лабораторной большинство задач с самопроверкой: выполни запрос, посмотри результат в терминале и нажми «Готово».</p>\n<p>Иногда длинный вывод открывается на отдельном экране просмотра. Если вместо приглашения <code>psql</code> видишь такой экран, нажми <code>q</code>, чтобы вернуться к запросам.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>psql</code> в базе <code>shop</code>.</p>\n<pre><code>psql -U student -d shop</code></pre>\n<p>В этой лабораторной большинство задач с самопроверкой: выполни запрос, посмотри результат в терминале и нажми «Готово».</p>\n<p>Иногда длинный вывод открывается на отдельном экране просмотра. Если вместо приглашения <code>psql</code> видишь такой экран, нажми <code>q</code>, чтобы вернуться к запросам.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Фильтр по статусу и дате",
+      "taskid": "pgsql_lab2_t2_where_date",
+      "hint": "<p><code>IN</code> удобнее, чем несколько условий <code>status = ... OR status = ...</code>. Сортировка <code>ORDER BY created_at, id</code> делает порядок строк стабильным.</p>\n<pre><code>SELECT id, customer_id, status, created_at\nFROM orders\nWHERE status IN ('paid', 'shipped')\n  AND created_at &gt;= '2026-05-10'\nORDER BY created_at, id;</code></pre>",
+      "question_html": "<p>Найди оплаченные и отправленные заказы, созданные начиная с 10 мая 2026.</p>\n<p>Работай с таблицей <code>orders</code>. Нужны колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>. Отфильтруй статусы <code>paid</code> и <code>shipped</code>, дату <code>created_at</code> от <code>2026-05-10</code> включительно, отсортируй по дате и <code>id</code>.</p>\n<p>Посмотри, какие заказы уже подходят под фильтр: в вывод попадут только статусы <code>paid</code> и <code>shipped</code>, начиная с указанной даты.</p>",
+      "options": [],
+      "raw_description": "<p>Найди оплаченные и отправленные заказы, созданные начиная с 10 мая 2026.</p>\n<p>Работай с таблицей <code>orders</code>. Нужны колонки <code>id</code>, <code>customer_id</code>, <code>status</code> и <code>created_at</code>. Отфильтруй статусы <code>paid</code> и <code>shipped</code>, дату <code>created_at</code> от <code>2026-05-10</code> включительно, отсортируй по дате и <code>id</code>.</p>\n<p>Посмотри, какие заказы уже подходят под фильтр: в вывод попадут только статусы <code>paid</code> и <code>shipped</code>, начиная с указанной даты.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Поиск по тексту через ILIKE",
+      "taskid": "pgsql_lab2_t3_ilike",
+      "hint": "<p><code>LIKE</code> чувствителен к регистру, <code>ILIKE</code> в PostgreSQL — нет. Оставь в выводе только колонки <code>id</code>, <code>name</code>, <code>category</code>, <code>price</code>.</p>\n<pre><code>SELECT id, name, category, price\nFROM products\nWHERE name ILIKE '%sql%'\nORDER BY price, id;</code></pre>",
+      "question_html": "<p>Найди товары, в названии которых встречается <code>sql</code> без учёта регистра.</p>\n<p>Работай с таблицей <code>products</code>. Нужны колонки <code>id</code>, <code>name</code>, <code>category</code> и <code>price</code>. Отсортируй результат по цене и <code>id</code>.</p>\n<p>Посмотри, какие товары нашлись по подстроке <code>sql</code>. В этой базе есть несколько таких товаров, и регистр букв не мешает поиску.</p>",
+      "options": [],
+      "raw_description": "<p>Найди товары, в названии которых встречается <code>sql</code> без учёта регистра.</p>\n<p>Работай с таблицей <code>products</code>. Нужны колонки <code>id</code>, <code>name</code>, <code>category</code> и <code>price</code>. Отсортируй результат по цене и <code>id</code>.</p>\n<p>Посмотри, какие товары нашлись по подстроке <code>sql</code>. В этой базе есть несколько таких товаров, и регистр букв не мешает поиску.</p>"
+    },
+    {
+      "type": "self",
+      "title": "GROUP BY по городам",
+      "taskid": "pgsql_lab2_t4_group_city",
+      "hint": "<p><code>count(*)</code> считает строки, а <code>GROUP BY city</code> делает отдельный счётчик для каждого города.</p>\n<pre><code>SELECT city, count(*) AS customers_count\nFROM customers\nGROUP BY city\nORDER BY customers_count DESC, city;</code></pre>",
+      "question_html": "<p>Посчитай клиентов по городам из таблицы <code>customers</code>.</p>\n<p>Нужны колонки <code>city</code> и <code>customers_count</code>. Отсортируй города сначала по количеству клиентов от большего к меньшему, затем по названию города.</p>\n<p>Посмотри, как клиенты распределены по городам. Город с большим количеством клиентов окажется выше из-за сортировки по <code>customers_count DESC</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посчитай клиентов по городам из таблицы <code>customers</code>.</p>\n<p>Нужны колонки <code>city</code> и <code>customers_count</code>. Отсортируй города сначала по количеству клиентов от большего к меньшему, затем по названию города.</p>\n<p>Посмотри, как клиенты распределены по городам. Город с большим количеством клиентов окажется выше из-за сортировки по <code>customers_count DESC</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Суммы строк заказа",
+      "taskid": "pgsql_lab2_t5_order_lines",
+      "hint": "<p>Здесь <code>order_items.product_id</code> связывается с <code>products.id</code>. Оставь в выводе пять колонок: <code>order_id</code>, <code>product_name</code>, <code>quantity</code>, <code>unit_price</code>, <code>line_total</code>.</p>\n<pre><code>SELECT\n  oi.order_id,\n  p.name AS product_name,\n  oi.quantity,\n  oi.unit_price,\n  oi.quantity * oi.unit_price AS line_total\nFROM order_items AS oi\nJOIN products AS p ON p.id = oi.product_id\nORDER BY oi.order_id, product_name;</code></pre>",
+      "question_html": "<p>Соедини строки заказов с товарами и посчитай сумму каждой строки.</p>\n<p>Соедини <code>order_items</code> и <code>products</code> по товару. Нужны колонки <code>order_id</code>, <code>product_name</code>, <code>quantity</code>, <code>unit_price</code> и <code>line_total</code>. Отсортируй по заказу и названию товара.</p>\n<p>В выводе нужны пять колонок. Колонка <code>line_total</code> должна показывать сумму строки: <code>quantity * unit_price</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Соедини строки заказов с товарами и посчитай сумму каждой строки.</p>\n<p>Соедини <code>order_items</code> и <code>products</code> по товару. Нужны колонки <code>order_id</code>, <code>product_name</code>, <code>quantity</code>, <code>unit_price</code> и <code>line_total</code>. Отсортируй по заказу и названию товара.</p>\n<p>В выводе нужны пять колонок. Колонка <code>line_total</code> должна показывать сумму строки: <code>quantity * unit_price</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Суммы оплаченных заказов",
+      "taskid": "pgsql_lab2_t6_paid_order_totals",
+      "hint": "<p>Сумма заказа считается как <code>sum(oi.quantity * oi.unit_price)</code>. Так как в SELECT есть обычные колонки заказа и клиента, они должны быть в <code>GROUP BY</code>.</p>\n<pre><code>SELECT\n  o.id AS order_id,\n  c.full_name AS customer_name,\n  o.status,\n  sum(oi.quantity * oi.unit_price) AS total_amount\nFROM orders AS o\nJOIN customers AS c ON c.id = o.customer_id\nJOIN order_items AS oi ON oi.order_id = o.id\nWHERE o.status IN ('paid', 'shipped')\nGROUP BY o.id, c.full_name, o.status\nORDER BY total_amount DESC, order_id;</code></pre>",
+      "question_html": "<p>Собери отчёт по оплаченным и отправленным заказам.</p>\n<p>Нужны колонки <code>order_id</code>, <code>customer_name</code>, <code>status</code>, <code>total_amount</code>. Соедини <code>orders</code>, <code>customers</code> и <code>order_items</code>, отфильтруй статусы <code>paid</code> и <code>shipped</code>, затем сгруппируй строки заказа.</p>\n<p>Первая строка отчёта будет заказом Denis: у него самая большая сумма.</p>",
+      "options": [],
+      "raw_description": "<p>Собери отчёт по оплаченным и отправленным заказам.</p>\n<p>Нужны колонки <code>order_id</code>, <code>customer_name</code>, <code>status</code>, <code>total_amount</code>. Соедини <code>orders</code>, <code>customers</code> и <code>order_items</code>, отфильтруй статусы <code>paid</code> и <code>shipped</code>, затем сгруппируй строки заказа.</p>\n<p>Первая строка отчёта будет заказом Denis: у него самая большая сумма.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Выручка по клиентам",
+      "taskid": "pgsql_lab2_t7_query_view",
+      "hint": "<p>Сумма считается по строкам заказа: <code>sum(oi.quantity * oi.unit_price)</code>. Группировка идёт по клиенту: <code>GROUP BY c.full_name</code>.</p>\n<pre><code>SELECT\n  c.full_name AS customer_name,\n  sum(oi.quantity * oi.unit_price) AS revenue\nFROM orders AS o\nJOIN customers AS c ON c.id = o.customer_id\nJOIN order_items AS oi ON oi.order_id = o.id\nWHERE o.status IN ('paid', 'shipped')\nGROUP BY c.full_name\nORDER BY revenue DESC, customer_name;</code></pre>",
+      "question_html": "<p>Теперь собери отчёт по клиентам: какая общая сумма оплаченных/отправленных заказов у каждого клиента.</p>\n<p>Нужны колонки <code>customer_name</code> и <code>revenue</code>.</p>\n<p>Соедини <code>orders</code>, <code>customers</code> и <code>order_items</code>, оставь статусы <code>paid</code> и <code>shipped</code>, сгруппируй результат по клиенту. Отсортируй по выручке от большей к меньшей, затем по имени клиента.</p>\n<p>Посмотри, у каких клиентов больше всего оплаченной выручки.</p>",
+      "options": [],
+      "raw_description": "<p>Теперь собери отчёт по клиентам: какая общая сумма оплаченных/отправленных заказов у каждого клиента.</p>\n<p>Нужны колонки <code>customer_name</code> и <code>revenue</code>.</p>\n<p>Соедини <code>orders</code>, <code>customers</code> и <code>order_items</code>, оставь статусы <code>paid</code> и <code>shipped</code>, сгруппируй результат по клиенту. Отсортируй по выручке от большей к меньшей, затем по имени клиента.</p>\n<p>Посмотри, у каких клиентов больше всего оплаченной выручки.</p>"
+    },
+    {
+      "type": "self",
+      "title": "HAVING: категории дороже 3000",
+      "taskid": "pgsql_lab2_t8_having_categories",
+      "hint": "<p><code>WHERE</code> фильтрует строки до группировки, а <code>HAVING</code> фильтрует уже готовые группы. Здесь условие должно быть <code>HAVING avg(price) &gt; 3000</code>.</p>\n<pre><code>SELECT\n  category,\n  avg(price) AS avg_price\nFROM products\nGROUP BY category\nHAVING avg(price) &gt; 3000\nORDER BY avg_price DESC, category;</code></pre>",
+      "question_html": "<p>Покажи категории товаров, где средняя цена выше <code>3000</code>.</p>\n<p>Работай с таблицей <code>products</code>. Нужны колонки <code>category</code> и <code>avg_price</code>. Сгруппируй товары по категории, оставь только группы со средней ценой выше <code>3000</code>, отсортируй по средней цене от большей к меньшей.</p>\n<p>Посмотри, какие категории в этой базе дороже остальных в среднем.</p>",
+      "options": [],
+      "raw_description": "<p>Покажи категории товаров, где средняя цена выше <code>3000</code>.</p>\n<p>Работай с таблицей <code>products</code>. Нужны колонки <code>category</code> и <code>avg_price</code>. Сгруппируй товары по категории, оставь только группы со средней ценой выше <code>3000</code>, отсортируй по средней цене от большей к меньшей.</p>\n<p>Посмотри, какие категории в этой базе дороже остальных в среднем.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Финальная самопроверка отчётов",
+      "taskid": "pgsql_lab2_t9_final_reports",
+      "hint": "<p>Это задание без автоматической проверки: проверь три признака — Denis первым в отчёте по заказам, <code>revenue</code> отсортирован по убыванию, а в задаче с <code>HAVING</code> не осталось категорий со средней ценой <code>3000</code> или ниже.</p>",
+      "question_html": "<p>Сделай финальную самопроверку по трём идеям из лабораторной:</p>",
+      "options": [
+        {
+          "text": "в отчёте по заказам выше всех стоит Denis;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "в отчёте по клиентам сумма <code>revenue</code> отсортирована по убыванию;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "в отчёте по категориям остались только группы со средней ценой выше <code>3000</code>.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Сделай финальную самопроверку по трём идеям из лабораторной:</p>\n<ul>\n<li>в отчёте по заказам выше всех стоит Denis;</li>\n<li>в отчёте по клиентам сумма <code>revenue</code> отсортирована по убыванию;</li>\n<li>в отчёте по категориям остались только группы со средней ценой выше <code>3000</code>.</li>\n</ul>"
+    }
+  ],
+  "vm_image": "postgre",
+  "vm_init": "module_postgres_sql/postgres/lab2/setup.yaml"
+}

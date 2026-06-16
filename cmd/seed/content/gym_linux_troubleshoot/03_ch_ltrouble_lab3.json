@@ -1,0 +1,49 @@
+{
+  "n": 3,
+  "id": "ch_ltrouble_lab3",
+  "title": "Блок 3: Процессы и планировщик",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Backup из cron не выполняется",
+      "taskid": "ltrouble_lab3_t01",
+      "hint": "<ul>\n<li>Посмотри текущий crontab root.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Резервное копирование должно запускать <code>/opt/app/backup.sh</code> по cron, но последнее выполнение так и не появилось. В расписании осталась старая ссылка на другой путь.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы backup-задача в cron была рабочей.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Резервное копирование должно запускать <code>/opt/app/backup.sh</code> по cron, но последнее выполнение так и не появилось. В расписании осталась старая ссылка на другой путь.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы backup-задача в cron была рабочей.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Приложение недоступно на 8080",
+      "taskid": "ltrouble_lab3_t02",
+      "hint": "<ul>\n<li>Посмотри слушающие TCP-порты и процессы.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Пользователи ждут <code>webapp</code> на <code>127.0.0.1:8080</code>, но подключение туда отклоняется. Сервис запущен через systemd и выглядит живым, однако слушает не тот порт.</p>\n<p><strong>Твоя цель:</strong> Исправить запуск <code>webapp.service</code>, чтобы приложение работало на ожидаемом порту.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Пользователи ждут <code>webapp</code> на <code>127.0.0.1:8080</code>, но подключение туда отклоняется. Сервис запущен через systemd и выглядит живым, однако слушает не тот порт.</p>\n<p><strong>Твоя цель:</strong> Исправить запуск <code>webapp.service</code>, чтобы приложение работало на ожидаемом порту.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Порт 3000 занят",
+      "taskid": "ltrouble_lab3_t03",
+      "hint": "<ul>\n<li>Найди PID процесса, который слушает <code>3000</code>.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Локальное приложение не может занять порт <code>3000</code>: при старте появляется ошибка о занятом адресе. На порту висит посторонний процесс.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного старта локального приложения на <code>3000</code>.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Локальное приложение не может занять порт <code>3000</code>: при старте появляется ошибка о занятом адресе. На порту висит посторонний процесс.</p>\n<p><strong>Твоя цель:</strong> Добиться успешного старта локального приложения на <code>3000</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Maintenance job не запускается cron",
+      "taskid": "ltrouble_lab3_t04",
+      "hint": "<ul>\n<li>Найди файл maintenance job в <code>/opt/app</code>.</li>\n</ul>",
+      "question_html": "<p><strong>Сценарий:</strong> Cron-задание технического обслуживания настроено, но сам файл задания не запускается как программа.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы maintenance job мог запускаться cron.</p>",
+      "options": [],
+      "raw_description": "<p><strong>Сценарий:</strong> Cron-задание технического обслуживания настроено, но сам файл задания не запускается как программа.</p>\n<p><strong>Твоя цель:</strong> Добиться, чтобы maintenance job мог запускаться cron.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "gym_linux_troubleshoot/linux_troubleshoot/lab3/setup.yaml"
+}

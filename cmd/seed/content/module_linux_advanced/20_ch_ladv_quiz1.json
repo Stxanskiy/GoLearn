@@ -1,0 +1,313 @@
+{
+  "n": 20,
+  "id": "ch_ladv_quiz1",
+  "title": "Квиз: сеть, SSH и диагностика",
+  "type": "quiz",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "ip addr vs ifconfig",
+      "taskid": "ladv_q1_t1",
+      "hint": "",
+      "question_html": "<p>Почему в современном Linux рекомендуется использовать <code>ip addr</code> вместо <code>ifconfig</code>?</p>",
+      "options": [
+        {
+          "text": "Разницы нет, это синонимы",
+          "correct": false,
+          "explanation": "Нет — у них разный синтаксис и <code>ip</code> поддерживает больше возможностей"
+        },
+        {
+          "text": "<code>ip addr</code> работает быстрее",
+          "correct": false,
+          "explanation": "Нет — скорость не причина перехода"
+        },
+        {
+          "text": "<code>ifconfig</code> не работает с IPv6",
+          "correct": false,
+          "explanation": "Нет — <code>ifconfig</code> умеет IPv6, хотя и с ограничениями"
+        },
+        {
+          "text": "<code>ifconfig</code> устарел и не поддерживается в новых дистрибутивах, <code>ip</code> — современный инструмент с расширенными возможностями",
+          "correct": true,
+          "explanation": "Верно! <code>ifconfig</code> из пакета net-tools не устанавливается по умолчанию в Ubuntu 18+. <code>ip</code> из пакета iproute2 — современная замена с поддержкой IPv6, policy routing и т.д."
+        }
+      ],
+      "raw_description": "<p>Почему в современном Linux рекомендуется использовать <code>ip addr</code> вместо <code>ifconfig</code>?</p><ul>\n<li>Разницы нет, это синонимы [Нет — у них разный синтаксис и <code>ip</code> поддерживает больше возможностей]</li>\n<li><code>ip addr</code> работает быстрее [Нет — скорость не причина перехода]</li>\n<li><code>ifconfig</code> не работает с IPv6 [Нет — <code>ifconfig</code> умеет IPv6, хотя и с ограничениями]</li>\n<li>+<code>ifconfig</code> устарел и не поддерживается в новых дистрибутивах, <code>ip</code> — современный инструмент с расширенными возможностями [Верно! <code>ifconfig</code> из пакета net-tools не устанавливается по умолчанию в Ubuntu 18+. <code>ip</code> из пакета iproute2 — современная замена с поддержкой IPv6, policy routing и т.д.]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "ss флаги",
+      "taskid": "ladv_q1_t2",
+      "hint": "",
+      "question_html": "<p>Что означают флаги в команде <code>ss -tlnp</code>?</p>",
+      "options": [
+        {
+          "text": "<code>t=TCP, l=local, n=no-headers, p=port</code>",
+          "correct": false,
+          "explanation": "Нет — <code>l</code> означает listening (слушающие соединения), <code>n</code> — numeric (числовой вывод IP и портов)"
+        },
+        {
+          "text": "<code>t=TCP, l=listening, n=numeric, p=process</code>",
+          "correct": true,
+          "explanation": "Верно! Полная команда для проверки открытых TCP-портов с именами процессов. Для UDP добавь <code>-u</code>"
+        },
+        {
+          "text": "<code>t=telnet, l=list, n=new, p=ping</code>",
+          "correct": false,
+          "explanation": "Нет — <code>ss</code> это socket statistics, флаги стандартные для сетевых утилит"
+        },
+        {
+          "text": "Показать все соединения в реальном времени",
+          "correct": false,
+          "explanation": "Нет — для этого нет специальных флагов <code>ss</code>, но можно использовать <code>watch ss -tlnp</code>"
+        }
+      ],
+      "raw_description": "<p>Что означают флаги в команде <code>ss -tlnp</code>?</p><ul>\n<li><code>t=TCP, l=local, n=no-headers, p=port</code> [Нет — <code>l</code> означает listening (слушающие соединения), <code>n</code> — numeric (числовой вывод IP и портов)]</li>\n<li>+<code>t=TCP, l=listening, n=numeric, p=process</code> [Верно! Полная команда для проверки открытых TCP-портов с именами процессов. Для UDP добавь <code>-u</code>]</li>\n<li><code>t=telnet, l=list, n=new, p=ping</code> [Нет — <code>ss</code> это socket statistics, флаги стандартные для сетевых утилит]</li>\n<li>Показать все соединения в реальном времени [Нет — для этого нет специальных флагов <code>ss</code>, но можно использовать <code>watch ss -tlnp</code>]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "curl проверка",
+      "taskid": "ladv_q1_t3",
+      "hint": "",
+      "question_html": "<p>Какая команда <code>curl</code> проверит HTTP-статус сервиса не выводя само тело ответа?</p>",
+      "options": [
+        {
+          "text": "<code>curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080</code>",
+          "correct": true,
+          "explanation": "Верно! <code>-s</code> = silent (без прогресса), <code>-o /dev/null</code> = тело ответа в никуда, <code>-w</code> = вывести формат. Выведет только код: 200, 404, 500"
+        },
+        {
+          "text": "<code>curl -head http://localhost:8080</code>",
+          "correct": false,
+          "explanation": "Нет — правильный флаг <code>-I</code> или <code>--head</code>, но он выведет заголовки, не только код"
+        },
+        {
+          "text": "<code>wget -q --spider http://localhost:8080</code>",
+          "correct": false,
+          "explanation": "Нет — <code>wget --spider</code> проверяет доступность, но возвращает код выхода, не HTTP-код"
+        },
+        {
+          "text": "<code>curl --status-only http://localhost:8080</code>",
+          "correct": false,
+          "explanation": "Нет — такого флага нет"
+        }
+      ],
+      "raw_description": "<p>Какая команда <code>curl</code> проверит HTTP-статус сервиса не выводя само тело ответа?</p><ul>\n<li>+<code>curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080</code> [Верно! <code>-s</code> = silent (без прогресса), <code>-o /dev/null</code> = тело ответа в никуда, <code>-w</code> = вывести формат. Выведет только код: 200, 404, 500]</li>\n<li><code>curl -head http://localhost:8080</code> [Нет — правильный флаг <code>-I</code> или <code>--head</code>, но он выведет заголовки, не только код]</li>\n<li><code>wget -q --spider http://localhost:8080</code> [Нет — <code>wget --spider</code> проверяет доступность, но возвращает код выхода, не HTTP-код]</li>\n<li><code>curl --status-only http://localhost:8080</code> [Нет — такого флага нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SSH ключи",
+      "taskid": "ladv_q1_t4",
+      "hint": "",
+      "question_html": "<p>При настройке SSH-аутентификации по ключам, какой файл должен существовать на удалённом сервере?</p>",
+      "options": [
+        {
+          "text": "<code>~/.ssh/known_hosts</code> с публичным ключом",
+          "correct": false,
+          "explanation": "Нет — <code>known_hosts</code> содержит ключи серверов (для проверки подлинности сервера), не пользователей"
+        },
+        {
+          "text": "<code>~/.ssh/authorized_keys</code> с публичным ключом <code>.pub</code>",
+          "correct": true,
+          "explanation": "Верно! Приватный ключ — у тебя. Публичный <code>.pub</code> кладёшь на сервер в <code>authorized_keys</code>. SSH сравнивает подписи"
+        },
+        {
+          "text": "<code>/etc/ssh/ssh_keys</code> с публичным ключом",
+          "correct": false,
+          "explanation": "Нет — <code>authorized_keys</code> хранится в домашней директории пользователя"
+        },
+        {
+          "text": "<code>~/.ssh/id_rsa</code> с приватным ключом",
+          "correct": false,
+          "explanation": "Нет — приватный ключ никогда не передаётся на сервер"
+        }
+      ],
+      "raw_description": "<p>При настройке SSH-аутентификации по ключам, какой файл должен существовать на удалённом сервере?</p><ul>\n<li><code>~/.ssh/known_hosts</code> с публичным ключом [Нет — <code>known_hosts</code> содержит ключи серверов (для проверки подлинности сервера), не пользователей]</li>\n<li>+<code>~/.ssh/authorized_keys</code> с публичным ключом <code>.pub</code> [Верно! Приватный ключ — у тебя. Публичный <code>.pub</code> кладёшь на сервер в <code>authorized_keys</code>. SSH сравнивает подписи]</li>\n<li><code>/etc/ssh/ssh_keys</code> с публичным ключом [Нет — <code>authorized_keys</code> хранится в домашней директории пользователя]</li>\n<li><code>~/.ssh/id_rsa</code> с приватным ключом [Нет — приватный ключ никогда не передаётся на сервер]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "SSH конфиг",
+      "taskid": "ladv_q1_t5",
+      "hint": "",
+      "question_html": "<p>Что нужно добавить в <code>~/.ssh/config</code> чтобы подключаться командой <code>ssh prod</code> вместо <code>ssh -i ~/.ssh/prod_key user@192.168.1.100</code>?</p>",
+      "options": [
+        {
+          "text": "Добавить запись в <code>/etc/hosts</code>",
+          "correct": false,
+          "explanation": "Нет — <code>/etc/hosts</code> резолвит имена в IP, но не добавляет ключи и пользователей"
+        },
+        {
+          "text": "<code>export SSH_HOST=192.168.1.100</code>",
+          "correct": false,
+          "explanation": "Нет — переменные окружения не работают с SSH напрямую"
+        },
+        {
+          "text": "<code>alias ssh-prod=\"ssh -i ~/.ssh/prod_key user@192.168.1.100\"</code>",
+          "correct": false,
+          "explanation": "Нет — это bash alias, а не SSH конфиг. Работает, но не так удобно и не интегрируется с <code>scp</code>/<code>rsync</code>"
+        },
+        {
+          "text": "<code>Host prod / HostName 192.168.1.100 / User user / IdentityFile ~/.ssh/prod_key</code>",
+          "correct": true,
+          "explanation": "Верно! <code>~/.ssh/config</code> позволяет создавать алиасы для SSH-соединений, избавляя от повторения длинных команд"
+        }
+      ],
+      "raw_description": "<p>Что нужно добавить в <code>~/.ssh/config</code> чтобы подключаться командой <code>ssh prod</code> вместо <code>ssh -i ~/.ssh/prod_key user@192.168.1.100</code>?</p><ul>\n<li>Добавить запись в <code>/etc/hosts</code> [Нет — <code>/etc/hosts</code> резолвит имена в IP, но не добавляет ключи и пользователей]</li>\n<li><code>export SSH_HOST=192.168.1.100</code> [Нет — переменные окружения не работают с SSH напрямую]</li>\n<li><code>alias ssh-prod=\"ssh -i ~/.ssh/prod_key user@192.168.1.100\"</code> [Нет — это bash alias, а не SSH конфиг. Работает, но не так удобно и не интегрируется с <code>scp</code>/<code>rsync</code>]</li>\n<li>+<code>Host prod / HostName 192.168.1.100 / User user / IdentityFile ~/.ssh/prod_key</code> [Верно! <code>~/.ssh/config</code> позволяет создавать алиасы для SSH-соединений, избавляя от повторения длинных команд]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "ping и traceroute",
+      "taskid": "ladv_q1_t6",
+      "hint": "",
+      "question_html": "<p>Сервер не отвечает на <code>ping</code>, но сайт на нём работает. Что это может означать?</p>",
+      "options": [
+        {
+          "text": "Сайт работает через кеш, сервер реально недоступен",
+          "correct": false,
+          "explanation": "Нет — если сайт работает, TCP соединение до сервера устанавливается"
+        },
+        {
+          "text": "ICMP-запросы (<code>ping</code>) могут быть запрещены сетевыми правилами, хотя TCP-соединения на 80/443 проходят",
+          "correct": true,
+          "explanation": "Верно! На многих серверах ICMP закрыт. <code>ping</code> = ICMP Echo. HTTP = TCP. Это разные протоколы. Отсутствие <code>ping</code> ≠ сервер недоступен"
+        },
+        {
+          "text": "Такая ситуация невозможна",
+          "correct": false,
+          "explanation": "Нет — это распространённая ситуация: ICMP может быть запрещён сетевыми правилами"
+        },
+        {
+          "text": "Нужно перезагрузить сеть на сервере",
+          "correct": false,
+          "explanation": "Нет — сервер работает, просто ICMP заблокирован"
+        }
+      ],
+      "raw_description": "<p>Сервер не отвечает на <code>ping</code>, но сайт на нём работает. Что это может означать?</p><ul>\n<li>Сайт работает через кеш, сервер реально недоступен [Нет — если сайт работает, TCP соединение до сервера устанавливается]</li>\n<li>+ICMP-запросы (<code>ping</code>) могут быть запрещены сетевыми правилами, хотя TCP-соединения на 80/443 проходят [Верно! На многих серверах ICMP закрыт. <code>ping</code> = ICMP Echo. HTTP = TCP. Это разные протоколы. Отсутствие <code>ping</code> ≠ сервер недоступен]</li>\n<li>Такая ситуация невозможна [Нет — это распространённая ситуация: ICMP может быть запрещён сетевыми правилами]</li>\n<li>Нужно перезагрузить сеть на сервере [Нет — сервер работает, просто ICMP заблокирован]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "DNS",
+      "taskid": "ladv_q1_t7",
+      "hint": "",
+      "question_html": "<p>Какая команда покажет IP-адрес для домена <code>google.com</code>?</p>",
+      "options": [
+        {
+          "text": "<code>ip route google.com</code>",
+          "correct": false,
+          "explanation": "Нет — <code>ip route</code> показывает таблицу маршрутизации, а не DNS"
+        },
+        {
+          "text": "<code>ss -tlnp | grep google.com</code>",
+          "correct": false,
+          "explanation": "Нет — <code>ss</code> показывает локальные сокеты, а не DNS"
+        },
+        {
+          "text": "<code>dig google.com</code> или <code>nslookup google.com</code>",
+          "correct": true,
+          "explanation": "Верно! <code>dig</code> и <code>nslookup</code> — инструменты DNS-запросов. <code>dig</code> даёт подробный вывод с TTL и другой информацией. <code>host google.com</code> тоже работает"
+        },
+        {
+          "text": "<code>ping google.com</code>",
+          "correct": false,
+          "explanation": "Нет — <code>ping</code> тоже резолвит DNS, но его назначение другое и он отправляет ICMP-пакеты"
+        }
+      ],
+      "raw_description": "<p>Какая команда покажет IP-адрес для домена <code>google.com</code>?</p><ul>\n<li><code>ip route google.com</code> [Нет — <code>ip route</code> показывает таблицу маршрутизации, а не DNS]</li>\n<li><code>ss -tlnp | grep google.com</code> [Нет — <code>ss</code> показывает локальные сокеты, а не DNS]</li>\n<li>+<code>dig google.com</code> или <code>nslookup google.com</code> [Верно! <code>dig</code> и <code>nslookup</code> — инструменты DNS-запросов. <code>dig</code> даёт подробный вывод с TTL и другой информацией. <code>host google.com</code> тоже работает]</li>\n<li><code>ping google.com</code> [Нет — <code>ping</code> тоже резолвит DNS, но его назначение другое и он отправляет ICMP-пакеты]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "known_hosts",
+      "taskid": "ladv_q1_t8",
+      "hint": "",
+      "question_html": "<p>При первом SSH-подключении к серверу появляется вопрос \"Are you sure you want to continue connecting?\". Что происходит при ответе \"yes\"?</p>",
+      "options": [
+        {
+          "text": "Создаётся новая пара SSH-ключей для этого сервера",
+          "correct": false,
+          "explanation": "Нет — ключи пользователя уже существуют. Речь о ключе сервера"
+        },
+        {
+          "text": "Пароль сохраняется для автологина",
+          "correct": false,
+          "explanation": "Нет — SSH не сохраняет пароли. <code>known_hosts</code> — это ключи серверов"
+        },
+        {
+          "text": "Публичный ключ сервера сохраняется в <code>~/.ssh/known_hosts</code> для будущей верификации",
+          "correct": true,
+          "explanation": "Верно! При следующих подключениях SSH проверяет, что ключ сервера совпадает с сохранённым. Это защита от MITM-атак"
+        },
+        {
+          "text": "Отключается проверка подлинности для этого сервера",
+          "correct": false,
+          "explanation": "Нет — проверка сохраняется, просто ключ записывается как доверенный"
+        }
+      ],
+      "raw_description": "<p>При первом SSH-подключении к серверу появляется вопрос \"Are you sure you want to continue connecting?\". Что происходит при ответе \"yes\"?</p><ul>\n<li>Создаётся новая пара SSH-ключей для этого сервера [Нет — ключи пользователя уже существуют. Речь о ключе сервера]</li>\n<li>Пароль сохраняется для автологина [Нет — SSH не сохраняет пароли. <code>known_hosts</code> — это ключи серверов]</li>\n<li>+Публичный ключ сервера сохраняется в <code>~/.ssh/known_hosts</code> для будущей верификации [Верно! При следующих подключениях SSH проверяет, что ключ сервера совпадает с сохранённым. Это защита от MITM-атак]</li>\n<li>Отключается проверка подлинности для этого сервера [Нет — проверка сохраняется, просто ключ записывается как доверенный]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "rsync vs scp",
+      "taskid": "ladv_q1_t9",
+      "hint": "",
+      "question_html": "<p>В чём главное преимущество <code>rsync</code> перед <code>scp</code> при синхронизации большой директории?</p>",
+      "options": [
+        {
+          "text": "<code>rsync</code> поддерживает IPv6, <code>scp</code> — нет",
+          "correct": false,
+          "explanation": "Нет — оба поддерживают IPv6"
+        },
+        {
+          "text": "<code>rsync</code> передаёт только изменённые файлы (инкрементальная синхронизация), <code>scp</code> всегда копирует всё целиком",
+          "correct": true,
+          "explanation": "Верно! <code>rsync</code> сравнивает файлы по размеру/времени/хешу и передаёт только дельту. При ежедневном бэкапе 100GB директории <code>rsync</code> передаёт мегабайты, <code>scp</code> — 100GB"
+        },
+        {
+          "text": "<code>rsync</code> шифрует данные, <code>scp</code> — нет",
+          "correct": false,
+          "explanation": "Нет — оба работают поверх SSH и шифруют данные"
+        },
+        {
+          "text": "<code>rsync</code> работает быстрее на медленных сетях",
+          "correct": false,
+          "explanation": "Нет — это следствие инкрементальности, а не отдельная причина"
+        }
+      ],
+      "raw_description": "<p>В чём главное преимущество <code>rsync</code> перед <code>scp</code> при синхронизации большой директории?</p><ul>\n<li><code>rsync</code> поддерживает IPv6, <code>scp</code> — нет [Нет — оба поддерживают IPv6]</li>\n<li>+<code>rsync</code> передаёт только изменённые файлы (инкрементальная синхронизация), <code>scp</code> всегда копирует всё целиком [Верно! <code>rsync</code> сравнивает файлы по размеру/времени/хешу и передаёт только дельту. При ежедневном бэкапе 100GB директории <code>rsync</code> передаёт мегабайты, <code>scp</code> — 100GB]</li>\n<li><code>rsync</code> шифрует данные, <code>scp</code> — нет [Нет — оба работают поверх SSH и шифруют данные]</li>\n<li><code>rsync</code> работает быстрее на медленных сетях [Нет — это следствие инкрементальности, а не отдельная причина]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "netcat",
+      "taskid": "ladv_q1_t10",
+      "hint": "",
+      "question_html": "<p>Как быстро проверить доступность порта 5432 (PostgreSQL) на сервере 192.168.1.50?</p>",
+      "options": [
+        {
+          "text": "<code>curl tcp://192.168.1.50:5432</code>",
+          "correct": false,
+          "explanation": "Нет — <code>curl</code> работает с HTTP/FTP/SMTP и другими прикладными протоколами, не с raw TCP"
+        },
+        {
+          "text": "<code>nc -zv 192.168.1.50 5432</code> или <code>telnet 192.168.1.50 5432</code>",
+          "correct": true,
+          "explanation": "Верно! <code>nc -z</code> (zero-I/O режим, только проверка соединения), <code>-v</code> (verbose). Показывает открыт ли порт без передачи данных"
+        },
+        {
+          "text": "<code>ssh 192.168.1.50 -p 5432</code>",
+          "correct": false,
+          "explanation": "Нет — SSH попытается установить SSH-соединение, а не просто проверит доступность порта"
+        },
+        {
+          "text": "<code>ping 192.168.1.50:5432</code>",
+          "correct": false,
+          "explanation": "Нет — <code>ping</code> работает с IP-адресами, а не с портами (это ICMP, не TCP)"
+        }
+      ],
+      "raw_description": "<p>Как быстро проверить доступность порта 5432 (PostgreSQL) на сервере 192.168.1.50?</p><ul>\n<li><code>curl tcp://192.168.1.50:5432</code> [Нет — <code>curl</code> работает с HTTP/FTP/SMTP и другими прикладными протоколами, не с raw TCP]</li>\n<li>+<code>nc -zv 192.168.1.50 5432</code> или <code>telnet 192.168.1.50 5432</code> [Верно! <code>nc -z</code> (zero-I/O режим, только проверка соединения), <code>-v</code> (verbose). Показывает открыт ли порт без передачи данных]</li>\n<li><code>ssh 192.168.1.50 -p 5432</code> [Нет — SSH попытается установить SSH-соединение, а не просто проверит доступность порта]</li>\n<li><code>ping 192.168.1.50:5432</code> [Нет — <code>ping</code> работает с IP-адресами, а не с портами (это ICMP, не TCP)]</li>\n</ul>"
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

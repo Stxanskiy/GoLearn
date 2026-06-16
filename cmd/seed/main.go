@@ -58,17 +58,22 @@ func main() {
 			difficulty = "beginner"
 		}
 		prereqJSON, _ := json.Marshal(mod.Prerequisites)
+		tagsJSON, _ := json.Marshal(mod.Tags)
 
 		keepModuleSlugs = append(keepModuleSlugs, mod.Slug)
 		var moduleID int
 		err := pool.QueryRow(ctx,
-			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)
+			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
+			   category, label, tags, cover_image, accent, est_minutes, source)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'seed')
 			 ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description,
 			   order_num=EXCLUDED.order_num, track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
-			   prerequisites=EXCLUDED.prerequisites
+			   prerequisites=EXCLUDED.prerequisites, category=EXCLUDED.category, label=EXCLUDED.label,
+			   tags=EXCLUDED.tags, accent=EXCLUDED.accent, est_minutes=EXCLUDED.est_minutes,
+			   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), modules.cover_image)
 			 RETURNING id`,
-			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON).Scan(&moduleID)
+			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON,
+			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes).Scan(&moduleID)
 		if err != nil {
 			log.Fatalf("upsert module %s: %v", mod.Slug, err)
 		}
@@ -84,16 +89,22 @@ func main() {
 			if lDiff == "" {
 				lDiff = difficulty
 			}
+			lKind := lesson.Kind
+			if lKind == "" {
+				lKind = "theory"
+			}
 
 			keepLessonSlugs = append(keepLessonSlugs, lesson.Slug)
 			var lessonID int
 			err := pool.QueryRow(ctx,
-				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7)
+				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, source)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'seed')
 				 ON CONFLICT (module_id, slug) DO UPDATE SET title=EXCLUDED.title, content=EXCLUDED.content,
-				   order_num=EXCLUDED.order_num, difficulty=EXCLUDED.difficulty, track=EXCLUDED.track
+				   order_num=EXCLUDED.order_num, difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
+				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init
 				 RETURNING id`,
-				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack).Scan(&lessonID)
+				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack,
+				lKind, lesson.VMImage, lesson.VMInit).Scan(&lessonID)
 			if err != nil {
 				log.Fatalf("upsert lesson %s: %v", lesson.Slug, err)
 			}
@@ -132,11 +143,12 @@ func main() {
 			}
 		}
 		if len(keepLessonSlugs) > 0 {
-			pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND slug <> ALL($2)`, moduleID, keepLessonSlugs)
+			pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND source='seed' AND slug <> ALL($2)`, moduleID, keepLessonSlugs)
 		}
 	}
 	if len(keepModuleSlugs) > 0 {
-		pool.Exec(ctx, `DELETE FROM modules WHERE slug <> ALL($1)`, keepModuleSlugs)
+		// Only prune seed-managed modules; admin-created courses survive re-seeds.
+		pool.Exec(ctx, `DELETE FROM modules WHERE source='seed' AND slug <> ALL($1)`, keepModuleSlugs)
 	}
 	fmt.Println("\nSeed completed!")
 }
@@ -149,6 +161,12 @@ type M struct {
 	Track                    string   // backend | devops | shared
 	Difficulty               string   // beginner | intermediate | advanced | expert
 	Prerequisites            []string // module slugs
+	Category                 string   // explicit catalog tag; empty -> derived in handler
+	Label                    string   // Старт | Практика | Вызов; empty -> derived
+	Tags                     []string // topic chips
+	CoverImage               string   // real photo URL/path; empty -> generated SVG
+	Accent                   string   // gradient key; empty -> by category
+	EstMinutes               int      // 0 -> derived from lesson count
 	Lessons                  []L
 }
 type L struct {
@@ -156,6 +174,9 @@ type L struct {
 	Order                int
 	Difficulty           string // beginner | intermediate | advanced | expert
 	Track                string // backend | devops | shared
+	Kind                 string // theory | quiz | lab | sim (empty -> theory)
+	VMImage              string // lab terminal image
+	VMInit               string // lab setup reference/script
 	Quiz                 []Q
 	Tasks                []T
 }
@@ -187,50 +208,50 @@ type T struct {
 // ── Registry ──
 
 func getAllModules() []M {
-	mods := []M{
-		// ── Track: shared — фундамент ──
-		mod01_basics_new(),       // 1: Первые шаги в Go
-		mod02_collections_new(),  // 2: Коллекции данных
-		mod03_functions_new(),    // 3: Функции
-		mod_pointers(),           // 4: Указатели и память
-		mod04_structs_new(),      // 5: Структуры и методы
-		mod05_interfaces_new(),   // 6: Интерфейсы
-		mod06_errors_new(),       // 7: Обработка ошибок
-		mod_milestone_beginner(), // 8: ★ Проект CLI (milestone — после всех основ)
-		mod_generics(),           // 9: Generics
-		mod08_packages(),         // 10: Пакеты и модули
-		mod_context(),            // 11: context.Context
-		mod_git(),                // 12: Git
-
-		// ── Track: backend ──
-		mod07_files_json(),       // 12: Файлы и JSON
-		mod09_http(),             // 13: HTTP Сервер
-		mod10_database(),         // 14: PostgreSQL
-		mod_architecture_full(),  // 15: Архитектура и SOLID (5 уроков)
-		mod_testing_full(),       // 16: Тестирование (5 уроков)
-		mod_milestone_intermediate(), // 17: ★ Проект REST API (milestone — после архитектуры+тестов)
-		mod13_auth(),             // 18: Аутентификация
-		mod14_concurrency_full(), // 19: Конкурентность (3 урока)
-		mod18_advanced(),         // WebSocket, Redis (realtime/cache)
-
-		// ── Track: backend — advanced ──
-		mod_go_internals(),       // Go Internals (memory, scheduler, GC, interfaces)
-
-		// ── Track: devops ──
-		mod_linux_terminal(),     // Linux: Старт в терминале (интерактив, песочница)
-		mod_linux(),              // Linux: Основные инструменты
-		mod_docker_full(),        // Docker
-		mod_helm(),               // Helm
-		mod_nginx(),              // Nginx
-		mod_ansible(),            // Ansible
-		mod_grafana(),            // Grafana + Prometheus (мониторинг)
-
-		// ── Track: security ──
-		mod_security_offense(),   // Кибербез: Пентест (8 уроков)
-		mod_security_defense(),   // Кибербез: Blue Team (7 уроков)
+	// ── Section: Golang (Go fundamentals + основы, merged) ──
+	golang := []M{
+		mod01_basics_new(),
+		mod02_collections_new(),
+		mod03_functions_new(),
+		mod_pointers(),
+		mod04_structs_new(),
+		mod05_interfaces_new(),
+		mod06_errors_new(),
+		mod_milestone_beginner(),
+		mod_generics(),
+		mod08_packages(),
+		mod_context(),
+		mod_git(),
+		mod07_files_json(),
+		mod09_http(),
+		mod10_database(),
+		mod_architecture_full(),
+		mod_testing_full(),
+		mod_milestone_intermediate(),
+		mod13_auth(),
+		mod14_concurrency_full(),
+		mod18_advanced(),
+		mod_go_internals(),
+	}
+	for i := range golang {
+		golang[i].Track = "golang"
 	}
 
-	// Fix order numbers
+	// ── Section: Кибербезопасность ──
+	security := []M{
+		mod_security_offense(),
+		mod_security_defense(),
+	}
+	for i := range security {
+		security[i].Track = "security"
+	}
+
+	// DevOps + Database sections come fully from the devops404 export.
+	var mods []M
+	mods = append(mods, golang...)
+	mods = append(mods, importedModules()...)
+	mods = append(mods, security...)
+
 	for i := range mods {
 		mods[i].Order = i + 1
 	}

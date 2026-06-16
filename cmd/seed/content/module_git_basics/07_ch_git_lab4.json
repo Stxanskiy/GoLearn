@@ -1,0 +1,88 @@
+{
+  "n": 7,
+  "id": "ch_git_lab4",
+  "title": "Лабораторная 4: Конфликты слияния",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Квиз: когда возникает конфликт",
+      "taskid": "git_lab4_t1_quiz",
+      "hint": "",
+      "question_html": "<p>Когда возникает merge conflict?</p>",
+      "options": [
+        {
+          "text": "<code>+Когда в обеих ветках изменена одна и та же строка одного файла — Git не знает, какую версию сохранить</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Всегда при слиянии веток",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Когда одна ветка старше другой",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Только при работе с удалёнными репозиториями",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Когда возникает merge conflict?</p>\n<ul>\n<li><code>+Когда в обеих ветках изменена одна и та же строка одного файла — Git не знает, какую версию сохранить</code></li>\n<li>Всегда при слиянии веток</li>\n<li>Когда одна ветка старше другой</li>\n<li>Только при работе с удалёнными репозиториями</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "посмотреть конфликтующие файлы",
+      "taskid": "git_lab4_t2_status",
+      "hint": "<p>Используй <code>git status</code> изнутри репозитория. В обычном выводе ищи чистое рабочее дерево, в коротком отсутствие строк тоже важно.</p>",
+      "question_html": "<p>Попытайся слить <code>branch-b</code> в <code>main</code> (возникнет конфликт) и определи конфликтующие файлы через <code>git status</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Попытайся слить <code>branch-b</code> в <code>main</code> (возникнет конфликт) и определи конфликтующие файлы через <code>git status</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "разрешить конфликт",
+      "taskid": "git_lab4_t3_resolve",
+      "hint": "<p>Выполняй <code>git</code>-команды из нужного репозитория. Сначала определи объект задачи — файл, индекс, commit, ветку или remote — затем проверь <code>status</code> или <code>log</code>.</p>",
+      "question_html": "<p>Разреши конфликт в файле <code>app.txt</code>: оставь содержимое <code>Resolved version</code> и сохрани файл.</p>",
+      "options": [],
+      "raw_description": "<p>Разреши конфликт в файле <code>app.txt</code>: оставь содержимое <code>Resolved version</code> и сохрани файл.</p>"
+    },
+    {
+      "type": "check",
+      "title": "git add: отметить конфликт разрешённым",
+      "taskid": "git_lab4_t4_add",
+      "hint": "<p>Используй <code>git add</code>: сначала создай или измени нужный файл, затем добавь именно его в индекс. Короткий <code>git status</code> покажет staging.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> после разрешения конфликта добавь файл в staging.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> после разрешения конфликта добавь файл в staging.</p>"
+    },
+    {
+      "type": "check",
+      "title": "merge commit: завершить слияние",
+      "taskid": "git_lab4_t5_commit",
+      "hint": "<p>Используй <code>git merge</code>, затем открой конфликтный файл, оставь итоговый вариант без служебных маркеров и добавь файл в индекс.</p>",
+      "question_html": "<p>В репозитории <code>/root/project</code> заверши merge коммитом с сообщением <code>resolve conflict</code>.</p>",
+      "options": [],
+      "raw_description": "<p>В репозитории <code>/root/project</code> заверши merge коммитом с сообщением <code>resolve conflict</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "проверить историю merge",
+      "taskid": "git_lab4_t6_log",
+      "hint": "<p>После разрешения конфликта используй <code>git add</code> и заверши merge-коммит с сообщением из условия.</p>",
+      "question_html": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_git_basics/git/lab4/setup.yaml"
+}

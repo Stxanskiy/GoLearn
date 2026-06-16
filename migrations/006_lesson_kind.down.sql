@@ -1,0 +1,4 @@
+-- 006 down
+ALTER TABLE lessons DROP COLUMN IF EXISTS kind;
+ALTER TABLE lessons DROP COLUMN IF EXISTS vm_image;
+ALTER TABLE lessons DROP COLUMN IF EXISTS vm_init;

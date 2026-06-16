@@ -1,0 +1,103 @@
+{
+  "n": 7,
+  "id": "ch_helm_lab2",
+  "title": "Лабораторная 3: Values и override",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Установить с кастомным replicaCount",
+      "taskid": "helm_lab2_t1_replicas",
+      "hint": "<p>Используй chart <code>/root/charts/nginx-chart</code> и values override для числа реплик.</p>",
+      "question_html": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>scaled-nginx</code> и задай 2 реплики через <code>--set replicaCount=2</code>.</p>\n<pre><code>helm install scaled-nginx /root/charts/nginx-chart --set replicaCount=2</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>scaled-nginx</code> и задай 2 реплики через <code>--set replicaCount=2</code>.</p>\n<pre><code>helm install scaled-nginx /root/charts/nginx-chart --set replicaCount=2</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить Deployment реплики",
+      "taskid": "helm_lab2_t2_check_replicas",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Убедись, что Deployment <code>scaled-nginx-nginx</code> имеет 2 готовые реплики.</p>",
+      "options": [],
+      "raw_description": "<p>Убедись, что Deployment <code>scaled-nginx-nginx</code> имеет 2 готовые реплики.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать кастомный values файл",
+      "taskid": "helm_lab2_t3_values_file",
+      "hint": "<p>Values-файл может содержать только те поля, которые нужно переопределить. Остальные значения Helm возьмёт из <code>/root/charts/nginx-chart/values.yaml</code>.</p>",
+      "question_html": "<p>Создай файл кастомных values для production окружения и сохрани его в <code>/root/prod-values.yaml</code>.</p>\n<p>Переопредели в нём количество реплик и tag образа:</p>\n<pre><code>replicaCount: 3\nimage:\n  tag: \"alpine\"</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай файл кастомных values для production окружения и сохрани его в <code>/root/prod-values.yaml</code>.</p>\n<p>Переопредели в нём количество реплик и tag образа:</p>\n<pre><code>replicaCount: 3\nimage:\n  tag: \"alpine\"</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Установить с values файлом",
+      "taskid": "helm_lab2_t4_install_values",
+      "hint": "<p>Используй <code>helm install</code> или <code>helm upgrade --install</code>: проверь имя release и путь к chart. Values передавай тем способом, который просит задача.</p>",
+      "question_html": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>prod-nginx</code> с production values файлом <code>/root/prod-values.yaml</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install prod-nginx /root/charts/nginx-chart -f /root/prod-values.yaml</code></pre>",
+      "options": [],
+      "raw_description": "<p>Установи chart <code>/root/charts/nginx-chart</code> как release <code>prod-nginx</code> с production values файлом <code>/root/prod-values.yaml</code> и убедись, что release перешёл в статус <code>deployed</code>.</p>\n<pre><code>helm install prod-nginx /root/charts/nginx-chart -f /root/prod-values.yaml</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "helm get values с флагом --all",
+      "taskid": "helm_lab2_t5_all_values",
+      "hint": "<p>Используй <code>helm template</code> или <code>helm get values</code>: уточни, откуда должны прийти values — файл, inline-параметр или дефолт chart.</p>",
+      "question_html": "<p>Посмотри все values release <code>prod-nginx</code>, включая дефолтные.</p>\n<pre><code>helm get values prod-nginx --all</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри все values release <code>prod-nginx</code>, включая дефолтные.</p>\n<pre><code>helm get values prod-nginx --all</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Override значения при upgrade",
+      "taskid": "helm_lab2_t6_override_upgrade",
+      "hint": "<p>Используй <code>helm upgrade</code>: проверь имя release, chart и values, затем посмотри <code>helm status</code> или <code>helm history</code>.</p>",
+      "question_html": "<p>Обнови release <code>prod-nginx</code> из chart <code>/root/charts/nginx-chart</code> через <code>--set</code>, чтобы итоговое значение <code>replicaCount</code> стало <code>1</code>. Файл values из предыдущей задачи остаётся в <code>/root/prod-values.yaml</code>.</p>\n<pre><code>helm upgrade prod-nginx /root/charts/nginx-chart -f /root/prod-values.yaml --set replicaCount=1</code></pre>",
+      "options": [],
+      "raw_description": "<p>Обнови release <code>prod-nginx</code> из chart <code>/root/charts/nginx-chart</code> через <code>--set</code>, чтобы итоговое значение <code>replicaCount</code> стало <code>1</code>. Файл values из предыдущей задачи остаётся в <code>/root/prod-values.yaml</code>.</p>\n<pre><code>helm upgrade prod-nginx /root/charts/nginx-chart -f /root/prod-values.yaml --set replicaCount=1</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "helm lint",
+      "taskid": "helm_lab2_t7_lint",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Проверь chart <code>/root/charts/nginx-chart</code> на ошибки с помощью <code>helm lint</code>. Команда должна завершиться без ошибок.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь chart <code>/root/charts/nginx-chart</code> на ошибки с помощью <code>helm lint</code>. Команда должна завершиться без ошибок.</p>"
+    },
+    {
+      "type": "self",
+      "title": "--dry-run с кастомными values",
+      "taskid": "helm_lab2_t8_dryrun",
+      "hint": "<p><code>--dry-run</code> показывает результат install без изменения кластера. Для чистого render без install-логики можно использовать <code>helm template</code>.</p>",
+      "question_html": "<p>Сделай dry-run установки с prod values, чтобы проверить YAML без создания release в кластере.</p>\n<pre><code>helm install test-release /root/charts/nginx-chart -f /root/prod-values.yaml --dry-run</code></pre>\n<p>Если хочешь сохранить вывод и спокойно открыть его в редакторе:</p>\n<pre><code>helm install test-release /root/charts/nginx-chart -f /root/prod-values.yaml --dry-run &gt; /root/dryrun_output.txt</code></pre>",
+      "options": [],
+      "raw_description": "<p>Сделай dry-run установки с prod values, чтобы проверить YAML без создания release в кластере.</p>\n<pre><code>helm install test-release /root/charts/nginx-chart -f /root/prod-values.yaml --dry-run</code></pre>\n<p>Если хочешь сохранить вывод и спокойно открыть его в редакторе:</p>\n<pre><code>helm install test-release /root/charts/nginx-chart -f /root/prod-values.yaml --dry-run &gt; /root/dryrun_output.txt</code></pre>"
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть Chart.yaml",
+      "taskid": "helm_lab2_t9_chart_yaml",
+      "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
+      "question_html": "<p>Посмотри метаданные chart в файле <code>/root/charts/nginx-chart/Chart.yaml</code>.</p>\n<pre><code>cat /root/charts/nginx-chart/Chart.yaml</code></pre>",
+      "options": [],
+      "raw_description": "<p>Посмотри метаданные chart в файле <code>/root/charts/nginx-chart/Chart.yaml</code>.</p>\n<pre><code>cat /root/charts/nginx-chart/Chart.yaml</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить все релизы",
+      "taskid": "helm_lab2_t10_cleanup",
+      "hint": "<p>Используй <code>helm uninstall</code>: release удалится, но внешние данные могут остаться. После удаления проверь список release в нужном namespace.</p>",
+      "question_html": "<p>Удали helm releases <code>scaled-nginx</code> и <code>prod-nginx</code> и проверь, что они больше не отображаются в списке releases.</p>",
+      "options": [],
+      "raw_description": "<p>Удали helm releases <code>scaled-nginx</code> и <code>prod-nginx</code> и проверь, что они больше не отображаются в списке releases.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_helm/helm/lab2/setup.yaml"
+}

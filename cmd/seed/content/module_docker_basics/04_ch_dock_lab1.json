@@ -1,0 +1,205 @@
+{
+  "n": 4,
+  "id": "ch_dock_lab1",
+  "title": "Лабораторная 1: Первые команды",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Запустить первый контейнер",
+      "taskid": "dock_lab1_t1_hello",
+      "hint": "<p>Используй <code>docker run</code> с образом из условия. После запуска проверь историю контейнеров через <code>docker ps -a</code>.</p>\n<p>Команда <code>docker run</code> скачивает образ, если его нет локально, и запускает контейнер. Сейчас достаточно запустить контейнер один раз и затем посмотреть, как Docker сохранил его в истории.</p>\n<p>Контейнер запустится и остановится сразу — потому что nginx запустился, но мы не сказали ему работать в фоне. Проверка убедится, что в списке контейнеров появилась запись на базе этого образа.</p>",
+      "question_html": "<p>Запусти контейнер на основе образа <code>nginx:alpine</code> и посмотри, что произойдёт.</p>\n<p><code>nginx</code> — имя образа, <code>alpine</code> после двоеточия — tag, то есть конкретный вариант образа. В этой задаче используй имя полностью: <code>nginx:alpine</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер на основе образа <code>nginx:alpine</code> и посмотри, что произойдёт.</p>\n<p><code>nginx</code> — имя образа, <code>alpine</code> после двоеточия — tag, то есть конкретный вариант образа. В этой задаче используй имя полностью: <code>nginx:alpine</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Список всех контейнеров",
+      "taskid": "dock_lab1_t2_ps",
+      "hint": "",
+      "question_html": "<p>Посмотри список всех контейнеров, включая остановленные.</p>\n<p>Выполни команду:</p>\n<pre><code>docker ps -a</code></pre>\n<p>Обрати внимание на столбцы <code>CONTAINER ID</code>, <code>IMAGE</code> и <code>STATUS</code>. Контейнеры со статусом <code>Exited</code> — остановленные.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри список всех контейнеров, включая остановленные.</p>\n<p>Выполни команду:</p>\n<pre><code>docker ps -a</code></pre>\n<p>Обрати внимание на столбцы <code>CONTAINER ID</code>, <code>IMAGE</code> и <code>STATUS</code>. Контейнеры со статусом <code>Exited</code> — остановленные.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить контейнер в фоне",
+      "taskid": "dock_lab1_t3_run",
+      "hint": "<p>Для первого запуска нужен <code>docker run</code>: он создаёт новый контейнер из образа. Добавь фоновый режим, имя контейнера из условия и образ <code>nginx:alpine</code>.</p>\n<p>Флаг <code>-d</code> (detached) запускает контейнер в фоне и сразу возвращает управление терминалу. Флаг <code>--name</code> даёт контейнеру имя, чтобы можно было обращаться к нему по имени, а не по ID.</p>",
+      "question_html": "<p>Запусти контейнер из образа <code>nginx:alpine</code> в фоновом режиме с именем <code>mynginx</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти контейнер из образа <code>nginx:alpine</code> в фоновом режиме с именем <code>mynginx</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Просмотр логов контейнера",
+      "taskid": "dock_lab1_t4_logs",
+      "hint": "",
+      "question_html": "<p>Посмотри логи контейнера <code>mynginx</code>.</p>\n<pre><code>docker logs mynginx</code></pre>\n<p><code>docker logs</code> показывает stdout/stderr контейнера. В этой задаче достаточно увидеть строки запуска nginx в терминале.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри логи контейнера <code>mynginx</code>.</p>\n<pre><code>docker logs mynginx</code></pre>\n<p><code>docker logs</code> показывает stdout/stderr контейнера. В этой задаче достаточно увидеть строки запуска nginx в терминале.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Инспектировать контейнер",
+      "taskid": "dock_lab1_t5_inspect",
+      "hint": "<p>Команда <code>docker inspect</code> возвращает JSON со всеми параметрами контейнера: сетевые настройки, volumes, переменные окружения, состояние и многое другое.</p>\n<p>В <code>docker inspect</code> нужные данные лежат в разных разделах JSON: State, Mounts, NetworkSettings. Сначала найди раздел по смыслу задачи, потом извлеки поле.</p>\n<p>Проверка смотрит файл <code>/root/mynginx_ip.txt</code>, поэтому запиши туда только найденный IP-адрес.</p>",
+      "question_html": "<p>Получи детальную информацию о контейнере <code>mynginx</code>, найди его IP-адрес и сохрани IP в <code>/root/mynginx_ip.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Получи детальную информацию о контейнере <code>mynginx</code>, найди его IP-адрес и сохрани IP в <code>/root/mynginx_ip.txt</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает флаг -d?",
+      "taskid": "dock_lab1_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Ты только что использовал команду <code>docker run -d --name mynginx nginx:alpine</code>. Что означает флаг <code>-d</code>?</p>",
+      "options": [
+        {
+          "text": "Запустить контейнер в фоновом режиме (detached)",
+          "correct": true,
+          "explanation": "Верно! -d (detached) означает, что контейнер работает в фоне и терминал остаётся свободным"
+        },
+        {
+          "text": "Удалить контейнер после остановки",
+          "correct": false,
+          "explanation": "Нет — для этого используется --rm"
+        },
+        {
+          "text": "Запустить с правами root",
+          "correct": false,
+          "explanation": "Нет — для этого --user root или --privileged"
+        },
+        {
+          "text": "Включить debug-вывод",
+          "correct": false,
+          "explanation": "Нет — debug-режим это --debug или DOCKER_DEBUG=1"
+        }
+      ],
+      "raw_description": "<p>Ты только что использовал команду <code>docker run -d --name mynginx nginx:alpine</code>. Что означает флаг <code>-d</code>?</p><ul>\n<li>+Запустить контейнер в фоновом режиме (detached) [Верно! -d (detached) означает, что контейнер работает в фоне и терминал остаётся свободным]</li>\n<li>Удалить контейнер после остановки [Нет — для этого используется --rm]</li>\n<li>Запустить с правами root [Нет — для этого --user root или --privileged]</li>\n<li>Включить debug-вывод [Нет — debug-режим это --debug или DOCKER_DEBUG=1]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Выполнить команду в контейнере",
+      "taskid": "dock_lab1_t7_exec",
+      "hint": "",
+      "question_html": "<p>В стандартном контейнере <code>nginx:alpine</code> какой пользователь указан в директиве <code>user</code> основного nginx config?</p>",
+      "options": [
+        {
+          "text": "root",
+          "correct": false,
+          "explanation": "Нет — root запускает master-процесс, но worker-процессы не должны работать от root"
+        },
+        {
+          "text": "nginx",
+          "correct": true,
+          "explanation": "Верно! В nginx:alpine worker-процессы запускаются от пользователя nginx"
+        },
+        {
+          "text": "www-data",
+          "correct": false,
+          "explanation": "Нет — это типичное имя в некоторых Debian/Ubuntu пакетах, но не в nginx:alpine"
+        },
+        {
+          "text": "nobody",
+          "correct": false,
+          "explanation": "Нет — в этом образе используется отдельный пользователь nginx"
+        }
+      ],
+      "raw_description": "<p>В стандартном контейнере <code>nginx:alpine</code> какой пользователь указан в директиве <code>user</code> основного nginx config?</p><ul>\n<li>root [Нет — root запускает master-процесс, но worker-процессы не должны работать от root]</li>\n<li>+nginx [Верно! В nginx:alpine worker-процессы запускаются от пользователя nginx]</li>\n<li>www-data [Нет — это типичное имя в некоторых Debian/Ubuntu пакетах, но не в nginx:alpine]</li>\n<li>nobody [Нет — в этом образе используется отдельный пользователь nginx]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить и запустить контейнер",
+      "taskid": "dock_lab1_t8_stop_start",
+      "hint": "<p>Различай <code>docker run</code> и <code>docker start</code>: первая команда создаёт новый контейнер, вторая запускает уже существующий. Здесь сначала проверь имя остановленного контейнера.</p>\n<p><code>docker stop</code> отправляет сигнал SIGTERM и ждёт 10 секунд (graceful shutdown). <code>docker start</code> запускает остановленный контейнер снова — со всеми его настройками.</p>",
+      "question_html": "<p>Останови контейнер <code>mynginx</code>, а затем снова запусти его.</p>",
+      "options": [],
+      "raw_description": "<p>Останови контейнер <code>mynginx</code>, а затем снова запусти его.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Чем отличается stop от kill?",
+      "taskid": "dock_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>В чём разница между <code>docker stop</code> и <code>docker kill</code>?</p>",
+      "options": [
+        {
+          "text": "stop удаляет контейнер, kill только останавливает",
+          "correct": false,
+          "explanation": "Нет — оба только останавливают, ни один не удаляет"
+        },
+        {
+          "text": "stop быстрее, kill медленнее",
+          "correct": false,
+          "explanation": "Нет — наоборот: stop ждёт 10с, kill мгновенный"
+        },
+        {
+          "text": "stop отправляет SIGTERM и ждёт graceful shutdown, kill сразу SIGKILL",
+          "correct": true,
+          "explanation": "Верно! stop даёт приложению время завершиться корректно, kill убивает немедленно"
+        },
+        {
+          "text": "Разницы нет, это синонимы",
+          "correct": false,
+          "explanation": "Нет — они отличаются типом сигнала и временем ожидания"
+        }
+      ],
+      "raw_description": "<p>В чём разница между <code>docker stop</code> и <code>docker kill</code>?</p><ul>\n<li>stop удаляет контейнер, kill только останавливает [Нет — оба только останавливают, ни один не удаляет]</li>\n<li>stop быстрее, kill медленнее [Нет — наоборот: stop ждёт 10с, kill мгновенный]</li>\n<li>+stop отправляет SIGTERM и ждёт graceful shutdown, kill сразу SIGKILL [Верно! stop даёт приложению время завершиться корректно, kill убивает немедленно]</li>\n<li>Разницы нет, это синонимы [Нет — они отличаются типом сигнала и временем ожидания]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Запуск с автоудалением",
+      "taskid": "dock_lab1_t10_rm",
+      "hint": "<p>Флаг <code>--rm</code> автоматически удаляет контейнер когда он останавливается. Полезно для одноразовых задач.</p>",
+      "question_html": "<p>Выполни <code>docker run --rm busybox:latest echo \"hello\"</code>. Что делает флаг <code>--rm</code>?</p>\n<pre><code>docker run --rm busybox:latest echo \"hello\"</code></pre>",
+      "options": [
+        {
+          "text": "Удаляет образ busybox после запуска",
+          "correct": false,
+          "explanation": "Нет — образ остаётся локально"
+        },
+        {
+          "text": "Запускает контейнер в фоне",
+          "correct": false,
+          "explanation": "Нет — за это отвечает -d"
+        },
+        {
+          "text": "Удаляет все stopped-контейнеры на машине",
+          "correct": false,
+          "explanation": "Нет — он относится только к текущему контейнеру"
+        },
+        {
+          "text": "Удаляет контейнер после завершения команды",
+          "correct": true,
+          "explanation": "Верно! Одноразовый контейнер не остаётся в docker ps -a"
+        }
+      ],
+      "raw_description": "<p>Выполни <code>docker run --rm busybox:latest echo \"hello\"</code>. Что делает флаг <code>--rm</code>?</p>\n<pre><code>docker run --rm busybox:latest echo \"hello\"</code></pre>\n<ul>\n<li>Удаляет образ busybox после запуска [Нет — образ остаётся локально]</li>\n<li>Запускает контейнер в фоне [Нет — за это отвечает -d]</li>\n<li>Удаляет все stopped-контейнеры на машине [Нет — он относится только к текущему контейнеру]</li>\n<li>+Удаляет контейнер после завершения команды [Верно! Одноразовый контейнер не остаётся в docker ps -a]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Статистика ресурсов",
+      "taskid": "dock_lab1_t11_stats",
+      "hint": "",
+      "question_html": "<p>Посмотри статистику использования ресурсов контейнером <code>mynginx</code>.</p>\n<pre><code>docker stats --no-stream mynginx</code></pre>\n<p><code>--no-stream</code> выводит один снимок и завершает команду. Найди в выводе <code>CPU %</code>, <code>MEM USAGE / LIMIT</code>, <code>NET I/O</code> и <code>BLOCK I/O</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статистику использования ресурсов контейнером <code>mynginx</code>.</p>\n<pre><code>docker stats --no-stream mynginx</code></pre>\n<p><code>--no-stream</code> выводит один снимок и завершает команду. Найди в выводе <code>CPU %</code>, <code>MEM USAGE / LIMIT</code>, <code>NET I/O</code> и <code>BLOCK I/O</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить контейнер",
+      "taskid": "dock_lab1_t12_rm",
+      "hint": "<p>Различай <code>docker run</code> и <code>docker start</code>: первая команда создаёт новый контейнер, вторая запускает уже существующий. Здесь сначала проверь имя остановленного контейнера.</p>\n<p>После <code>docker stop</code> контейнер остаётся в системе, его можно посмотреть через <code>docker ps -a</code>. Команда <code>docker rm</code> удаляет остановленный контейнер полностью. Проверить что контейнер удалён можно через фильтр.</p>",
+      "question_html": "<p>Останови и удали контейнер <code>mynginx</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Останови и удали контейнер <code>mynginx</code>.</p>"
+    }
+  ],
+  "vm_image": "docker",
+  "vm_init": "module_docker_basics/docker/lab1/setup.yaml"
+}

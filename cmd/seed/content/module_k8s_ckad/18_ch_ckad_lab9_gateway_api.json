@@ -1,0 +1,140 @@
+{
+  "n": 18,
+  "id": "ch_ckad_lab9_gateway_api",
+  "title": "Лабораторная 8: Gateway API",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Посмотри backend-манифест:</p>\n<pre><code>cat /root/gateway-api/backend.yaml</code></pre>\n<p>Он создаёт три части приложения:</p>\n<ul>\n<li><code>frontend</code> на <code>nginx:alpine</code> — главная страница и кнопка;</li>\n<li><code>api</code> на <code>busybox:1.28</code> — маленький HTTP endpoint <code>/api/message</code>;</li>\n<li><code>admin</code> на <code>nginx:alpine</code> — отдельная страница <code>/admin</code>.</li>\n</ul>\n<p>Примени манифест и дождись готовности Deployment'ов:</p>\n<pre><code>kubectl apply -f /root/gateway-api/backend.yaml</code></pre>\n<pre><code>kubectl rollout status deployment/frontend --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/api --timeout=300s</code></pre>\n<pre><code>kubectl rollout status deployment/admin --timeout=300s</code></pre>\n<p>Проверь Service и endpoints:</p>\n<pre><code>kubectl get service frontend-svc</code></pre>\n<pre><code>kubectl get service api-svc</code></pre>\n<pre><code>kubectl get service admin-svc</code></pre>\n<pre><code>kubectl get endpoints frontend-svc</code></pre>\n<pre><code>kubectl get endpoints api-svc</code></pre>\n<pre><code>kubectl get endpoints admin-svc</code></pre>\n<p>Gateway API не создаёт Pod'ы сам. Он маршрутизирует HTTP-трафик к Service, а Service выбирает Pod'ы через labels.</p>27:T5e0,<p>До настройки Gateway проверь, что приложение отвечает через обычные Kubernetes Service. Если прямой Service не работает, Gateway пока ни при чём.</p>\n<p>Сначала посмотри, что Service соз",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Проверить platform-слой Gateway API",
+      "taskid": "k8sgw_lab1_t1_platform",
+      "hint": "",
+      "question_html": "<p>Сначала проверь, что в учебном кластере есть Gateway API и Traefik GatewayClass:</p>\n<pre><code>kubectl api-resources --api-group=gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl get gatewayclass</code></pre>\n<pre><code>kubectl describe gatewayclass traefik</code></pre>\n<pre><code>kubectl auth can-i create gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i create httproutes.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get httproutes.gateway.networking.k8s.io</code></pre>\n<p><code>GatewayClass</code> и controller — platform-слой. В этой лабораторной они уже подготовлены, а ты создашь приложение, <code>Gateway</code> и <code>HTTPRoute</code> в своём namespace.</p>",
+      "options": [],
+      "raw_description": "<p>Сначала проверь, что в учебном кластере есть Gateway API и Traefik GatewayClass:</p>\n<pre><code>kubectl api-resources --api-group=gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl get gatewayclass</code></pre>\n<pre><code>kubectl describe gatewayclass traefik</code></pre>\n<pre><code>kubectl auth can-i create gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i create httproutes.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get httproutes.gateway.networking.k8s.io</code></pre>\n<p><code>GatewayClass</code> и controller — platform-слой. В этой лабораторной они уже подготовлены, а ты создашь приложение, <code>Gateway</code> и <code>HTTPRoute</code> в своём namespace.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Развернуть backend-приложение",
+      "taskid": "k8sgw_lab1_t2_backend",
+      "hint": "<p>Если Service существует, но endpoints пустые, смотри labels Deployment и selector Service.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "self",
+      "title": "Проверить Service до Gateway",
+      "taskid": "k8sgw_lab1_t3_service_check",
+      "hint": "<p>Если один из Service не отвечает, проверь <code>kubectl get pods -o wide</code>, endpoints, selector у Service и labels у Pod'ов. Gateway появится только в следующем слое.</p>",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    },
+    {
+      "type": "check",
+      "title": "Создать Gateway",
+      "taskid": "k8sgw_lab1_t4_gateway",
+      "hint": "<p>В <code>describe gateway</code> ищи conditions <code>Accepted=True</code> и <code>Programmed=True</code>. Для Traefik Gateway provider listener должен совпасть с entryPoint; в этой лаборатории используется порт <code>8000</code>.</p>",
+      "question_html": "$28",
+      "options": [],
+      "raw_description": "$28"
+    },
+    {
+      "type": "check",
+      "title": "Подключить HTTPRoute",
+      "taskid": "k8sgw_lab1_t5_httproute",
+      "hint": "<p>В <code>describe httproute</code> ищи <code>Accepted=True</code> и <code>ResolvedRefs=True</code>. <code>ResolvedRefs=False</code> обычно означает, что Route не нашёл Service или port.</p>",
+      "question_html": "<p>Теперь посмотри HTTPRoute:</p>\n<pre><code>cat /root/gateway-api/httproute.yaml</code></pre>\n<p>Он подключается к <code>lab-gateway</code> через <code>parentRefs</code>, принимает тот же host и маршрутизирует три path:</p>\n\n<p>Примени маршрут и проверь статус:</p>\n<pre><code>kubectl apply -f /root/gateway-api/httproute.yaml</code></pre>\n<pre><code>kubectl get httproute lab-route -o wide</code></pre>\n<pre><code>kubectl describe httproute lab-route</code></pre>",
+      "options": [
+        {
+          "text": "<code>/api</code> → <code>api-svc:80</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>/admin</code> → <code>admin-svc:80</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>/</code> → <code>frontend-svc:80</code>.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Теперь посмотри HTTPRoute:</p>\n<pre><code>cat /root/gateway-api/httproute.yaml</code></pre>\n<p>Он подключается к <code>lab-gateway</code> через <code>parentRefs</code>, принимает тот же host и маршрутизирует три path:</p>\n<ul>\n<li><code>/api</code> → <code>api-svc:80</code>;</li>\n<li><code>/admin</code> → <code>admin-svc:80</code>;</li>\n<li><code>/</code> → <code>frontend-svc:80</code>.</li>\n</ul>\n<p>Примени маршрут и проверь статус:</p>\n<pre><code>kubectl apply -f /root/gateway-api/httproute.yaml</code></pre>\n<pre><code>kubectl get httproute lab-route -o wide</code></pre>\n<pre><code>kubectl describe httproute lab-route</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить Gateway route через HTTP",
+      "taskid": "k8sgw_lab1_t6_http_routes",
+      "hint": "<p>Если запрос возвращает 404, сравни <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames[0]</code>. Если ответ 503/502 или пустой, проверь <code>ResolvedRefs</code> и endpoints Service.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "self",
+      "title": "Открыть `Web Preview`",
+      "taskid": "k8sgw_lab1_t7_web_preview",
+      "hint": "",
+      "question_html": "$2a",
+      "options": [],
+      "raw_description": "$2a"
+    },
+    {
+      "type": "self",
+      "title": "Разобрать диагностику Gateway API",
+      "taskid": "k8sgw_lab1_t8_diagnostics",
+      "hint": "<p>Думай слоями: внешний вход и Traefik → Gateway listener → HTTPRoute rules → Service → endpoints → Pod. Когда <code>Web Preview</code> не открывается, обычно один из этих слоёв прямо показывает проблему в conditions, events или пустых endpoints.</p>",
+      "question_html": "$2b",
+      "options": [],
+      "raw_description": "$2b"
+    },
+    {
+      "type": "quiz",
+      "title": "Gateway API и Ingress",
+      "taskid": "k8sgw_lab1_t9_quiz",
+      "hint": "",
+      "question_html": "<p>Что точнее всего описывает отличие Gateway API от Ingress?</p>",
+      "options": [
+        {
+          "text": "Gateway API автоматически создаёт Deployment и Service",
+          "correct": false,
+          "explanation": "Нет. Workload и Service создаются отдельно"
+        },
+        {
+          "text": "Gateway API работает только внутри Pod'ов и не принимает внешний HTTP",
+          "correct": false,
+          "explanation": "Нет. Gateway описывает входной listener, а controller принимает внешний трафик"
+        },
+        {
+          "text": "Gateway API разделяет platform-слой входа в кластер и application-маршруты, поэтому лучше подходит для командной платформенной работы",
+          "correct": true,
+          "explanation": "Верно. GatewayClass/Gateway/HTTPRoute разделяют роли и ответственность"
+        },
+        {
+          "text": "Gateway API заменяет kube-proxy и Service",
+          "correct": false,
+          "explanation": "Нет. Route всё равно отправляет трафик в Service"
+        }
+      ],
+      "raw_description": "<p>Что точнее всего описывает отличие Gateway API от Ingress?</p><ul>\n<li>Gateway API автоматически создаёт Deployment и Service [Нет. Workload и Service создаются отдельно]</li>\n<li>Gateway API работает только внутри Pod'ов и не принимает внешний HTTP [Нет. Gateway описывает входной listener, а controller принимает внешний трафик]</li>\n<li>+Gateway API разделяет platform-слой входа в кластер и application-маршруты, поэтому лучше подходит для командной платформенной работы [Верно. GatewayClass/Gateway/HTTPRoute разделяют роли и ответственность]</li>\n<li>Gateway API заменяет kube-proxy и Service [Нет. Route всё равно отправляет трафик в Service]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить ресурсы лабораторной",
+      "taskid": "k8sgw_lab1_t10_cleanup",
+      "hint": "",
+      "question_html": "<p>Удали ресурсы, которые создала лабораторная:</p>\n<pre><code>kubectl delete -f /root/gateway-api/httproute.yaml --ignore-not-found</code></pre>\n<pre><code>kubectl delete -f /root/gateway-api/gateway.yaml --ignore-not-found</code></pre>\n<pre><code>kubectl delete -f /root/gateway-api/backend.yaml --ignore-not-found</code></pre>\n<p>После удаления <code>Gateway</code>, <code>HTTPRoute</code>, <code>Deployment</code>, <code>Service</code> и <code>ConfigMap</code> не должны существовать.</p>",
+      "options": [],
+      "raw_description": "<p>Удали ресурсы, которые создала лабораторная:</p>\n<pre><code>kubectl delete -f /root/gateway-api/httproute.yaml --ignore-not-found</code></pre>\n<pre><code>kubectl delete -f /root/gateway-api/gateway.yaml --ignore-not-found</code></pre>\n<pre><code>kubectl delete -f /root/gateway-api/backend.yaml --ignore-not-found</code></pre>\n<p>После удаления <code>Gateway</code>, <code>HTTPRoute</code>, <code>Deployment</code>, <code>Service</code> и <code>ConfigMap</code> не должны существовать.</p>"
+    }
+  ],
+  "vm_image": "kuber",
+  "vm_init": "module_k8s_ckad/k8s_ckad/gateway_lab1/setup.yaml"
+}

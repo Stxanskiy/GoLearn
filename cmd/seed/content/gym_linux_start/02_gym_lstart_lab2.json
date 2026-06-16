@@ -1,0 +1,166 @@
+{
+  "n": 2,
+  "id": "gym_lstart_lab2",
+  "title": "Тренировка 2: Работа с файлами и папками",
+  "type": "lab",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Создать директорию",
+      "taskid": "gym_lstart_lab2_t1_mkdir",
+      "hint": "<p>Используй <code>mkdir</code> и укажи полный путь новой директории.</p>",
+      "question_html": "<p>Создай директорию <code>/root/myproject</code> для нового проекта.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/myproject</code> для нового проекта.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать файл с текстом",
+      "taskid": "gym_lstart_lab2_t2_touch",
+      "hint": "<p>Используй <code>printf</code> или <code>echo</code> с перенаправлением <code>&gt;</code>: создай файл и запиши строку с точным регистром.</p>",
+      "question_html": "<p>Создай файл <code>/root/myproject/README.md</code> и запиши в него строку <code>Hello DevOps</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>/root/myproject/README.md</code> и запиши в него строку <code>Hello DevOps</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Скопировать файл",
+      "taskid": "gym_lstart_lab2_t3_cp",
+      "hint": "<p>У <code>cp</code> первый аргумент — источник, второй — назначение.</p>",
+      "question_html": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в директорию <code>/root/myproject/</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Скопируй файл <code>/opt/devops/lab1/config.txt</code> в директорию <code>/root/myproject/</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Переименовать файл",
+      "taskid": "gym_lstart_lab2_t4_mv",
+      "hint": "<p>Используй <code>mv</code>: укажи старый путь и новый путь в той же директории, затем проверь, что старого имени больше нет.</p>",
+      "question_html": "<p>Переименуй <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>",
+      "options": [],
+      "raw_description": "<p>Переименуй <code>/root/myproject/config.txt</code> в <code>myconfig.txt</code> (в той же директории).</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Как создать пустой файл?",
+      "taskid": "gym_lstart_lab2_t5_quiz",
+      "hint": "",
+      "question_html": "<p>Какая команда часто используется, чтобы создать пустой файл или обновить время его изменения?</p>",
+      "options": [
+        {
+          "text": "<code>touch file.txt</code>",
+          "correct": true,
+          "explanation": "Верно! touch создаёт файл, если его нет"
+        },
+        {
+          "text": "<code>rmdir file.txt</code>",
+          "correct": false,
+          "explanation": "Нет — rmdir удаляет пустые директории"
+        },
+        {
+          "text": "<code>cd file.txt</code>",
+          "correct": false,
+          "explanation": "Нет — cd переходит в каталог"
+        },
+        {
+          "text": "<code>gzip file.txt</code>",
+          "correct": false,
+          "explanation": "Нет — gzip сжимает файл"
+        }
+      ],
+      "raw_description": "<p>Какая команда часто используется, чтобы создать пустой файл или обновить время его изменения?</p><ul>\n<li>+<code>touch file.txt</code> [Верно! touch создаёт файл, если его нет]</li><li><code>rmdir file.txt</code> [Нет — rmdir удаляет пустые директории]</li><li><code>cd file.txt</code> [Нет — cd переходит в каталог]</li><li><code>gzip file.txt</code> [Нет — gzip сжимает файл]</li>\n</ul>"
+    },
+    {
+      "type": "check",
+      "title": "Создать вложенную структуру",
+      "taskid": "gym_lstart_lab2_t6_mkdirp",
+      "hint": "<p>Сначала используй <code>mkdir</code> для вложенной директории, затем <code>cp</code> для копирования файла в конечный каталог.</p>\n<p>У <code>mkdir</code> есть флаг <code>-p</code>: он создаёт все промежуточные директории автоматически.</p>",
+      "question_html": "<p>Создай директорию <code>/root/backup/configs</code> (сразу всю вложенную структуру) и скопируй в неё <code>/root/myproject/myconfig.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Создай директорию <code>/root/backup/configs</code> (сразу всю вложенную структуру) и скопируй в неё <code>/root/myproject/myconfig.txt</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить файл",
+      "taskid": "gym_lstart_lab2_t7_rm",
+      "hint": "<p>Используй <code>rm</code> и внимательно проверь путь перед запуском.</p>",
+      "question_html": "<p>Удали файл <code>/root/myproject/README.md</code>.</p>\n<p>В Linux нет корзины — <code>rm</code> удаляет сразу и навсегда.</p>",
+      "options": [],
+      "raw_description": "<p>Удали файл <code>/root/myproject/README.md</code>.</p>\n<p>В Linux нет корзины — <code>rm</code> удаляет сразу и навсегда.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Удалить директорию",
+      "taskid": "gym_lstart_lab2_t8_rmdir",
+      "hint": "<p>Используй <code>rm</code> с рекурсивным режимом для непустой директории; сначала убедись, что указан правильный путь.</p>\n<p>Флаг <code>-r</code> (recursive) позволяет удалить непустую директорию.</p>",
+      "question_html": "<p>Удали директорию <code>/root/myproject</code> со всем содержимым.</p>",
+      "options": [],
+      "raw_description": "<p>Удали директорию <code>/root/myproject</code> со всем содержимым.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда подойдёт rmdir?",
+      "taskid": "gym_lstart_lab2_t9_quiz",
+      "hint": "",
+      "question_html": "<p>В каком случае команда <code>rmdir old_dir</code> сработает без дополнительных флагов?</p>",
+      "options": [
+        {
+          "text": "Если <code>old_dir</code> существует и пустая",
+          "correct": true,
+          "explanation": "Верно! rmdir удаляет только пустые директории"
+        },
+        {
+          "text": "Если внутри есть много файлов",
+          "correct": false,
+          "explanation": "Нет — для непустой директории нужен другой подход"
+        },
+        {
+          "text": "Если <code>old_dir</code> является обычным файлом",
+          "correct": false,
+          "explanation": "Нет — rmdir работает с директориями"
+        },
+        {
+          "text": "Если нужно скопировать директорию",
+          "correct": false,
+          "explanation": "Нет — удаление и копирование разные операции"
+        }
+      ],
+      "raw_description": "<p>В каком случае команда <code>rmdir old_dir</code> сработает без дополнительных флагов?</p><ul>\n<li>+Если <code>old_dir</code> существует и пустая [Верно! rmdir удаляет только пустые директории]</li><li>Если внутри есть много файлов [Нет — для непустой директории нужен другой подход]</li><li>Если <code>old_dir</code> является обычным файлом [Нет — rmdir работает с директориями]</li><li>Если нужно скопировать директорию [Нет — удаление и копирование разные операции]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что будет без mkdir -p?",
+      "taskid": "gym_lstart_lab2_t10_quiz",
+      "hint": "",
+      "question_html": "<p>Что обычно произойдёт с <code>mkdir /root/a/b</code>, если директории <code>/root/a</code> ещё нет?</p>",
+      "options": [
+        {
+          "text": "Команда завершится ошибкой, потому что промежуточный каталог отсутствует",
+          "correct": true,
+          "explanation": "Верно! Для создания цепочки нужен <code>mkdir -p</code>"
+        },
+        {
+          "text": "Команда автоматически создаст все уровни",
+          "correct": false,
+          "explanation": "Нет — это поведение <code>mkdir -p</code>"
+        },
+        {
+          "text": "Команда удалит <code>/root</code>",
+          "correct": false,
+          "explanation": "Нет — mkdir не удаляет директории"
+        },
+        {
+          "text": "Команда создаст файл <code>b</code> вместо директории",
+          "correct": false,
+          "explanation": "Нет — mkdir создаёт директории"
+        }
+      ],
+      "raw_description": "<p>Что обычно произойдёт с <code>mkdir /root/a/b</code>, если директории <code>/root/a</code> ещё нет?</p><ul>\n<li>+Команда завершится ошибкой, потому что промежуточный каталог отсутствует [Верно! Для создания цепочки нужен <code>mkdir -p</code>]</li>\n<li>Команда автоматически создаст все уровни [Нет — это поведение <code>mkdir -p</code>]</li>\n<li>Команда удалит <code>/root</code> [Нет — mkdir не удаляет директории]</li>\n<li>Команда создаст файл <code>b</code> вместо директории [Нет — mkdir создаёт директории]</li>\n</ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "gym_linux_start/linux_nav/lab2/setup.yaml"
+}

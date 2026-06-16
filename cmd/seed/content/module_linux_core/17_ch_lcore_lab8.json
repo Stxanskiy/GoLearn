@@ -1,0 +1,223 @@
+{
+  "n": 17,
+  "id": "ch_lcore_lab8",
+  "title": "Лабораторная 8: ps, top, kill, signals",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Посмотреть процессы",
+      "taskid": "lcore_lab8_t1_ps",
+      "hint": "<p>В <code>ps aux</code> набор флагов включает процессы разных пользователей и процессы без терминала, а формат <code>u</code> добавляет удобные пользовательские колонки.</p>",
+      "question_html": "<p>Выполни команду <code>ps aux</code> и внимательно посмотри на колонки <code>USER</code>, <code>PID</code>, <code>%CPU</code>, <code>%MEM</code> и <code>COMMAND</code>. Здесь важнее увидеть вывод глазами, чем сохранить его в файл.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>ps aux</code> и внимательно посмотри на колонки <code>USER</code>, <code>PID</code>, <code>%CPU</code>, <code>%MEM</code> и <code>COMMAND</code>. Здесь важнее увидеть вывод глазами, чем сохранить его в файл.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Найти PID процесса",
+      "taskid": "lcore_lab8_t2_pgrep",
+      "hint": "",
+      "question_html": "<p>Найди PID процесса <code>sshd</code>. Почему в задании не стоит проверять конкретное число PID как эталон?</p>",
+      "options": [
+        {
+          "text": "<code>+PID может отличаться между запусками, поэтому проверять нужно способ поиска, а не фиксированное число</code>",
+          "correct": false,
+          "explanation": "Верно! PID является runtime-значением"
+        },
+        {
+          "text": "<code>PID всегда одинаковый для всех запусков VM, если сервис называется одинаково и запускается systemd с тем же unit-файлом</code>",
+          "correct": false,
+          "explanation": "Нет — PID выдаёт ядро при старте процесса"
+        },
+        {
+          "text": "<code>PID нельзя увидеть из терминала</code>",
+          "correct": false,
+          "explanation": "Нет — его показывают <code>ps</code>, <code>pgrep</code>, <code>ss</code>, <code>lsof</code>"
+        },
+        {
+          "text": "<code>PID совпадает с номером порта</code>",
+          "correct": false,
+          "explanation": "Нет — это разные сущности"
+        }
+      ],
+      "raw_description": "<p>Найди PID процесса <code>sshd</code>. Почему в задании не стоит проверять конкретное число PID как эталон?</p>\n<ul>\n<li><code>+PID может отличаться между запусками, поэтому проверять нужно способ поиска, а не фиксированное число</code> [Верно! PID является runtime-значением]</li>\n<li><code>PID всегда одинаковый для всех запусков VM, если сервис называется одинаково и запускается systemd с тем же unit-файлом</code> [Нет — PID выдаёт ядро при старте процесса]</li>\n<li><code>PID нельзя увидеть из терминала</code> [Нет — его показывают <code>ps</code>, <code>pgrep</code>, <code>ss</code>, <code>lsof</code>]</li>\n<li><code>PID совпадает с номером порта</code> [Нет — это разные сущности]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Сортировка процессов по CPU",
+      "taskid": "lcore_lab8_t3_cpu",
+      "hint": "<p>В <code>ps --sort</code> знак минус перед полем означает сортировку по убыванию. <code>head</code> нужен только чтобы ограничить верхнюю часть списка.</p>",
+      "question_html": "<p>Выведи несколько процессов с наибольшим текущим потреблением CPU и посмотри, как меняются значения <code>%CPU</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Выведи несколько процессов с наибольшим текущим потреблением CPU и посмотри, как меняются значения <code>%CPU</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Квиз: SIGTERM vs SIGKILL",
+      "taskid": "lcore_lab8_t4_quiz",
+      "hint": "",
+      "question_html": "<p>Чем отличается <code>kill -9</code> (SIGKILL) от обычного <code>kill</code> (SIGTERM)?</p>",
+      "options": [
+        {
+          "text": "SIGKILL работает только с root-процессами",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<code>+SIGKILL нельзя перехватить или проигнорировать — процесс завершается немедленно принудительно</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "SIGTERM быстрее чем SIGKILL",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "Нет разницы — оба делают одно и то же",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Чем отличается <code>kill -9</code> (SIGKILL) от обычного <code>kill</code> (SIGTERM)?</p>\n<ul>\n<li>SIGKILL работает только с root-процессами</li>\n<li><code>+SIGKILL нельзя перехватить или проигнорировать — процесс завершается немедленно принудительно</code></li>\n<li>SIGTERM быстрее чем SIGKILL</li>\n<li>Нет разницы — оба делают одно и то же</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Запустить процесс на переднем плане",
+      "taskid": "lcore_lab8_t5_foreground",
+      "hint": "<p>Передний план — это обычный запуск без <code>&amp;</code>. Пока сервер работает, терминал занят. <code>Ctrl+C</code> отправляет процессу сигнал прерывания и возвращает prompt.</p>",
+      "question_html": "<p>Перейди в <code>/opt/devops/process-demo</code>. В директории уже лежит минимальный <code>index.html</code>; посмотри его через <code>cat index.html</code>, запусти HTTP-сервер командой <code>python3 -m http.server 80</code>, открой <code>Web Preview</code> и проверь, что видишь страницу <code>Process demo</code>. После этого вернись в терминал и останови сервер через <code>Ctrl+C</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Перейди в <code>/opt/devops/process-demo</code>. В директории уже лежит минимальный <code>index.html</code>; посмотри его через <code>cat index.html</code>, запусти HTTP-сервер командой <code>python3 -m http.server 80</code>, открой <code>Web Preview</code> и проверь, что видишь страницу <code>Process demo</code>. После этого вернись в терминал и останови сервер через <code>Ctrl+C</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить процесс в фоне и сохранить PID",
+      "taskid": "lcore_lab8_t6_background_pid",
+      "hint": "<p>Символ <code>&amp;</code> возвращает prompt сразу, а переменная <code>$!</code> содержит PID последнего процесса, запущенного в фоне. После фонового запуска <code>Web Preview</code> тоже должен открывать страницу <code>Process demo</code>.</p>",
+      "question_html": "<p>Запусти тот же HTTP-сервер в фоне на порту <code>80</code> и сохрани PID последнего фонового процесса в <code>/root/demo.pid</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти тот же HTTP-сервер в фоне на порту <code>80</code> и сохрани PID последнего фонового процесса в <code>/root/demo.pid</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Проверить процесс через ps, pgrep и ss",
+      "taskid": "lcore_lab8_t7_inspect_demo",
+      "hint": "<p><code>ps -p</code> показывает конкретный PID, <code>pgrep -af</code> ищет по командной строке, а <code>ss -lntp</code> связывает слушающий порт с процессом.</p>",
+      "question_html": "<p>Проверь запущенный demo-процесс тремя способами:</p>\n<pre><code class=\"language-bash\">ps -p &quot;$(cat /root/demo.pid)&quot; -o pid,ppid,stat,cmd\npgrep -af &quot;python3 -m http.server 80&quot;\nss -lntp | grep ':80'\n</code></pre>",
+      "options": [],
+      "raw_description": "<p>Проверь запущенный demo-процесс тремя способами:</p>\n<pre><code class=\"language-bash\">ps -p &quot;$(cat /root/demo.pid)&quot; -o pid,ppid,stat,cmd\npgrep -af &quot;python3 -m http.server 80&quot;\nss -lntp | grep ':80'\n</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Остановить demo-процесс",
+      "taskid": "lcore_lab8_t8_kill_demo",
+      "hint": "<p>Если ты сохранил PID в предыдущей задаче, можно выполнить <code>kill \"$(cat /root/demo.pid)\"</code>. После остановки проверь порт: <code>ss -lntp | grep ':80'</code>.</p>",
+      "question_html": "<p>Останови demo HTTP-сервер удобным способом и убедись, что порт <code>80</code> больше не слушается.</p>",
+      "options": [],
+      "raw_description": "<p>Останови demo HTTP-сервер удобным способом и убедись, что порт <code>80</code> больше не слушается.</p>"
+    },
+    {
+      "type": "check",
+      "title": "kill: завершить процесс",
+      "taskid": "lcore_lab8_t9_kill_sleep",
+      "hint": "<p><code>pgrep</code> удобен для поиска PID по имени процесса. Обычный <code>kill</code> отправляет мягкий сигнал завершения; принудительный <code>-9</code> нужен только когда процесс не реагирует.</p>",
+      "question_html": "<p>Найди и заверши процесс <code>sleep 9999</code> (он запущен в фоне).</p>",
+      "options": [],
+      "raw_description": "<p>Найди и заверши процесс <code>sleep 9999</code> (он запущен в фоне).</p>"
+    },
+    {
+      "type": "self",
+      "title": "free: использование памяти",
+      "taskid": "lcore_lab8_t10_free",
+      "hint": "<p>Флаг <code>-m</code> выводит значения в мегабайтах. Обрати внимание на строки <code>Mem:</code> и <code>Swap:</code>, а также на разницу между <code>free</code> и <code>available</code>.</p>",
+      "question_html": "<p>Посмотри информацию об использовании памяти в мегабайтах.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри информацию об использовании памяти в мегабайтах.</p>"
+    },
+    {
+      "type": "self",
+      "title": "df: дисковое пространство",
+      "taskid": "lcore_lab8_t11_df",
+      "hint": "<p>У <code>df</code> флаг <code>-h</code> включает human-readable размеры. Для первичной диагностики смотри <code>Use%</code> и точки монтирования.</p>",
+      "question_html": "<p>Посмотри статистику использования дисков в human-readable формате.</p>",
+      "options": [],
+      "raw_description": "<p>Посмотри статистику использования дисков в human-readable формате.</p>"
+    },
+    {
+      "type": "self",
+      "title": "uptime: нагрузка",
+      "taskid": "lcore_lab8_t12_uptime",
+      "hint": "<p><code>uptime</code> показывает load average за 1, 5 и 15 минут. Эту же строку можно быстро увидеть в <code>top</code>; сравнивай load с количеством CPU.</p>",
+      "question_html": "<p>Выполни команду <code>uptime</code>, чтобы посмотреть текущий uptime и load average системы.</p>",
+      "options": [],
+      "raw_description": "<p>Выполни команду <code>uptime</code>, чтобы посмотреть текущий uptime и load average системы.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему PID нельзя заучивать?",
+      "taskid": "lcore_lab8_t13_quiz",
+      "hint": "",
+      "question_html": "<p>Почему PID процесса нельзя считать постоянным свойством сервиса?</p>",
+      "options": [
+        {
+          "text": "PID выдаётся при запуске процесса и может измениться после перезапуска",
+          "correct": true,
+          "explanation": "Верно! Это runtime-идентификатор"
+        },
+        {
+          "text": "PID всегда совпадает с номером TCP-порта",
+          "correct": false,
+          "explanation": "Нет — это разные сущности"
+        },
+        {
+          "text": "PID хранится в <code>/etc/passwd</code>",
+          "correct": false,
+          "explanation": "Нет — там информация о пользователях"
+        },
+        {
+          "text": "PID одинаковый на всех Linux-серверах",
+          "correct": false,
+          "explanation": "Нет — он зависит от текущего состояния системы"
+        }
+      ],
+      "raw_description": "<p>Почему PID процесса нельзя считать постоянным свойством сервиса?</p><ul><li>+PID выдаётся при запуске процесса и может измениться после перезапуска [Верно! Это runtime-идентификатор]</li><li>PID всегда совпадает с номером TCP-порта [Нет — это разные сущности]</li><li>PID хранится в <code>/etc/passwd</code> [Нет — там информация о пользователях]</li><li>PID одинаковый на всех Linux-серверах [Нет — он зависит от текущего состояния системы]</li></ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает load average?",
+      "taskid": "lcore_lab8_t14_quiz",
+      "hint": "",
+      "question_html": "<p>Что в общих чертах показывает <code>load average</code>?</p>",
+      "options": [
+        {
+          "text": "Среднее количество процессов, которые выполняются или ждут ресурсы за последние интервалы времени",
+          "correct": true,
+          "explanation": "Верно! Это индикатор нагрузки, а не просто процент CPU"
+        },
+        {
+          "text": "Только количество файлов в <code>/var/log</code>",
+          "correct": false,
+          "explanation": "Нет — это не файловая статистика"
+        },
+        {
+          "text": "HTTP-коды всех запросов за минуту",
+          "correct": false,
+          "explanation": "Нет — это данные веб-логов"
+        },
+        {
+          "text": "Права доступа текущего пользователя",
+          "correct": false,
+          "explanation": "Нет — это не связано с chmod"
+        }
+      ],
+      "raw_description": "<p>Что в общих чертах показывает <code>load average</code>?</p><ul><li>+Среднее количество процессов, которые выполняются или ждут ресурсы за последние интервалы времени [Верно! Это индикатор нагрузки, а не просто процент CPU]</li><li>Только количество файлов в <code>/var/log</code> [Нет — это не файловая статистика]</li><li>HTTP-коды всех запросов за минуту [Нет — это данные веб-логов]</li><li>Права доступа текущего пользователя [Нет — это не связано с chmod]</li></ul>"
+    }
+  ],
+  "vm_image": "base",
+  "vm_init": "module_linux_core/linux_core/lab8/setup.yaml"
+}
