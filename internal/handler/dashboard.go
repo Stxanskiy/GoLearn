@@ -11,6 +11,9 @@ type DashboardData struct {
 	PageTitle       string
 	UserName        string
 	IsAdmin         bool
+	ContinueURL     string
+	ContinueTitle   string
+	ContinueModule  string
 	Overview        *model.ProgressOverview
 	Weeks           [][]HeatCell
 	MonthLabels     []MonthLabel
@@ -135,8 +138,26 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	allProgress, _ := h.progressRepo.GetAll(ctx, uid)
 	progressMap := make(map[int]string)
+	var contLessonID int
+	var contTime time.Time
 	for _, p := range allProgress {
 		progressMap[p.LessonID] = p.Status
+		if p.Status == "in_progress" && p.UpdatedAt.After(contTime) {
+			contTime = p.UpdatedAt
+			contLessonID = p.LessonID
+		}
+	}
+	if contLessonID > 0 {
+		if l, err := h.lessonRepo.GetByID(ctx, contLessonID); err == nil {
+			if m, err := h.moduleRepo.GetByID(ctx, l.ModuleID); err == nil {
+				data.ContinueTitle = l.Title
+				data.ContinueModule = m.Title
+				data.ContinueURL = "/module/" + m.Slug + "/lesson/" + l.Slug
+				if l.Kind == "lab" {
+					data.ContinueURL += "/tasks"
+				}
+			}
+		}
 	}
 
 	for _, mod := range modules {

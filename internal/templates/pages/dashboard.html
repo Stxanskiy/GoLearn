@@ -15,6 +15,28 @@
     </div>
 </div>
 
+{{if .ContinueURL}}
+<a class="continue-card" href="{{.ContinueURL}}">
+    <div class="continue-ico">▶</div>
+    <div class="continue-body">
+        <div class="continue-label">Продолжить обучение</div>
+        <div class="continue-title">{{.ContinueTitle}}</div>
+        <div class="continue-module muted">{{.ContinueModule}}</div>
+    </div>
+    <div class="continue-go">→</div>
+</a>
+<style>
+.continue-card { display:flex; align-items:center; gap:16px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:14px; padding:16px 20px; margin-bottom:22px; text-decoration:none; color:var(--text); transition:transform .2s, border-color .2s; }
+.continue-card:hover { transform:translateY(-2px); border-color:var(--border-strong); }
+.continue-ico { width:42px; height:42px; border-radius:50%; background:var(--grad); color:#0a0c10; display:flex; align-items:center; justify-content:center; font-size:1.1em; flex-shrink:0; }
+.continue-body { flex:1; min-width:0; }
+.continue-label { font-size:.74em; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.continue-title { font-size:1.1em; font-weight:700; }
+.continue-module { font-size:.84em; }
+.continue-go { font-size:1.4em; color:var(--accent); }
+</style>
+{{end}}
+
 {{with .Overview}}
 <div class="metrics-grid">
     <div class="metric-card"><div class="metric-ico" style="color:#f0883e;">🔥</div><div><div class="metric-num">{{.Streak}}</div><div class="metric-lbl">Серия дней</div></div></div>
