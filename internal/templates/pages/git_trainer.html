@@ -3,212 +3,133 @@
 {{end}}
 
 {{define "content"}}
-<div class="breadcrumb"><a href="/">Дашборд</a> / <span>Git Trainer</span></div>
+<link rel="stylesheet" href="/static/vendor/xterm/xterm.css">
+<script src="/static/vendor/xterm/xterm.js"></script>
+<script src="/static/vendor/xterm/addon-fit.js"></script>
 
-<div class="page-head">
-    <h1>Git Trainer</h1>
-    <p class="muted">Настоящий <strong>git</strong> в изолированной песочнице. Граф истории внизу перерисовывается из реального репозитория после каждой команды.</p>
+<div class="breadcrumb"><a href="/">Дашборд</a> / <a href="/trainers">Тренажёры</a> / <span>Git Trainer</span></div>
+<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+    <div>
+        <h1>Git Trainer</h1>
+        <p class="muted">Настоящий <strong>git</strong> в песочнице. Слева — живой граф из реального репозитория, справа — терминал.</p>
+    </div>
 </div>
 
 {{if not .SandboxOK}}
-<div class="card" style="border-color: var(--yellow);">Песочница сейчас недоступна на сервере — терминал работать не будет.</div>
+<div class="card" style="border-color:var(--yellow);margin-bottom:14px;">Песочница сейчас недоступна на сервере — терминал работать не будет.</div>
 {{end}}
 
-<div class="term-wrap">
-    <div class="term-bar">
-        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-        <span class="term-title">git sandbox &middot; ~/repo</span>
-        <span class="term-status" id="git-status"><span class="led"></span><span>готов</span></span>
-    </div>
-    <div class="term-body" id="git-body" style="height:300px;"><span class="term-dim">Поднимаю репозиторий…</span></div>
-    <div style="display:flex;align-items:center;gap:8px;background:#05070a;border-top:1px solid var(--border);padding:8px 12px;">
-        <span class="term-prompt" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;white-space:nowrap;">student@git:~/repo$</span>
-        <input id="git-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-            style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13.5px;"
-            placeholder="git switch -c feature  (стрелки вверх/вниз — история)" onkeydown="gitKey(event)">
-    </div>
+<div class="git2">
+    <aside class="git2-side">
+        <div class="git2-graph-head">
+            <span>🌿 Граф репозитория</span>
+            <button class="btn btn-outline btn-xs" onclick="gitRefresh()">↻</button>
+        </div>
+        <pre id="git-graph" class="git2-graph">репозиторий поднимается…</pre>
+        <div class="git2-quick">
+            <button class="gq" onclick="gitType('git status')">git status</button>
+            <button class="gq" onclick="gitType('git log --oneline --all')">git log</button>
+            <button class="gq" onclick="gitType('git switch -c feature')">switch -c</button>
+            <button class="gq" onclick="gitType('git add .')">git add .</button>
+            <button class="gq" onclick="gitType('git commit -m &#34;msg&#34;')">git commit</button>
+            <button class="gq" onclick="gitType('git merge feature')">git merge</button>
+        </div>
+        <button class="btn btn-ghost btn-xs" style="color:var(--red);margin-top:10px;" onclick="gitResetRepo()">⟲ Сбросить репозиторий</button>
+        <details class="git2-cheat"><summary>Шпаргалка</summary>
+            <ul>
+                <li><code>git switch -c &lt;ветка&gt;</code> — создать и перейти</li>
+                <li><code>git add .</code> · <code>git commit -m ".."</code></li>
+                <li><code>git merge &lt;ветка&gt;</code> · <code>git rebase &lt;ветка&gt;</code></li>
+                <li><code>git log --oneline --graph --all</code></li>
+            </ul>
+        </details>
+    </aside>
+    <section class="git2-main">
+        <div class="git2-bar">
+            <span class="git2-status" id="git-status"><span class="led"></span>Не запущен</span>
+            <span class="git2-spacer"></span>
+            <button class="git2-iconbtn" onclick="gitRestart()" title="Перезапустить">⟳</button>
+        </div>
+        <div class="git2-term" id="git-host">
+            <div class="git2-launch" id="git-launch">
+                <button class="btn btn-primary" onclick="gitStart()">▶ Запустить терминал</button>
+                <div class="muted" style="margin-top:10px;font-size:.84em;">Настоящий bash + git. Граф слева обновляется автоматически.</div>
+            </div>
+        </div>
+    </section>
 </div>
 
-<div class="row mt-16">
-    <button class="btn btn-outline" onclick="gitRun('git status')">git status</button>
-    <button class="btn btn-outline" onclick="gitRun('git log --oneline --all --decorate')">git log</button>
-    <button class="btn btn-ghost" onclick="gitReset()">&#8635; Новый репозиторий</button>
-</div>
-
-<div class="card" style="margin-top:16px;">
-    <h3 style="margin-bottom:4px;">Граф истории</h3>
-    <p class="muted" style="font-size:.82em;margin-bottom:10px;">Обновляется автоматически из реального git после каждой команды.</p>
-    <div style="overflow-x:auto;background:#070a0e;border:1px solid var(--border);border-radius:8px;">
-        <svg id="git-graph" width="100%" height="120"></svg>
-    </div>
-</div>
-
-<div class="card" style="margin-top:16px;">
-    <h3 style="margin-bottom:12px;">Шпаргалка</h3>
-    <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:.85em;">
-        <code style="color:var(--green);">git add &lt;файл&gt;</code><span class="muted">Добавить в индекс (staging)</span>
-        <code style="color:var(--green);">git commit -m "msg"</code><span class="muted">Зафиксировать коммит</span>
-        <code style="color:var(--green);">git switch -c feature</code><span class="muted">Создать ветку и перейти</span>
-        <code style="color:var(--green);">git switch main</code><span class="muted">Переключиться на ветку</span>
-        <code style="color:var(--green);">git merge feature</code><span class="muted">Слить ветку в текущую</span>
-        <code style="color:var(--green);">git rebase main</code><span class="muted">Перебазировать на main</span>
-        <code style="color:var(--green);">echo text &gt; file.txt</code><span class="muted">Изменить файл (обычный shell)</span>
-        <code style="color:var(--yellow);">clear</code><span class="muted">Очистить вывод терминала</span>
-    </div>
-</div>
+<style>
+.git2 { display:grid; grid-template-columns:360px minmax(0,1fr); gap:0; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:70vh; }
+.git2-side { padding:16px; border-right:1px solid var(--border); background:var(--bg-card); overflow-y:auto; max-height:78vh; }
+.git2-graph-head { display:flex; align-items:center; justify-content:space-between; font-weight:700; margin-bottom:10px; }
+.git2-graph { background:var(--code-bg); border:1px solid var(--border); border-radius:10px; padding:12px; font-family:'JetBrains Mono','SF Mono',monospace; font-size:.8em; line-height:1.5; white-space:pre; overflow:auto; max-height:340px; color:#d6e2ee; }
+.git2-quick { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.gq { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); padding:4px 9px; border-radius:7px; cursor:pointer; font-family:monospace; font-size:.72em; }
+.gq:hover { border-color:var(--accent); color:var(--accent); }
+.git2-cheat { margin-top:12px; font-size:.84em; } .git2-cheat summary { cursor:pointer; color:var(--accent); font-weight:600; }
+.git2-cheat ul { margin:8px 0 0 16px; } .git2-cheat li { margin:4px 0; } .git2-cheat code { background:var(--code-bg); padding:1px 5px; border-radius:4px; }
+.git2-main { display:flex; flex-direction:column; background:#05070a; }
+.git2-bar { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border-bottom:1px solid var(--border); }
+.git2-status { display:flex; align-items:center; gap:7px; font-size:.82em; font-weight:600; color:var(--text-muted); }
+.git2-status .led { width:9px; height:9px; border-radius:50%; background:var(--red); }
+.git2-status.on .led { background:var(--green); box-shadow:0 0 8px var(--green); }
+.git2-spacer { flex:1; }
+.git2-iconbtn { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); width:30px; height:30px; border-radius:8px; cursor:pointer; }
+.git2-iconbtn:hover { color:var(--accent); border-color:var(--accent); }
+.git2-term { flex:1; position:relative; padding:8px 6px 8px 10px; min-height:58vh; }
+.git2-term .xterm { height:100%; }
+.git2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.btn-xs { padding:3px 9px; font-size:.8em; }
+@media (max-width:860px){ .git2 { grid-template-columns:1fr; } .git2-side { max-height:none; border-right:none; border-bottom:1px solid var(--border); } }
+</style>
 
 <script>
 (function () {
-    var body = document.getElementById('git-body');
-    var input = document.getElementById('git-input');
-    var status = document.getElementById('git-status');
-    var svg = document.getElementById('git-graph');
-    var hist = [], hidx = -1, busy = false;
-    var LANE_COLORS = ['#3fb950', '#6ea8ff', '#b98cff', '#e3b341', '#f85149', '#39d353', '#ff7b72', '#7ee0c0'];
-    function laneColor(i) { return LANE_COLORS[i % LANE_COLORS.length]; }
-    function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var term = null, ws = null, fit = null, poll = null;
+    var graphEl = document.getElementById('git-graph');
 
-    function append(text, cls) {
-        var div = document.createElement('div');
-        if (cls) div.className = cls;
-        div.textContent = text;
-        body.appendChild(div);
-        body.scrollTop = body.scrollHeight;
-    }
-    async function rawExec(cmd) {
-        var r = await fetch('/api/git/exec', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({command: cmd})
-        });
-        var d = await r.json();
-        return d.output || '';
-    }
-    window.gitRun = async function (cmd, echo) {
-        if (busy) return;
-        busy = true;
-        if (echo !== false) append('student@git:~/repo$ ' + cmd, 'term-cmd');
-        status.classList.add('on'); status.querySelector('span:last-child').textContent = 'выполняю…';
-        try {
-            var out = await rawExec(cmd);
-            if (out && out.length) append(out.replace(/\n+$/, ''));
-        } catch (e) { append('Ошибка соединения: ' + e.message, 'term-err'); }
-        status.querySelector('span:last-child').textContent = 'готов';
-        busy = false;
-        refreshGraph();
-    };
-    window.gitReset = async function () {
-        try { await fetch('/api/git/reset', {method: 'POST'}); } catch (e) {}
-        body.innerHTML = '';
-        append('Создан новый репозиторий с первым коммитом.', 'term-dim');
-        refreshGraph();
-    };
-    window.gitKey = function (e) {
-        if (e.key === 'Enter') {
-            var cmd = input.value.trim();
-            if (!cmd) return;
-            input.value = '';
-            hist.push(cmd); hidx = hist.length;
-            if (cmd === 'clear') { body.innerHTML = ''; return; }
-            gitRun(cmd);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (hidx > 0) { hidx--; input.value = hist[hidx]; }
-        } else if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (hidx < hist.length - 1) { hidx++; input.value = hist[hidx]; }
-            else { hidx = hist.length; input.value = ''; }
-        }
-    };
+    function setStatus(t, on) { var s = document.getElementById('git-status'); s.classList.toggle('on', !!on); s.lastChild.textContent = t; }
 
-    // ── Real-git commit graph ──────────────────────────────
-    function parseLog(text) {
-        var out = [];
-        text.split('\n').forEach(function (l) {
-            if (!l.trim()) return;
-            var i1 = l.indexOf('|'), i2 = l.indexOf('|', i1 + 1), i3 = l.indexOf('|', i2 + 1);
-            if (i1 < 0 || i2 < 0 || i3 < 0) return;
-            out.push({
-                h: l.slice(0, i1),
-                parents: l.slice(i1 + 1, i2).trim().split(/\s+/).filter(Boolean),
-                refs: l.slice(i2 + 1, i3).trim(),
-                subject: l.slice(i3 + 1)
-            });
-        });
-        return out;
-    }
-    function assignLanes(commits) {
-        var lanes = []; // lane -> expected next hash
-        commits.forEach(function (c) {
-            var lane = lanes.indexOf(c.h);
-            if (lane === -1) {
-                lane = lanes.indexOf(null);
-                if (lane === -1) { lane = lanes.length; lanes.push(null); }
-            }
-            c.lane = lane;
-            lanes[lane] = c.parents[0] || null;
-            for (var k = 1; k < c.parents.length; k++) {
-                if (lanes.indexOf(c.parents[k]) === -1) {
-                    var fl = lanes.indexOf(null);
-                    if (fl === -1) { fl = lanes.length; lanes.push(null); }
-                    lanes[fl] = c.parents[k];
-                }
-            }
-        });
-        return commits;
-    }
-    function renderGraph(commits) {
-        if (!commits.length) { svg.innerHTML = '<text x="14" y="24" fill="#6b7785" font-size="12">Нет коммитов</text>'; return; }
-        var LANE_W = 26, ROW_H = 40, PADX = 22, PADY = 22, R = 6;
-        var byHash = {};
-        var maxLane = 0;
-        commits.forEach(function (c, i) {
-            c.row = i; c.x = PADX + c.lane * LANE_W; c.y = PADY + i * ROW_H;
-            byHash[c.h] = c; if (c.lane > maxLane) maxLane = c.lane;
-        });
-        var textX = PADX + (maxLane + 1) * LANE_W + 6;
-        svg.setAttribute('height', Math.max(80, PADY * 2 + (commits.length - 1) * ROW_H + 20));
-        var html = '';
-        commits.forEach(function (c) {
-            c.parents.forEach(function (ph) {
-                var p = byHash[ph]; if (!p) return;
-                var color = laneColor(c.lane);
-                if (p.x === c.x) {
-                    html += '<line x1="' + c.x + '" y1="' + c.y + '" x2="' + p.x + '" y2="' + p.y + '" stroke="' + color + '" stroke-width="2"/>';
-                } else {
-                    var my = (c.y + p.y) / 2;
-                    html += '<path d="M' + c.x + ',' + c.y + ' C' + c.x + ',' + my + ' ' + p.x + ',' + my + ' ' + p.x + ',' + p.y + '" fill="none" stroke="' + laneColor(p.lane) + '" stroke-width="2"/>';
-                }
-            });
-        });
-        commits.forEach(function (c) {
-            var color = laneColor(c.lane);
-            html += '<circle cx="' + c.x + '" cy="' + c.y + '" r="' + R + '" fill="' + color + '" stroke="#070a0e" stroke-width="2"/>';
-            var lx = textX;
-            if (c.refs) {
-                c.refs.split(',').map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (lb) {
-                    var txt = lb.replace('HEAD -> ', '● ');
-                    var w = txt.length * 6.7 + 12;
-                    html += '<rect x="' + lx + '" y="' + (c.y - 9) + '" width="' + w + '" height="18" rx="9" fill="' + color + '22" stroke="' + color + '"/>';
-                    html += '<text x="' + (lx + 6) + '" y="' + (c.y + 4) + '" fill="' + color + '" font-size="11" font-family="monospace">' + esc(txt) + '</text>';
-                    lx += w + 6;
-                });
-            }
-            html += '<text x="' + (lx + 2) + '" y="' + (c.y + 4) + '" fill="#aebccb" font-size="12" font-family="monospace">' + esc(c.h) + '  ' + esc(c.subject) + '</text>';
-        });
-        svg.innerHTML = html;
-    }
-    async function refreshGraph() {
-        try {
-            var out = await rawExec("git log --all --date-order --pretty=format:'%h|%p|%D|%s' 2>/dev/null");
-            renderGraph(assignLanes(parseLog(out)));
-        } catch (e) { /* ignore */ }
-    }
+    window.gitRefresh = function () {
+        fetch('/api/git/exec', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: 'git log --oneline --graph --all --decorate --color=never 2>/dev/null | head -60' }) })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { graphEl.textContent = (d.output && d.output.trim()) ? d.output : '(пока нет коммитов)'; })
+            .catch(function () {});
+    };
+    window.gitType = function (cmd) { if (term && ws && ws.readyState === 1) { ws.send(new TextEncoder().encode(cmd)); term.focus(); } };
 
-    // init: warm the session + draw the starting graph
-    body.innerHTML = '';
-    append('Готов. Это настоящий git — пробуй команды.', 'term-dim');
-    refreshGraph();
-    input.focus();
+    window.gitStart = function () {
+        if (term) return;
+        if (typeof Terminal === 'undefined') { document.getElementById('git-host').innerHTML = '<div class="git2-launch" style="color:var(--red);">Терминал не загрузился. Обнови страницу.</div>'; return; }
+        document.getElementById('git-launch').style.display = 'none';
+        term = new Terminal({ fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
+        fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(document.getElementById('git-host'));
+        try { fit.fit(); } catch (e) {}
+        setStatus('Подключаюсь…', true);
+        var proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        ws = new WebSocket(proto + '://' + location.host + '/api/term?kind=git');
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = function () { setStatus('Запущен', true); sendResize(); term.focus(); setTimeout(gitRefresh, 800); poll = setInterval(gitRefresh, 2500); };
+        ws.onmessage = function (e) { term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
+        ws.onclose = function () { setStatus('Остановлен', false); clearInterval(poll); };
+        term.onData(function (d) { if (ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
+        term.onResize(sendResize);
+        setTimeout(function () { try { fit.fit(); sendResize(); } catch (e) {} }, 150);
+    };
+    function sendResize() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ resize: [term.cols, term.rows] })); }
+    window.addEventListener('resize', function () { try { fit && fit.fit(); sendResize(); } catch (e) {} });
+
+    window.gitRestart = function () {
+        if (ws) { try { ws.close(); } catch (e) {} } if (term) { try { term.dispose(); } catch (e) {} }
+        term = null; ws = null; clearInterval(poll);
+        document.getElementById('git-host').innerHTML = '<div class="git2-launch" id="git-launch"><button class="btn btn-primary" onclick="gitStart()">▶ Запустить терминал</button></div>';
+        setStatus('Не запущен', false);
+    };
+    window.gitResetRepo = function () {
+        fetch('/api/git/reset', { method: 'POST' }).then(function () { graphEl.textContent = '(репозиторий сброшен — перезапусти терминал)'; gitRestart(); });
+    };
 })();
 </script>
 {{end}}

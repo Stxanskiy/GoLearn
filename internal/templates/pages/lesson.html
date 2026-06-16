@@ -67,7 +67,7 @@
     </div>
     <div id="sql-output" class="sql-output"></div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script src="/static/vendor/sqljs/sql-wasm.js"></script>
 <script>
 (function () {
     var metaEl = document.getElementById('sql-meta');
@@ -76,7 +76,7 @@
     var dbReady = null;
     function ensureDB() {
         if (dbReady) return dbReady;
-        dbReady = initSqlJs({ locateFile: function (f) { return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f; } })
+        dbReady = initSqlJs({ locateFile: function (f) { return '/static/vendor/sqljs/' + f; } })
             .then(function (SQL) { var db = new SQL.Database(); db.run(meta.ddl); return db; });
         return dbReady;
     }
