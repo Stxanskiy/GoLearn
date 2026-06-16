@@ -3,9 +3,9 @@
 {{end}}
 
 {{define "content"}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/[email protected]/css/xterm.css">
-<script src="https://cdn.jsdelivr.net/npm/[email protected]/lib/xterm.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/[email protected]/lib/xterm-addon-fit.js"></script>
+<link rel="stylesheet" href="/static/vendor/xterm/xterm.css">
+<script src="/static/vendor/xterm/xterm.js"></script>
+<script src="/static/vendor/xterm/addon-fit.js"></script>
 
 {{if .IsShellLab}}
 {{/* ─────────── SHELL LAB: two-pane terminal workspace ─────────── */}}
@@ -120,6 +120,11 @@
 
     window.labStart = function () {
         if (term) return;
+        if (typeof Terminal === 'undefined') {
+            var h0 = document.getElementById('lab2-host');
+            h0.innerHTML = '<div class="lab2-launch" style="color:var(--red);text-align:center;padding:20px;">Не удалось загрузить терминал (xterm). Обнови страницу.</div>';
+            return;
+        }
         document.getElementById('lab2-launch').style.display = 'none';
         var host = document.getElementById('lab2-host');
         term = new Terminal({ fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
