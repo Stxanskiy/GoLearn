@@ -21,23 +21,22 @@
         </details>
         {{end}}
 
-        {{if .HasQuiz}}
-        <script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>
-        <div id="lab-quiz" class="lab2-quiz" data-action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz"></div>
-        {{end}}
+        {{if .HasQuiz}}<script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>{{end}}
 
-        <div class="lab2-steps">
-            {{range $i, $t := .Tasks}}<button class="lab2-pill" data-pill="{{$i}}" onclick="labStep({{$i}})">{{add $i 1}}</button>{{end}}
-        </div>
+        <div class="lab2-steps" id="lab2-pills"></div>
         <div class="lab2-stepnav">
-            <button class="btn btn-outline" id="lab2-prev" onclick="labBy(-1)">Назад</button>
+            <button class="btn btn-outline" id="lab2-prev" onclick="stepBy(-1)">Назад</button>
             <span class="muted" id="lab2-pos"></span>
-            <button class="btn btn-outline" id="lab2-next" onclick="labBy(1)">Вперёд</button>
+            <button class="btn btn-outline" id="lab2-next" onclick="stepBy(1)">Вперёд</button>
         </div>
 
+        {{/* Quiz steps render here (one question at a time) */}}
+        <div id="lab2-quizpanel" class="lab2-quiz" data-action="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz" style="display:none;"></div>
+
+        {{/* Task steps (server-rendered, shown one at a time by the controller) */}}
         {{range $i, $t := .Tasks}}
-        <div class="lab2-step" data-step="{{$i}}"{{if $i}} style="display:none"{{end}}>
-            <div class="lab2-step-title">Задание {{add $i 1}}: {{$t.Title}}</div>
+        <div class="lab2-task" data-task="{{$i}}" style="display:none;">
+            <div class="lab2-step-title">🧪 {{$t.Title}}</div>
             {{if $t.Glossary}}
             <div class="glossary-block">
                 <div class="glossary-title">Что понадобится:</div>
@@ -51,9 +50,9 @@
             {{end}}
             <div class="lab2-actions">
                 {{if $t.CheckScript}}
-                <button class="btn btn-success" onclick="labCheck({{$t.ID}})">✓ Проверить задачу</button>
+                <button class="btn btn-success" onclick="labCheck({{$t.ID}}, {{$i}})">✓ Проверить</button>
                 {{else}}
-                <button class="btn btn-success" onclick="labDone({{$i}})">✓ Готово, дальше</button>
+                <button class="btn btn-success" onclick="labTaskDone({{$i}})">✓ Готово</button>
                 {{end}}
                 <button class="btn btn-ghost" title="Фокус в терминал" onclick="labFocus()">⌨</button>
             </div>
@@ -83,25 +82,51 @@
 <script>
 (function () {
     var SESSION = {{.SessionTask}};
-    var COUNT = {{len .Tasks}};
+    var NT = {{len .Tasks}};
+    var QUIZ = []; var qd = document.getElementById('quiz-data'); if (qd) { try { QUIZ = JSON.parse(qd.textContent); } catch (e) {} }
+    var NQ = QUIZ.length, TOTAL = NQ + NT;
     var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0;
+    var answers = new Array(NQ).fill(null), quizSaved = false;
+    var pillsEl = document.getElementById('lab2-pills');
+    var quizPanel = document.getElementById('lab2-quizpanel');
+    var quizAction = quizPanel.dataset.action;
 
-    window.labStep = function (i) {
-        if (i < 0 || i >= COUNT) return;
-        step = i;
-        document.querySelectorAll('.lab2-step').forEach(function (el) { el.style.display = (+el.dataset.step === i) ? 'block' : 'none'; });
-        document.querySelectorAll('.lab2-pill').forEach(function (p) { p.classList.toggle('current', +p.dataset.pill === i); });
-        document.getElementById('lab2-pos').textContent = (i + 1) + ' / ' + COUNT;
-        document.getElementById('lab2-prev').disabled = i === 0;
-        document.getElementById('lab2-next').disabled = i === COUNT - 1;
-    };
-    window.labBy = function (d) { labStep(step + d); };
-    window.labDone = function (i) {
-        var p = document.querySelector('.lab2-pill[data-pill="' + i + '"]');
-        if (p) p.classList.add('done');
-        if (i < COUNT - 1) labStep(i + 1);
-    };
+    // unified step pills: quizzes (1..NQ) then tasks (NQ+1..TOTAL)
+    for (var i = 0; i < TOTAL; i++) {
+        var b = document.createElement('button');
+        b.className = 'lab2-pill ' + (i < NQ ? 'kq' : 'kt');
+        b.textContent = i + 1;
+        (function (k) { b.onclick = function () { showStep(k); }; })(i);
+        pillsEl.appendChild(b);
+    }
+
+    window.stepBy = function (d) { showStep(Math.max(0, Math.min(TOTAL - 1, step + d))); };
     window.labFocus = function () { if (term) term.focus(); };
+
+    function showStep(i) {
+        step = i;
+        document.querySelectorAll('.lab2-task').forEach(function (el) { el.style.display = 'none'; });
+        if (i < NQ) { quizPanel.style.display = 'block'; renderQuiz(i); }
+        else { quizPanel.style.display = 'none'; var c = document.querySelector('.lab2-task[data-task="' + (i - NQ) + '"]'); if (c) c.style.display = 'block'; }
+        document.getElementById('lab2-pos').textContent = (i + 1) + ' / ' + TOTAL;
+        document.getElementById('lab2-prev').disabled = i === 0;
+        document.getElementById('lab2-next').disabled = i === TOTAL - 1;
+        Array.prototype.forEach.call(pillsEl.children, function (p, idx) { p.classList.toggle('current', idx === step); });
+    }
+
+    function renderQuiz(qi) {
+        var q = QUIZ[qi], ans = answers[qi];
+        var h = '<div class="lq-card"><div class="lq-q">' + q.q + '</div>';
+        q.o.forEach(function (o, j) { var cls = 'lq-opt'; if (ans !== null) { if (j === q.c) cls += ' correct'; else if (j === ans) cls += ' wrong'; } h += '<button class="' + cls + '" data-i="' + j + '"' + (ans !== null ? ' disabled' : '') + '>' + o + '</button>'; });
+        if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + e + '</div>'; }
+        h += '</div>';
+        quizPanel.innerHTML = h;
+        quizPanel.querySelectorAll('.lq-opt').forEach(function (btn) { btn.onclick = function () { if (answers[qi] !== null) return; answers[qi] = parseInt(btn.dataset.i, 10); markQuizPill(qi); renderQuiz(qi); maybeSave(); }; });
+    }
+    function markQuizPill(qi) { var p = pillsEl.children[qi]; if (p) { p.classList.remove('correct', 'wrong'); p.classList.add(answers[qi] === QUIZ[qi].c ? 'correct' : 'wrong'); } }
+    function maybeSave() { if (quizSaved || NQ === 0) return; if (answers.every(function (a) { return a !== null; })) { quizSaved = true; var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&'); fetch(quizAction, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }).catch(function () {}); } }
+
+    window.labTaskDone = function (ti) { var p = pillsEl.children[NQ + ti]; if (p) p.classList.add('done'); if (step < TOTAL - 1) showStep(step + 1); };
 
     function setStatus(txt, on) {
         var s = document.getElementById('lab2-status');
@@ -156,7 +181,7 @@
         fetch('/api/shell/' + SESSION + '/reset', { method: 'POST' }).catch(function () {});
         labStop(); setTimeout(labStart, 300);
     };
-    window.labCheck = function (taskId) {
+    window.labCheck = function (taskId, taskIndex) {
         var box = document.getElementById('check-' + taskId);
         box.className = 'check-result'; box.style.display = 'block'; box.textContent = 'Проверяю…';
         fetch('/api/shell/' + taskId + '/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
@@ -164,49 +189,13 @@
             .then(function (d) {
                 box.className = 'check-result ' + (d.passed ? 'pass' : 'fail');
                 box.textContent = d.passed ? '✓ Задание выполнено!' : '✗ Пока не выполнено. Попробуй ещё.';
-                if (d.passed) { var p = document.querySelector('.lab2-pill[data-pill="' + step + '"]'); if (p) p.classList.add('done'); }
+                var p = pillsEl.children[NQ + taskIndex]; if (p) p.classList.toggle('done', !!d.passed);
             }).catch(function (e) { box.className = 'check-result fail'; box.textContent = 'Ошибка: ' + e.message; });
     };
 
-    labStep(0);
+    showStep(0);
 })();
 </script>
-
-{{if .HasQuiz}}
-<script>
-(function () {
-    var root = document.getElementById('lab-quiz');
-    if (!root) return;
-    var DATA = JSON.parse(document.getElementById('quiz-data').textContent);
-    var answers = new Array(DATA.length).fill(null), cur = 0, saved = false;
-    var action = root.dataset.action;
-    root.innerHTML = '<div class="lq-head"><strong>📝 Проверь себя</strong><div class="lq-pills"></div></div>' +
-        '<div class="lq-card" id="lq-card"></div>' +
-        '<div class="lq-foot"><button class="btn btn-outline btn-xs" id="lq-prev">←</button>' +
-        '<button class="btn btn-outline btn-xs" id="lq-next">→</button>' +
-        '<span class="muted" id="lq-prog" style="margin-left:auto;font-size:.8em;"></span>' +
-        '<button class="btn btn-success btn-xs" id="lq-fin" disabled>Сохранить</button></div>';
-    var pills = root.querySelector('.lq-pills'), card = root.querySelector('#lq-card'),
-        prog = root.querySelector('#lq-prog'), fin = root.querySelector('#lq-fin');
-    DATA.forEach(function (_, i) { var b = document.createElement('button'); b.className = 'lq-pill'; b.textContent = i + 1; b.onclick = function () { cur = i; render(); }; pills.appendChild(b); });
-    root.querySelector('#lq-prev').onclick = function () { cur = Math.max(0, cur - 1); render(); };
-    root.querySelector('#lq-next').onclick = function () { cur = Math.min(DATA.length - 1, cur + 1); render(); };
-    fin.onclick = function () { if (saved) return; var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&'); fetch(action, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }).then(function () { saved = true; fin.textContent = '✓'; }); };
-    function choose(i) { if (answers[cur] !== null) return; answers[cur] = i; render(); upd(); }
-    function upd() { var d = answers.filter(function (a) { return a !== null; }).length; var c = answers.filter(function (a, i) { return a === DATA[i].c; }).length; prog.textContent = d + '/' + DATA.length + ' · верно ' + c; fin.disabled = d < DATA.length || saved; }
-    function render() {
-        var q = DATA[cur], ans = answers[cur];
-        var h = '<div class="lq-q">' + q.q + '</div>';
-        q.o.forEach(function (o, i) { var cls = 'lq-opt'; if (ans !== null) { if (i === q.c) cls += ' correct'; else if (i === ans) cls += ' wrong'; } h += '<button class="' + cls + '" data-i="' + i + '"' + (ans !== null ? ' disabled' : '') + '>' + o + '</button>'; });
-        if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + e + '</div>'; }
-        card.innerHTML = h;
-        card.querySelectorAll('.lq-opt').forEach(function (b) { b.onclick = function () { choose(parseInt(b.dataset.i, 10)); }; });
-        Array.prototype.forEach.call(pills.children, function (p, i) { p.classList.remove('current', 'correct', 'wrong'); if (i === cur) p.classList.add('current'); if (answers[i] !== null) p.classList.add(answers[i] === DATA[i].c ? 'correct' : 'wrong'); });
-    }
-    render(); upd();
-})();
-</script>
-{{end}}
 
 <style>
 .lab2 { display:grid; grid-template-columns:380px minmax(0,1fr); gap:0; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:74vh; }
@@ -239,6 +228,10 @@
 .lab2-pill { width:34px; height:34px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; transition:all .15s; }
 .lab2-pill.current { outline:2px solid var(--accent); color:var(--text); }
 .lab2-pill.done { background:var(--green); color:#04210d; border-color:transparent; }
+.lab2-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lab2-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
+.lab2-pill.kq { box-shadow:inset 0 -3px 0 rgba(227,179,65,.5); }
+.lab2-pill.kt { box-shadow:inset 0 -3px 0 rgba(247,120,186,.5); }
 .lab2-stepnav { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; }
 .lab2-stepnav .btn { padding:5px 12px; font-size:.82em; }
 .lab2-step-title { font-weight:700; margin-bottom:12px; }
