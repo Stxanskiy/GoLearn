@@ -77,6 +77,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(h.AdminMiddleware)
 			r.Get("/admin", h.AdminDashboard)
+			r.Post("/admin/preview", h.AdminPreview)
 			r.Get("/admin/specs", h.AdminSpecs)
 			r.Post("/admin/spec", h.AdminSpecSave)
 			r.Post("/admin/spec/{slug}/delete", h.AdminSpecDelete)
@@ -119,6 +120,7 @@ func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
 			return a * 100 / b
 		},
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
+		"content":  func(format, raw string) template.HTML { return RenderContent(format, raw) },
 	}).ParseFiles(
 		"internal/templates/layouts/base.html",
 		"internal/templates/pages/"+tmplName+".html",

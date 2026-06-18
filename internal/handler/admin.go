@@ -185,7 +185,15 @@ type AdminLessonData struct {
 
 func (h *Handler) AdminLessonNew(w http.ResponseWriter, r *http.Request) {
 	mid := atoiDefault(chi.URLParam(r, "id"), 0)
-	h.render(w, "admin_lesson", &AdminLessonData{PageTitle: "Новая глава", Lesson: &model.Lesson{Kind: "theory", Difficulty: "beginner"}, ModuleID: mid, IsNew: true})
+	h.render(w, "admin_lesson", &AdminLessonData{PageTitle: "Новая глава", Lesson: &model.Lesson{Kind: "theory", Difficulty: "beginner", Format: "md"}, ModuleID: mid, IsNew: true})
+}
+
+// AdminPreview renders markdown/html content the same way the lesson page does.
+func (h *Handler) AdminPreview(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	html := RenderContent(r.FormValue("format"), r.FormValue("content"))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = w.Write([]byte(html))
 }
 
 func (h *Handler) AdminLessonEdit(w http.ResponseWriter, r *http.Request) {
@@ -216,10 +224,14 @@ func (h *Handler) AdminLessonSave(w http.ResponseWriter, r *http.Request) {
 		Title:      strings.TrimSpace(r.FormValue("title")),
 		Content:    r.FormValue("content"),
 		Kind:       r.FormValue("kind"),
+		Format:     r.FormValue("format"),
 		Difficulty: r.FormValue("difficulty"),
 		OrderNum:   atoiDefault(r.FormValue("order_num"), 0),
 		VMImage:    strings.TrimSpace(r.FormValue("vm_image")),
 		VMInit:     r.FormValue("vm_init"),
+	}
+	if l.Format == "" {
+		l.Format = "html"
 	}
 	if l.Slug == "" || l.Title == "" {
 		http.Error(w, "slug и title обязательны", 400)
@@ -385,7 +397,7 @@ type AdminTaskData struct {
 
 func (h *Handler) AdminTaskNew(w http.ResponseWriter, r *http.Request) {
 	lid := atoiDefault(chi.URLParam(r, "id"), 0)
-	h.render(w, "admin_task", &AdminTaskData{PageTitle: "Новое задание", Task: &model.Task{Kind: "shell", Difficulty: "medium"}, LessonID: lid, IsNew: true})
+	h.render(w, "admin_task", &AdminTaskData{PageTitle: "Новое задание", Task: &model.Task{Kind: "shell", Difficulty: "medium", Format: "md"}, LessonID: lid, IsNew: true})
 }
 
 func (h *Handler) AdminTaskEdit(w http.ResponseWriter, r *http.Request) {
@@ -412,6 +424,7 @@ func (h *Handler) AdminTaskSave(w http.ResponseWriter, r *http.Request) {
 		Solution:     r.FormValue("solution"),
 		Difficulty:   r.FormValue("difficulty"),
 		Kind:         r.FormValue("kind"),
+		Format:       r.FormValue("format"),
 		StarterCode:  r.FormValue("starter_code"),
 		SandboxImage: strings.TrimSpace(r.FormValue("sandbox_image")),
 		SetupScript:  r.FormValue("setup_script"),

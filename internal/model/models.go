@@ -33,6 +33,7 @@ type Lesson struct {
 	Difficulty string    `json:"difficulty" db:"difficulty"` // beginner | intermediate | advanced | expert
 	Track      string    `json:"track" db:"track"`           // backend | devops | shared
 	Kind       string    `json:"kind" db:"kind"`             // theory | quiz | lab | sim
+	Format     string    `json:"format" db:"format"`         // html | md
 	VMImage    string    `json:"vm_image" db:"vm_image"`     // lab terminal image
 	VMInit     string    `json:"vm_init" db:"vm_init"`       // lab setup reference/script
 	Source     string    `json:"source" db:"source"`         // seed | admin
@@ -92,6 +93,7 @@ type Task struct {
 	Glossary    []GlossaryItem  `json:"glossary"`
 	TestCases   []TestCase      `json:"test_cases"`
 	StarterCode string          `json:"starter_code" db:"starter_code"`
+	Format       string `json:"format" db:"format"`               // html | md
 	Kind         string `json:"kind" db:"kind"`                   // go | shell
 	SandboxImage string `json:"sandbox_image" db:"sandbox_image"` // shell tasks
 	SetupScript  string `json:"setup_script" db:"setup_script"`

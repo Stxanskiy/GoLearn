@@ -1,0 +1,3 @@
+-- 009 down
+ALTER TABLE lessons DROP COLUMN IF EXISTS format;
+ALTER TABLE tasks   DROP COLUMN IF EXISTS format;

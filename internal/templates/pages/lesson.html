@@ -50,7 +50,7 @@
 </div>
 {{else if .ContentHTML}}
 <div class="content-area lesson-content">
-    {{safeHTML .ContentHTML}}
+    {{content .Lesson.Format .ContentHTML}}
 </div>
 {{end}}
 

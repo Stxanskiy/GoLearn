@@ -17,12 +17,12 @@ func NewLessonRepo(pool *pgxpool.Pool) *LessonRepo {
 	return &LessonRepo{pool: pool}
 }
 
-const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, source, created_at`
+const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, created_at`
 
 func scanLesson(row pgx.Row) (model.Lesson, error) {
 	var l model.Lesson
 	err := row.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.Difficulty,
-		&l.Track, &l.Kind, &l.VMImage, &l.VMInit, &l.Source, &l.CreatedAt)
+		&l.Track, &l.Kind, &l.Format, &l.VMImage, &l.VMInit, &l.Source, &l.CreatedAt)
 	return l, err
 }
 
@@ -58,16 +58,16 @@ func (r *LessonRepo) GetBySlug(ctx context.Context, moduleID int, slug string) (
 func (r *LessonRepo) Create(ctx context.Context, l model.Lesson) (int, error) {
 	var id int
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, source)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'admin') RETURNING id`,
-		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.VMImage, l.VMInit).Scan(&id)
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin') RETURNING id`,
+		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&id)
 	return id, err
 }
 
 func (r *LessonRepo) Update(ctx context.Context, l model.Lesson) error {
 	_, err := r.pool.Exec(ctx,
-		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, vm_image=$7, vm_init=$8 WHERE id=$9`,
-		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.VMImage, l.VMInit, l.ID)
+		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9 WHERE id=$10`,
+		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit, l.ID)
 	return err
 }
 
@@ -117,7 +117,7 @@ func (r *LessonRepo) GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []
 
 func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script
+		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, format, kind, sandbox_image, setup_script, check_script
 		FROM tasks WHERE lesson_id = $1 ORDER BY order_num`, lessonID)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, 
 	for rows.Next() {
 		var t model.Task
 		var glossaryJSON, testCasesJSON []byte
-		if err := rows.Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript); err != nil {
+		if err := rows.Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Format, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal(glossaryJSON, &t.Glossary)
@@ -208,9 +208,9 @@ func (r *LessonRepo) CreateTask(ctx context.Context, t model.Task) (int, error) 
 	_ = r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num),0) FROM tasks WHERE lesson_id=$1`, t.LessonID).Scan(&maxOrder)
 	var id int
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`,
-		t.LessonID, t.Title, t.Description, t.Hints, t.Solution, maxOrder+1, t.Difficulty, gloss, tc, t.StarterCode, t.Kind, t.SandboxImage, t.SetupScript, t.CheckScript).Scan(&id)
+		`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, format, kind, sandbox_image, setup_script, check_script)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id`,
+		t.LessonID, t.Title, t.Description, t.Hints, t.Solution, maxOrder+1, t.Difficulty, gloss, tc, t.StarterCode, t.Format, t.Kind, t.SandboxImage, t.SetupScript, t.CheckScript).Scan(&id)
 	return id, err
 }
 
@@ -219,8 +219,8 @@ func (r *LessonRepo) UpdateTask(ctx context.Context, t model.Task) error {
 	tc, _ := json.Marshal(t.TestCases)
 	_, err := r.pool.Exec(ctx,
 		`UPDATE tasks SET title=$1, description=$2, hints=$3, solution=$4, difficulty=$5, glossary=$6,
-		   test_cases=$7, starter_code=$8, kind=$9, sandbox_image=$10, setup_script=$11, check_script=$12 WHERE id=$13`,
-		t.Title, t.Description, t.Hints, t.Solution, t.Difficulty, gloss, tc, t.StarterCode, t.Kind, t.SandboxImage, t.SetupScript, t.CheckScript, t.ID)
+		   test_cases=$7, starter_code=$8, format=$9, kind=$10, sandbox_image=$11, setup_script=$12, check_script=$13 WHERE id=$14`,
+		t.Title, t.Description, t.Hints, t.Solution, t.Difficulty, gloss, tc, t.StarterCode, t.Format, t.Kind, t.SandboxImage, t.SetupScript, t.CheckScript, t.ID)
 	return err
 }
 
@@ -233,9 +233,9 @@ func (r *LessonRepo) GetTaskByID(ctx context.Context, taskID int) (*model.Task, 
 	var t model.Task
 	var glossaryJSON, testCasesJSON []byte
 	err := r.pool.QueryRow(ctx, `
-		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script
+		SELECT id, lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, format, kind, sandbox_image, setup_script, check_script
 		FROM tasks WHERE id = $1`, taskID).
-		Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript)
+		Scan(&t.ID, &t.LessonID, &t.Title, &t.Description, &t.Hints, &t.Solution, &t.OrderNum, &t.Difficulty, &glossaryJSON, &testCasesJSON, &t.StarterCode, &t.Format, &t.Kind, &t.SandboxImage, &t.SetupScript, &t.CheckScript)
 	if err != nil {
 		return nil, err
 	}

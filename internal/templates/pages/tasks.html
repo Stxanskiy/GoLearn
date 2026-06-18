@@ -17,7 +17,7 @@
         {{if .ContentHTML}}
         <details class="lab2-material">
             <summary>📖 Теория к лабораторной</summary>
-            <div class="lesson-content lab2-content">{{safeHTML .ContentHTML}}</div>
+            <div class="lesson-content lab2-content">{{content .Lesson.Format .ContentHTML}}</div>
         </details>
         {{end}}
 
@@ -44,10 +44,10 @@
                 {{range $t.Glossary}}<div class="glossary-item"><code class="glossary-term">{{.Term}}</code><span class="glossary-def">{{.Definition}}</span></div>{{end}}
             </div>
             {{end}}
-            <div class="lab2-desc">{{safeHTML $t.Description}}</div>
+            <div class="lab2-desc">{{content $t.Format $t.Description}}</div>
             {{if $t.Hints}}
             <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">💡 Подсказка</button>
-            <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{safeHTML $t.Hints}}</div></div>
+            <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{content $t.Format $t.Hints}}</div></div>
             {{end}}
             <div class="lab2-actions">
                 {{if $t.CheckScript}}
@@ -292,7 +292,7 @@
         <div class="glossary-block"><div class="glossary-title">Что понадобится:</div>
             {{range $t.Glossary}}<div class="glossary-item"><code class="glossary-term">{{.Term}}</code><span class="glossary-def">{{.Definition}}</span></div>{{end}}
         </div>{{end}}
-        <div class="content-area" style="border:none;padding:0;">{{safeHTML $t.Description}}</div>
+        <div class="content-area" style="border:none;padding:0;">{{content $t.Format $t.Description}}</div>
         {{if $t.StarterCode}}
         <div style="margin-top:14px;">
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;">
@@ -304,7 +304,7 @@
             <div id="output-{{$t.ID}}" style="display:none;margin-top:8px;padding:12px 16px;font-family:'SF Mono',monospace;font-size:.85em;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);white-space:pre-wrap;max-height:300px;overflow-y:auto;"></div>
         </div>{{end}}
         {{if $t.Hints}}<button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">💡 Подсказка</button>
-        <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{safeHTML $t.Hints}}</div></div>{{end}}
+        <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{content $t.Format $t.Hints}}</div></div>{{end}}
     </div>
 </div>
 {{end}}

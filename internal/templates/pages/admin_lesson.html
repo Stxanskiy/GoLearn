@@ -32,7 +32,22 @@
         </label>
         <label>Порядок<input name="order_num" type="number" value="{{.Lesson.OrderNum}}"></label>
         <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="ubuntu:24.04"></label>
-        <label class="full">Контент (HTML)<textarea name="content" rows="18" style="font-family:'SF Mono',monospace;font-size:.85em;">{{.Lesson.Content}}</textarea></label>
+        <label>Формат контента
+            <select name="format" id="fmt-sel">
+                {{$f := .Lesson.Format}}
+                <option value="md"{{if eq $f "md"}} selected{{end}}>Markdown (текст, **жирный**, код, цвет через HTML)</option>
+                <option value="html"{{if eq $f "html"}} selected{{end}}>HTML</option>
+            </select>
+        </label>
+        <div class="full md-editor">
+            <div class="md-tabs">
+                <button type="button" class="md-tab active" data-tab="edit" onclick="mdTab('edit')">Редактор</button>
+                <button type="button" class="md-tab" data-tab="prev" onclick="mdTab('prev')">Предпросмотр</button>
+                <span class="md-hint muted">Markdown: <code>**жирный**</code>, <code>`код`</code>, <code>```bash</code>, <code>&lt;span style="color:#3fb950"&gt;цвет&lt;/span&gt;</code></span>
+            </div>
+            <textarea id="md-src" name="content" rows="18" style="font-family:'SF Mono',monospace;font-size:.85em;">{{.Lesson.Content}}</textarea>
+            <div id="md-preview" class="lesson-content md-preview" style="display:none;"></div>
+        </div>
     </div>
     <div class="row" style="margin-top:16px;">
         <button class="btn btn-primary" type="submit">Сохранить</button>
@@ -94,5 +109,28 @@
 .adm-form input, .adm-form select, .adm-form textarea { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
 .adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { border-color:var(--accent); }
 @media (max-width:680px){ .adm-form .adm-grid { grid-template-columns:1fr; } }
+.md-editor { border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+.md-tabs { display:flex; align-items:center; gap:6px; background:var(--bg-elevated); border-bottom:1px solid var(--border); padding:6px 8px; flex-wrap:wrap; }
+.md-tab { background:none; border:1px solid transparent; color:var(--text-muted); padding:4px 12px; border-radius:7px; cursor:pointer; font-size:.85em; font-weight:600; }
+.md-tab.active { background:var(--bg-card); color:var(--text); border-color:var(--border); }
+.md-hint { font-size:.74em; margin-left:auto; }
+.md-editor textarea { border:none; border-radius:0; width:100%; display:block; }
+.md-preview { padding:16px; min-height:200px; max-height:520px; overflow:auto; background:var(--bg-card); }
 </style>
+<script>
+function mdTab(which) {
+    var src = document.getElementById('md-src'), prev = document.getElementById('md-preview');
+    document.querySelectorAll('.md-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === which); });
+    if (which === 'prev') {
+        prev.innerHTML = '<span class="muted">Рендерю…</span>';
+        src.style.display = 'none'; prev.style.display = 'block';
+        var body = 'format=' + encodeURIComponent(document.getElementById('fmt-sel').value) + '&content=' + encodeURIComponent(src.value);
+        fetch('/admin/preview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
+            .then(function (r) { return r.text(); }).then(function (h) { prev.innerHTML = h; })
+            .catch(function (e) { prev.innerHTML = '<span style="color:var(--red)">Ошибка предпросмотра</span>'; });
+    } else {
+        prev.style.display = 'none'; src.style.display = 'block';
+    }
+}
+</script>
 {{end}}
