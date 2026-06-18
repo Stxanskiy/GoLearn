@@ -343,6 +343,7 @@
             <a href="/courses" class="nav-link" data-path="/courses">Курсы</a>
             <a href="/trainers" class="nav-link" data-path="/trainers">Тренажёры</a>
             <a href="/simulators" class="nav-link" data-path="/simulators">Симуляторы</a>
+            <a href="/admin" class="nav-link" data-path="/admin" id="nav-admin" style="display:none;">⚙ Админка</a>
             <a href="/logout" class="nav-link spacer">Выход</a>
         </div>
     </nav>
@@ -352,13 +353,16 @@
         </div>
     </main>
     <script>
-        // Mark active nav link
+        // Mark active nav link + reveal admin link for admins
         (function () {
             var p = location.pathname;
             document.querySelectorAll('nav .nav-link[data-path]').forEach(function (a) {
                 var dp = a.getAttribute('data-path');
                 if (dp === '/' ? p === '/' : p.indexOf(dp) === 0) a.classList.add('active');
             });
+            if (/(^|;\s*)gl_role=admin/.test(document.cookie)) {
+                var na = document.getElementById('nav-admin'); if (na) na.style.display = '';
+            }
         })();
 
         function toggleElement(id) {

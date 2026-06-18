@@ -74,6 +74,11 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 				user.Role = "admin"
 			}
 		}
+		// Non-sensitive hint cookie so the navbar can show the admin link
+		// (/admin itself is still guarded by AdminMiddleware).
+		if user.IsAdmin() {
+			http.SetCookie(w, &http.Cookie{Name: "gl_role", Value: "admin", Path: "/", MaxAge: 30 * 24 * 3600})
+		}
 
 		ctx := context.WithValue(r.Context(), userContextKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -168,5 +173,6 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		h.userRepo.DeleteSession(r.Context(), cookie.Value)
 	}
 	http.SetCookie(w, &http.Cookie{Name: "session", Value: "", MaxAge: -1, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "gl_role", Value: "", MaxAge: -1, Path: "/"})
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
