@@ -47,6 +47,7 @@ type Specialization struct {
 	Icon        string `json:"icon" db:"icon"`
 	Description string `json:"description" db:"description"`
 	OrderNum    int    `json:"order_num" db:"order_num"`
+	CoverImage  string `json:"cover_image" db:"cover_image"`
 }
 
 // Quiz represents a quiz attached to a lesson.

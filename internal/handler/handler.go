@@ -51,6 +51,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Get("/courses", h.CoursesPage)
 		r.Get("/courses/{track}", h.SectionPage)
 		r.Get("/api/courses/{slug}/cover", h.CourseCover)
+		r.Get("/api/spec/{slug}/cover", h.SpecCover)
 		r.Get("/trainers", h.TrainersPage)
 		r.Get("/simulators", h.SimulatorsPage)
 		r.Get("/simulator/{slug}", h.SimulatorPage)

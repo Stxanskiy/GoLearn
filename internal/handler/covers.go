@@ -52,6 +52,45 @@ func deriveLabel(difficulty string) string {
 	}
 }
 
+// SpecCover serves a specialization's cover (real image) or a generated SVG.
+func (h *Handler) SpecCover(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	s, err := h.specRepo.Get(r.Context(), slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if s.CoverImage != "" {
+		if strings.HasPrefix(s.CoverImage, "data:") {
+			if mime, raw, ok := decodeDataURI(s.CoverImage); ok {
+				w.Header().Set("Content-Type", mime)
+				w.Header().Set("Cache-Control", "public, max-age=86400")
+				_, _ = w.Write(raw)
+				return
+			}
+		} else {
+			http.Redirect(w, r, s.CoverImage, http.StatusFound)
+			return
+		}
+	}
+	// fallback: gradient banner + icon
+	gradKey := map[string]string{"devops": "DevOps", "golang": "Golang", "security": "Security", "database": "Database"}[slug]
+	from, to := gradientFor(gradKey)
+	icon := s.Icon
+	if icon == "" {
+		icon = "📚"
+	}
+	var b strings.Builder
+	b.WriteString(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340" role="img"><defs>`)
+	fmt.Fprintf(&b, `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s"/></linearGradient>`, from, to)
+	b.WriteString(`<pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/></pattern></defs>`)
+	b.WriteString(`<rect width="600" height="340" fill="url(#g)"/><rect width="600" height="340" fill="url(#grid)"/>`)
+	fmt.Fprintf(&b, `<text x="300" y="186" font-size="150" text-anchor="middle" dominant-baseline="middle">%s</text></svg>`, icon)
+	w.Header().Set("Content-Type", "image/svg+xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	_, _ = w.Write([]byte(b.String()))
+}
+
 // decodeDataURI parses "data:<mime>;base64,<data>" into mime + bytes.
 func decodeDataURI(uri string) (mime string, data []byte, ok bool) {
 	const b64 = ";base64,"

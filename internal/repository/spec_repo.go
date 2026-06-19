@@ -17,7 +17,7 @@ func NewSpecRepo(pool *pgxpool.Pool) *SpecRepo {
 
 func (r *SpecRepo) List(ctx context.Context) ([]model.Specialization, error) {
 	rows, err := r.pool.Query(ctx,
-		`SELECT slug, name, icon, description, order_num FROM specializations ORDER BY order_num, name`)
+		`SELECT slug, name, icon, description, order_num, cover_image FROM specializations ORDER BY order_num, name`)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (r *SpecRepo) List(ctx context.Context) ([]model.Specialization, error) {
 	var specs []model.Specialization
 	for rows.Next() {
 		var s model.Specialization
-		if err := rows.Scan(&s.Slug, &s.Name, &s.Icon, &s.Description, &s.OrderNum); err != nil {
+		if err := rows.Scan(&s.Slug, &s.Name, &s.Icon, &s.Description, &s.OrderNum, &s.CoverImage); err != nil {
 			return nil, err
 		}
 		specs = append(specs, s)
@@ -36,8 +36,8 @@ func (r *SpecRepo) List(ctx context.Context) ([]model.Specialization, error) {
 func (r *SpecRepo) Get(ctx context.Context, slug string) (*model.Specialization, error) {
 	var s model.Specialization
 	err := r.pool.QueryRow(ctx,
-		`SELECT slug, name, icon, description, order_num FROM specializations WHERE slug = $1`, slug).
-		Scan(&s.Slug, &s.Name, &s.Icon, &s.Description, &s.OrderNum)
+		`SELECT slug, name, icon, description, order_num, cover_image FROM specializations WHERE slug = $1`, slug).
+		Scan(&s.Slug, &s.Name, &s.Icon, &s.Description, &s.OrderNum, &s.CoverImage)
 	if err != nil {
 		return nil, err
 	}
@@ -46,11 +46,12 @@ func (r *SpecRepo) Get(ctx context.Context, slug string) (*model.Specialization,
 
 func (r *SpecRepo) Upsert(ctx context.Context, s model.Specialization) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO specializations (slug, name, icon, description, order_num)
-		 VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO specializations (slug, name, icon, description, order_num, cover_image)
+		 VALUES ($1, $2, $3, $4, $5, $6)
 		 ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, icon=EXCLUDED.icon,
-		   description=EXCLUDED.description, order_num=EXCLUDED.order_num`,
-		s.Slug, s.Name, s.Icon, s.Description, s.OrderNum)
+		   description=EXCLUDED.description, order_num=EXCLUDED.order_num,
+		   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), specializations.cover_image)`,
+		s.Slug, s.Name, s.Icon, s.Description, s.OrderNum, s.CoverImage)
 	return err
 }
 

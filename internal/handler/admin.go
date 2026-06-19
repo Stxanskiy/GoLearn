@@ -280,13 +280,14 @@ func (h *Handler) AdminSpecs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AdminSpecSave(w http.ResponseWriter, r *http.Request) {
-	_ = r.ParseForm()
+	_ = r.ParseMultipartForm(8 << 20)
 	s := model.Specialization{
 		Slug:        strings.TrimSpace(r.FormValue("slug")),
 		Name:        strings.TrimSpace(r.FormValue("name")),
 		Icon:        strings.TrimSpace(r.FormValue("icon")),
 		Description: r.FormValue("description"),
 		OrderNum:    atoiDefault(r.FormValue("order_num"), 0),
+		CoverImage:  h.coverFromForm(r),
 	}
 	if s.Slug == "" || s.Name == "" {
 		http.Error(w, "slug и name обязательны", 400)
