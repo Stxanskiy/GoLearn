@@ -201,7 +201,17 @@
             .then(function (r) { return r.json(); })
             .then(function (d) {
                 box.className = 'check-result ' + (d.passed ? 'pass' : 'fail');
-                box.textContent = d.passed ? '✓ Задание выполнено!' : '✗ Пока не выполнено. Попробуй ещё.';
+                box.textContent = '';
+                var head = document.createElement('div');
+                head.className = 'check-head';
+                head.textContent = d.passed ? '✓ Задание выполнено!' : '✗ Пока не выполнено. Попробуй ещё.';
+                box.appendChild(head);
+                if (d.output && d.output.trim()) {
+                    var pre = document.createElement('pre');
+                    pre.className = 'check-out';
+                    pre.textContent = d.output.trim();
+                    box.appendChild(pre);
+                }
                 var p = pillsEl.children[NQ + taskIndex]; if (p) p.classList.toggle('done', !!d.passed);
             }).catch(function (e) { box.className = 'check-result fail'; box.textContent = 'Ошибка: ' + e.message; });
     };
@@ -273,6 +283,8 @@
 .check-result { display:none; margin-top:6px; padding:10px 12px; border-radius:9px; font-size:.85em; }
 .check-result.pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(63,185,80,.4); }
 .check-result.fail { background:var(--red-bg); color:var(--red); border:1px solid rgba(248,81,73,.4); }
+.check-head { font-weight:600; }
+.check-out { margin-top:8px; padding:8px 10px; background:var(--code-bg); border:1px solid var(--border); border-radius:7px; color:var(--text-muted); font-family:'SF Mono',ui-monospace,monospace; font-size:.92em; white-space:pre-wrap; max-height:220px; overflow:auto; }
 .hint-toggle { background:none; border:1px solid var(--border); color:var(--yellow); padding:5px 12px; border-radius:8px; cursor:pointer; font-size:.82em; margin-bottom:10px; }
 .glossary-block { margin-bottom:14px; padding:12px 14px; background:var(--bg); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; }
 .glossary-title { color:var(--accent); font-size:.84em; font-weight:600; margin-bottom:8px; }

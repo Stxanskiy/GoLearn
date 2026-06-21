@@ -46,7 +46,7 @@
                 <span class="md-hint muted">Markdown: <code>**жирный**</code>, <code>`код`</code>, <code>```bash</code>, <code>&lt;span style="color:#3fb950"&gt;цвет&lt;/span&gt;</code></span>
             </div>
             <textarea id="md-src" name="content" rows="18" style="font-family:'SF Mono',monospace;font-size:.85em;">{{.Lesson.Content}}</textarea>
-            <div id="md-preview" class="lesson-content md-preview" style="display:none;"></div>
+            <div id="md-preview" class="content-area md-preview" style="display:none;"></div>
         </div>
     </div>
     <div class="row" style="margin-top:16px;">
@@ -115,7 +115,9 @@
 .md-tab.active { background:var(--bg-card); color:var(--text); border-color:var(--border); }
 .md-hint { font-size:.74em; margin-left:auto; }
 .md-editor textarea { border:none; border-radius:0; width:100%; display:block; }
-.md-preview { padding:16px; min-height:200px; max-height:520px; overflow:auto; background:var(--bg-card); }
+.md-preview { padding:20px 24px; min-height:200px; max-height:640px; overflow:auto; background:var(--bg-card); border:none; border-radius:0; line-height:1.7; }
+.md-preview h1 { margin-top:8px; }
+.md-preview img { max-width:100%; height:auto; }
 </style>
 <script>
 function mdTab(which) {

@@ -30,6 +30,15 @@ func atoiDefault(s string, def int) int {
 	return def
 }
 
+func isValidSlug(s string) bool {
+	for _, r := range s {
+		if !(r >= 'a' && r <= 'z') && !(r >= '0' && r <= '9') && r != '-' && r != '_' {
+			return false
+		}
+	}
+	return s != ""
+}
+
 func splitTags(s string) []string {
 	var out []string
 	for _, t := range strings.Split(s, ",") {
@@ -291,6 +300,10 @@ func (h *Handler) AdminSpecSave(w http.ResponseWriter, r *http.Request) {
 	}
 	if s.Slug == "" || s.Name == "" {
 		http.Error(w, "slug и name обязательны", 400)
+		return
+	}
+	if !isValidSlug(s.Slug) {
+		http.Error(w, "slug может содержать только латиницу, цифры и дефис", 400)
 		return
 	}
 	if err := h.specRepo.Upsert(r.Context(), s); err != nil {

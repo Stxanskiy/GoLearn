@@ -15,7 +15,7 @@
         <span class="muted">{{.Slug}}</span>
         <span>{{.OrderNum}}</span>
         <span class="admin-actions">
-            <button class="btn btn-outline btn-xs" onclick='editSpec({{printf "%q" .Slug}},{{printf "%q" .Name}},{{printf "%q" .Icon}},{{printf "%q" .Description}},{{.OrderNum}})'>✎</button>
+            <button class="btn btn-outline btn-xs" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}})">✎</button>
             <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
         </span>
     </div>

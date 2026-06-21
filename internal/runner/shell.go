@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/creack/pty"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -27,6 +28,7 @@ const (
 type ShellRunner struct {
 	host, port, user, image, keyFile string
 	enabled                          bool
+	local                            bool // run docker on the host directly (no SSH/VM)
 	mu                               sync.Mutex
 	sessions                         map[string]time.Time
 }
@@ -38,6 +40,14 @@ func NewShellRunner() *ShellRunner {
 		user:     shellEnv("SANDBOX_SSH_USER", "sandbox"),
 		image:    shellEnv("SANDBOX_IMAGE", "ubuntu:24.04"),
 		sessions: make(map[string]time.Time),
+	}
+	// Local mode: execute docker on the host directly. Suited to a single-user
+	// local install where a dedicated sandbox VM is overkill.
+	if v := strings.ToLower(shellEnv("SANDBOX_LOCAL", "")); v == "1" || v == "true" || v == "yes" {
+		s.local = true
+		s.enabled = true
+		go s.reaper()
+		return s
 	}
 	keySrc := shellEnv("SANDBOX_SSH_KEY", "")
 	if s.host == "" || keySrc == "" {
@@ -62,6 +72,25 @@ func NewShellRunner() *ShellRunner {
 }
 
 func (s *ShellRunner) Enabled() bool { return s != nil && s.enabled }
+
+// run executes a shell script via the active transport: locally (bash on the
+// host) in local mode, or over SSH to the sandbox VM otherwise.
+func (s *ShellRunner) run(ctx context.Context, script string) (string, int, error) {
+	if s.local {
+		cmd := exec.CommandContext(ctx, "bash", "-c", script)
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &out
+		err := cmd.Run()
+		exit := 0
+		if ee, ok := err.(*exec.ExitError); ok {
+			exit = ee.ExitCode()
+			err = nil
+		}
+		return out.String(), exit, err
+	}
+	return s.runSSH(ctx, script)
+}
 
 func (s *ShellRunner) runSSH(ctx context.Context, remote string) (string, int, error) {
 	args := []string{
@@ -104,7 +133,7 @@ func (s *ShellRunner) ensure(ctx context.Context, userID, taskID int, image, set
 		image = s.image
 	}
 	c := sessionName(userID, taskID)
-	out, _, err := s.runSSH(ctx, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s 2>/dev/null", c))
+	out, _, err := s.run(ctx, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s 2>/dev/null", c))
 	if err != nil {
 		return "", err
 	}
@@ -120,7 +149,7 @@ func (s *ShellRunner) ensure(ctx context.Context, userID, taskID int, image, set
 			`echo OK`,
 		c, c, image, b64, c, b64,
 	)
-	out, _, err = s.runSSH(ctx, create)
+	out, _, err = s.run(ctx, create)
 	if err != nil {
 		return "", err
 	}
@@ -144,7 +173,7 @@ func wrap(command string) string {
 func (s *ShellRunner) execIn(ctx context.Context, container, script string) (string, int, error) {
 	b64 := base64.StdEncoding.EncodeToString([]byte(script))
 	remote := fmt.Sprintf(`docker exec %s sh -c 'echo %s | base64 -d | bash' 2>&1`, container, b64)
-	out, exit, err := s.runSSH(ctx, remote)
+	out, exit, err := s.run(ctx, remote)
 	if len(out) > maxShellOutput {
 		out = out[:maxShellOutput] + "\n… (вывод обрезан)"
 	}
@@ -183,7 +212,7 @@ func (s *ShellRunner) Reset(ctx context.Context, userID, taskID int) error {
 	ctx, cancel := context.WithTimeout(ctx, shellExecTimeout)
 	defer cancel()
 	c := sessionName(userID, taskID)
-	_, _, err := s.runSSH(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1; echo OK", c))
+	_, _, err := s.run(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1; echo OK", c))
 	s.mu.Lock()
 	delete(s.sessions, c)
 	s.mu.Unlock()
@@ -208,7 +237,7 @@ func (s *ShellRunner) reaper() {
 		s.mu.Unlock()
 		for _, c := range stale {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			_, _, _ = s.runSSH(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1", c))
+			_, _, _ = s.run(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1", c))
 			cancel()
 		}
 	}
@@ -236,22 +265,24 @@ func (s *ShellRunner) signer() (ssh.Signer, error) {
 	return ssh.ParsePrivateKey(data)
 }
 
-// PTYSession is a live interactive shell into a sandbox container.
+// PTYSession is a live interactive shell into a sandbox container. The
+// transport (SSH or local docker) is hidden behind resize/closer closures.
 type PTYSession struct {
-	client  *ssh.Client
-	session *ssh.Session
-	Stdin   io.WriteCloser
-	Stdout  io.Reader
+	Stdin  io.WriteCloser
+	Stdout io.Reader
+	resize func(rows, cols int)
+	closer func()
 }
 
-func (p *PTYSession) Resize(rows, cols int) { _ = p.session.WindowChange(rows, cols) }
+func (p *PTYSession) Resize(rows, cols int) {
+	if p.resize != nil {
+		p.resize(rows, cols)
+	}
+}
 
 func (p *PTYSession) Close() {
-	if p.session != nil {
-		_ = p.session.Close()
-	}
-	if p.client != nil {
-		_ = p.client.Close()
+	if p.closer != nil {
+		p.closer()
 	}
 }
 
@@ -260,6 +291,35 @@ func (s *ShellRunner) OpenPTY(container string, cols, rows int) (*PTYSession, er
 	if !s.enabled {
 		return nil, fmt.Errorf("sandbox disabled")
 	}
+	if s.local {
+		return s.openPTYLocal(container, cols, rows)
+	}
+	return s.openPTYSSH(container, cols, rows)
+}
+
+// openPTYLocal attaches to an interactive docker exec via a host PTY.
+func (s *ShellRunner) openPTYLocal(container string, cols, rows int) (*PTYSession, error) {
+	cmd := exec.Command("docker", "exec", "-it", container, "env", "TERM=xterm-256color", "HOME=/root", "bash")
+	ptmx, err := pty.Start(cmd)
+	if err != nil {
+		return nil, err
+	}
+	_ = pty.Setsize(ptmx, &pty.Winsize{Rows: uint16(rows), Cols: uint16(cols)})
+	return &PTYSession{
+		Stdin:  ptmx,
+		Stdout: ptmx,
+		resize: func(r, c int) { _ = pty.Setsize(ptmx, &pty.Winsize{Rows: uint16(r), Cols: uint16(c)}) },
+		closer: func() {
+			_ = ptmx.Close()
+			if cmd.Process != nil {
+				_ = cmd.Process.Kill()
+			}
+			_ = cmd.Wait()
+		},
+	}, nil
+}
+
+func (s *ShellRunner) openPTYSSH(container string, cols, rows int) (*PTYSession, error) {
 	sg, err := s.signer()
 	if err != nil {
 		return nil, err
@@ -303,5 +363,10 @@ func (s *ShellRunner) OpenPTY(container string, cols, rows int) (*PTYSession, er
 		_ = client.Close()
 		return nil, err
 	}
-	return &PTYSession{client: client, session: session, Stdin: stdin, Stdout: stdout}, nil
+	return &PTYSession{
+		Stdin:  stdin,
+		Stdout: stdout,
+		resize: func(r, c int) { _ = session.WindowChange(r, c) },
+		closer: func() { _ = session.Close(); _ = client.Close() },
+	}, nil
 }

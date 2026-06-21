@@ -7,30 +7,32 @@
     <title>{{.PageTitle}}</title>
     <style>
         :root {
-            --bg: #0a0c10;
-            --bg-secondary: #0f131a;
-            --bg-card: #141a22;
-            --bg-elevated: #1a212b;
-            --border: #232b36;
-            --border-strong: #303a48;
-            --text: #e6edf3;
-            --text-muted: #9aa7b4;
-            --text-dim: #6b7785;
-            --accent: #6ea8ff;
-            --accent-hover: #8cbcff;
-            --accent-2: #b98cff;
-            --green: #3fb950;
-            --green-bg: #0e2a17;
-            --yellow: #e3b341;
+            --bg: #08090f;
+            --bg-secondary: #10121c;
+            --bg-card: #151826;
+            --bg-elevated: #1c2032;
+            --border: #272b3f;
+            --border-strong: #3a3f59;
+            --text: #edf0f8;
+            --text-muted: #a4a9c0;
+            --text-dim: #6e7391;
+            --accent: #818cf8;
+            --accent-hover: #a5b4fc;
+            --accent-2: #e879f9;
+            --green: #34d399;
+            --green-bg: #06281d;
+            --yellow: #fbbf24;
             --yellow-bg: #2a2009;
-            --red: #f85149;
-            --red-bg: #2c1011;
-            --purple: #bc8cff;
-            --code-bg: #0b0e13;
+            --red: #fb7185;
+            --red-bg: #2c1014;
+            --purple: #c084fc;
+            --code-bg: #0a0c13;
             --radius: 12px;
             --radius-sm: 8px;
-            --shadow: 0 8px 28px rgba(0,0,0,.45);
-            --grad: linear-gradient(135deg, #6ea8ff 0%, #b98cff 100%);
+            --shadow: 0 8px 28px rgba(0,0,0,.5);
+            --glow: 0 6px 24px rgba(124,99,235,.4);
+            --grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 48%, #ec4899 100%);
+            --grad-soft: linear-gradient(135deg, rgba(99,102,241,.16), rgba(236,72,153,.12));
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,8 +42,8 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
             background:
-                radial-gradient(900px 500px at 100% -10%, rgba(110,168,255,.08), transparent 60%),
-                radial-gradient(800px 500px at -10% 0%, rgba(185,140,255,.07), transparent 55%),
+                radial-gradient(900px 520px at 100% -10%, rgba(99,102,241,.14), transparent 60%),
+                radial-gradient(820px 520px at -10% 0%, rgba(236,72,153,.10), transparent 55%),
                 var(--bg);
             background-attachment: fixed;
             color: var(--text);
@@ -93,7 +95,7 @@
             transition: color .18s, background .18s;
         }
         nav .nav-link:hover { color: var(--text); background: var(--bg-elevated); }
-        nav .nav-link.active { color: var(--text); background: rgba(110,168,255,.14); }
+        nav .nav-link.active { color: var(--text); background: rgba(129,140,248,.16); }
         nav .spacer { margin-left: auto; }
 
         main { padding: 32px 0 64px; }
@@ -107,7 +109,7 @@
             margin-bottom: 16px;
             transition: border-color .2s, transform .2s, box-shadow .2s;
         }
-        .card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--glow); }
 
         h1, h2, h3 { letter-spacing: -.01em; }
 
@@ -171,8 +173,8 @@
         }
         .btn:hover { transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
-        .btn-primary { background: var(--grad); color: #0a0c10; border: none; font-weight: 700; }
-        .btn-primary:hover { box-shadow: 0 6px 20px rgba(110,168,255,.35); }
+        .btn-primary { background: var(--grad); background-size: 160% 160%; color: #fff; border: none; font-weight: 700; transition: transform .15s, box-shadow .2s, background-position .4s; }
+        .btn-primary:hover { box-shadow: var(--glow); background-position: 100% 0; }
         .btn-success { background: var(--green); color: #04140a; border: none; }
         .btn-outline { background: transparent; }
         .btn-outline:hover { background: var(--bg-elevated); border-color: var(--accent); }
@@ -232,6 +234,7 @@
         .content-area table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
         .content-area th, .content-area td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
         .content-area th { background: var(--bg-elevated); }
+        .content-area img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 16px 0; }
 
         /* Quiz */
         .quiz-question { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }

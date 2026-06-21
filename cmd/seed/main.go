@@ -251,6 +251,7 @@ func getAllModules() []M {
 	// DevOps + Database sections come fully from the devops404 export.
 	var mods []M
 	mods = append(mods, golang...)
+	mods = append(mods, mod_linux_terminal()) // interactive Linux module with auto-checked shell tasks
 	mods = append(mods, importedModules()...)
 	mods = append(mods, sqlAcademyModules()...)
 	mods = append(mods, security...)
