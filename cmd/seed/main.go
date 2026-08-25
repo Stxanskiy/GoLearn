@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -38,6 +39,14 @@ func main() {
 		}
 	}
 	defer pool.Close()
+
+	// The seeder is often the first thing run against a fresh database, so it
+	// applies pending migrations too (same bookkeeping table as the server).
+	if ran, err := migrate.Up(ctx, pool, os.Getenv("MIGRATIONS_DIR")); err != nil {
+		log.Fatalf("apply migrations: %v", err)
+	} else if len(ran) > 0 {
+		fmt.Printf("Applied %d migration(s): %v\n", len(ran), ran)
+	}
 
 	// Idempotent seed: rebuild quizzes/questions/tasks (no user progress lives
 	// there), but UPSERT modules/lessons by slug (stable IDs) below and KEEP the
@@ -183,9 +192,9 @@ type L struct {
 }
 type Q struct {
 	Question, Explanation string
-	Options              []string
-	OptionExpl           []string // per-option explanation (parallel to Options)
-	Correct              int
+	Options               []string
+	OptionExpl            []string // per-option explanation (parallel to Options)
+	Correct               int
 }
 type GlossaryItem struct {
 	Term       string `json:"term"`
@@ -197,7 +206,7 @@ type TestCase struct {
 }
 type T struct {
 	Title, Description, Hints, Solution string
-	Difficulty                          string         // easy | medium | hard
+	Difficulty                          string // easy | medium | hard
 	Glossary                            []GlossaryItem
 	TestCases                           []TestCase
 	StarterCode                         string
@@ -256,8 +265,8 @@ func getAllModules() []M {
 	mods = append(mods, sqlAcademyModules()...)
 	mods = append(mods, security...)
 
-	for i := range mods {
-		mods[i].Order = i + 1
+	if err := assignOrder(mods); err != nil {
+		log.Fatalf("curriculum order: %v", err)
 	}
 	return mods
 }
