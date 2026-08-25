@@ -39,14 +39,13 @@ jobs:
           cd /opt/golearn
           cp src/deploy/berg/docker-compose.yml docker-compose.yml
           docker compose build
-          # Ensure DB is up, then apply migrations idempotently (IF NOT EXISTS guards).
+          # Ensure DB is up. Migrations are applied by the app itself
+          # (internal/migrate, tracked in schema_migrations) — applying them here
+          # too would run every file a second time without recording it.
           docker compose up -d db
           for i in $(seq 1 30); do
             [ "$(docker inspect -f '{{.State.Health.Status}}' golearn-db 2>/dev/null)" = healthy ] && break
             sleep 2
-          done
-          for f in src/migrations/*.up.sql; do
-            docker exec -i golearn-db psql -U golearn -d golearn -v ON_ERROR_STOP=0 < "$f" >/dev/null 2>&1 || true
           done
           docker compose run --rm app /app/seed
           docker compose up -d --force-recreate app

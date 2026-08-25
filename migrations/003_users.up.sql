@@ -21,8 +21,12 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 -- Add user_id to progress (nullable first for migration safety)
 ALTER TABLE progress ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id) ON DELETE CASCADE;
 
--- Drop old unique constraint (lesson_id only) and add composite
+-- Drop old unique constraint (lesson_id only) and add composite.
+-- ADD CONSTRAINT has no IF NOT EXISTS, so drop the target name first: the file
+-- must be safe to apply twice (a database may already carry it from an older
+-- deploy that applied migrations without recording them).
 ALTER TABLE progress DROP CONSTRAINT IF EXISTS progress_lesson_id_key;
+ALTER TABLE progress DROP CONSTRAINT IF EXISTS progress_user_lesson_unique;
 ALTER TABLE progress ADD CONSTRAINT progress_user_lesson_unique UNIQUE(user_id, lesson_id);
 
 -- Add user_id to submissions
