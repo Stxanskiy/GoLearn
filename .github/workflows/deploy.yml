@@ -50,7 +50,17 @@ jobs:
           done
           docker compose run --rm app /app/seed
           docker compose up -d --force-recreate app
-          curl -sf -o /dev/null -w "deploy check /login -> %{http_code}\n" http://127.0.0.1:8081/login
+          # `up -d` returns once the container exists, not once the app serves:
+          # it still has to connect to the database, apply migrations and start
+          # listening. Wait for readiness instead of racing it.
+          code=""
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/login || true)
+            [ "$code" = 200 ] && break
+            sleep 2
+          done
+          echo "deploy check /login -> ${code:-none}"
+          [ "$code" = 200 ]
 
       # The runner's logs need repo-admin rights to download, so on failure the
       # diagnostics are published into the job summary instead — that is readable
