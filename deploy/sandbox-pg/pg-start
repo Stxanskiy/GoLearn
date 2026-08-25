@@ -1,0 +1,14 @@
+#!/bin/bash
+# Boots the PostgreSQL cluster inside the lab container and makes `psql` work
+# for root without extra flags. Idempotent: safe to call from every lesson setup.
+set -e
+VER=$(ls /etc/postgresql | head -1)
+pg_ctlcluster "$VER" main start >/dev/null 2>&1 || true
+for _ in $(seq 1 25); do
+    su postgres -c 'psql -tAc "SELECT 1"' >/dev/null 2>&1 && break
+    sleep 0.4
+done
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='root'\"" | grep -q 1 \
+    || su postgres -c "psql -qc \"CREATE ROLE root SUPERUSER LOGIN CREATEDB\"" >/dev/null
+su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='root'\"" | grep -q 1 \
+    || su postgres -c "createdb root" >/dev/null

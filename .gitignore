@@ -20,3 +20,10 @@ output/
 
 # Local infra notes / knowledge base — never commit
 vibibay-brain/
+
+# Sandbox build artifacts — regenerate with deploy/sandbox-*/prepare.sh
+deploy/sandbox-docker/images/
+deploy/sandbox-docker/registry/
+deploy/sandbox-docker/certs/
+deploy/sandbox-k8s/bin/
+deploy/sandbox-k8s/registry/

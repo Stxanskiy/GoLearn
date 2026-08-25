@@ -25,7 +25,7 @@
                 <option value="hard"{{if eq $d "hard"}} selected{{end}}>hard</option>
             </select>
         </label>
-        <label>Sandbox image<input name="sandbox_image" value="{{.Task.SandboxImage}}" placeholder="ubuntu:24.04"></label>
+        <label>Sandbox image<input name="sandbox_image" value="{{.Task.SandboxImage}}" placeholder="golearn/sandbox:latest"></label>
         <label>Формат текста
             <select name="format" id="fmt-sel">
                 {{$f := .Task.Format}}

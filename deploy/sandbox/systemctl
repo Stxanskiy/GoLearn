@@ -1,0 +1,150 @@
+#!/bin/bash
+# Minimal systemctl for the GoLearn sandbox.
+#
+# Lab containers have no systemd as PID 1, so the real systemctl cannot work —
+# yet the systemd lessons are a core part of the Linux course. This shim
+# implements the subset the lessons use (daemon-reload / start / stop / restart /
+# status / enable / disable / is-active / is-enabled / list-units) by running
+# ExecStart directly and tracking state under /run/glsystemd. Behaviour and
+# output are close enough to the real thing for teaching, and unit files are
+# read from the normal locations.
+set -u
+
+STATE=/run/glsystemd
+mkdir -p "$STATE/running" "$STATE/enabled"
+WANTS=/etc/systemd/system/multi-user.target.wants
+
+normalize() {
+    case "$1" in
+        *.service|*.socket|*.timer|*.target|*.path|*.mount) echo "$1" ;;
+        *) echo "$1.service" ;;
+    esac
+}
+
+unit_path() {
+    local u=$1 d
+    for d in /etc/systemd/system /run/systemd/system /lib/systemd/system /usr/lib/systemd/system; do
+        [ -f "$d/$u" ] && { echo "$d/$u"; return 0; }
+    done
+    return 1
+}
+
+unit_value() { # unit_value <file> <key>
+    sed -n "s/^[[:space:]]*$2=//p" "$1" | tail -n1
+}
+
+pid_of() {
+    local p="$STATE/running/$1.pid"
+    [ -f "$p" ] || return 1
+    local pid; pid=$(cat "$p")
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && { echo "$pid"; return 0; }
+    rm -f "$p"; return 1
+}
+
+no_unit() { echo "Failed to $1 $2: Unit $2 not found." >&2; exit 5; }
+
+do_start() {
+    local u=$1 f exec_start pid
+    f=$(unit_path "$u") || no_unit start "$u"
+    pid_of "$u" >/dev/null && return 0
+    exec_start=$(unit_value "$f" ExecStart)
+    if [ -z "$exec_start" ]; then
+        echo "Failed to start $u: unit has no ExecStart=." >&2; exit 1
+    fi
+    local workdir; workdir=$(unit_value "$f" WorkingDirectory)
+    ( cd "${workdir:-/}" 2>/dev/null || cd /
+      setsid $exec_start >>"$STATE/$u.log" 2>&1 &
+      echo $! > "$STATE/running/$u.pid" )
+    sleep 0.3
+    pid_of "$u" >/dev/null || { echo "Job for $u failed. See: systemctl status $u" >&2; exit 1; }
+}
+
+do_stop() {
+    local u=$1 pid
+    if pid=$(pid_of "$u"); then
+        kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+        sleep 0.3
+        kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null
+        rm -f "$STATE/running/$u.pid"
+    fi
+    return 0
+}
+
+cmd=${1:-}
+[ -n "$cmd" ] || { echo "systemctl: команда не указана (start|stop|status|enable|...)" >&2; exit 1; }
+shift || true
+
+case "$cmd" in
+    daemon-reload|daemon-reexec|reset-failed) exit 0 ;;
+
+    start|stop|restart|reload|reload-or-restart)
+        for arg in "$@"; do
+            u=$(normalize "$arg")
+            case "$cmd" in
+                start) do_start "$u" ;;
+                stop) do_stop "$u" ;;
+                *) do_stop "$u"; do_start "$u" ;;
+            esac
+        done
+        ;;
+
+    status)
+        u=$(normalize "${1:-}")
+        f=$(unit_path "$u") || no_unit status "$u"
+        if pid=$(pid_of "$u"); then active="active (running)"; rc=0; else active="inactive (dead)"; rc=3; fi
+        if [ -e "$STATE/enabled/$u" ] || [ -e "$WANTS/$u" ]; then en=enabled; else en=disabled; fi
+        echo "● $u - $(unit_value "$f" Description)"
+        echo "     Loaded: loaded ($f; $en; preset: enabled)"
+        echo "     Active: $active"
+        [ -n "${pid:-}" ] && echo "   Main PID: $pid ($(unit_value "$f" ExecStart | awk '{print $1}' | xargs basename 2>/dev/null))"
+        [ -f "$STATE/$u.log" ] && { echo; tail -n 5 "$STATE/$u.log"; }
+        exit $rc
+        ;;
+
+    is-active)
+        u=$(normalize "${1:-}")
+        if pid_of "$u" >/dev/null; then echo active; exit 0; else echo inactive; exit 3; fi
+        ;;
+
+    is-enabled)
+        u=$(normalize "${1:-}")
+        if [ -e "$STATE/enabled/$u" ] || [ -e "$WANTS/$u" ]; then echo enabled; exit 0; else echo disabled; exit 1; fi
+        ;;
+
+    enable)
+        for arg in "$@"; do
+            [ "$arg" = "--now" ] && continue
+            u=$(normalize "$arg")
+            f=$(unit_path "$u") || no_unit enable "$u"
+            mkdir -p "$WANTS"; ln -sf "$f" "$WANTS/$u"; touch "$STATE/enabled/$u"
+            echo "Created symlink $WANTS/$u → $f."
+        done
+        for arg in "$@"; do [ "$arg" = "--now" ] && for a in "$@"; do [ "$a" = "--now" ] || do_start "$(normalize "$a")"; done; done
+        ;;
+
+    disable)
+        for arg in "$@"; do
+            [ "$arg" = "--now" ] && continue
+            u=$(normalize "$arg")
+            rm -f "$WANTS/$u" "$STATE/enabled/$u"
+            echo "Removed $WANTS/$u."
+        done
+        ;;
+
+    list-units|list-unit-files)
+        printf "%-32s %-8s %s\n" UNIT STATE ACTIVE
+        for f in /etc/systemd/system/*.service /lib/systemd/system/*.service; do
+            [ -f "$f" ] || continue
+            u=$(basename "$f")
+            if pid_of "$u" >/dev/null; then a=active; else a=inactive; fi
+            if [ -e "$STATE/enabled/$u" ] || [ -e "$WANTS/$u" ]; then s=enabled; else s=disabled; fi
+            printf "%-32s %-8s %s\n" "$u" "$s" "$a"
+        done
+        ;;
+
+    *)
+        echo "systemctl (sandbox): команда '$cmd' не поддерживается в учебной песочнице." >&2
+        echo "Доступны: daemon-reload, start, stop, restart, status, enable, disable, is-active, is-enabled, list-units" >&2
+        exit 1
+        ;;
+esac

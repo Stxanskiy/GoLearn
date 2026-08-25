@@ -79,7 +79,7 @@ func mod_linux_terminal() M {
 						Explanation: ".. — это родительский каталог, на уровень вверх. Из /var/log это /var.",
 					},
 					{
-						Question:    "Чем символическая ссылка (ln -s) отличается от жёсткой (ln)?",
+						Question: "Чем символическая ссылка (ln -s) отличается от жёсткой (ln)?",
 						Options: []string{
 							"Ничем, это синонимы",
 							"Symlink хранит путь к цели и может ломаться; hard link — ещё одно имя того же inode",
@@ -100,7 +100,7 @@ func mod_linux_terminal() M {
 					{
 						Title:        "Освойся: pwd, ls и переход",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>Осмотрись в системе и перейди в каталог временных файлов:</p>
 <ol>
@@ -115,14 +115,14 @@ func mod_linux_terminal() M {
 							{Term: "cd /tmp", Definition: "перейти в каталог /tmp"},
 						},
 						CheckScript: `if [ "$PWD" = /tmp ]; then echo "✓ Текущий каталог — /tmp"; else echo "✗ Сейчас ты в: $PWD. Перейди в /tmp командой: cd /tmp"; exit 1; fi`,
-						Solution:    `<pre><code>pwd
+						Solution: `<pre><code>pwd
 ls -l /etc
 cd /tmp</code></pre>`,
 					},
 					{
 						Title:        "Создай структуру каталогов и файл",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>В домашнем каталоге (<code>~</code>) создай:</p>
 <ol>
@@ -136,13 +136,13 @@ cd /tmp</code></pre>`,
 							{Term: "~", Definition: "домашний каталог пользователя"},
 						},
 						CheckScript: `if [ -d "$HOME/workspace" ] && grep -q "hello" "$HOME/workspace/readme.txt" 2>/dev/null; then echo "✓ Каталог workspace и readme.txt со словом hello на месте"; else echo "✗ Нужен каталог ~/workspace и файл ~/workspace/readme.txt со словом hello. Проверь: ls ~/workspace && cat ~/workspace/readme.txt"; exit 1; fi`,
-						Solution:    `<pre><code>mkdir ~/workspace
+						Solution: `<pre><code>mkdir ~/workspace
 echo "hello" &gt; ~/workspace/readme.txt</code></pre>`,
 					},
 					{
 						Title:        "Символическая ссылка",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>В домашнем каталоге создай файл и ссылку на него:</p>
 <ol>
@@ -157,7 +157,7 @@ echo "hello" &gt; ~/workspace/readme.txt</code></pre>`,
 						},
 						SetupScript: `cd /root; rm -f data.txt latest.txt`,
 						CheckScript: `cd "$HOME"; if [ -L latest.txt ] && [ "$(cat latest.txt 2>/dev/null)" = "GoLearn" ] && grep -q "GoLearn" data.txt 2>/dev/null; then echo "✓ Ссылка latest.txt ведёт на data.txt (GoLearn)"; else echo "✗ Нужен файл data.txt со словом GoLearn и символьная ссылка latest.txt -> data.txt (ln -s data.txt latest.txt). Проверь: ls -l latest.txt"; exit 1; fi`,
-						Solution:    `<pre><code>cd ~
+						Solution: `<pre><code>cd ~
 echo "GoLearn" &gt; data.txt
 ln -s data.txt latest.txt
 cat latest.txt   # GoLearn
@@ -223,7 +223,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Отфильтруй строки с grep",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>В файле <code>/root/log.txt</code> уже лежат логи. Выбери из них только строки со словом <code>ERROR</code> и сохрани их в <code>/root/errors.txt</code>.</p>
 <p>Подсказка: <code>grep ERROR /root/log.txt &gt; /root/errors.txt</code>. Посмотреть исходник — <code>cat /root/log.txt</code>.</p>`,
@@ -238,7 +238,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Найди файлы через find",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>Внутри <code>/root/proj</code> лежат разные файлы. Найди все файлы с расширением <code>.md</code> и сохрани их пути в <code>/root/md.txt</code>.</p>
 <p>Подсказка: <code>find /root/proj -name "*.md" &gt; /root/md.txt</code>.</p>`,
@@ -314,7 +314,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Сделай скрипт исполняемым",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>Создай файл <code>/root/run.sh</code> (любое содержимое) и сделай его исполняемым с помощью <code>chmod +x</code>.</p>
 <p>Проверь результат: <code>ls -l /root/run.sh</code> — в правах должна появиться <code>x</code>.</p>`,
@@ -329,7 +329,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Закрой секрет правами 600",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>Файл <code>/root/secret.txt</code> сейчас доступен на чтение всем (644). Установи на него права <code>600</code>, чтобы читать/писать мог только владелец.</p>
 <p>Подсказка: <code>chmod 600 /root/secret.txt</code>. Проверь: <code>ls -l /root/secret.txt</code>.</p>`,
@@ -400,7 +400,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Перенаправление: > и >>",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>Сделай два шага:</p>
 <ol>
@@ -419,7 +419,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Конвейер: посчитай .conf",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>В каталоге <code>/root/cfg</code> лежат файлы. Собери конвейер, который посчитает, сколько из них имеют расширение <code>.conf</code>, и сохрани это число в <code>/root/n.txt</code>.</p>
 <p>Подсказка: <code>ls /root/cfg | grep '\.conf$' | wc -l &gt; /root/n.txt</code>.</p>`,
@@ -485,7 +485,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Уникальные значения: sort | uniq",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>В файле <code>/root/names.txt</code> есть повторяющиеся имена. Получи отсортированный список <strong>без дублей</strong> и сохрани его в <code>/root/unique.txt</code>.</p>
 <p>Подсказка: <code>sort /root/names.txt | uniq &gt; /root/unique.txt</code>.</p>`,
@@ -500,7 +500,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Вырежи колонку: cut",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>В <code>/root/users.csv</code> строки вида <code>имя:uid</code>. Извлеки только имена (первое поле, разделитель <code>:</code>) и сохрани в <code>/root/just_names.txt</code>.</p>
 <p>Подсказка: <code>cut -d: -f1 /root/users.csv &gt; /root/just_names.txt</code>.</p>`,
@@ -566,7 +566,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Прочитай переменную окружения",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>Запиши значение переменной <code>$HOME</code> в файл <code>/root/home.txt</code>.</p>
 <p>Подсказка: <code>echo $HOME &gt; /root/home.txt</code>.</p>`,
@@ -581,7 +581,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Своя переменная",
 						Kind:         "shell",
-						SandboxImage: "ubuntu:24.04",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>В одной команде: создай переменную <code>GREETING</code> со значением <code>hello</code> и выведи её значение в файл <code>/root/greet.txt</code>.</p>
 <p>Подсказка: <code>GREETING=hello; echo $GREETING &gt; /root/greet.txt</code> (в одной строке, потому что переменная живёт только в пределах команды).</p>`,
@@ -648,7 +648,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Найди и заверши процесс",
 						Kind:         "shell",
-						SandboxImage: "golearn/linux:latest",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>В песочнице уже работает фоновый процесс <code>sleep 100000</code>. Найди его PID и заверши его.</p>
 <ol>
@@ -661,14 +661,14 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 							{Term: "pgrep -af sleep", Definition: "вывести PID и команду процессов sleep"},
 							{Term: "kill PID", Definition: "послать процессу сигнал завершения (SIGTERM)"},
 						},
-						SetupScript: "pkill -f 'sleep 100000' 2>/dev/null; nohup sleep 100000 >/dev/null 2>&1 & disown; sleep 0.3",
-						CheckScript: `if ! pgrep -f 'sleep 100000' >/dev/null 2>&1; then echo "✓ Процесс sleep 100000 завершён"; else echo "✗ Процесс 'sleep 100000' ещё работает — заверши его (kill PID). Найди PID: pgrep -f 'sleep 100000'"; exit 1; fi`,
+						SetupScript: "nohup sleep 100000 >/dev/null 2>&1 & disown; sleep 0.3",
+						CheckScript: `if [ -z "$(pgrep -f 'sleep 10000[0]')" ]; then echo "✓ Фоновый процесс завершён"; else echo "✗ Процесс ещё работает — найди его PID (pgrep -af sleep) и заверши: kill <PID>"; exit 1; fi`,
 						Solution:    "<pre><code>pgrep -af sleep        # узнать PID\nkill &lt;PID&gt;             # заменить на реальный PID\n# или одной командой:\npkill -f 'sleep 100000'</code></pre>",
 					},
 					{
 						Title:        "Кто такой PID 1",
 						Kind:         "shell",
-						SandboxImage: "golearn/linux:latest",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>У главного процесса контейнера всегда PID 1. Выясни <strong>имя</strong> этого процесса и запиши его в <code>/root/pid1.txt</code>.</p>
 <p>Подсказка: <code>ps -p 1 -o comm= &gt; /root/pid1.txt</code>.</p>`,
@@ -741,7 +741,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Кто я в системе",
 						Kind:         "shell",
-						SandboxImage: "golearn/linux:latest",
+						SandboxImage: sandboxImage,
 						Difficulty:   "easy",
 						Description: `<p>Запиши в файл <code>/root/me.txt</code> строку вида <code>имя:uid</code> для текущего пользователя.</p>
 <p>Подсказка: <code>echo "$(whoami):$(id -u)" &gt; /root/me.txt</code>. В песочнице ты root, так что ждём <code>root:0</code>.</p>`,
@@ -756,7 +756,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Создай пользователя",
 						Kind:         "shell",
-						SandboxImage: "golearn/linux:latest",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>Создай пользователя с именем <code>alice</code> командой <code>useradd</code>.</p>
 <p>Проверь результат: <code>id alice</code> или <code>grep alice /etc/passwd</code> — должна появиться запись.</p>`,
@@ -772,7 +772,7 @@ ls -l            # latest.txt -&gt; data.txt</code></pre>`,
 					{
 						Title:        "Смени группу-владельца файла",
 						Kind:         "shell",
-						SandboxImage: "golearn/linux:latest",
+						SandboxImage: sandboxImage,
 						Difficulty:   "medium",
 						Description: `<p>У файла <code>/root/report.txt</code> сейчас группа-владелец <code>root</code>. Поменяй её на группу <code>daemon</code>.</p>
 <p>Подсказка: <code>chgrp daemon /root/report.txt</code> (или <code>chown :daemon /root/report.txt</code>). Проверь: <code>ls -l /root/report.txt</code>.</p>`,

@@ -228,6 +228,9 @@ func buildModule(s importSpec) (M, error) {
 			}
 		}
 
+		// Attach fixtures + auto-checks where this course has them authored.
+		applyLabFixtures(s.Slug, &l)
+
 		m.Lessons = append(m.Lessons, l)
 	}
 	return m, nil
@@ -252,9 +255,15 @@ func toQuiz(t pkTask) (Q, bool) {
 }
 
 func toShellTask(t pkTask, vmImage string) T {
+	// The export's vm_image values are platform-side labels ("base", "docker",
+	// "kuber", "golearn/linux:latest"), not images that exist here — a container
+	// could not even start with them. Anything we do not actually ship falls
+	// back to the standard sandbox image.
 	img := vmImage
-	if img == "" || img == "base" {
-		img = "ubuntu:24.04"
+	switch img {
+	case sandboxImage, sandboxImagePG, sandboxImageDocker, sandboxImageK8s:
+	default:
+		img = sandboxImage
 	}
 	return T{
 		Title:        t.Title,

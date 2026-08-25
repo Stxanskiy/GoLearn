@@ -31,7 +31,7 @@
             </select>
         </label>
         <label>Порядок<input name="order_num" type="number" value="{{.Lesson.OrderNum}}"></label>
-        <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="ubuntu:24.04"></label>
+        <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="golearn/sandbox:latest"></label>
         <label>Формат контента
             <select name="format" id="fmt-sel">
                 {{$f := .Lesson.Format}}
