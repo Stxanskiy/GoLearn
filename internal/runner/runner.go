@@ -201,7 +201,8 @@ func (r *Runner) runInDocker(ctx context.Context, code string, stdin string) (*R
 	setupCmd := exec.Command("docker", "exec", containerName,
 		"sh", "-c", fmt.Sprintf("mkdir -p %s", workDir))
 	if err := setupCmd.Run(); err != nil {
-		return r.runLocal(ctx, code, stdin)
+		// Fail closed: never fall back to running untrusted code on the host.
+		return &Result{Errors: "Песочница временно недоступна. Попробуй ещё раз через минуту."}, nil
 	}
 
 	// Copy code into container via docker exec
@@ -209,7 +210,8 @@ func (r *Runner) runInDocker(ctx context.Context, code string, stdin string) (*R
 		"sh", "-c", fmt.Sprintf("cat > %s/main.go", workDir))
 	copyCmd.Stdin = strings.NewReader(code)
 	if err := copyCmd.Run(); err != nil {
-		return r.runLocal(ctx, code, stdin)
+		// Fail closed: never fall back to running untrusted code on the host.
+		return &Result{Errors: "Песочница временно недоступна. Попробуй ещё раз через минуту."}, nil
 	}
 
 	// Execute code with timeout

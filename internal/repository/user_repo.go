@@ -44,6 +44,40 @@ func (r *UserRepo) Create(ctx context.Context, email, password, name string) (*U
 	return &user, err
 }
 
+// CreateWithRole creates a user with an explicit role (used by the admin panel).
+func (r *UserRepo) CreateWithRole(ctx context.Context, email, password, name, role string) (*User, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	var user User
+	err = r.pool.QueryRow(ctx,
+		`INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4)
+		 RETURNING id, email, password_hash, name, role, created_at`,
+		email, string(hash), name, role,
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
+	return &user, err
+}
+
+// List returns all users (newest first) for the admin panel; password hashes omitted.
+func (r *UserRepo) List(ctx context.Context) ([]User, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC, id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
 func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
 	err := r.pool.QueryRow(ctx,
@@ -80,10 +114,13 @@ func (r *UserRepo) CheckPassword(user *User, password string) bool {
 // Session management
 
 func (r *UserRepo) CreateSession(ctx context.Context, userID int) (string, error) {
-	token := generateToken()
+	token, err := generateToken()
+	if err != nil {
+		return "", err
+	}
 	expiresAt := time.Now().Add(30 * 24 * time.Hour) // 30 days
 
-	_, err := r.pool.Exec(ctx,
+	_, err = r.pool.Exec(ctx,
 		`INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3)`,
 		token, userID, expiresAt,
 	)
@@ -114,8 +151,10 @@ func (r *UserRepo) CleanExpiredSessions(ctx context.Context) error {
 	return err
 }
 
-func generateToken() string {
+func generateToken() (string, error) {
 	b := make([]byte, 32)
-	rand.Read(b)
-	return hex.EncodeToString(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }

@@ -1,0 +1,70 @@
+{{define "admin_users"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="breadcrumb"><a href="/admin">Админка</a> / <span>Пользователи</span></div>
+
+<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:18px;">
+    <div><h1>👤 Пользователи</h1><p class="muted">Создание аккаунтов вручную (даже если регистрация закрыта).</p></div>
+    <a href="/admin" class="btn btn-ghost">← В админку</a>
+</div>
+
+{{if .Created}}<div class="flash flash-ok">✅ Пользователь <b>{{.Created}}</b> создан.</div>{{end}}
+{{if .Error}}<div class="flash flash-err">⚠ {{.Error}}</div>{{end}}
+
+<form class="adm-form" method="POST" action="/admin/users" autocomplete="off">
+    <div class="adm-grid">
+        <label>Имя<input name="name" required placeholder="Иван Иванов"></label>
+        <label>Email<input name="email" type="email" required placeholder="user@example.com"></label>
+        <label>Пароль<input name="password" type="password" required minlength="6" placeholder="минимум 6 символов"></label>
+        <label>Роль
+            <select name="role">
+                <option value="student" selected>student — обычный ученик</option>
+                <option value="admin">admin — полный доступ</option>
+            </select>
+        </label>
+    </div>
+    <div class="row" style="margin-top:16px;">
+        <button class="btn btn-primary" type="submit">Создать пользователя</button>
+    </div>
+</form>
+
+<div class="section-title">Все пользователи ({{len .Users}})</div>
+<div class="admin-table">
+    <div class="admin-row admin-head">
+        <span>#</span><span>Имя</span><span>Email</span><span>Роль</span><span>Создан</span>
+    </div>
+    {{range .Users}}
+    <div class="admin-row">
+        <span class="muted">{{.ID}}</span>
+        <span class="admin-name">{{.Name}}</span>
+        <span class="muted">{{.Email}}</span>
+        <span><span class="role-badge role-{{.Role}}">{{.Role}}</span></span>
+        <span class="muted">{{.CreatedAt.Format "2006-01-02 15:04"}}</span>
+    </div>
+    {{end}}
+</div>
+
+<style>
+.breadcrumb { font-size:.85em; color:var(--text-muted); margin-bottom:12px; }
+.breadcrumb a { color:var(--accent); text-decoration:none; }
+.flash { padding:10px 14px; border-radius:10px; margin-bottom:14px; font-size:.92em; }
+.flash-ok { background:var(--green-bg); color:var(--green); border:1px solid var(--green); }
+.flash-err { background:rgba(248,81,73,.12); color:var(--red); border:1px solid var(--red); }
+.adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
+.adm-form input, .adm-form select { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
+.adm-form input:focus, .adm-form select:focus { border-color:var(--accent); }
+.section-title { font-weight:700; color:var(--text); margin:32px 0 8px; }
+.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.admin-row { display:grid; grid-template-columns:60px 1fr 1fr 110px 150px; gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
+.admin-row:last-child { border-bottom:none; }
+.admin-head { background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.8em; text-transform:uppercase; }
+.admin-name { font-weight:600; color:var(--text); }
+.role-badge { font-size:.72em; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--bg-elevated); }
+.role-admin { color:var(--green); background:var(--green-bg); }
+.role-student { color:var(--text-muted); }
+@media (max-width:680px){ .adm-form .adm-grid { grid-template-columns:1fr; } .admin-row { grid-template-columns:40px 1fr 90px; } .admin-row span:nth-child(3), .admin-row span:nth-child(5){ display:none; } }
+</style>
+{{end}}
