@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/backendraz/golearn/internal/config"
-	"github.com/joho/godotenv"
 	"github.com/backendraz/golearn/internal/handler"
+	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -37,12 +38,36 @@ func main() {
 	}
 	defer pool.Close()
 
+	// Schema is brought up to date on every boot: a fresh volume or a stale one
+	// missing late columns no longer needs a manual psql step.
+	migCtx, migCancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ran, err := migrate.Up(migCtx, pool, os.Getenv("MIGRATIONS_DIR"))
+	migCancel()
+	if err != nil {
+		log.Error("apply migrations", "error", err)
+		os.Exit(1)
+	}
+	if len(ran) > 0 {
+		log.Info("migrations applied", "count", len(ran), "versions", ran)
+	}
+
 	moduleRepo := repository.NewModuleRepo(pool)
 	lessonRepo := repository.NewLessonRepo(pool)
 	progressRepo := repository.NewProgressRepo(pool)
 	submissionRepo := repository.NewSubmissionRepo(pool)
 	userRepo := repository.NewUserRepo(pool)
 	specRepo := repository.NewSpecRepo(pool)
+
+	// A freshly migrated database has no accounts and self-registration is off
+	// by default, so seed the first admin instead of locking the owner out.
+	bootCtx, bootCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if email, err := userRepo.BootstrapAdmin(bootCtx); err != nil {
+		log.Error("bootstrap admin", "error", err)
+	} else if email != "" {
+		log.Info("created first admin account", "email", email,
+			"password", "ADMIN_PASSWORD env (default golearn123) — смени после входа")
+	}
+	bootCancel()
 
 	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, log)
 
@@ -58,11 +83,13 @@ func main() {
 	h.RegisterRoutes(r)
 
 	srv := &http.Server{
-		Addr:         ":" + cfg.Port,
-		Handler:      r,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:    ":" + cfg.Port,
+		Handler: r,
+		// No Read/WriteTimeout: those deadlines persist onto hijacked WebSocket
+		// connections (the interactive terminal) and would drop them after ~15s.
+		// ReadHeaderTimeout still guards against slow-header (slowloris) attacks.
+		ReadHeaderTimeout: 15 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	go func() {

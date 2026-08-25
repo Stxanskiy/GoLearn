@@ -57,5 +57,5 @@ CREATE TABLE IF NOT EXISTS progress (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_lessons_module ON lessons(module_id);
-CREATE INDEX idx_progress_status ON progress(status);
+CREATE INDEX IF NOT EXISTS idx_lessons_module ON lessons(module_id);
+CREATE INDEX IF NOT EXISTS idx_progress_status ON progress(status);
