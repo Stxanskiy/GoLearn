@@ -10,16 +10,18 @@ import (
 )
 
 type ModulePageData struct {
-	PageTitle  string
-	Module     *model.Module
-	Category   string
-	Icon       string
-	Cover      string
+	PageTitle   string
+	Module      *model.Module
+	Category    string
+	Icon        string
+	Cover       string
 	Items       []CourseItem
 	DoneCount   int
 	TotalCount  int
 	Pct         int
 	ContinueURL string
+	PrevCourse  *model.Module // previous course in this specialization
+	NextCourse  *model.Module // next course — where to go once this one is done
 }
 
 // CourseItem is one row in the "Содержание курса" list: a lesson, quiz, or lab.
@@ -155,6 +157,14 @@ func (h *Handler) ModulePage(w http.ResponseWriter, r *http.Request) {
 	}
 	if data.ContinueURL == "" && len(data.Items) > 0 {
 		data.ContinueURL = data.Items[0].URL // all done -> jump to start
+	}
+
+	// Courses are meant to be taken in order, so each one points at its
+	// neighbours in the same specialization.
+	if prev, next, err := h.moduleRepo.Neighbors(ctx, *mod, specTracks(specForTrack(mod.Track))); err == nil {
+		data.PrevCourse, data.NextCourse = prev, next
+	} else {
+		h.log.Error("course neighbors", "module", mod.Slug, "error", err)
 	}
 
 	h.render(w, "module", &data)

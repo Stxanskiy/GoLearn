@@ -40,6 +40,23 @@
 </div>
 <div class="toc-footer muted">{{.DoneCount}} из {{.TotalCount}} разделов пройдено</div>
 
+{{if or .PrevCourse .NextCourse}}
+<div class="course-nav">
+    {{if .PrevCourse}}
+    <a class="course-nav-card prev" href="/module/{{.PrevCourse.Slug}}">
+        <span class="cn-label">← Предыдущий курс</span>
+        <span class="cn-title">{{.PrevCourse.Title}}</span>
+    </a>
+    {{else}}<span></span>{{end}}
+    {{if .NextCourse}}
+    <a class="course-nav-card next" href="/module/{{.NextCourse.Slug}}">
+        <span class="cn-label">Следующий курс →</span>
+        <span class="cn-title">{{.NextCourse.Title}}</span>
+    </a>
+    {{end}}
+</div>
+{{end}}
+
 <style>
 .course-hero { display:flex; gap:22px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
 .course-hero-cover { flex:0 0 320px; max-width:40%; }
@@ -80,10 +97,23 @@
 .tre-arrow { color:var(--text-dim); font-size:1.3em; line-height:1; }
 .toc-footer { margin-top:16px; font-size:.86em; }
 
+.course-nav { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px; }
+.course-nav-card {
+    display:flex; flex-direction:column; gap:5px; padding:14px 18px; text-decoration:none; color:var(--text);
+    background:var(--bg-card); border:1px solid var(--border); border-radius:12px; transition:border-color .15s, transform .15s;
+}
+.course-nav-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.course-nav-card.next { text-align:right; border-left:3px solid var(--accent); }
+.course-nav-card.prev { border-right:3px solid var(--border-strong); }
+.cn-label { font-size:.74em; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
+.cn-title { font-size:.95em; font-weight:700; }
+
 @media (max-width:720px) {
     .course-hero { flex-direction:column; }
     .course-hero-cover { max-width:100%; flex-basis:auto; height:160px; }
     .toc-row-badge { display:none; }
+    .course-nav { grid-template-columns:1fr; }
+    .course-nav-card.next { text-align:left; }
 }
 </style>
 {{end}}

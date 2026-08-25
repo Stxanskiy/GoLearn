@@ -114,3 +114,29 @@ func (r *ModuleRepo) GetByID(ctx context.Context, id int) (*model.Module, error)
 	}
 	return &m, nil
 }
+
+// Neighbors returns the previous and next course inside the same
+// specialization, following the curriculum order (order_num). Either may be
+// nil at the ends of the path.
+func (r *ModuleRepo) Neighbors(ctx context.Context, m model.Module, tracks []string) (prev, next *model.Module, err error) {
+	p, err := scanModule(r.pool.QueryRow(ctx,
+		`SELECT `+moduleCols+` FROM modules
+		 WHERE track = ANY($1) AND order_num < $2
+		 ORDER BY order_num DESC LIMIT 1`, tracks, m.OrderNum))
+	if err == nil {
+		prev = &p
+	} else if err != pgx.ErrNoRows {
+		return nil, nil, err
+	}
+
+	n, err := scanModule(r.pool.QueryRow(ctx,
+		`SELECT `+moduleCols+` FROM modules
+		 WHERE track = ANY($1) AND order_num > $2
+		 ORDER BY order_num ASC LIMIT 1`, tracks, m.OrderNum))
+	if err == nil {
+		next = &n
+	} else if err != pgx.ErrNoRows {
+		return nil, nil, err
+	}
+	return prev, next, nil
+}

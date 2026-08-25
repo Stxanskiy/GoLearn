@@ -23,7 +23,10 @@ type CourseCard struct {
 	Completed  int
 	Pct        int
 	Duration   string // human-readable estimate
+	EstMinutes int    // raw estimate, used for sorting
 	Started    bool
+	Num        int    // position in the specialization's curriculum
+	Status     string // completed | in_progress | not_started
 }
 
 func categoryIcon(cat string) string {
@@ -81,6 +84,23 @@ func specForTrack(track string) string {
 		return "security"
 	default:
 		return "golang"
+	}
+}
+
+// specTracks lists the module tracks that belong to one specialization — used
+// to walk the curriculum inside a single learning path.
+func specTracks(spec string) []string {
+	switch spec {
+	case "devops":
+		return []string{"devops"}
+	case "database":
+		return []string{"database"}
+	case "gym":
+		return []string{"gym"}
+	case "security":
+		return []string{"security", "security-offense", "security-defense"}
+	default:
+		return []string{"golang", "backend", "shared"}
 	}
 }
 
@@ -161,11 +181,18 @@ func (h *Handler) buildCard(ctx context.Context, m model.Module, pmap map[int]st
 	if est == 0 {
 		est = len(lessons) * 10
 	}
+	status := "not_started"
+	switch {
+	case pct == 100 && len(lessons) > 0:
+		status = "completed"
+	case started:
+		status = "in_progress"
+	}
 	return CourseCard{
 		Title: m.Title, Slug: m.Slug, Category: cat, Icon: categoryIcon(cat),
 		Label: label, Cover: "/api/courses/" + m.Slug + "/cover", Tags: m.Tags, Difficulty: m.Difficulty,
 		Chapters: len(lessons), Completed: done, Pct: pct,
-		Duration: humanDuration(est), Started: started,
+		Duration: humanDuration(est), EstMinutes: est, Started: started, Status: status,
 	}
 }
 
@@ -260,6 +287,7 @@ func (h *Handler) SectionPage(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		c := h.buildCard(ctx, m, pmap)
+		c.Num = len(cards) + 1 // modules arrive in curriculum order
 		cards = append(cards, c)
 		catCount[c.Category]++
 	}

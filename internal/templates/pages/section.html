@@ -20,19 +20,35 @@
         <button class="filter-chip" onclick="filterCat('{{.Name}}', this)">{{.Name}} <span class="chip-count">{{.Count}}</span></button>
         {{end}}
     </div>
-    <input id="course-search" class="course-search" type="search" placeholder="Поиск курса…" oninput="searchCourses(this.value)">
+    <div class="sec-tools-right">
+        <label class="sort-wrap">
+            <span class="sort-label">Сортировка</span>
+            <select id="course-sort" class="course-sort" onchange="sortCourses(this.value)">
+                <option value="order">По порядку курса</option>
+                <option value="progress">По прогрессу</option>
+                <option value="short">Сначала короткие</option>
+                <option value="long">Сначала длинные</option>
+                <option value="title">По названию</option>
+            </select>
+        </label>
+        <input id="course-search" class="course-search" type="search" placeholder="Поиск курса…" oninput="searchCourses(this.value)">
+    </div>
 </div>
 
 <div class="courses-grid" id="sec-grid">
     {{range $i, $c := .Cards}}
-    <a class="course-card" data-cat="{{$c.Category}}" data-title="{{$c.Title}}" href="/module/{{$c.Slug}}" style="animation-delay:{{$i}}0ms;">
+    <a class="course-card {{$c.Status}}" data-cat="{{$c.Category}}" data-title="{{$c.Title}}"
+       data-order="{{$c.Num}}" data-pct="{{$c.Pct}}" data-min="{{$c.EstMinutes}}"
+       href="/module/{{$c.Slug}}" style="animation-delay:{{$i}}0ms;">
         <div class="course-cover">
             <img loading="lazy" src="{{$c.Cover}}" alt="{{$c.Title}}">
             <span class="course-cover-tag">{{$c.Category}}</span>
+            <span class="course-cover-num">{{printf "%02d" $c.Num}}</span>
             {{if gt $c.Pct 0}}<span class="course-cover-pct">{{$c.Pct}}%</span>{{end}}
         </div>
         <div class="course-body">
             <h3 class="course-title">{{$c.Title}}</h3>
+            <span class="course-state course-state-{{$c.Status}}">{{if eq $c.Status "completed"}}✓ Пройден{{else if eq $c.Status "in_progress"}}◐ В процессе{{else}}○ Не начат{{end}}</span>
             <div class="course-meta">
                 <span class="meta-pill">{{$c.Chapters}} глав</span>
                 {{if $c.Duration}}<span class="meta-pill">{{$c.Duration}}</span>{{end}}
@@ -66,6 +82,17 @@
 .meta-label { color:var(--accent); border-color:transparent; background:color-mix(in srgb, var(--accent) 14%, transparent); font-weight:700; }
 .course-cta { margin-top:auto; font-size:.82em; font-weight:700; color:var(--accent); }
 .no-results { text-align:center; color:var(--text-muted); padding:50px; }
+.sec-tools-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.sort-wrap { display:flex; align-items:center; gap:7px; }
+.sort-label { font-size:.78em; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
+.course-sort { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:999px; font-size:.86em; font-weight:600; outline:none; cursor:pointer; }
+.course-sort:focus { border-color:var(--border-strong); }
+.course-cover-num { position:absolute; left:10px; bottom:10px; z-index:1; font-family:'SF Mono',ui-monospace,monospace; font-size:.72em; font-weight:800; letter-spacing:.06em; color:#fff; background:rgba(0,0,0,.62); padding:2px 8px; border-radius:999px; }
+.course-state { align-self:flex-start; font-size:.72em; font-weight:700; padding:2px 9px; border-radius:999px; }
+.course-state-completed { color:var(--green); background:var(--green-bg); }
+.course-state-in_progress { color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
+.course-state-not_started { color:var(--text-dim); background:var(--bg-elevated); }
+.course-card.completed .course-cover img { opacity:.75; }
 </style>
 
 <script>
@@ -84,5 +111,27 @@ function filterCat(cat,el){
     el.classList.add('active'); curCat=cat; applyFilters();
 }
 function searchCourses(q){ curQuery=q.trim().toLowerCase(); applyFilters(); }
+
+// Sorting reorders the cards in place; "order" restores the curriculum sequence.
+function sortCourses(mode){
+    var grid=document.getElementById('sec-grid');
+    var cards=Array.prototype.slice.call(grid.querySelectorAll('.course-card'));
+    var num=function(c,k){ return parseInt(c.dataset[k]||'0',10)||0; };
+    cards.sort(function(a,b){
+        switch(mode){
+            case 'progress': return num(b,'pct')-num(a,'pct') || num(a,'order')-num(b,'order');
+            case 'short':    return num(a,'min')-num(b,'min');
+            case 'long':     return num(b,'min')-num(a,'min');
+            case 'title':    return a.dataset.title.localeCompare(b.dataset.title,'ru');
+            default:         return num(a,'order')-num(b,'order');
+        }
+    });
+    cards.forEach(function(c){ c.style.animationDelay='0ms'; grid.appendChild(c); });
+    try { localStorage.setItem('gl_course_sort', mode); } catch(e){}
+}
+try {
+    var savedSort=localStorage.getItem('gl_course_sort');
+    if(savedSort){ document.getElementById('course-sort').value=savedSort; sortCourses(savedSort); }
+} catch(e){}
 </script>
 {{end}}
