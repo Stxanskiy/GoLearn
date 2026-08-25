@@ -15,7 +15,12 @@ services:
       SANDBOX_SSH_PORT: "2222"
       SANDBOX_SSH_USER: "sandbox"
       SANDBOX_SSH_KEY: "/sandbox/id_ed25519"
-      SANDBOX_IMAGE: "ubuntu:24.04"
+      # Lab image built once on the sandbox VM (see deploy/berg/README.md).
+      # Per-task images in the database take precedence over this default.
+      SANDBOX_IMAGE: "golearn/sandbox:latest"
+      # Docker/Kubernetes courses need a privileged sandbox = root on the
+      # sandbox VM for anyone who can open a lab. Off on this server.
+      SANDBOX_PRIVILEGED: "0"
       ADMIN_EMAILS: "berg@gmail.com"
     volumes:
       - ./sandbox-vm/id_ed25519:/sandbox/id_ed25519:ro

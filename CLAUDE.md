@@ -12,15 +12,54 @@ This is the **platform** project. The **learning** project is WatchTogether (../
 
 ## How to Run
 ```bash
-# Start database
+# 1. Build the lab sandbox images (once; network is needed only at build time)
+docker build -t golearn/sandbox:latest    -f deploy/sandbox/Dockerfile    deploy/sandbox
+docker tag   golearn/sandbox:latest golearn/git:latest
+docker build -t golearn/sandbox-pg:latest -f deploy/sandbox-pg/Dockerfile deploy/sandbox-pg
+bash deploy/sandbox-docker/prepare.sh     # images + offline registry (needs network)
+docker build -t golearn/sandbox-docker:latest -f deploy/sandbox-docker/Dockerfile deploy/sandbox-docker
+bash deploy/sandbox-k8s/prepare.sh        # k3s/helm binaries + airgap images
+docker build -t golearn/sandbox-k8s:latest    -f deploy/sandbox-k8s/Dockerfile    deploy/sandbox-k8s
+
+# 2. Start database
 docker compose up -d
 
-# Seed course content
-go run cmd/seed/main.go
+# 3. Seed course content (applies pending migrations too)
+go run ./cmd/seed
 
-# Start server
-go run cmd/server/main.go
-# Open http://localhost:8080
+# 4. Start server (also applies migrations, creates the first admin)
+go run ./cmd/server
+# Open http://localhost:8080 — login: ADMIN_EMAIL / ADMIN_PASSWORD from .env
+```
+
+Migrations run automatically on startup (`internal/migrate`, tracked in the
+`schema_migrations` table) — no manual psql step.
+
+## Lab sandboxes
+Shell labs run one container **per lesson** (`gl-s-u<user>-l<lesson>`), always
+with `--network none`. Four images, picked per lesson via `tasks.sandbox_image`:
+
+| Image | Used by | Notes |
+|---|---|---|
+| `golearn/sandbox` | Linux, Git, тренажёры | CLI tools baked in; offline apt repo; `systemctl` shim (`deploy/sandbox/systemctl`) |
+| `golearn/sandbox-pg` | SQL | PostgreSQL server; lesson setup calls `pg-start` |
+| `golearn/sandbox-docker` | Docker, Compose | full Docker Engine (**privileged**); `docker-start`; offline Docker Hub stand-in so `docker pull` works |
+| `golearn/sandbox-k8s` | Kubernetes, Helm | single-node k3s + kubectl/helm (**privileged**); `k8s-start`; images and traefik baked in |
+
+Consequences to keep in mind:
+- every CLI tool and every image a lesson needs must be baked in — there is no network;
+- the Docker/Kubernetes images run **privileged** and keep runtime state on a
+  per-session volume (`gl-dind-u<user>-l<lesson>`); `internal/runner/shell.go`
+  decides this from the image name;
+- `mount` (CAP_SYS_ADMIN) still does not work, so those few tasks stay manual.
+
+## Lab fixtures & auto-checks
+Course tasks get their environment and validator from `cmd/seed/labs_*.go`
+(`labFixtures` in `cmd/seed/labfixtures.go`): one `Setup` per lesson creates the
+files the tasks reference, and each task gets a `Check` (exit 0 = solved).
+Verify them with the regression harness:
+```bash
+./scripts/labcheck/run.sh linux-start   # check must FAIL before, PASS after the reference solution
 ```
 
 ## Project Structure
