@@ -1,0 +1,110 @@
+#!/bin/bash
+# Boots the single-node k3s cluster inside the lab container and waits until the
+# API server answers and the node is Ready. Idempotent: every lesson setup calls
+# it, the work happens only on the first call.
+set -u
+
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+# The API answers /readyz before the node object exists, so readiness means
+# "the node is registered and Ready" — otherwise the first kubectl run of the
+# lesson sits in Pending forever.
+ready() {
+    [ "$(kubectl get nodes --no-headers 2>/dev/null | grep -c ' Ready ')" -ge 1 ]
+}
+
+if ready; then
+    exit 0
+fi
+
+mkdir -p /var/lib/rancher/k3s/agent/images /var/log
+
+# The lab container runs with --network none, but k3s refuses to start without a
+# default route (it derives the node IP from it). A dummy interface gives it one
+# without granting any actual connectivity.
+if ! ip route show default >/dev/null 2>&1 || [ -z "$(ip route show default)" ]; then
+    ip link add gl0 type dummy 2>/dev/null
+    ip addr add 10.55.0.2/24 dev gl0 2>/dev/null
+    ip link set gl0 up 2>/dev/null
+    ip route add default via 10.55.0.1 dev gl0 2>/dev/null
+fi
+# cgroup v2 is delegated to the container as a "domain" cgroup with processes
+# already in it, which kubelet cannot subdivide. Moving our own processes into a
+# nested leaf and enabling the controllers for children is the standard
+# preparation (same as the rancher/k3s and kind entrypoints do).
+if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
+    mkdir -p /sys/fs/cgroup/gl-init
+    for pid in $(cat /sys/fs/cgroup/cgroup.procs 2>/dev/null); do
+        echo "$pid" > /sys/fs/cgroup/gl-init/cgroup.procs 2>/dev/null || true
+    done
+    sed -e 's/ / +/g' -e 's/^/+/' < /sys/fs/cgroup/cgroup.controllers \
+        > /sys/fs/cgroup/cgroup.subtree_control 2>/dev/null || true
+fi
+
+# The cluster's own images (pause, coredns, ...) ship inside the lab image:
+# without network k3s cannot pull them. The marker lives outside the images
+# directory — k3s tries to import every file it finds there.
+if [ -f /var/lib/glk8s/airgap-images.tar ] && [ ! -f /var/lib/rancher/.gl-images-loaded ]; then
+    cp /var/lib/glk8s/airgap-images.tar /var/lib/rancher/k3s/agent/images/airgap.tar
+    [ -f /var/lib/glk8s/app-images.tar ] && \
+        cp /var/lib/glk8s/app-images.tar /var/lib/rancher/k3s/agent/images/app.tar
+    touch /var/lib/rancher/.gl-images-loaded
+fi
+
+# Local registry + mirror config: kubelet always pulls :latest tags, so point
+# docker.io at a registry that lives inside the lab.
+if ! curl -s --max-time 2 http://127.0.0.1:5000/v2/ >/dev/null 2>&1; then
+    mkdir -p /var/lib/glregistry
+    cat > /etc/glregistry.yml <<'REGEOF'
+version: 0.1
+storage:
+  filesystem:
+    rootdirectory: /var/lib/glregistry
+http:
+  addr: 127.0.0.1:5000
+log:
+  level: error
+REGEOF
+    nohup registry serve /etc/glregistry.yml >>/var/log/registry.log 2>&1 &
+    for _ in $(seq 1 20); do
+        curl -s --max-time 1 http://127.0.0.1:5000/v2/ >/dev/null 2>&1 && break
+        sleep 0.5
+    done
+fi
+mkdir -p /etc/rancher/k3s
+cat > /etc/rancher/k3s/registries.yaml <<'REGYEOF'
+mirrors:
+  docker.io:
+    endpoint:
+      - "http://127.0.0.1:5000"
+REGYEOF
+
+# Traefik stays enabled — the Ingress lesson needs a controller, and both its
+# image and its chart ship with k3s, so it comes up without network. The metrics
+# server is dropped: nothing in the course uses it.
+nohup k3s server \
+    --disable metrics-server \
+    --disable-cloud-controller \
+    --disable-network-policy \
+    --snapshotter native \
+    --node-ip 10.55.0.2 \
+    --flannel-iface gl0 \
+    --kube-apiserver-arg=event-ttl=30m \
+    >>/var/log/k3s.log 2>&1 &
+
+for _ in $(seq 1 180); do
+    ready && break
+    sleep 1
+done
+
+if ! ready; then
+    echo "k3s не стартовал; смотри /var/log/k3s.log" >&2
+    exit 1
+fi
+
+# CoreDNS must be up too: lessons resolve services by name.
+kubectl -n kube-system wait --for=condition=Available deploy/coredns --timeout=120s >/dev/null 2>&1
+
+# Make the default kubeconfig readable the way the lessons assume.
+chmod 644 /etc/rancher/k3s/k3s.yaml 2>/dev/null || true
+exit 0

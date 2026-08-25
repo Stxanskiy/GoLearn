@@ -1,0 +1,72 @@
+#!/bin/bash
+# Boots the inner Docker daemon and loads the preloaded images.
+# Idempotent: every lesson setup calls it, it does the work only once.
+set -u
+
+if docker info >/dev/null 2>&1; then
+    exit 0
+fi
+
+mkdir -p /var/log
+
+# The daemon must not only boot but actually run a container: on some hosts a
+# driver initialises fine and then every exec fails, so each candidate is
+# validated with a real (tiny) container before we accept it.
+boot() {
+    nohup dockerd --storage-driver="$1" --iptables=false --ip6tables=false \
+        >>/var/log/dockerd.log 2>&1 &
+    for _ in $(seq 1 40); do
+        docker info >/dev/null 2>&1 && return 0
+        sleep 0.5
+    done
+    return 1
+}
+
+# start_registry brings up the offline Docker Hub stand-in so `docker pull`
+# works inside the network-less lab.
+start_registry() {
+    grep -q registry-1.docker.io /etc/hosts 2>/dev/null || \
+        echo "127.0.0.1 registry-1.docker.io index.docker.io auth.docker.io docker.io" >> /etc/hosts
+    docker inspect -f '{{.State.Running}}' gl-registry 2>/dev/null | grep -q true && return 0
+    docker rm -f gl-registry >/dev/null 2>&1
+    docker run -d --name gl-registry --restart always -p 443:443 \
+        -v /var/lib/glregistry:/var/lib/registry \
+        -v /etc/glcerts:/certs:ro \
+        -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+        -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt \
+        -e REGISTRY_HTTP_TLS_KEY=/certs/registry.key \
+        registry:2 >/dev/null 2>&1
+    for _ in $(seq 1 20); do
+        curl -sk https://registry-1.docker.io/v2/ >/dev/null 2>&1 && return 0
+        sleep 0.5
+    done
+    return 0
+}
+
+load_images() {
+    [ -f /var/lib/glimages/preload.tar ] || return 0
+    [ -f /var/lib/docker/.gl-loaded ] && return 0
+    docker load -i /var/lib/glimages/preload.tar >/dev/null 2>&1 && touch /var/lib/docker/.gl-loaded
+}
+
+for driver in overlay2 vfs; do
+    boot "$driver" || { pkill -x dockerd >/dev/null 2>&1; sleep 1; continue; }
+    load_images
+    if docker run --rm busybox:latest true >/dev/null 2>&1; then
+        start_registry
+        echo "docker: storage-driver=$driver" >> /var/log/dockerd.log
+        break
+    fi
+    pkill -x dockerd >/dev/null 2>&1
+    sleep 1
+    rm -rf /var/lib/docker/* 2>/dev/null
+done
+
+if ! docker info >/dev/null 2>&1; then
+    echo "dockerd не стартовал; смотри /var/log/dockerd.log" >&2
+    exit 1
+fi
+
+load_images
+start_registry
+exit 0
