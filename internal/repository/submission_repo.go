@@ -81,3 +81,37 @@ func (r *SubmissionRepo) AllLessonTasksPassed(ctx context.Context, userID, lesso
 	}
 	return passedTasks >= totalTasks, nil
 }
+
+// PassedTaskIDs returns the set of tasks in a lesson the user has already
+// solved, so a returning student sees their completed steps instead of a
+// blank lab.
+func (r *SubmissionRepo) PassedTaskIDs(ctx context.Context, userID, lessonID int) (map[int]bool, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT DISTINCT s.task_id
+		FROM submissions s JOIN tasks t ON t.id = s.task_id
+		WHERE s.user_id = $1 AND t.lesson_id = $2 AND s.passed = true`, userID, lessonID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	passed := make(map[int]bool)
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		passed[id] = true
+	}
+	return passed, rows.Err()
+}
+
+// ResetLesson drops the user's attempt history for every task in a lesson, so
+// the lab can be taken again from scratch ("Пройти заново").
+func (r *SubmissionRepo) ResetLesson(ctx context.Context, userID, lessonID int) error {
+	_, err := r.pool.Exec(ctx, `
+		DELETE FROM submissions
+		WHERE user_id = $1 AND task_id IN (SELECT id FROM tasks WHERE lesson_id = $2)`,
+		userID, lessonID)
+	return err
+}

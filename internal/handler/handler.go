@@ -69,7 +69,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/api/run/{taskID}", h.RunTaskCode)
 		r.Post("/api/shell/{taskID}/exec", h.ShellExec)
 		r.Post("/api/shell/{taskID}/check", h.ShellCheck)
-		r.Post("/api/shell/{taskID}/reset", h.ShellReset)
+		r.Post("/api/shell/{taskID}/done", h.ShellStepDone)
+		r.Post("/api/lab/{lessonID}/reset", h.LabReset)
+		r.Post("/api/lab/{lessonID}/retry", h.LabRetry)
 		r.Post("/api/git/exec", h.GitExec)
 		r.Post("/api/git/reset", h.GitReset)
 		r.Get("/api/term", h.TermWS)
@@ -78,6 +80,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(h.AdminMiddleware)
 			r.Get("/admin", h.AdminDashboard)
+			r.Get("/admin/users", h.AdminUsers)
+			r.Post("/admin/users", h.AdminUserCreate)
 			r.Post("/admin/preview", h.AdminPreview)
 			r.Get("/admin/specs", h.AdminSpecs)
 			r.Post("/admin/spec", h.AdminSpecSave)
@@ -108,12 +112,19 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	})
 }
 
-func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
-	w.Header().Set("Cache-Control", "no-store")
-	tmpl, err := template.New("").Funcs(template.FuncMap{
+// templateFuncs is the single FuncMap used by the renderer AND by the template
+// parse test, so a helper added here can never be missing at render time.
+func templateFuncs() template.FuncMap {
+	return template.FuncMap{
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"mul": func(a, b int) int { return a * b },
+		"mod": func(a, b int) int {
+			if b == 0 {
+				return 0
+			}
+			return a % b
+		},
 		"pct": func(a, b int) int {
 			if b == 0 {
 				return 0
@@ -122,7 +133,12 @@ func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
 		},
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 		"content":  func(format, raw string) template.HTML { return RenderContent(format, raw) },
-	}).ParseFiles(
+	}
+}
+
+func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
+	w.Header().Set("Cache-Control", "no-store")
+	tmpl, err := template.New("").Funcs(templateFuncs()).ParseFiles(
 		"internal/templates/layouts/base.html",
 		"internal/templates/pages/"+tmplName+".html",
 	)

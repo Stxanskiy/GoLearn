@@ -153,3 +153,14 @@ func computeStreak(activity map[string]int) int {
 	}
 	return streak
 }
+
+// ResetLesson clears the user's status and quiz score for one lesson while
+// keeping their notes — the lesson can be retaken from a clean slate.
+func (r *ProgressRepo) ResetLesson(ctx context.Context, userID, lessonID int) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE progress
+		SET status = 'not_started', quiz_score = NULL, quiz_total = NULL,
+		    completed_at = NULL, updated_at = NOW()
+		WHERE user_id = $1 AND lesson_id = $2`, userID, lessonID)
+	return err
+}

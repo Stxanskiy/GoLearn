@@ -52,7 +52,7 @@
                 {{if $t.CheckScript}}
                 <button class="btn btn-success" onclick="labCheck({{$t.ID}}, {{$i}})">✓ Проверить</button>
                 {{else}}
-                <button class="btn btn-success" onclick="labTaskDone({{$i}})">✓ Готово</button>
+                <button class="btn btn-success" onclick="labTaskDone({{$t.ID}}, {{$i}})">✓ Готово</button>
                 {{end}}
                 <button class="btn btn-ghost" title="Фокус в терминал" onclick="labFocus()">⌨</button>
             </div>
@@ -68,6 +68,7 @@
             <span class="lab2-status" id="lab2-status"><span class="led"></span>Не запущена</span>
             <span class="lab2-timer" id="lab2-timer">00:00</span>
             <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Сбросить песочницу — чистое окружение">⟳ Сбросить</button>
+            <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
             <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить">⨯ Остановить</button>
         </div>
         <div class="lab2-term" id="lab2-host">
@@ -81,8 +82,10 @@
 
 <script>
 (function () {
-    var SESSION = {{.SessionTask}};
+    var LESSON = {{.Lesson.ID}};
     var NT = {{len .Tasks}};
+    var TASK_IDS = [{{range $i, $t := .Tasks}}{{if $i}},{{end}}{{$t.ID}}{{end}}];
+    var PASSED = {{.PassedJSON}};
     var QUIZ = []; var qd = document.getElementById('quiz-data'); if (qd) { try { QUIZ = JSON.parse(qd.textContent); } catch (e) {} }
     var NQ = QUIZ.length, TOTAL = NQ + NT;
     var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0, manualStop = false;
@@ -99,6 +102,13 @@
         (function (k) { b.onclick = function () { showStep(k); }; })(i);
         pillsEl.appendChild(b);
     }
+
+    // Restore steps this user already solved (server truth, survives reload).
+    var passedSet = {};
+    (PASSED || []).forEach(function (id) { passedSet[id] = true; });
+    TASK_IDS.forEach(function (id, ti) {
+        if (passedSet[id]) { var p = pillsEl.children[NQ + ti]; if (p) p.classList.add('done'); }
+    });
 
     window.stepBy = function (d) { showStep(Math.max(0, Math.min(TOTAL - 1, step + d))); };
     window.labFocus = function () { if (term) term.focus(); };
@@ -126,7 +136,11 @@
     function markQuizPill(qi) { var p = pillsEl.children[qi]; if (p) { p.classList.remove('correct', 'wrong'); p.classList.add(answers[qi] === QUIZ[qi].c ? 'correct' : 'wrong'); } }
     function maybeSave() { if (quizSaved || NQ === 0) return; if (answers.every(function (a) { return a !== null; })) { quizSaved = true; var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&'); fetch(quizAction, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }).catch(function () {}); } }
 
-    window.labTaskDone = function (ti) { var p = pillsEl.children[NQ + ti]; if (p) p.classList.add('done'); if (step < TOTAL - 1) showStep(step + 1); };
+    window.labTaskDone = function (taskId, ti) {
+        var p = pillsEl.children[NQ + ti]; if (p) p.classList.add('done');
+        fetch('/api/shell/' + taskId + '/done', { method: 'POST' }).catch(function () {});
+        if (step < TOTAL - 1) showStep(step + 1);
+    };
 
     function setStatus(txt, on) {
         var s = document.getElementById('lab2-status');
@@ -157,7 +171,7 @@
         try { fit.fit(); } catch (e) {}
         setStatus('Подключаюсь…', true);
         var proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        ws = new WebSocket(proto + '://' + location.host + '/api/term?task=' + SESSION);
+        ws = new WebSocket(proto + '://' + location.host + '/api/term?lesson=' + LESSON);
         ws.binaryType = 'arraybuffer';
         manualStop = false;
         ws.onopen = function () { setStatus('Запущена', true); startTimer(); sendResize(); term.focus(); };
@@ -191,8 +205,15 @@
     // Reset = throw away the container and start a clean one (recovers from rm -rf etc.)
     window.labRestart = function () {
         if (!confirm('Сбросить песочницу к чистому состоянию? Файлы в ней будут удалены.')) return;
-        fetch('/api/shell/' + SESSION + '/reset', { method: 'POST' }).catch(function () {});
+        fetch('/api/lab/' + LESSON + '/reset', { method: 'POST' }).catch(function () {});
         labStop(); setTimeout(function () { manualStop = false; labStart(); }, 400);
+    };
+    // Retry = clear the recorded progress for this lab AND the container, then reload.
+    window.labRetry = function () {
+        if (!confirm('Пройти лабораторную заново? Отметки о выполненных шагах и результат теста будут сброшены.')) return;
+        fetch('/api/lab/' + LESSON + '/retry', { method: 'POST' })
+            .then(function () { location.reload(); })
+            .catch(function () { location.reload(); });
     };
     window.labCheck = function (taskId, taskIndex) {
         var box = document.getElementById('check-' + taskId);

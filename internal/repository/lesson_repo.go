@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/jackc/pgx/v5"
@@ -136,6 +137,37 @@ func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, 
 		tasks = append(tasks, t)
 	}
 	return tasks, rows.Err()
+}
+
+// LessonSandbox returns the image and setup script for a lesson's shell lab.
+// The whole lab shares one container, so the setup is the concatenation of
+// every distinct task setup script (in task order) and the image is the first
+// non-empty one — all fixture files exist before the student's first command.
+func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (image string, setup string, err error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT sandbox_image, setup_script FROM tasks
+		WHERE lesson_id = $1 AND kind = 'shell' ORDER BY order_num, id`, lessonID)
+	if err != nil {
+		return "", "", err
+	}
+	defer rows.Close()
+
+	seen := make(map[string]bool)
+	var parts []string
+	for rows.Next() {
+		var img, s string
+		if err := rows.Scan(&img, &s); err != nil {
+			return "", "", err
+		}
+		if image == "" {
+			image = img
+		}
+		if s = strings.TrimSpace(s); s != "" && !seen[s] {
+			seen[s] = true
+			parts = append(parts, s)
+		}
+	}
+	return image, strings.Join(parts, "\n"), rows.Err()
 }
 
 // ── Admin: quiz question CRUD ──

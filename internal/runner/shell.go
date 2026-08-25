@@ -18,8 +18,11 @@ import (
 
 const (
 	shellExecTimeout = 20 * time.Second
-	shellSessionTTL  = 30 * time.Minute
-	maxShellOutput   = 64 * 1024
+	// Docker labs boot an engine and load images on first use, which is far
+	// slower than a shell command.
+	dockerExecTimeout = 3 * time.Minute
+	shellSessionTTL   = 30 * time.Minute
+	maxShellOutput    = 64 * 1024
 )
 
 // ShellRunner runs student shell commands inside per-(user,task) ephemeral
@@ -29,17 +32,23 @@ type ShellRunner struct {
 	host, port, user, image, keyFile string
 	enabled                          bool
 	local                            bool // run docker on the host directly (no SSH/VM)
-	mu                               sync.Mutex
-	sessions                         map[string]time.Time
+	// privileged enables the Docker/Kubernetes courses, whose labs need a
+	// container runtime of their own and therefore --privileged. That is root
+	// on the sandbox host for anyone who can open a lab, so it is OFF unless
+	// SANDBOX_PRIVILEGED is set explicitly.
+	privileged bool
+	mu         sync.Mutex
+	sessions   map[string]time.Time
 }
 
 func NewShellRunner() *ShellRunner {
 	s := &ShellRunner{
-		host:     shellEnv("SANDBOX_SSH_HOST", ""),
-		port:     shellEnv("SANDBOX_SSH_PORT", "2222"),
-		user:     shellEnv("SANDBOX_SSH_USER", "sandbox"),
-		image:    shellEnv("SANDBOX_IMAGE", "ubuntu:24.04"),
-		sessions: make(map[string]time.Time),
+		privileged: shellBool("SANDBOX_PRIVILEGED"),
+		host:       shellEnv("SANDBOX_SSH_HOST", ""),
+		port:       shellEnv("SANDBOX_SSH_PORT", "2222"),
+		user:       shellEnv("SANDBOX_SSH_USER", "sandbox"),
+		image:      shellEnv("SANDBOX_IMAGE", "golearn/sandbox:latest"),
+		sessions:   make(map[string]time.Time),
 	}
 	// Local mode: execute docker on the host directly. Suited to a single-user
 	// local install where a dedicated sandbox VM is overkill.
@@ -116,8 +125,43 @@ func (s *ShellRunner) runSSH(ctx context.Context, remote string) (string, int, e
 	return out.String(), exit, err
 }
 
-func sessionName(userID, taskID int) string {
-	return fmt.Sprintf("gl-s-u%d-t%d", userID, taskID)
+// sessionName maps a (user, session key) pair to a container name. The key is
+// the *lesson* ("l42") for course labs and a fixed word for standalone
+// trainers ("git") — one container per lab, so every step of a lab and its
+// checks share the same filesystem as the terminal the student is typing in.
+func sessionName(userID int, key string) string {
+	return fmt.Sprintf("gl-s-u%d-%s", userID, key)
+}
+
+// dindVolume names the per-session volume that backs the inner Docker daemon.
+func dindVolume(userID int, key string) string {
+	return fmt.Sprintf("gl-dind-u%d-%s", userID, key)
+}
+
+// needsDocker reports whether an image ships a container runtime of its own —
+// Docker Engine or a k3s cluster. Those containers need --privileged, and their
+// runtime state must live on a volume: on the overlay rootfs the fast storage
+// drivers refuse to start.
+func needsDocker(image string) bool {
+	return strings.Contains(image, "sandbox-docker") || strings.Contains(image, "sandbox-k8s")
+}
+
+// runOpts returns the docker run flags for one kind of sandbox.
+func runOpts(userID int, key, image string) string {
+	switch {
+	case strings.Contains(image, "sandbox-k8s"):
+		// k3s keeps its state (containerd, images, etcd) under /var/lib/rancher
+		// and wants a writable /run.
+		return fmt.Sprintf(
+			"--privileged --memory 4g --cpus 3 --pids-limit 4096 --tmpfs /run -v %s:/var/lib/rancher",
+			dindVolume(userID, key))
+	case strings.Contains(image, "sandbox-docker"):
+		return fmt.Sprintf(
+			"--privileged --memory 2g --cpus 2 --pids-limit 2048 -v %s:/var/lib/docker",
+			dindVolume(userID, key))
+	default:
+		return "--memory 512m --cpus 1 --pids-limit 256"
+	}
 }
 
 func (s *ShellRunner) touch(c string) {
@@ -128,11 +172,16 @@ func (s *ShellRunner) touch(c string) {
 
 // ensure creates the per-(user,task) container if it is not running, applying
 // the task setup script once. Returns the container name.
-func (s *ShellRunner) ensure(ctx context.Context, userID, taskID int, image, setup string) (string, error) {
+func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup string) (string, error) {
 	if image == "" {
 		image = s.image
 	}
-	c := sessionName(userID, taskID)
+	if needsDocker(image) && !s.privileged {
+		return "", fmt.Errorf("курсы Docker и Kubernetes на этом сервере отключены: " +
+			"их лаборатории требуют привилегированной песочницы (SANDBOX_PRIVILEGED). " +
+			"Проходить их можно в локальной установке")
+	}
+	c := sessionName(userID, key)
 	out, _, err := s.run(ctx, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s 2>/dev/null", c))
 	if err != nil {
 		return "", err
@@ -142,19 +191,28 @@ func (s *ShellRunner) ensure(ctx context.Context, userID, taskID int, image, set
 		return c, nil
 	}
 	b64 := base64.StdEncoding.EncodeToString([]byte(setup))
+	// Courses with their own runtime (Docker, Kubernetes) need elevated
+	// privileges and more headroom than a shell-only lab.
+	opts := runOpts(userID, key, image)
 	create := fmt.Sprintf(
 		`docker rm -f %s >/dev/null 2>&1; `+
-			`docker run -d --name %s --hostname sandbox --network none --memory 512m --cpus 1 --pids-limit 256 %s sleep infinity >/dev/null 2>&1 || exit 1; `+
+			`docker run -d --init --name %s --hostname sandbox --network none %s %s sleep infinity >/dev/null || exit 1; `+
 			`if [ -n "%s" ]; then docker exec %s sh -c 'echo %s | base64 -d | bash' >/dev/null 2>&1; fi; `+
 			`echo OK`,
-		c, c, image, b64, c, b64,
+		c, c, opts, image, b64, c, b64,
 	)
 	out, _, err = s.run(ctx, create)
 	if err != nil {
 		return "", err
 	}
 	if !strings.Contains(out, "OK") {
-		return "", fmt.Errorf("sandbox start failed: %s", strings.TrimSpace(out))
+		msg := strings.TrimSpace(out)
+		if strings.Contains(msg, "Unable to find image") || strings.Contains(msg, "No such image") ||
+			strings.Contains(msg, "manifest unknown") || strings.Contains(msg, "pull access denied") {
+			return "", fmt.Errorf("образ песочницы %s не собран на этом хосте — "+
+				"собери его один раз: docker build -t %s -f deploy/sandbox/Dockerfile deploy/sandbox", image, image)
+		}
+		return "", fmt.Errorf("sandbox start failed: %s", msg)
 	}
 	s.touch(c)
 	return c, nil
@@ -181,10 +239,10 @@ func (s *ShellRunner) execIn(ctx context.Context, container, script string) (str
 }
 
 // Exec runs a user command in the session container and returns combined output.
-func (s *ShellRunner) Exec(ctx context.Context, userID, taskID int, image, setup, command string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, shellExecTimeout)
+func (s *ShellRunner) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, execTimeout(image))
 	defer cancel()
-	c, err := s.ensure(ctx, userID, taskID, image, setup)
+	c, err := s.ensure(ctx, userID, key, image, setup)
 	if err != nil {
 		return "", err
 	}
@@ -193,10 +251,10 @@ func (s *ShellRunner) Exec(ctx context.Context, userID, taskID int, image, setup
 }
 
 // Check runs the task's check script in the session; passed = exit code 0.
-func (s *ShellRunner) Check(ctx context.Context, userID, taskID int, image, setup, checkScript string) (bool, string, error) {
-	ctx, cancel := context.WithTimeout(ctx, shellExecTimeout)
+func (s *ShellRunner) Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, execTimeout(image))
 	defer cancel()
-	c, err := s.ensure(ctx, userID, taskID, image, setup)
+	c, err := s.ensure(ctx, userID, key, image, setup)
 	if err != nil {
 		return false, "", err
 	}
@@ -207,12 +265,25 @@ func (s *ShellRunner) Check(ctx context.Context, userID, taskID int, image, setu
 	return exit == 0, out, nil
 }
 
+// execTimeout picks the deadline for one command in this kind of sandbox.
+func execTimeout(image string) time.Duration {
+	if needsDocker(image) {
+		return dockerExecTimeout
+	}
+	return shellExecTimeout
+}
+
 // Reset destroys the session container so the next command starts fresh.
-func (s *ShellRunner) Reset(ctx context.Context, userID, taskID int) error {
-	ctx, cancel := context.WithTimeout(ctx, shellExecTimeout)
+func (s *ShellRunner) Reset(ctx context.Context, userID int, key string) error {
+	ctx, cancel := context.WithTimeout(ctx, dockerExecTimeout)
 	defer cancel()
-	c := sessionName(userID, taskID)
-	_, _, err := s.run(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1; echo OK", c))
+	c := sessionName(userID, key)
+	// The dind volume holds the inner daemon's images and containers, so a reset
+	// has to drop it too — otherwise the "clean environment" still has the
+	// student's old containers in it.
+	_, _, err := s.run(ctx, fmt.Sprintf(
+		"docker rm -f %s >/dev/null 2>&1; docker volume rm -f %s >/dev/null 2>&1; echo OK",
+		c, dindVolume(userID, key)))
 	s.mu.Lock()
 	delete(s.sessions, c)
 	s.mu.Unlock()
@@ -236,11 +307,23 @@ func (s *ShellRunner) reaper() {
 		}
 		s.mu.Unlock()
 		for _, c := range stale {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			_, _, _ = s.run(ctx, fmt.Sprintf("docker rm -f %s >/dev/null 2>&1", c))
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			// The matching dind volume (if any) is named after the container.
+			vol := strings.Replace(c, "gl-s-", "gl-dind-", 1)
+			_, _, _ = s.run(ctx, fmt.Sprintf(
+				"docker rm -f %s >/dev/null 2>&1; docker volume rm -f %s >/dev/null 2>&1", c, vol))
 			cancel()
 		}
 	}
+}
+
+// shellBool reads a boolean-ish environment flag.
+func shellBool(k string) bool {
+	switch strings.ToLower(os.Getenv(k)) {
+	case "1", "true", "yes", "on":
+		return true
+	}
+	return false
 }
 
 func shellEnv(k, def string) string {
@@ -253,8 +336,8 @@ func shellEnv(k, def string) string {
 // ── Interactive PTY terminal (xterm.js over WebSocket) ──
 
 // EnsureSession is a public wrapper to create/get the session container.
-func (s *ShellRunner) EnsureSession(ctx context.Context, userID, taskID int, image, setup string) (string, error) {
-	return s.ensure(ctx, userID, taskID, image, setup)
+func (s *ShellRunner) EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error) {
+	return s.ensure(ctx, userID, key, image, setup)
 }
 
 func (s *ShellRunner) signer() (ssh.Signer, error) {

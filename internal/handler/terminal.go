@@ -45,12 +45,24 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var image, setup string
-	var taskID int
-	if r.URL.Query().Get("kind") == "git" {
-		taskID, image, setup = gitTaskID, gitImage, gitSetup
-	} else {
-		id, err := strconv.Atoi(r.URL.Query().Get("task"))
+	// The session is keyed by lesson (?lesson=) so the terminal, every step and
+	// every check share one container. ?task= is still accepted and resolved to
+	// its lesson for older links.
+	var image, setup, key string
+	q := r.URL.Query()
+	switch {
+	case q.Get("kind") == "git":
+		key, image, setup = gitKey, gitImage, gitSetup
+	case q.Get("lesson") != "":
+		lessonID, err := strconv.Atoi(q.Get("lesson"))
+		if err != nil {
+			http.Error(w, "bad lesson id", 400)
+			return
+		}
+		key = labKey(lessonID)
+		image, setup = h.labSandbox(r, lessonID)
+	default:
+		id, err := strconv.Atoi(q.Get("task"))
 		if err != nil {
 			http.Error(w, "bad task id", 400)
 			return
@@ -60,10 +72,11 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "task not found", 404)
 			return
 		}
-		taskID, image, setup = id, task.SandboxImage, task.SetupScript
+		key = labKey(task.LessonID)
+		image, setup = h.labSandbox(r, task.LessonID)
 	}
 
-	container, err := h.shell.EnsureSession(r.Context(), user.ID, taskID, image, setup)
+	container, err := h.shell.EnsureSession(r.Context(), user.ID, key, image, setup)
 	if err != nil {
 		h.log.Error("term ensure session", "error", err)
 		http.Error(w, "sandbox start failed", 500)

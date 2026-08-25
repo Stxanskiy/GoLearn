@@ -16,9 +16,11 @@ type TasksPageData struct {
 	ContentHTML   string
 	Tasks         []model.Task
 	IsShellLab    bool
-	SessionTask   int // shared sandbox session id for the whole lab (first task)
+	PassedIDs     map[int]bool // steps already solved by this user
+	DoneCount     int
 	HasQuiz       bool
 	QuestionsJSON template.JS
+	PassedJSON    template.JS
 }
 
 func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +56,25 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(tasks) > 0 && tasks[0].Kind == "shell" {
 		data.IsShellLab = true
-		data.SessionTask = tasks[0].ID
 	}
+
+	// Solved steps are restored from the database, so reloading the page (or
+	// coming back a week later) keeps the lab's completed steps marked.
+	passed, err := h.submissionRepo.PassedTaskIDs(ctx, currentUserID(ctx), lesson.ID)
+	if err != nil {
+		h.log.Error("passed task ids", "error", err)
+		passed = map[int]bool{}
+	}
+	data.PassedIDs = passed
+	data.DoneCount = len(passed)
+	passedList := make([]int, 0, len(passed))
+	for _, t := range tasks {
+		if passed[t.ID] {
+			passedList = append(passedList, t.ID)
+		}
+	}
+	pjson, _ := json.Marshal(passedList)
+	data.PassedJSON = template.JS(pjson)
 
 	// Inline quiz (lab chapters from the import carry quiz questions too).
 	if _, questions, qerr := h.lessonRepo.GetQuiz(ctx, lesson.ID); qerr == nil && len(questions) > 0 {
