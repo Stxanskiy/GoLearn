@@ -335,7 +335,7 @@ func main() {
 		fmt.Printf("%s=%s\n", k, result[k])
 	}
 }`,
-				Hints:    `<ul><li>Скопируй все base в результат</li><li>Потом пройди по override и перезапиши/добавь</li></ul>`,
+				Hints: `<ul><li>Скопируй все base в результат</li><li>Потом пройди по override и перезапиши/добавь</li></ul>`,
 				Solution: `<pre><code>func mergeValues(base, override map[string]string) map[string]string {
     result := make(map[string]string)
     for k, v := range base {
@@ -473,7 +473,7 @@ func main() {
 	}
 	fmt.Println(validateChart(fields))
 }`,
-				Hints:    `<ul><li>Проверь наличие apiVersion, name, version</li><li>SemVer regex: ^\d+\.\d+\.\d+$</li></ul>`,
+				Hints: `<ul><li>Проверь наличие apiVersion, name, version</li><li>SemVer regex: ^\d+\.\d+\.\d+$</li></ul>`,
 				Solution: `<pre><code>func validateChart(fields map[string]string) string {
     if _, ok := fields["apiVersion"]; !ok { return "missing apiVersion" }
     if fields["apiVersion"] != "v2" { return "apiVersion must be v2" }
@@ -630,7 +630,7 @@ func main() {
 
 	fmt.Println(renderTemplate(tmpl, values))
 }`,
-				Hints:    `<ul><li>Ищи "{{ .Values." в строке</li><li>Найди закрывающий " }}"</li><li>Извлеки ключ между .Values. и }}</li><li>Замени всю конструкцию на значение</li></ul>`,
+				Hints: `<ul><li>Ищи "{{ .Values." в строке</li><li>Найди закрывающий " }}"</li><li>Извлеки ключ между .Values. и }}</li><li>Замени всю конструкцию на значение</li></ul>`,
 				Solution: `<pre><code>func renderTemplate(tmpl string, values map[string]string) string {
     result := tmpl
     for {
@@ -807,7 +807,7 @@ func main() {
 		}
 	}
 }`,
-				Hints:    `<ul><li>Deploy: append описание, current = len(revisions)</li><li>Rollback: проверить что rev существует, добавить новую ревизию "rollback to N"</li><li>History: пройтись по всем ревизиям, пометить current</li></ul>`,
+				Hints: `<ul><li>Deploy: append описание, current = len(revisions)</li><li>Rollback: проверить что rev существует, добавить новую ревизию "rollback to N"</li><li>History: пройтись по всем ревизиям, пометить current</li></ul>`,
 				Solution: `<pre><code>func (r *Release) Deploy(desc string) string {
     r.revisions = append(r.revisions, desc)
     r.current = len(r.revisions)
@@ -979,7 +979,7 @@ func main() {
 		fmt.Printf("%s=%s\n", k, result[k])
 	}
 }`,
-				Hints:    `<ul><li>Скопируй base, потом override с env</li></ul>`,
+				Hints: `<ul><li>Скопируй base, потом override с env</li></ul>`,
 				Solution: `<pre><code>func resolveValues(base map[string]string, env map[string]string) map[string]string {
     r := make(map[string]string)
     for k, v := range base { r[k] = v }

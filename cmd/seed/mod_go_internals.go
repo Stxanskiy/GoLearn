@@ -253,7 +253,7 @@ func main() {
 		fmt.Println(escapeAnalysis(line))
 	}
 }`,
-				Hints:    `<ul><li>return_pointer → heap (указатель покидает функцию)</li><li>interface_assign → heap (boxing requires heap allocation)</li><li>closure_escape → heap (замыкание может пережить функцию)</li><li>unknown_size_slice → heap (размер неизвестен компилятору)</li><li>large_struct → heap (слишком большая для стека)</li></ul>`,
+				Hints: `<ul><li>return_pointer → heap (указатель покидает функцию)</li><li>interface_assign → heap (boxing requires heap allocation)</li><li>closure_escape → heap (замыкание может пережить функцию)</li><li>unknown_size_slice → heap (размер неизвестен компилятору)</li><li>large_struct → heap (слишком большая для стека)</li></ul>`,
 				Solution: `<pre><code>func escapeAnalysis(situation string) string {
     switch situation {
     case "return_pointer":
@@ -457,7 +457,7 @@ func main() {
 		}
 	}
 }`,
-				Hints:    `<ul><li>Основной цикл: while хоть одна очередь непуста</li><li>Для каждого процессора: если очередь непуста — pop front, иначе найди процессор с max очередью и укради половину с конца</li><li>Одна итерация = один "тик" — все процессоры работают одновременно</li></ul>`,
+				Hints: `<ul><li>Основной цикл: while хоть одна очередь непуста</li><li>Для каждого процессора: если очередь непуста — pop front, иначе найди процессор с max очередью и укради половину с конца</li><li>Одна итерация = один "тик" — все процессоры работают одновременно</li></ul>`,
 				Solution: `<pre><code>func simulate(queues [][]string) [][]string {
     results := make([][]string, len(queues))
     for i := range results {
@@ -654,7 +654,7 @@ func main() {
 		fmt.Println(strings.Join(garbage, " "))
 	}
 }`,
-				Hints:    `<ul><li>BFS/DFS от roots через edges</li><li>Все посещённые = живые</li><li>objects - живые = garbage</li><li>Отсортируй результат</li></ul>`,
+				Hints: `<ul><li>BFS/DFS от roots через edges</li><li>Все посещённые = живые</li><li>objects - живые = garbage</li><li>Отсортируй результат</li></ul>`,
 				Solution: `<pre><code>func markAndSweep(objects []string, edges map[string][]string, roots []string) []string {
     alive := make(map[string]bool)
     queue := append([]string{}, roots...)
@@ -824,7 +824,7 @@ func main() {
 		fmt.Println(isNilInterface(line))
 	}
 }`,
-				Hints:    `<ul><li>nil_direct и nil_interface_var — оба поля nil → true</li><li>typed_nil_ptr — type info заполнен → false!</li><li>func_returns_nil_ptr_as_error — то же что typed_nil_ptr → false</li></ul>`,
+				Hints: `<ul><li>nil_direct и nil_interface_var — оба поля nil → true</li><li>typed_nil_ptr — type info заполнен → false!</li><li>func_returns_nil_ptr_as_error — то же что typed_nil_ptr → false</li></ul>`,
 				Solution: `<pre><code>func isNilInterface(desc string) string {
     switch desc {
     case "nil_direct":
@@ -1011,7 +1011,7 @@ func main() {
 		}
 	}
 }`,
-				Hints:    `<ul><li>Send: if count == size return "blocked"; buf[sendx] = val; sendx = (sendx+1) % size; count++</li><li>Recv: if count == 0 return "blocked"; val = buf[recvx]; recvx = (recvx+1) % size; count--</li></ul>`,
+				Hints: `<ul><li>Send: if count == size return "blocked"; buf[sendx] = val; sendx = (sendx+1) % size; count++</li><li>Recv: if count == 0 return "blocked"; val = buf[recvx]; recvx = (recvx+1) % size; count--</li></ul>`,
 				Solution: `<pre><code>func (rb *RingBuffer) Send(val string) string {
     if rb.count == rb.size { return "blocked" }
     rb.buf[rb.sendx] = val
@@ -1224,7 +1224,7 @@ func main() {
 		}
 	}
 }`,
-				Hints:    `<ul><li>Put: iterate bucket slots, check tophash match then key match for update. If not found, find empty slot (tophash==0)</li><li>Get: iterate slots, if tophash[i]==top && entries[i].key==key return value</li><li>tophash==0 means empty slot</li></ul>`,
+				Hints: `<ul><li>Put: iterate bucket slots, check tophash match then key match for update. If not found, find empty slot (tophash==0)</li><li>Get: iterate slots, if tophash[i]==top && entries[i].key==key return value</li><li>tophash==0 means empty slot</li></ul>`,
 				Solution: `<pre><code>func (hm *HashMap) Put(key, value string) {
     h := hash(key)
     idx := h % numBuckets
@@ -1453,7 +1453,7 @@ func main() {
 		fmt.Println(detectLeak(line))
 	}
 }`,
-				Hints:    `<ul><li>unbuf_no_receiver: никто не читает → sender заблокирован навсегда → leak</li><li>unbuf_first_wins: 2 пишут, 1 читает → второй навсегда заблокирован → leak</li><li>buffered_all_write: cap=2, обе записи поместятся → safe</li><li>context_cancel: select с ctx.Done() → горутина узнает об отмене → safe</li></ul>`,
+				Hints: `<ul><li>unbuf_no_receiver: никто не читает → sender заблокирован навсегда → leak</li><li>unbuf_first_wins: 2 пишут, 1 читает → второй навсегда заблокирован → leak</li><li>buffered_all_write: cap=2, обе записи поместятся → safe</li><li>context_cancel: select с ctx.Done() → горутина узнает об отмене → safe</li></ul>`,
 				Solution: `<pre><code>func detectLeak(pattern string) string {
     switch pattern {
     case "unbuf_no_receiver":
@@ -1515,7 +1515,7 @@ func main() {
 		fmt.Println(sharesArray(l, c, n))
 	}
 }`,
-				Hints:    `<ul><li>Если lenA + appendCount <= capA → append не создаёт новый array → shared</li><li>Если lenA + appendCount > capA → нужен новый array → independent</li></ul>`,
+				Hints: `<ul><li>Если lenA + appendCount <= capA → append не создаёт новый array → shared</li><li>Если lenA + appendCount > capA → нужен новый array → independent</li></ul>`,
 				Solution: `<pre><code>func sharesArray(lenA, capA, appendCount int) string {
     if lenA+appendCount <= capA {
         return "shared"

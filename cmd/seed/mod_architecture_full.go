@@ -9,7 +9,7 @@ func mod_architecture_full() M {
 	return M{
 		Slug: "architecture", Title: "Архитектура и SOLID", Order: 11,
 		Description: "SOLID принципы, чистая архитектура, dependency injection, паттерны проектирования в Go.",
-		Track: "backend", Difficulty: "advanced", Prerequisites: []string{"database"},
+		Track:       "backend", Difficulty: "advanced", Prerequisites: []string{"database"},
 		Lessons: []L{
 			{
 				Slug: "solid-principles", Title: "SOLID принципы в Go", Order: 1,

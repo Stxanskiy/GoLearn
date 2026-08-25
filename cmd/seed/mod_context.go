@@ -379,7 +379,7 @@ func main() {
     fmt.Println("Context cancelled")
     <-done
 }`,
-						Hints:    `<p><code>cancel()</code> закрывает <code>ctx.Done()</code> → горутина выходит из <code><-ctx.Done()</code>.</p>`,
+						Hints: `<p><code>cancel()</code> закрывает <code>ctx.Done()</code> → горутина выходит из <code><-ctx.Done()</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -449,7 +449,7 @@ func main() {
     defer cancel()
     fmt.Println("data:", fetchData(ctx, time.Duration(delayMs)*time.Millisecond))
 }`,
-						Hints:    `<p>select ждёт первый готовый канал: либо результат, либо ctx.Done() (таймаут).</p>`,
+						Hints: `<p>select ждёт первый готовый канал: либо результат, либо ctx.Done() (таймаут).</p>`,
 						Solution: `<pre><code>package main
 
 import ("context";"fmt";"time")
@@ -526,7 +526,7 @@ func main() {
     ctx = withRequestID(ctx, reqID)
     handler(ctx)
 }`,
-						Hints:    `<p>Каждый <code>context.WithValue</code> оборачивает предыдущий context. Все значения доступны через <code>ctx.Value(key)</code>.</p>`,
+						Hints: `<p>Каждый <code>context.WithValue</code> оборачивает предыдущий context. Все значения доступны через <code>ctx.Value(key)</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import ("context";"fmt")

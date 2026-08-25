@@ -7,12 +7,12 @@ package main
 
 func mod02_collections_new() M {
 	return M{
-		Slug:        "collections",
-		Title:       "Коллекции данных",
-		Description: "Как хранить наборы данных: массивы, слайсы (динамические списки) и map (словари). Фундамент для любой программы.",
-		Order:       2,
-		Track:       "shared",
-		Difficulty:  "beginner",
+		Slug:          "collections",
+		Title:         "Коллекции данных",
+		Description:   "Как хранить наборы данных: массивы, слайсы (динамические списки) и map (словари). Фундамент для любой программы.",
+		Order:         2,
+		Track:         "shared",
+		Difficulty:    "beginner",
 		Prerequisites: []string{"basics"},
 		Lessons: []L{
 			lesson_arrays_slices(),
@@ -171,7 +171,7 @@ func main() {
     // Выведи всех через for range в формате "N. Name"
 
 }`,
-				Hints:    `<p><code>names = append(names, "Diana")</code>. Затем <code>for i, name := range names { fmt.Printf("%d. %s\n", i+1, name) }</code></p>`,
+				Hints: `<p><code>names = append(names, "Diana")</code>. Затем <code>for i, name := range names { fmt.Printf("%d. %s\n", i+1, name) }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -219,7 +219,7 @@ func main() {
     // Найди сумму и максимум
 
 }`,
-				Hints:    `<p>Для суммы: <code>sum += nums[i]</code>. Для максимума: начни с <code>max := nums[0]</code>, затем <code>if nums[i] > max { max = nums[i] }</code></p>`,
+				Hints: `<p>Для суммы: <code>sum += nums[i]</code>. Для максимума: начни с <code>max := nums[0]</code>, затем <code>if nums[i] > max { max = nums[i] }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -278,7 +278,7 @@ func main() {
     // Выведи числа в обратном порядке через пробел
 
 }`,
-				Hints:    `<p>Цикл от последнего к первому: <code>for i := len(nums) - 1; i >= 0; i--</code>. Для вывода без пробела в конце: проверяй <code>if i > 0 { fmt.Print(" ") }</code></p>`,
+				Hints: `<p>Цикл от последнего к первому: <code>for i := len(nums) - 1; i >= 0; i--</code>. Для вывода без пробела в конце: проверяй <code>if i > 0 { fmt.Print(" ") }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -333,7 +333,7 @@ func main() {
     // Вычисли сумму, затем среднее как float64
 
 }`,
-				Hints:    `<p>Сумму накапливай как int: <code>sum += v</code>. Среднее: <code>avg := float64(sum) / float64(n)</code>. Вывод: <code>fmt.Printf("Average: %.2f\n", avg)</code>.</p>`,
+				Hints: `<p>Сумму накапливай как int: <code>sum += v</code>. Среднее: <code>avg := float64(sum) / float64(n)</code>. Вывод: <code>fmt.Printf("Average: %.2f\n", avg)</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -397,7 +397,7 @@ func main() {
     }
     fmt.Println()
 }`,
-				Hints:    `<p>В цикле: <code>if !seen[v] { seen[v] = true; result = append(result, v) }</code></p>`,
+				Hints: `<p>В цикле: <code>if !seen[v] { seen[v] = true; result = append(result, v) }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -562,7 +562,7 @@ func main() {
     // Собери чётные числа в новый слайс и выведи через пробел
 
 }`,
-				Hints:    `<p>Создай <code>even := []int{}</code>, в цикле проверяй <code>if v % 2 == 0</code> и добавляй через <code>append</code>.</p>`,
+				Hints: `<p>Создай <code>even := []int{}</code>, в цикле проверяй <code>if v % 2 == 0</code> и добавляй через <code>append</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -630,7 +630,7 @@ func main() {
     _ = sort.Ints // убери эту строку когда используешь sort
 
 }`,
-				Hints:    `<p>После <code>sort.Ints(nums)</code> первый элемент — минимум, последний — максимум: <code>nums[0]</code> и <code>nums[len(nums)-1]</code>.</p>`,
+				Hints: `<p>После <code>sort.Ints(nums)</code> первый элемент — минимум, последний — максимум: <code>nums[0]</code> и <code>nums[len(nums)-1]</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -683,7 +683,7 @@ func main() {
     // Выведи первые 3, последние 3, средние 3
 
 }`,
-				Hints:    `<p><code>s[:3]</code> — первые 3. <code>s[2:]</code> — последние 3. <code>s[1:4]</code> — средние.</p>`,
+				Hints: `<p><code>s[:3]</code> — первые 3. <code>s[2:]</code> — последние 3. <code>s[1:4]</code> — средние.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -741,7 +741,7 @@ func main() {
     }
     fmt.Println()
 }`,
-				Hints:    `<p>Если слайс отсортирован — дубликат стоит рядом с предыдущим. Проверь: <code>if i == 0 || v != nums[i-1]</code>.</p>`,
+				Hints: `<p>Если слайс отсортирован — дубликат стоит рядом с предыдущим. Проверь: <code>if i == 0 || v != nums[i-1]</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -816,7 +816,7 @@ func main() {
 
     fmt.Printf("Second max: %d\n", second)
 }`,
-				Hints:    `<p>Следи за двумя переменными: <code>first</code> (максимум) и <code>second</code> (второй). Если новое значение больше first — сдвигай. Если между second и first — обновляй second.</p>`,
+				Hints: `<p>Следи за двумя переменными: <code>first</code> (максимум) и <code>second</code> (второй). Если новое значение больше first — сдвигай. Если между second и first — обновляй second.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -984,7 +984,7 @@ func main() {
     _ = line
 
 }`,
-				Hints:    `<p><code>words := strings.Fields(line)</code> разделит строку по пробелам. Затем <code>len(words)</code> даст количество.</p>`,
+				Hints: `<p><code>words := strings.Fields(line)</code> разделит строку по пробелам. Затем <code>len(words)</code> даст количество.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1038,7 +1038,7 @@ func main() {
     // Сформируй и выведи Full, Username, Email
 
 }`,
-				Hints:    `<p>Capitalize: <code>strings.ToUpper(s[:1]) + s[1:]</code>. Username: <code>first[:1] + last</code>. Email: <code>first + "." + last + "@watchtogether.com"</code></p>`,
+				Hints: `<p>Capitalize: <code>strings.ToUpper(s[:1]) + s[1:]</code>. Username: <code>first[:1] + last</code>. Email: <code>first + "." + last + "@watchtogether.com"</code></p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1090,7 +1090,7 @@ func main() {
 
     fmt.Println(isPalindrome)
 }`,
-				Hints:    `<p>Цикл до len(runes)/2. Сравни <code>runes[i]</code> с <code>runes[len(runes)-1-i]</code>. Если хоть одна пара не совпала — false.</p>`,
+				Hints: `<p>Цикл до len(runes)/2. Сравни <code>runes[i]</code> с <code>runes[len(runes)-1-i]</code>. Если хоть одна пара не совпала — false.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1141,7 +1141,7 @@ func main() {
     // Разбей по запятой и выведи с номерами
 
 }`,
-				Hints:    `<p><code>fields := strings.Split(line, ",")</code>, затем <code>for i, f := range fields { fmt.Printf("%d: %s\n", i+1, f) }</code></p>`,
+				Hints: `<p><code>fields := strings.Split(line, ",")</code>, затем <code>for i, f := range fields { fmt.Printf("%d: %s\n", i+1, f) }</code></p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1208,7 +1208,7 @@ func main() {
     fmt.Printf("Upper: %d\n", upper)
     fmt.Printf("Lower: %d\n", lower)
 }`,
-				Hints:    `<p>Используй <code>for _, ch := range line</code> для перебора символов. <code>unicode.IsUpper(ch)</code> и <code>unicode.IsLower(ch)</code> для определения регистра.</p>`,
+				Hints: `<p>Используй <code>for _, ch := range line</code> для перебора символов. <code>unicode.IsUpper(ch)</code> и <code>unicode.IsLower(ch)</code> для определения регистра.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1381,7 +1381,7 @@ func main() {
     _ = sort.Slice // убери когда используешь
 
 }`,
-				Hints:    `<p>Создай <code>counts := map[rune]int{}</code>. Перебери строку: <code>for _, ch := range s { counts[ch]++ }</code>. Собери ключи в слайс, отсортируй, выведи.</p>`,
+				Hints: `<p>Создай <code>counts := map[rune]int{}</code>. Перебери строку: <code>for _, ch := range s { counts[ch]++ }</code>. Собери ключи в слайс, отсортируй, выведи.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1455,7 +1455,7 @@ func main() {
         _ = book
     }
 }`,
-				Hints:    `<p>Для add: <code>fmt.Scan(&name, &number); book[name] = number</code>. Для find: <code>if val, ok := book[name]; ok { ... }</code>. Для delete: <code>delete(book, name)</code>.</p>`,
+				Hints: `<p>Для add: <code>fmt.Scan(&name, &number); book[name] = number</code>. Для find: <code>if val, ok := book[name]; ok { ... }</code>. Для delete: <code>delete(book, name)</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1538,7 +1538,7 @@ func main() {
         fmt.Printf("%s: %d\n", k, counts[k])
     }
 }`,
-				Hints:    `<p><code>counts[word]++</code> работает даже для новых ключей — Go автоматически инициализирует нулём. Для вывода по алфавиту: собери ключи в слайс и отсортируй.</p>`,
+				Hints: `<p><code>counts[word]++</code> работает даже для новых ключей — Go автоматически инициализирует нулём. Для вывода по алфавиту: собери ключи в слайс и отсортируй.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1609,7 +1609,7 @@ func main() {
 
     _ = sort.Strings
 }`,
-				Hints:    `<p>Для инверсии: <code>for k, v := range original { inverted[v] = k }</code>. Затем отсортируй ключи inverted и выведи.</p>`,
+				Hints: `<p>Для инверсии: <code>for k, v := range original { inverted[v] = k }</code>. Затем отсортируй ключи inverted и выведи.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -1692,7 +1692,7 @@ func main() {
         fmt.Printf("%s: %s\n", k, strings.Join(groups[k], " "))
     }
 }`,
-				Hints:    `<p>Ключ — первая буква: <code>key := string(name[0])</code>. Добавление в группу: <code>groups[key] = append(groups[key], name)</code>. Вывод группы: <code>strings.Join(groups[k], " ")</code>.</p>`,
+				Hints: `<p>Ключ — первая буква: <code>key := string(name[0])</code>. Добавление в группу: <code>groups[key] = append(groups[key], name)</code>. Вывод группы: <code>strings.Join(groups[k], " ")</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import (

@@ -6,12 +6,12 @@ package main
 
 func mod07_files_json() M {
 	return M{
-		Slug:        "files-json",
-		Title:       "Файлы, I/O и JSON",
-		Description: "os, io, bufio, filepath, encoding/json — работа с файловой системой и сериализация данных.",
-		Order:       7,
-		Track:       "backend",
-		Difficulty:  "intermediate",
+		Slug:          "files-json",
+		Title:         "Файлы, I/O и JSON",
+		Description:   "os, io, bufio, filepath, encoding/json — работа с файловой системой и сериализация данных.",
+		Order:         7,
+		Track:         "backend",
+		Difficulty:    "intermediate",
 		Prerequisites: []string{"errors"},
 		Lessons: []L{
 			{
@@ -321,7 +321,7 @@ func main() {
     }
     fmt.Printf("%d %d %d\n", lines, words, chars)
 }`,
-						Hints:    `<p><code>strings.Fields(line)</code> разбивает на слова. <code>len(line)+1</code> считает символы + newline.</p>`,
+						Hints: `<p><code>strings.Fields(line)</code> разбивает на слова. <code>len(line)+1</code> считает символы + newline.</p>`,
 						Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() { sc:=bufio.NewScanner(os.Stdin); l,w,c:=0,0,0
@@ -357,7 +357,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>strings.Contains(strings.ToLower(line), strings.ToLower(pattern))</code></p>`,
+						Hints: `<p><code>strings.Contains(strings.ToLower(line), strings.ToLower(pattern))</code></p>`,
 						Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() { sc:=bufio.NewScanner(os.Stdin); sc.Scan(); p:=strings.ToLower(sc.Text()); n:=0
@@ -393,7 +393,7 @@ func main() {
     if count > n { start = idx % n; count = n }
     for i := 0; i < count; i++ { fmt.Println(buf[(start+i)%n]) }
 }`,
-						Hints:    `<p>Кольцевой буфер: <code>buf[idx%n] = line</code>. Потом выводи с позиции <code>(idx%n)</code> по кругу.</p>`,
+						Hints: `<p>Кольцевой буфер: <code>buf[idx%n] = line</code>. Потом выводи с позиции <code>(idx%n)</code> по кругу.</p>`,
 						Solution: `<pre><code>package main
 import ("bufio";"fmt";"os")
 func main() { sc:=bufio.NewScanner(os.Stdin); sc.Scan(); var n int; fmt.Sscan(sc.Text(),&n)
@@ -681,7 +681,7 @@ func main() {
 <p>Вывод:</p><pre><code>VALID: object
 INVALID
 VALID: array</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "json.Valid", Definition: "Проверяет JSON без десериализации."}},
+						Glossary:  []GlossaryItem{{Term: "json.Valid", Definition: "Проверяет JSON без десериализации."}},
 						TestCases: []TestCase{{Input: "3\n{\"name\":\"Alice\"}\n{bad\n[1,2]", ExpectedOutput: "VALID: object\nINVALID\nVALID: array"}},
 						StarterCode: `package main
 import ("bufio";"encoding/json";"fmt";"os";"strings")
@@ -700,7 +700,7 @@ func main() { var n int;fmt.Scan(&n);sc:=bufio.NewScanner(os.Stdin)
 <p>Ввод:</p><pre><code>{"name":"Alice","age":25}
 {"age":26,"city":"Moscow"}</code></pre>
 <p>Вывод: <code>{"age":26,"city":"Moscow","name":"Alice"}</code></p>`,
-						Glossary: []GlossaryItem{{Term: "map[string]any", Definition: "Для произвольного JSON. Marshal сортирует ключи."}},
+						Glossary:  []GlossaryItem{{Term: "map[string]any", Definition: "Для произвольного JSON. Marshal сортирует ключи."}},
 						TestCases: []TestCase{{Input: "{\"name\":\"Alice\",\"age\":25}\n{\"age\":26,\"city\":\"Moscow\"}", ExpectedOutput: "{\"age\":26,\"city\":\"Moscow\",\"name\":\"Alice\"}"}},
 						StarterCode: `package main
 import ("bufio";"encoding/json";"fmt";"os")

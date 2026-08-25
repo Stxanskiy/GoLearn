@@ -6,12 +6,12 @@ package main
 
 func mod04_structs_new() M {
 	return M{
-		Slug:        "structs",
-		Title:       "Структуры и методы",
-		Description: "Свои типы данных: как объединить связанные поля в одну сущность и добавить поведение через методы.",
-		Order:       4,
-		Track:       "shared",
-		Difficulty:  "beginner",
+		Slug:          "structs",
+		Title:         "Структуры и методы",
+		Description:   "Свои типы данных: как объединить связанные поля в одну сущность и добавить поведение через методы.",
+		Order:         4,
+		Track:         "shared",
+		Difficulty:    "beginner",
 		Prerequisites: []string{"functions"},
 		Lessons: []L{
 			{
@@ -167,7 +167,7 @@ func main() {
     fmt.Scan(&v.Title, &v.Year, &v.Duration)
     fmt.Println(v.String())
 }`,
-						Hints:    `<p>Часы: <code>v.Duration / 60</code>. Минуты: <code>v.Duration % 60</code>. Формат: <code>fmt.Sprintf("%dh %dm", h, m)</code></p>`,
+						Hints: `<p>Часы: <code>v.Duration / 60</code>. Минуты: <code>v.Duration % 60</code>. Формат: <code>fmt.Sprintf("%dh %dm", h, m)</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -236,7 +236,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>func (c *Counter) Inc() { c.count++ }</code>. Value может быть value receiver: <code>func (c Counter) Value() int { return c.count }</code></p>`,
+						Hints: `<p><code>func (c *Counter) Inc() { c.count++ }</code>. Value может быть value receiver: <code>func (c Counter) Value() int { return c.count }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -348,7 +348,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Withdraw: <code>if amount > a.balance { return fmt.Errorf("insufficient funds") }</code></p>`,
+						Hints: `<p>Withdraw: <code>if amount > a.balance { return fmt.Errorf("insufficient funds") }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -442,7 +442,7 @@ func main() {
     fmt.Scan(&p.X, &p.Y)
     fmt.Printf("Distance: %.2f\n", p.Distance())
 }`,
-						Hints:    `<p><code>math.Sqrt(p.X*p.X + p.Y*p.Y)</code> — теорема Пифагора.</p>`,
+						Hints: `<p><code>math.Sqrt(p.X*p.X + p.Y*p.Y)</code> — теорема Пифагора.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -530,7 +530,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Проверяй <code>strings.TrimSpace(name) == ""</code> для пустого имени. Затем <code>price &lt;= 0</code>.</p>`,
+						Hints: `<p>Проверяй <code>strings.TrimSpace(name) == ""</code> для пустого имени. Затем <code>price &lt;= 0</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -757,7 +757,7 @@ func main() {
     fmt.Scan(&v.ID, &v.Title, &v.Duration)
     fmt.Println(v.String())
 }`,
-						Hints:    `<p><code>fmt.Sprintf("Video #%d: %s (%dh%02dm)", v.ID, v.Title, v.Duration/60, v.Duration%60)</code></p>`,
+						Hints: `<p><code>fmt.Sprintf("Video #%d: %s (%dh%02dm)", v.ID, v.Title, v.Duration/60, v.Duration%60)</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -834,7 +834,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>fmt.Printf("[ERROR] %s: %s\n", l.Prefix, msg)</code></p>`,
+						Hints: `<p><code>fmt.Printf("[ERROR] %s: %s\n", l.Prefix, msg)</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -916,7 +916,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>d.Name + " says Woof!"</code> — поле Name доступно через embedding.</p>`,
+						Hints: `<p><code>d.Name + " says Woof!"</code> — поле Name доступно через embedding.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1011,7 +1011,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>u.IsNew()</code> — метод доступен через embedding. <code>u.ID</code> — поле тоже.</p>`,
+						Hints: `<p><code>u.IsNew()</code> — метод доступен через embedding. <code>u.ID</code> — поле тоже.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1105,7 +1105,7 @@ func main() {
     fmt.Println("Config:", cfg.String())
     fmt.Println("With 60s timeout:", cfg.WithTimeout(60).String())
 }`,
-						Hints:    `<p>Value receiver создаёт копию автоматически. <code>c.Timeout = t; return c</code> — изменяем копию, возвращаем.</p>`,
+						Hints: `<p>Value receiver создаёт копию автоматически. <code>c.Timeout = t; return c</code> — изменяем копию, возвращаем.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1312,7 +1312,7 @@ func main() {
     }
     fmt.Println(string(data))
 }`,
-						Hints:    `<p>Password с тегом <code>json:"-"</code> не попадёт в вывод. <code>string(data)</code> — байты в строку.</p>`,
+						Hints: `<p>Password с тегом <code>json:"-"</code> не попадёт в вывод. <code>string(data)</code> — байты в строку.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1376,7 +1376,7 @@ func main() {
     }
     fmt.Printf("ID: %d\nName: %s\nEmail: %s\n", u.ID, u.Name, u.Email)
 }`,
-						Hints:    `<p><code>json.Unmarshal([]byte(line), &u)</code> — передавай указатель на структуру.</p>`,
+						Hints: `<p><code>json.Unmarshal([]byte(line), &u)</code> — передавай указатель на структуру.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1453,7 +1453,7 @@ func main() {
         fmt.Println(string(data))
     }
 }`,
-						Hints:    `<p>Code=0 с omitempty → пропускается. Message="" с omitempty → пропускается.</p>`,
+						Hints: `<p>Code=0 с omitempty → пропускается. Message="" с omitempty → пропускается.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1529,7 +1529,7 @@ func main() {
     }
     fmt.Println(cfg.DSN())
 }`,
-						Hints:    `<p><code>fmt.Sprintf("postgres://%s:%s@%s:%d/%s", c.User, c.Password, c.Host, c.Port, c.Name)</code></p>`,
+						Hints: `<p><code>fmt.Sprintf("postgres://%s:%s@%s:%d/%s", c.User, c.Password, c.Host, c.Port, c.Name)</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1635,7 +1635,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Два разных struct для успеха и ошибки. Go сериализует вложенные struct рекурсивно.</p>`,
+						Hints: `<p>Два разных struct для успеха и ошибки. Go сериализует вложенные struct рекурсивно.</p>`,
 						Solution: `<pre><code>package main
 
 import (

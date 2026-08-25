@@ -107,14 +107,14 @@ pool.Query(ctx, "SELECT * FROM users WHERE name = $1", name)
 		},
 		Tasks: []T{
 			{
-				Title:       "Pool monitor", Difficulty: "easy",
+				Title: "Pool monitor", Difficulty: "easy",
 				Description: `<p>Рассчитай утилизацию connection pool. На вход: maxConns, текущие acquired, idle:</p>
 <p>Ввод: <code>20 15 5</code></p>
 <p>Вывод:</p><pre><code>Max: 20
 Acquired: 15
 Idle: 5
 Utilization: 75%</code></pre>`,
-				Glossary: []GlossaryItem{{Term: "Pool utilization", Definition: "acquired / maxConns * 100. Высокая (>80%) → нужно увеличить pool."}},
+				Glossary:  []GlossaryItem{{Term: "Pool utilization", Definition: "acquired / maxConns * 100. Высокая (>80%) → нужно увеличить pool."}},
 				TestCases: []TestCase{{Input: "20 15 5", ExpectedOutput: "Max: 20\nAcquired: 15\nIdle: 5\nUtilization: 75%"}},
 				StarterCode: `package main
 import "fmt"
@@ -126,8 +126,8 @@ import "fmt"
 func main(){var m,a,i int;fmt.Scan(&m,&a,&i);fmt.Printf("Max: %d\nAcquired: %d\nIdle: %d\nUtilization: %d%%\n",m,a,i,a*100/m)}</code></pre>`,
 			},
 			{
-				Title:       "Перевод денег (транзакция)",
-				Difficulty:  "medium",
+				Title:      "Перевод денег (транзакция)",
+				Difficulty: "medium",
 				Description: `<p>Симулируй транзакцию перевода денег. Операции: balance, transfer, rollback:</p>
 <p>Ввод:</p><pre><code>5
 balance Alice 100
@@ -140,7 +140,7 @@ Bob: 50
 Transfer: Alice -> Bob: 30 OK
 Transfer: Bob -> Alice: 200 FAILED (insufficient funds)
 Alice: 70</code></pre>`,
-				Glossary: []GlossaryItem{{Term: "Transaction", Definition: "Атомарная операция: или все шаги выполнены, или ни один. В Go: tx.Begin → операции → tx.Commit."}},
+				Glossary:  []GlossaryItem{{Term: "Transaction", Definition: "Атомарная операция: или все шаги выполнены, или ни один. В Go: tx.Begin → операции → tx.Commit."}},
 				TestCases: []TestCase{{Input: "5\nbalance Alice 100\nbalance Bob 50\ntransfer Alice Bob 30\ntransfer Bob Alice 200\nbalance Alice", ExpectedOutput: "Alice: 100\nBob: 50\nTransfer: Alice -> Bob: 30 OK\nTransfer: Bob -> Alice: 200 FAILED (insufficient funds)\nAlice: 70"}},
 				StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -175,7 +175,7 @@ Host: db.example.com
 Port: 5432
 Database: myapp
 SSLMode: verify-ca</code></pre>`,
-				Glossary: []GlossaryItem{{Term: "DSN", Definition: "Data Source Name: postgres://user:pass@host:port/dbname?params."}},
+				Glossary:  []GlossaryItem{{Term: "DSN", Definition: "Data Source Name: postgres://user:pass@host:port/dbname?params."}},
 				TestCases: []TestCase{{Input: "postgres://admin:secret@db.example.com:5432/myapp?sslmode=verify-ca", ExpectedOutput: "User: admin\nHost: db.example.com\nPort: 5432\nDatabase: myapp\nSSLMode: verify-ca"}},
 				StarterCode: `package main
 import ("fmt";"net/url")
@@ -206,7 +206,7 @@ INSERT INTO roles (name) VALUES ('admin')</code></pre>
 ALTER TABLE: users
 DROP TABLE: sessions
 INSERT INTO: roles</code></pre>`,
-				Glossary: []GlossaryItem{{Term: "Migration", Definition: "SQL-файл с изменениями схемы. UP — применить, DOWN — откатить."}},
+				Glossary:  []GlossaryItem{{Term: "Migration", Definition: "SQL-файл с изменениями схемы. UP — применить, DOWN — откатить."}},
 				TestCases: []TestCase{{Input: "4\nCREATE TABLE users (id SERIAL PRIMARY KEY)\nALTER TABLE users ADD COLUMN email TEXT\nDROP TABLE sessions\nINSERT INTO roles (name) VALUES ('admin')", ExpectedOutput: "CREATE TABLE: users\nALTER TABLE: users\nDROP TABLE: sessions\nINSERT INTO: roles"}},
 				StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -236,7 +236,7 @@ Found: id=1 name=Alice age=25
 Updated: id=1 age=26
 Found: id=1 name=Alice age=26
 Deleted: id=2</code></pre>`,
-				Glossary: []GlossaryItem{{Term: "CRUD", Definition: "Create, Read, Update, Delete — четыре базовые операции с данными."}},
+				Glossary:  []GlossaryItem{{Term: "CRUD", Definition: "Create, Read, Update, Delete — четыре базовые операции с данными."}},
 				TestCases: []TestCase{{Input: "6\nINSERT Alice 25\nINSERT Bob 30\nSELECT 1\nUPDATE 1 26\nSELECT 1\nDELETE 2", ExpectedOutput: "Inserted: id=1 name=Alice age=25\nInserted: id=2 name=Bob age=30\nFound: id=1 name=Alice age=25\nUpdated: id=1 age=26\nFound: id=1 name=Alice age=26\nDeleted: id=2"}},
 				StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")

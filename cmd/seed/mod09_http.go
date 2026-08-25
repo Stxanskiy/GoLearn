@@ -3,9 +3,9 @@ package main
 func mod09_http() M {
 	return M{
 		Slug: "http", Title: "HTTP Сервер", Order: 9,
-		Description: "net/http под капотом, chi router, middleware, JSON API, таймауты, graceful shutdown.",
-		Track:       "backend",
-		Difficulty:  "intermediate",
+		Description:   "net/http под капотом, chi router, middleware, JSON API, таймауты, graceful shutdown.",
+		Track:         "backend",
+		Difficulty:    "intermediate",
 		Prerequisites: []string{"packages"},
 		Lessons: []L{
 			{
@@ -147,7 +147,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				},
 				Tasks: []T{
 					{
-						Title: "HTTP роутер на map",
+						Title:      "HTTP роутер на map",
 						Difficulty: "medium",
 						Glossary: []GlossaryItem{
 							{Term: "map[string]func()", Definition: "Маршрутизация: ключ — путь, значение — обработчик. Основа любого HTTP-роутера."},
@@ -215,7 +215,7 @@ func main() {
 						},
 					},
 					{
-						Title: "JSON request/response симулятор",
+						Title:      "JSON request/response симулятор",
 						Difficulty: "hard",
 						Glossary: []GlossaryItem{
 							{Term: "json.NewDecoder(r).Decode(&v)", Definition: "Потоковый парсинг JSON из Reader. Используется для HTTP body."},
@@ -320,7 +320,7 @@ func main() {
 404: 4xx Client Error - Not Found
 500: 5xx Server Error - Internal Server Error
 201: 2xx Success - Created</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "HTTP Status Codes", Definition: "1xx Info, 2xx Success, 3xx Redirect, 4xx Client Error, 5xx Server Error."}},
+						Glossary:  []GlossaryItem{{Term: "HTTP Status Codes", Definition: "1xx Info, 2xx Success, 3xx Redirect, 4xx Client Error, 5xx Server Error."}},
 						TestCases: []TestCase{{Input: "5\n200 301 404 500 201", ExpectedOutput: "200: 2xx Success - OK\n301: 3xx Redirect - Moved Permanently\n404: 4xx Client Error - Not Found\n500: 5xx Server Error - Internal Server Error\n201: 2xx Success - Created"}},
 						StarterCode: `package main
 import "fmt"
@@ -344,7 +344,7 @@ Host: api.example.com
 Port: 8080
 Path: /users/42
 Query: name=alice&role=admin</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "net/url.Parse", Definition: "Парсит URL в структуру url.URL с полями Scheme, Host, Path, RawQuery."}},
+						Glossary:  []GlossaryItem{{Term: "net/url.Parse", Definition: "Парсит URL в структуру url.URL с полями Scheme, Host, Path, RawQuery."}},
 						TestCases: []TestCase{{Input: "http://api.example.com:8080/users/42?name=alice&role=admin", ExpectedOutput: "Scheme: http\nHost: api.example.com\nPort: 8080\nPath: /users/42\nQuery: name=alice&role=admin"}},
 						StarterCode: `package main
 import ("fmt";"net/url")
@@ -492,7 +492,7 @@ const userIDKey contextKey = "user_id"</code></pre>`,
 				},
 				Tasks: []T{
 					{
-						Title: "Цепочка middleware",
+						Title:      "Цепочка middleware",
 						Difficulty: "medium",
 						Glossary: []GlossaryItem{
 							{Term: "func(next func()) func()", Definition: "Middleware-паттерн: принимает следующий обработчик, возвращает обёрнутый."},
@@ -591,7 +591,7 @@ func main() {
 <p>Вывод:</p><pre><code>/users/42 -> /users/{id} (id=42)
 /posts/hello -> /posts/{slug} (slug=hello)
 /other -> 404</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "{param}", Definition: "URL-параметр в chi. chi.URLParam(r,\"id\") извлекает значение."}},
+						Glossary:  []GlossaryItem{{Term: "{param}", Definition: "URL-параметр в chi. chi.URLParam(r,\"id\") извлекает значение."}},
 						TestCases: []TestCase{{Input: "2\n/users/{id}\n/posts/{slug}\n3\n/users/42\n/posts/hello\n/other", ExpectedOutput: "/users/42 -> /users/{id} (id=42)\n/posts/hello -> /posts/{slug} (slug=hello)\n/other -> 404"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -617,7 +617,7 @@ GET /api/users HTTP/1.1
 POST /api/login HTTP/1.1</code></pre>
 <p>Вывод:</p><pre><code>Method: GET, Path: /api/users
 Method: POST, Path: /api/login</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "Request line", Definition: "METHOD PATH VERSION — первая строка HTTP-запроса."}},
+						Glossary:  []GlossaryItem{{Term: "Request line", Definition: "METHOD PATH VERSION — первая строка HTTP-запроса."}},
 						TestCases: []TestCase{{Input: "2\nGET /api/users HTTP/1.1\nPOST /api/login HTTP/1.1", ExpectedOutput: "Method: GET, Path: /api/users\nMethod: POST, Path: /api/login"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -639,7 +639,7 @@ r2: ALLOWED (1 left)
 r3: ALLOWED (0 left)
 r4: DENIED
 r5: DENIED</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "Token Bucket", Definition: "Ведро с N токенами. Каждый запрос = -1. Пусто = отклонить."}},
+						Glossary:  []GlossaryItem{{Term: "Token Bucket", Definition: "Ведро с N токенами. Каждый запрос = -1. Пусто = отклонить."}},
 						TestCases: []TestCase{{Input: "3\n5\nr1 r2 r3 r4 r5", ExpectedOutput: "r1: ALLOWED (2 left)\nr2: ALLOWED (1 left)\nr3: ALLOWED (0 left)\nr4: DENIED\nr5: DENIED"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -666,7 +666,7 @@ PUT /users</code></pre>
 <p>Вывод:</p><pre><code>200 list
 200 create
 405 Method Not Allowed</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "405 Method Not Allowed", Definition: "Путь есть, но метод не зарегистрирован для этого пути."}},
+						Glossary:  []GlossaryItem{{Term: "405 Method Not Allowed", Definition: "Путь есть, но метод не зарегистрирован для этого пути."}},
 						TestCases: []TestCase{{Input: "2\nGET /users list\nPOST /users create\n3\nGET /users\nPOST /users\nPUT /users", ExpectedOutput: "200 list\n200 create\n405 Method Not Allowed"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")

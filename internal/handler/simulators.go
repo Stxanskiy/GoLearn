@@ -11,11 +11,11 @@ import (
 // ── Simulator engine (turn-based business decisions with metric effects) ──
 
 type SimMetric struct {
-	Key     string `json:"key"`
-	Label   string `json:"label"`
-	Unit    string `json:"unit"`
-	Start   int    `json:"start"`
-	Higher  bool   `json:"higher"` // true: higher is better; false: lower is better
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Unit   string `json:"unit"`
+	Start  int    `json:"start"`
+	Higher bool   `json:"higher"` // true: higher is better; false: lower is better
 }
 
 type SimChoice struct {
@@ -56,7 +56,7 @@ func baseMetrics(budget, sat, vel, debt int) []SimMetric {
 func middleDevopsScenario() Scenario {
 	return Scenario{
 		Slug: "middle-devops", Title: "Middle DevOps: Второй год", Role: "Middle DevOps-инженер", Icon: "📈",
-		Intro: "Ты Middle DevOps в финтех-компании «ФинТехПро»: 50 000 пользователей, платёжная система, строгое SLA и регулятор ЦБ. За год нужно выстроить наблюдаемость, SLO, on-call и зрелые релизы. Нарушение SLA грозит штрафами.",
+		Intro:   "Ты Middle DevOps в финтех-компании «ФинТехПро»: 50 000 пользователей, платёжная система, строгое SLA и регулятор ЦБ. За год нужно выстроить наблюдаемость, SLO, on-call и зрелые релизы. Нарушение SLA грозит штрафами.",
 		Metrics: baseMetrics(4000, 48, 35, 68),
 		Turns: []SimTurn{
 			{Title: "Наблюдаемость с нуля", Situation: "Есть метрики CPU, но нет понимания пользовательского опыта. Инциденты ловите постфактум.", Choices: []SimChoice{
@@ -91,7 +91,7 @@ func middleDevopsScenario() Scenario {
 func sreScenario() Scenario {
 	return Scenario{
 		Slug: "senior-sre", Title: "Senior SRE: платформа", Role: "Senior SRE / Platform Lead", Icon: "🛡️",
-		Intro: "Ты Senior SRE в топ-маркетплейсе «МаркетПульс»: 3 млн пользователей, 150 микросервисов, 200+ инженеров. Задача — подготовить платформу к «Чёрной пятнице» (в прошлом году 4 часа даунтайма и потери 180 млн) и построить Internal Developer Platform: GitOps, DevSecOps, Golden Path.",
+		Intro:   "Ты Senior SRE в топ-маркетплейсе «МаркетПульс»: 3 млн пользователей, 150 микросервисов, 200+ инженеров. Задача — подготовить платформу к «Чёрной пятнице» (в прошлом году 4 часа даунтайма и потери 180 млн) и построить Internal Developer Platform: GitOps, DevSecOps, Golden Path.",
 		Metrics: baseMetrics(5000, 50, 32, 70),
 		Turns: []SimTurn{
 			{Title: "Готовность к Чёрной пятнице", Situation: "Прошлый год — 4 часа даунтайма в пик. До распродажи 2 месяца.", Choices: []SimChoice{

@@ -266,7 +266,7 @@ func main() {
 					{Input: "3", ExpectedOutput: "ping\npong\nping\npong\nping\npong"},
 					{Input: "1", ExpectedOutput: "ping\npong"},
 				},
-				Hints:    `<p>ping горутина: println → pong <- → <-ping. pong горутина: <-pong → println → ping <-.</p>`,
+				Hints: `<p>ping горутина: println → pong <- → <-ping. pong горутина: <-pong → println → ping <-.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func main() {
@@ -554,7 +554,7 @@ func main() {
 					{Input: "1000", ExpectedOutput: "1000"},
 					{Input: "500", ExpectedOutput: "500"},
 				},
-				Hints:    `<p>c.mu.Lock(); c.value++; c.mu.Unlock() — или defer c.mu.Unlock()</p>`,
+				Hints: `<p>c.mu.Lock(); c.value++; c.mu.Unlock() — или defer c.mu.Unlock()</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync")
 type SafeCounter struct { mu sync.Mutex; value int }
@@ -621,7 +621,7 @@ func main() {
 					{Input: "3 5\n1 2 3 4 5", ExpectedOutput: "30"},
 					{Input: "2 4\n10 20 30 40", ExpectedOutput: "200"},
 				},
-				Hints:    `<p>Воркер: for job := range jobs { results <- job * 2 }. close(jobs) после отправки. wg.Wait() + close(results) в горутине.</p>`,
+				Hints: `<p>Воркер: for job := range jobs { results <- job * 2 }. close(jobs) после отправки. wg.Wait() + close(results) в горутине.</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync")
 func main() {
@@ -879,7 +879,7 @@ func main() {
 					{Input: "2 5\n1 2 3 4 5", ExpectedOutput: "45"},
 					{Input: "1 3\n10 20 30", ExpectedOutput: "180"},
 				},
-				Hints:    `<p>sem <- struct{}{} перед go. defer func() { <-sem }() внутри горутины.</p>`,
+				Hints: `<p>sem <- struct{}{} перед go. defer func() { <-sem }() внутри горутины.</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync")
 func main() {
@@ -895,4 +895,3 @@ func main() {
 		},
 	}
 }
-

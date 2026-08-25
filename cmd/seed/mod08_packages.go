@@ -3,9 +3,9 @@ package main
 func mod08_packages() M {
 	return M{
 		Slug: "packages", Title: "Пакеты и модули", Order: 8,
-		Description: "go mod, internal/, видимость, циклические зависимости, vendor, replace.",
-		Track:       "shared",
-		Difficulty:  "intermediate",
+		Description:   "go mod, internal/, видимость, циклические зависимости, vendor, replace.",
+		Track:         "shared",
+		Difficulty:    "intermediate",
 		Prerequisites: []string{"errors"},
 		Lessons: []L{
 			{
@@ -407,7 +407,7 @@ func main() {
     }
     fmt.Printf("Module: %s\nGo: %s\nDependencies: %d\n", modName, goVer, deps)
 }`,
-						Hints:    `<p><code>strings.HasPrefix(line, "require ")</code> — считай все строки с require.</p>`,
+						Hints: `<p><code>strings.HasPrefix(line, "require ")</code> — считай все строки с require.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -485,7 +485,7 @@ func main() {
     fmt.Println("EXT:"); for _, s := range ext { fmt.Println("  " + s) }
     fmt.Println("INT:"); for _, s := range internal { fmt.Println("  " + s) }
 }`,
-						Hints:    `<p>STD: нет точки в первом сегменте. INT: начинается с пути модуля. EXT: остальное.</p>`,
+						Hints: `<p>STD: нет точки в первом сегменте. INT: начинается с пути модуля. EXT: остальное.</p>`,
 						Solution: `<pre><code>package main
 
 import ("bufio";"fmt";"os";"sort";"strings")

@@ -367,8 +367,8 @@ func main() {
 			},
 			{
 				Title:      "Apache vs Nginx сравнение",
-					Difficulty: "easy",
-					Description: `<p>По характеристикам определи Apache или Nginx:</p>
+				Difficulty: "easy",
+				Description: `<p>По характеристикам определи Apache или Nginx:</p>
 <p>Ввод:</p><pre><code>3
 event-driven
 process-per-connection
@@ -376,13 +376,13 @@ zero-copy sendfile</code></pre>
 <p>Вывод:</p><pre><code>event-driven: Nginx
 process-per-connection: Apache
 zero-copy sendfile: Nginx</code></pre>`,
-					Glossary: []GlossaryItem{
-						{Term: "event-driven", Definition: "Один процесс обрабатывает множество соединений через event loop — модель Nginx."},
-					},
-					TestCases: []TestCase{
-						{Input: "3\nevent-driven\nprocess-per-connection\nzero-copy sendfile", ExpectedOutput: "event-driven: Nginx\nprocess-per-connection: Apache\nzero-copy sendfile: Nginx"},
-					},
-					StarterCode: `package main
+				Glossary: []GlossaryItem{
+					{Term: "event-driven", Definition: "Один процесс обрабатывает множество соединений через event loop — модель Nginx."},
+				},
+				TestCases: []TestCase{
+					{Input: "3\nevent-driven\nprocess-per-connection\nzero-copy sendfile", ExpectedOutput: "event-driven: Nginx\nprocess-per-connection: Apache\nzero-copy sendfile: Nginx"},
+				},
+				StarterCode: `package main
 import ("bufio"; "fmt"; "os")
 func main() {
     nginx := map[string]bool{"event-driven": true, "zero-copy sendfile": true, "non-blocking I/O": true, "epoll": true, "no .htaccess": true}
@@ -391,16 +391,16 @@ func main() {
         if nginx[f] { fmt.Printf("%s: Nginx\n", f) } else { fmt.Printf("%s: Apache\n", f) }
     }
 }`,
-					Hints: `<p>Map с Nginx-характеристиками. Остальное — Apache.</p>`,
-					Solution: `<pre><code>package main
+				Hints: `<p>Map с Nginx-характеристиками. Остальное — Apache.</p>`,
+				Solution: `<pre><code>package main
 import ("bufio"; "fmt"; "os")
 func main() { ng := map[string]bool{"event-driven":true,"zero-copy sendfile":true,"non-blocking I/O":true,"epoll":true}; var n int; fmt.Scan(&n); sc := bufio.NewScanner(os.Stdin)
     for i := 0; i < n; i++ { sc.Scan(); f := sc.Text(); if ng[f] { fmt.Printf("%s: Nginx\n", f) } else { fmt.Printf("%s: Apache\n", f) } } }</code></pre>`,
-				},
-				{
-					Title:      "Nginx signal handler",
-					Difficulty: "medium",
-					Description: `<p>По сигналу определи что произойдёт с Nginx:</p>
+			},
+			{
+				Title:      "Nginx signal handler",
+				Difficulty: "medium",
+				Description: `<p>По сигналу определи что произойдёт с Nginx:</p>
 <p>Ввод:</p><pre><code>4
 reload
 stop
@@ -410,13 +410,13 @@ reopen</code></pre>
 stop (TERM): immediate shutdown
 quit (QUIT): graceful shutdown, finish current requests
 reopen (USR1): reopen log files</code></pre>`,
-					Glossary: []GlossaryItem{
-						{Term: "nginx -s reload", Definition: "SIGHUP → проверить конфиг → новые workers → старые дорабатывают → zero downtime."},
-					},
-					TestCases: []TestCase{
-						{Input: "4\nreload\nstop\nquit\nreopen", ExpectedOutput: "reload (HUP): graceful config reload, zero downtime\nstop (TERM): immediate shutdown\nquit (QUIT): graceful shutdown, finish current requests\nreopen (USR1): reopen log files"},
-					},
-					StarterCode: `package main
+				Glossary: []GlossaryItem{
+					{Term: "nginx -s reload", Definition: "SIGHUP → проверить конфиг → новые workers → старые дорабатывают → zero downtime."},
+				},
+				TestCases: []TestCase{
+					{Input: "4\nreload\nstop\nquit\nreopen", ExpectedOutput: "reload (HUP): graceful config reload, zero downtime\nstop (TERM): immediate shutdown\nquit (QUIT): graceful shutdown, finish current requests\nreopen (USR1): reopen log files"},
+				},
+				StarterCode: `package main
 import ("bufio"; "fmt"; "os")
 func main() {
     signals := map[string]string{
@@ -428,28 +428,28 @@ func main() {
     var n int; fmt.Scan(&n); sc := bufio.NewScanner(os.Stdin)
     for i := 0; i < n; i++ { sc.Scan(); fmt.Println(signals[sc.Text()]) }
 }`,
-					Hints: `<p>Map signal → описание с Unix-сигналом.</p>`,
-					Solution: `<pre><code>package main
+				Hints: `<p>Map signal → описание с Unix-сигналом.</p>`,
+				Solution: `<pre><code>package main
 import ("bufio"; "fmt"; "os")
 func main() { s := map[string]string{"reload":"reload (HUP): graceful config reload, zero downtime","stop":"stop (TERM): immediate shutdown","quit":"quit (QUIT): graceful shutdown, finish current requests","reopen":"reopen (USR1): reopen log files"}
     var n int; fmt.Scan(&n); sc := bufio.NewScanner(os.Stdin); for i := 0; i < n; i++ { sc.Scan(); fmt.Println(s[sc.Text()]) } }</code></pre>`,
-				},
-				{
-					Title:      "Capacity planner",
-					Difficulty: "hard",
-					Description: `<p>Рассчитай capacity Nginx сервера:</p>
+			},
+			{
+				Title:      "Capacity planner",
+				Difficulty: "hard",
+				Description: `<p>Рассчитай capacity Nginx сервера:</p>
 <p>Ввод: <code>8 4096 500</code> (cores, worker_connections, avg_request_ms)</p>
 <p>Вывод:</p><pre><code>Workers: 8
 Max concurrent: 32768
 Theoretical RPS: 65536
 Bottleneck: CPU-bound at 8 cores</code></pre>`,
-					Glossary: []GlossaryItem{
-						{Term: "Capacity planning", Definition: "max_concurrent = workers * connections. RPS = max_concurrent * (1000/avg_ms)."},
-					},
-					TestCases: []TestCase{
-						{Input: "8 4096 500", ExpectedOutput: "Workers: 8\nMax concurrent: 32768\nTheoretical RPS: 65536\nBottleneck: CPU-bound at 8 cores"},
-					},
-					StarterCode: `package main
+				Glossary: []GlossaryItem{
+					{Term: "Capacity planning", Definition: "max_concurrent = workers * connections. RPS = max_concurrent * (1000/avg_ms)."},
+				},
+				TestCases: []TestCase{
+					{Input: "8 4096 500", ExpectedOutput: "Workers: 8\nMax concurrent: 32768\nTheoretical RPS: 65536\nBottleneck: CPU-bound at 8 cores"},
+				},
+				StarterCode: `package main
 import "fmt"
 func main() {
     var cores, conns, avgMs int; fmt.Scan(&cores, &conns, &avgMs)
@@ -457,12 +457,12 @@ func main() {
     rps := maxConc * (1000 / avgMs)
     fmt.Printf("Workers: %d\nMax concurrent: %d\nTheoretical RPS: %d\nBottleneck: CPU-bound at %d cores\n", cores, maxConc, rps, cores)
 }`,
-					Hints: `<p>RPS = max_concurrent * (1000ms / avg_request_ms).</p>`,
-					Solution: `<pre><code>package main
+				Hints: `<p>RPS = max_concurrent * (1000ms / avg_request_ms).</p>`,
+				Solution: `<pre><code>package main
 import "fmt"
 func main() { var c, conn, ms int; fmt.Scan(&c, &conn, &ms); mc := c * conn; fmt.Printf("Workers: %d\nMax concurrent: %d\nTheoretical RPS: %d\nBottleneck: CPU-bound at %d cores\n", c, mc, mc*(1000/ms), c) }</code></pre>`,
-				},
 			},
+		},
 	}
 }
 

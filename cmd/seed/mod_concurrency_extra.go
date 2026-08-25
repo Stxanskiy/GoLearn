@@ -80,7 +80,7 @@ func main() {
     wg.Wait()
     fmt.Printf("Counter: %d\n", counter)
 }`,
-				Hints:    `<p>mu.Lock() перед counter++, mu.Unlock() после.</p>`,
+				Hints: `<p>mu.Lock() перед counter++, mu.Unlock() после.</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync")
 var (counter int; mu sync.Mutex)
@@ -97,7 +97,7 @@ import ("fmt"; "sync"; "sync/atomic")
 var counter int64
 func increment(wg *sync.WaitGroup) { defer wg.Done(); for i := 0; i < 1000; i++ { atomic.AddInt64(&counter, 1) } }
 func main() { wg := &sync.WaitGroup{}; for i := 0; i < 10; i++ { wg.Add(1); go increment(wg) }; wg.Wait(); fmt.Printf("Counter: %d\n", atomic.LoadInt64(&counter)) }`,
-				Hints:    `<p>atomic.AddInt64(&counter, 1)</p>`,
+				Hints: `<p>atomic.AddInt64(&counter, 1)</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync"; "sync/atomic")
 var counter int64
@@ -131,7 +131,7 @@ func main() {
         switch p[0] { case "set": cache.Set(p[1], p[2]); case "get": if v, ok := cache.Get(p[1]); ok { fmt.Println(v) } else { fmt.Println("NOT FOUND") } }
     }
 }`,
-				Hints:    `<p>Get: RLock/RUnlock. Set: Lock/Unlock.</p>`,
+				Hints: `<p>Get: RLock/RUnlock. Set: Lock/Unlock.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio"; "fmt"; "os"; "strings"; "sync")
 type Cache struct { mu sync.RWMutex; data map[string]string }
@@ -155,7 +155,7 @@ func main() {
     go partialSum(nums[:mid], ch); go partialSum(nums[mid:], ch)
     fmt.Printf("Sum: %d\n", <-ch + <-ch)
 }`,
-				Hints:    `<p>Раздели пополам, две горутины, собери 2 результата из канала.</p>`,
+				Hints: `<p>Раздели пополам, две горутины, собери 2 результата из канала.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func partialSum(nums []int, ch chan<- int) { s := 0; for _, n := range nums { s += n }; ch <- s }
@@ -188,7 +188,7 @@ func main() {
     sort.Strings(keys)
     for _, k := range keys { val, _ := visits.Load(k); fmt.Printf("%s: %d\n", k, atomic.LoadInt64(val.(*int64))) }
 }`,
-				Hints:    `<p>LoadOrStore: вернёт existing или сохранит new(int64). Потом atomic.AddInt64.</p>`,
+				Hints: `<p>LoadOrStore: вернёт existing или сохранит new(int64). Потом atomic.AddInt64.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio"; "fmt"; "os"; "sort"; "sync"; "sync/atomic")
 func main() { var visits sync.Map; var n int; fmt.Scan(&n); var wg sync.WaitGroup; scanner := bufio.NewScanner(os.Stdin)
@@ -253,7 +253,7 @@ func main() {
     for _, num := range nums { jobs <- num }; close(jobs)
     sum := 0; for i := 0; i < n; i++ { sum += <-results }; fmt.Printf("Sum: %d\n", sum)
 }`,
-				Hints:    `<p>3 воркера, close(jobs), собрать N результатов.</p>`,
+				Hints: `<p>3 воркера, close(jobs), собрать N результатов.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func worker(jobs <-chan int, results chan<- int) { for j := range jobs { results <- j * 2 } }
@@ -272,7 +272,7 @@ func main() {
         go func() { defer wg.Done(); defer func() { <-sem }(); atomic.AddInt64(&done, 1) }() }
     wg.Wait(); fmt.Printf("done: %d\n", atomic.LoadInt64(&done))
 }`,
-				Hints:    `<p>sem <- struct{}{} захват. <-sem освобождение в defer.</p>`,
+				Hints: `<p>sem <- struct{}{} захват. <-sem освобождение в defer.</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync"; "sync/atomic")
 func main() { var n int; fmt.Scan(&n); sem := make(chan struct{}, 2); var wg sync.WaitGroup; var done int64; for i := 0; i < n; i++ { wg.Add(1); sem <- struct{}{}; go func() { defer wg.Done(); defer func() { <-sem }(); atomic.AddInt64(&done, 1) }() }; wg.Wait(); fmt.Printf("done: %d\n", atomic.LoadInt64(&done)) }</code></pre>`,
@@ -287,7 +287,7 @@ import "fmt"
 func generate(n int) <-chan int { out := make(chan int); go func() { for i := 1; i <= n; i++ { out <- i }; close(out) }(); return out }
 func square(in <-chan int) <-chan int { out := make(chan int); go func() { for v := range in { out <- v * v }; close(out) }(); return out }
 func main() { var n int; fmt.Scan(&n); first := true; for v := range square(generate(n)) { if !first { fmt.Print(" ") }; fmt.Print(v); first = false }; fmt.Println() }`,
-				Hints:    `<p>Каждая стадия: make(chan), go func(){range in → out}, close(out), return out.</p>`,
+				Hints: `<p>Каждая стадия: make(chan), go func(){range in → out}, close(out), return out.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func generate(n int) <-chan int { out := make(chan int); go func() { for i := 1; i <= n; i++ { out <- i }; close(out) }(); return out }
@@ -304,7 +304,7 @@ import ("fmt"; "sync")
 func producer(id, count int) <-chan int { ch := make(chan int); go func() { for i := 0; i < count; i++ { ch <- id*100+i }; close(ch) }(); return ch }
 func fanIn(chs ...<-chan int) <-chan int { var wg sync.WaitGroup; merged := make(chan int); for _, ch := range chs { wg.Add(1); go func(c <-chan int) { defer wg.Done(); for v := range c { merged <- v } }(ch) }; go func() { wg.Wait(); close(merged) }(); return merged }
 func main() { var n int; fmt.Scan(&n); count := 0; for range fanIn(producer(1,n), producer(2,n), producer(3,n)) { count++ }; fmt.Printf("Count: %d\n", count) }`,
-				Hints:    `<p>fanIn: для каждого канала горутина с range. WaitGroup → close(merged).</p>`,
+				Hints: `<p>fanIn: для каждого канала горутина с range. WaitGroup → close(merged).</p>`,
 				Solution: `<pre><code>package main
 import ("fmt"; "sync")
 func producer(id, count int) <-chan int { ch := make(chan int); go func() { for i := 0; i < count; i++ { ch <- id*100+i }; close(ch) }(); return ch }
@@ -319,7 +319,7 @@ func main() { var n int; fmt.Scan(&n); count := 0; for range fanIn(producer(1,n)
 				StarterCode: `package main
 import "fmt"
 func main() { var n int; fmt.Scan(&n); processed := 0; for i := 0; i < n; i++ { processed++ }; fmt.Printf("Processed: %d\n", processed) }`,
-				Hints:    `<p>В реальности: ticker := time.NewTicker(interval); <-ticker.C перед операцией.</p>`,
+				Hints: `<p>В реальности: ticker := time.NewTicker(interval); <-ticker.C перед операцией.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func main() { var n int; fmt.Scan(&n); p := 0; for i := 0; i < n; i++ { p++ }; fmt.Printf("Processed: %d\n", p) }</code></pre>`,
@@ -377,7 +377,7 @@ srv.Shutdown(timeoutCtx)</code></pre>
 import ("context"; "fmt")
 func counter(ctx context.Context, done chan<- struct{}) { for { select { case <-ctx.Done(): done <- struct{}{}; return; default: } } }
 func main() { ctx, cancel := context.WithCancel(context.Background()); done := make(chan struct{}); go counter(ctx, done); cancel(); <-done; fmt.Println("Stopped") }`,
-				Hints:    `<p>select { case <-ctx.Done(): return }</p>`,
+				Hints: `<p>select { case <-ctx.Done(): return }</p>`,
 				Solution: `<pre><code>package main
 import ("context"; "fmt")
 func counter(ctx context.Context, done chan<- struct{}) { for { select { case <-ctx.Done(): done <- struct{}{}; return; default: } } }
@@ -397,7 +397,7 @@ func operation(ctx context.Context, mode string) (string, error) {
 }
 func main() { var mode string; fmt.Scan(&mode); ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond); defer cancel()
     r, err := operation(ctx, mode); if err != nil { fmt.Println("timeout") } else { fmt.Printf("Result: %s\n", r) } }`,
-				Hints:    `<p>select { case r := <-ch: ok; case <-ctx.Done(): timeout }</p>`,
+				Hints: `<p>select { case r := <-ch: ok; case <-ctx.Done(): timeout }</p>`,
 				Solution: `<pre><code>package main
 import ("context"; "fmt"; "time")
 func operation(ctx context.Context, mode string) (string, error) { ch := make(chan string, 1); go func() { if mode == "slow" { time.Sleep(200*time.Millisecond) }; ch <- "done" }(); select { case r := <-ch: return r, nil; case <-ctx.Done(): return "", ctx.Err() } }
@@ -414,7 +414,7 @@ func process(ctx context.Context, items []int) int {
     count := 0; for range items { select { case <-ctx.Done(): return count; default: count++ } }; return count
 }
 func main() { var n int; fmt.Scan(&n); items := make([]int, n); fmt.Printf("Processed: %d\n", process(context.Background(), items)) }`,
-				Hints:    `<p>select { case <-ctx.Done(): early exit; default: work }</p>`,
+				Hints: `<p>select { case <-ctx.Done(): early exit; default: work }</p>`,
 				Solution: `<pre><code>package main
 import ("context"; "fmt")
 func process(ctx context.Context, items []int) int { c := 0; for range items { select { case <-ctx.Done(): return c; default: c++ } }; return c }
@@ -434,7 +434,7 @@ func main() { var n int; fmt.Scan(&n); ctx := context.Background(); jobs := make
     for w := 0; w < 3; w++ { wg.Add(1); go worker(ctx, jobs, results, &wg) }
     for i := 1; i <= n; i++ { jobs <- i }; close(jobs); go func() { wg.Wait(); close(results) }()
     count := 0; for range results { count++ }; fmt.Printf("Done: %d\n", count) }`,
-				Hints:    `<p>select с двумя case: ctx.Done() и jobs. close(jobs) → ok=false → return.</p>`,
+				Hints: `<p>select с двумя case: ctx.Done() и jobs. close(jobs) → ok=false → return.</p>`,
 				Solution: `<pre><code>package main
 import ("context"; "fmt"; "sync")
 func worker(ctx context.Context, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) { defer wg.Done(); for { select { case <-ctx.Done(): return; case j, ok := <-jobs: if !ok { return }; results <- j*2 } } }
@@ -453,7 +453,7 @@ import ("context"; "fmt"; "sync/atomic")
 func main() { var n int; fmt.Scan(&n); _, cancel := context.WithCancel(context.Background()); var done int64; finished := make(chan struct{})
     go func() { for i := 0; i < n; i++ { atomic.AddInt64(&done, 1) }; finished <- struct{}{} }()
     <-finished; cancel(); fmt.Printf("Shutdown complete: %d tasks done\n", atomic.LoadInt64(&done)) }`,
-				Hints:    `<p>Горутина работает → finished. Main ждёт → cancel → print.</p>`,
+				Hints: `<p>Горутина работает → finished. Main ждёт → cancel → print.</p>`,
 				Solution: `<pre><code>package main
 import ("context"; "fmt"; "sync/atomic")
 func main() { var n int; fmt.Scan(&n); _, cancel := context.WithCancel(context.Background()); var done int64; finished := make(chan struct{})

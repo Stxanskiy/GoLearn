@@ -171,7 +171,7 @@ import "fmt"
 func main() {
     // Напиши здесь: fmt.Println("Hello, Go!")
 }`,
-				Hints:    `<p>Замени комментарий на <code>fmt.Println("Hello, Go!")</code>. Не забудь кавычки вокруг текста!</p>`,
+				Hints: `<p>Замени комментарий на <code>fmt.Println("Hello, Go!")</code>. Не забудь кавычки вокруг текста!</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -202,7 +202,7 @@ func main() {
     fmt.Println("Я учу Go")
     // Добавь ещё две строки по примеру первой
 }`,
-				Hints:    `<p>Скопируй строку <code>fmt.Println("Я учу Go")</code> и замени текст в кавычках на нужный.</p>`,
+				Hints: `<p>Скопируй строку <code>fmt.Println("Я учу Go")</code> и замени текст в кавычках на нужный.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -235,7 +235,7 @@ func main() {
     fmt.Println("Роль: Go-разработчик")
     // Добавь третью строку: Город: Москва
 }`,
-				Hints:    `<p>Добавь <code>fmt.Println("Город: Москва")</code> после второй строки.</p>`,
+				Hints: `<p>Добавь <code>fmt.Println("Город: Москва")</code> после второй строки.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -269,7 +269,7 @@ func main() {
     fmt.Println("  GoLearn Course")
     // Добавь закрывающую линию из = (как первая)
 }`,
-				Hints:    `<p>Скопируй первую строку <code>fmt.Println("====================")</code> и вставь в конец.</p>`,
+				Hints: `<p>Скопируй первую строку <code>fmt.Println("====================")</code> и вставь в конец.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -301,7 +301,7 @@ func main() {
     fmt.println("Учись каждый день")
     fmt.Println(Ты справишься!)
 }`,
-				Hints:    `<p>1) Нет <code>import "fmt"</code> 2) <code>println</code> → <code>Println</code> (заглавная P) 3) <code>Ты справишься!</code> без кавычек → добавь <code>"Ты справишься!"</code></p>`,
+				Hints: `<p>1) Нет <code>import "fmt"</code> 2) <code>println</code> → <code>Println</code> (заглавная P) 3) <code>Ты справишься!</code> без кавычек → добавь <code>"Ты справишься!"</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -442,7 +442,7 @@ fmt.Println(name)    // выведет: Alice (значение переменн
 		},
 		Tasks: []T{
 			{
-				Title: "Создай переменную",
+				Title:      "Создай переменную",
 				Difficulty: "easy",
 				Description: `<p>Создай переменную <code>language</code> со значением <code>"Go"</code> и выведи её:</p>
 <pre><code>Go</code></pre>`,
@@ -460,7 +460,7 @@ func main() {
     // Создай переменную language со значением "Go"
     // и выведи её через fmt.Println
 }`,
-				Hints:    `<p><code>language := "Go"</code> — создаёт переменную. <code>fmt.Println(language)</code> — выводит её значение.</p>`,
+				Hints: `<p><code>language := "Go"</code> — создаёт переменную. <code>fmt.Println(language)</code> — выводит её значение.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -471,7 +471,7 @@ func main() {
 }</code></pre>`,
 			},
 			{
-				Title: "Визитка с переменными",
+				Title:      "Визитка с переменными",
 				Difficulty: "easy",
 				Description: `<p>Создай три переменные и выведи визитку:</p>
 <pre><code>Имя: Алексей
@@ -495,7 +495,7 @@ func main() {
     fmt.Println("Имя:", name)
     // Добавь вывод возраста и города по тому же примеру
 }`,
-				Hints:    `<p><code>fmt.Println("Возраст:", age)</code> и <code>fmt.Println("Город:", city)</code></p>`,
+				Hints: `<p><code>fmt.Println("Возраст:", age)</code> и <code>fmt.Println("Город:", city)</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -511,7 +511,7 @@ func main() {
 }</code></pre>`,
 			},
 			{
-				Title: "Счётчик",
+				Title:      "Счётчик",
 				Difficulty: "easy",
 				Description: `<p>Создай переменную <code>count</code> = 0, увеличь её три раза на 1 и выведи результат:</p>
 <pre><code>3</code></pre>`,
@@ -532,7 +532,7 @@ func main() {
     // Увеличь count ещё на 1
     fmt.Println(count)
 }`,
-				Hints:    `<p>Добавь ещё одну строку <code>count = count + 1</code> перед fmt.Println.</p>`,
+				Hints: `<p>Добавь ещё одну строку <code>count = count + 1</code> перед fmt.Println.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -546,7 +546,7 @@ func main() {
 }</code></pre>`,
 			},
 			{
-				Title: "Обмен значений",
+				Title:      "Обмен значений",
 				Difficulty: "medium",
 				Description: `<p>Поменяй значения двух переменных местами и выведи результат:</p>
 <pre><code>a = 20
@@ -572,7 +572,7 @@ func main() {
     fmt.Println("a =", a)
     fmt.Println("b =", b)
 }`,
-				Hints:    `<p><code>tmp := a</code> — сохранить. <code>a = b</code> — перезаписать. <code>b = tmp</code> — восстановить.</p>`,
+				Hints: `<p><code>tmp := a</code> — сохранить. <code>a = b</code> — перезаписать. <code>b = tmp</code> — восстановить.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -590,7 +590,7 @@ func main() {
 }</code></pre>`,
 			},
 			{
-				Title: "Найди ошибки в переменных",
+				Title:      "Найди ошибки в переменных",
 				Difficulty: "hard",
 				Description: `<p>В коде <strong>3 ошибки</strong> с переменными. Исправь их чтобы вывести:</p>
 <pre><code>Привет, Go!
@@ -619,7 +619,7 @@ func main() {
 
     _ = unused  // Убери эту строку и удали переменную unused
 }`,
-				Hints:    `<p>1) Удали <code>unused</code> и <code>_ = unused</code>. 2) Убери кавычки вокруг version. 3) Замени <code>:=</code> на <code>=</code> для year.</p>`,
+				Hints: `<p>1) Удали <code>unused</code> и <code>_ = unused</code>. 2) Убери кавычки вокруг version. 3) Замени <code>:=</code> на <code>=</code> для year.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -638,7 +638,6 @@ func main() {
 		},
 	}
 }
-
 
 // ── Урок 3: Типы данных и форматирование ─────────────────────
 
@@ -779,7 +778,7 @@ func main() {
     fmt.Println(a, "-", b, "=", a-b)
     // Допиши умножение, деление и остаток
 }`,
-				Hints:    `<p><code>fmt.Println(a, "*", b, "=", a*b)</code> — по аналогии для *, / и %.</p>`,
+				Hints: `<p><code>fmt.Println(a, "*", b, "=", a*b)</code> — по аналогии для *, / и %.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -819,7 +818,7 @@ func main() {
     fmt.Printf("Возраст: %d\n", age)
     // Допиши вывод баланса с %.2f
 }`,
-				Hints:    `<p><code>fmt.Printf("Баланс: $%.2f\n", balance)</code></p>`,
+				Hints: `<p><code>fmt.Printf("Баланс: $%.2f\n", balance)</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -862,7 +861,7 @@ func main() {
     fmt.Printf("Количество: %d\n", quantity)
     // Допиши вывод итого
 }`,
-				Hints:    `<p><code>fmt.Printf("Итого: $%.2f\n", total)</code></p>`,
+				Hints: `<p><code>fmt.Printf("Итого: $%.2f\n", total)</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -897,7 +896,7 @@ func main() {
     fahrenheit := celsius * 9.0/5.0 + 32.0
     fmt.Printf("%.0f°C = %.2f°F\n", celsius, fahrenheit)
 }`,
-				Hints:    `<p>Формула уже написана. Убедись что используешь 9.0/5.0 (не 9/5).</p>`,
+				Hints: `<p>Формула уже написана. Убедись что используешь 9.0/5.0 (не 9/5).</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -934,7 +933,7 @@ func main() {
     fmt.Printf("Баланс: $%d\n", balance)                    // Ошибка 2: %d для float64
     fmt.Printf("Активен: %s\n", active)                     // Ошибка 3: %s для bool
 }`,
-				Hints:    `<p>1) name — строка (%s), age — число (%d). 2) balance — дробное (%.2f). 3) active — bool (%v или %t).</p>`,
+				Hints: `<p>1) name — строка (%s), age — число (%d). 2) balance — дробное (%.2f). 3) active — bool (%v или %t).</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1086,7 +1085,7 @@ func main() {
     // Выведи: Привет, <имя>!
     // Подсказка: fmt.Printf("Привет, %s!\n", name)
 }`,
-				Hints:    `<p><code>fmt.Printf("Привет, %s!\n", name)</code></p>`,
+				Hints: `<p><code>fmt.Printf("Привет, %s!\n", name)</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1118,7 +1117,7 @@ func main() {
     fmt.Scan(&a, &b)
     // Выведи сумму a + b
 }`,
-				Hints:    `<p><code>fmt.Println(a + b)</code></p>`,
+				Hints: `<p><code>fmt.Println(a + b)</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1151,7 +1150,7 @@ func main() {
     area := width * height
     fmt.Println("Площадь:", area)
 }`,
-				Hints:    `<p>Код уже написан! Просто запусти его.</p>`,
+				Hints: `<p>Код уже написан! Просто запусти его.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1184,7 +1183,7 @@ func main() {
     dollars := rubles / rate
     fmt.Printf("$%.2f\n", dollars)
 }`,
-				Hints:    `<p>Код уже готов. Изучи как работает <code>%.2f</code> — два знака после точки.</p>`,
+				Hints: `<p>Код уже готов. Изучи как работает <code>%.2f</code> — два знака после точки.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1226,7 +1225,7 @@ func main() {
     // Допиши вывод Age и City
     // Потом закрывающую линию ====================
 }`,
-				Hints:    `<p><code>fmt.Printf("  Age: %d\n", age)</code> и <code>fmt.Printf("  City: %s\n", city)</code>. В конце <code>fmt.Println("====================")</code></p>`,
+				Hints: `<p><code>fmt.Printf("  Age: %d\n", age)</code> и <code>fmt.Printf("  City: %s\n", city)</code>. В конце <code>fmt.Println("====================")</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1393,7 +1392,7 @@ func main() {
     }
     // Добавь else с "Доступ запрещён"
 }`,
-				Hints:    `<p>После закрывающей скобки <code>}</code> добавь <code>else { fmt.Println("Доступ запрещён") }</code></p>`,
+				Hints: `<p>После закрывающей скобки <code>}</code> добавь <code>else { fmt.Println("Доступ запрещён") }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1430,7 +1429,7 @@ func main() {
 
     // Если n % 2 == 0 → "Чётное", иначе "Нечётное"
 }`,
-				Hints:    `<p><code>if n % 2 == 0 { fmt.Println("Чётное") } else { fmt.Println("Нечётное") }</code></p>`,
+				Hints: `<p><code>if n % 2 == 0 { fmt.Println("Чётное") } else { fmt.Println("Нечётное") }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1479,7 +1478,7 @@ func main() {
     }
     // Допиши else if для >= 50 и else
 }`,
-				Hints:    `<p>Добавь <code>else if score >= 50 { ... } else { ... }</code></p>`,
+				Hints: `<p>Добавь <code>else if score >= 50 { ... } else { ... }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1525,7 +1524,7 @@ func main() {
     // Добавь проверку для c
     fmt.Println(max)
 }`,
-				Hints:    `<p>Добавь <code>if c > max { max = c }</code> перед fmt.Println.</p>`,
+				Hints: `<p>Добавь <code>if c > max { max = c }</code> перед fmt.Println.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1571,7 +1570,7 @@ func main() {
     }
     // Допиши * и / (с проверкой деления на 0)
 }`,
-				Hints:    `<p>Для /: <code>if b == 0 { fmt.Println("Ошибка: деление на ноль") } else { fmt.Println(a/b) }</code></p>`,
+				Hints: `<p>Для /: <code>if b == 0 { fmt.Println("Ошибка: деление на ноль") } else { fmt.Println(a/b) }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1727,7 +1726,7 @@ func main() {
     // Допиши остальные дни: 3-Среда, 4-Четверг, 5-Пятница, 6-Суббота, 7-Воскресенье
     }
 }`,
-				Hints:    `<p>Добавь case 3: ... case 4: ... и так до case 7.</p>`,
+				Hints: `<p>Добавь case 3: ... case 4: ... и так до case 7.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1774,7 +1773,7 @@ func main() {
         // Допиши
     }
 }`,
-				Hints:    `<p><code>fmt.Println("Рабочий день")</code> в блоке default.</p>`,
+				Hints: `<p><code>fmt.Println("Рабочий день")</code> в блоке default.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1816,7 +1815,7 @@ func main() {
     // Допиши: Весна (3,4,5), Лето (6,7,8), Осень (9,10,11)
     }
 }`,
-				Hints:    `<p>case 3, 4, 5: "Весна". case 6, 7, 8: "Лето". case 9, 10, 11: "Осень".</p>`,
+				Hints: `<p>case 3, 4, 5: "Весна". case 6, 7, 8: "Лето". case 9, 10, 11: "Осень".</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1861,7 +1860,7 @@ func main() {
     // Допиши * и /
     }
 }`,
-				Hints:    `<p>Для /: внутри case "/" проверь <code>if b == 0</code>.</p>`,
+				Hints: `<p>Для /: внутри case "/" проверь <code>if b == 0</code>.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -1919,7 +1918,7 @@ func main() {
         fmt.Printf("%d: %s\n", code, status)
     }
 }`,
-				Hints:    `<p>case 404: status = "Not Found". case 500: status = "Server Error".</p>`,
+				Hints: `<p>case 404: status = "Not Found". case 500: status = "Server Error".</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -2087,7 +2086,7 @@ func main() {
         fmt.Println(i)
     }
 }`,
-				Hints:    `<p>Код уже написан! Запусти и разберись как работает цикл.</p>`,
+				Hints: `<p>Код уже написан! Запусти и разберись как работает цикл.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -2127,7 +2126,7 @@ func main() {
     }
     fmt.Println(sum)
 }`,
-				Hints:    `<p><code>sum += i</code> или <code>sum = sum + i</code></p>`,
+				Hints: `<p><code>sum += i</code> или <code>sum = sum + i</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -2174,7 +2173,7 @@ func main() {
         fmt.Printf("%d x %d = %d\n", n, i, n*i)
     }
 }`,
-				Hints:    `<p>Код уже готов! Разберись как <code>n*i</code> вычисляет результат на каждой итерации.</p>`,
+				Hints: `<p>Код уже готов! Разберись как <code>n*i</code> вычисляет результат на каждой итерации.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -2236,7 +2235,7 @@ func main() {
         // Допиши: проверку на 5 и вывод числа (else)
     }
 }`,
-				Hints:    `<p>Добавь <code>else if i%5 == 0 { fmt.Println("Buzz") } else { fmt.Println(i) }</code></p>`,
+				Hints: `<p>Добавь <code>else if i%5 == 0 { fmt.Println("Buzz") } else { fmt.Println(i) }</code></p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"
@@ -2300,7 +2299,7 @@ func main() {
     fmt.Println("Минимум:", min)
     fmt.Println("Максимум:", max)
 }`,
-				Hints:    `<p>Добавь <code>if x > max { max = x }</code> после проверки min.</p>`,
+				Hints: `<p>Добавь <code>if x > max { max = x }</code> после проверки min.</p>`,
 				Solution: `<pre><code>package main
 
 import "fmt"

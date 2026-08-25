@@ -162,7 +162,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Для add: <code>scanner.Scan(); fmt.Sscanf(scanner.Text(), "%s %d %d", &v.Title, &v.Year, &v.Duration)</code>. Для list: <code>for i, v := range videos</code></p>`,
+						Hints: `<p>Для add: <code>scanner.Scan(); fmt.Sscanf(scanner.Text(), "%s %d %d", &v.Title, &v.Year, &v.Duration)</code>. Для list: <code>for i, v := range videos</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -221,7 +221,7 @@ func main() {
 							{Term: "strings.Contains + strings.ToLower", Definition: "Регистронезависимый поиск: strings.Contains(strings.ToLower(s), strings.ToLower(query))."},
 							{Term: "strconv.Atoi(s)", Definition: "Конвертирует строку в число. Для парсинга номера из команды delete."},
 						},
-						TestCases: []TestCase{},
+						TestCases:   []TestCase{},
 						StarterCode: "",
 						Hints:       `<p>search: цикл по videos, фильтруй по strings.Contains. delete: парси номер через strconv.Atoi, проверь диапазон, удали через append(s[:i], s[i+1:]...).</p>`,
 						Solution:    `<p>Расширь базовую версию. Ключевое: проверка индексов, strings.ToLower для поиска, fmt.Sprintf для stats.</p>`,

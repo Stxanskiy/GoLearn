@@ -144,7 +144,7 @@ node_modules/  # зависимости JavaScript
 <p>Для каждой строки выведи: <code>[hash] сообщение</code></p>
 <p><em>Пример входа:</em> <code>a1b2c3d Add user login</code></p>
 <p><em>Выход:</em> <code>[a1b2c3d] Add user login</code></p>`,
-				Hints:   `<p>Используй <code>strings.SplitN(line, " ", 2)</code> — разобьёт на hash и остаток сообщения.</p>`,
+				Hints: `<p>Используй <code>strings.SplitN(line, " ", 2)</code> — разобьёт на hash и остаток сообщения.</p>`,
 				Solution: `<pre><code>package main
 
 import (
@@ -336,7 +336,7 @@ func main() {
         fmt.Printf("%s: %s\n", parts[0], parts[1])
     }
 }`,
-				Hints:    `<p><code>strings.SplitN(line, " ", 2)</code> — разбить на тип и описание.</p>`,
+				Hints: `<p><code>strings.SplitN(line, " ", 2)</code> — разбить на тип и описание.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() {
@@ -371,7 +371,7 @@ func main() {
         if seen[s] > 1 { fmt.Println(s, "(collision!)") } else { fmt.Println(s) }
     }
 }`,
-				Hints:    `<p><code>s[:7]</code> — первые 7 символов. Map для подсчёта коллизий.</p>`,
+				Hints: `<p><code>s[:7]</code> — первые 7 символов. Map для подсчёта коллизий.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os")
 func main() {
@@ -426,7 +426,7 @@ func main() {
     }
     fmt.Printf("Committed: %v\n", sorted(committed))
 }`,
-				Hints:    `<p>Три map: modified, staged, committed. edit → modified. add → staged (из modified). commit → all staged → committed.</p>`,
+				Hints: `<p>Три map: modified, staged, committed. edit → modified. add → staged (из modified). commit → all staged → committed.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"sort";"strings")
 func s(m map[string]bool) []string { var r []string; for k := range m{r=append(r,k)}; sort.Strings(r); return r }
@@ -779,7 +779,7 @@ func main() {
     for _, h := range order { fmt.Printf("%s: %s\n", h, strings.Join(groups[h], ", ")) }
     _ = sort.Strings
 }`,
-				Hints:    `<p>Map hash → []branches. Сохраняй порядок первого появления хеша.</p>`,
+				Hints: `<p>Map hash → []branches. Сохраняй порядок первого появления хеша.</p>`,
 				Solution: `<pre><code>package main
 import ("fmt";"strings")
 func main() {
@@ -817,7 +817,7 @@ func main() {
         if days > threshold { fmt.Printf("  %s (%d days)\n", name, days) }
     }
 }`,
-				Hints:    `<p>Просто сравни days > threshold для каждой ветки.</p>`,
+				Hints: `<p>Просто сравни days > threshold для каждой ветки.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func main() { var t,n int; fmt.Scan(&t,&n); fmt.Printf("Stale branches (>%d days):\n",t)
@@ -852,7 +852,7 @@ func main() {
     }
     fmt.Printf("Fast-forward: YES (%d new commits)\n", len(featCommits)-len(mainCommits))
 }`,
-				Hints:    `<p>FF возможен если main — префикс feature. Проверь каждый коммит main есть в начале feature.</p>`,
+				Hints: `<p>FF возможен если main — префикс feature. Проверь каждый коммит main есть в начале feature.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() {
@@ -1182,7 +1182,7 @@ func main() {
         fmt.Println(line)
     }
 }`,
-				Hints:    `<p>Пропусти строки начинающиеся с <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>.</p>`,
+				Hints: `<p>Пропусти строки начинающиеся с <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() { sc:=bufio.NewScanner(os.Stdin)
@@ -1215,7 +1215,7 @@ func main() {
         } else { fmt.Printf("%s: MERGE (never rebase public branches)\n", name) }
     }
 }`,
-				Hints:    `<p>"local" → REBASE, "shared" → MERGE (others may have pulled), остальное → MERGE.</p>`,
+				Hints: `<p>"local" → REBASE, "shared" → MERGE (others may have pulled), остальное → MERGE.</p>`,
 				Solution: `<pre><code>package main
 import ("bufio";"fmt";"os";"strings")
 func main() { var n int;fmt.Scan(&n);sc:=bufio.NewScanner(os.Stdin)
@@ -1253,7 +1253,7 @@ func main() {
         } else { fmt.Printf("CONFLICT: %s vs %s\n", ours, theirs) }
     }
 }`,
-				Hints:    `<p>4 случая: обе одинаковы, только ours изменился, только theirs, оба изменились → конфликт.</p>`,
+				Hints: `<p>4 случая: обе одинаковы, только ours изменился, только theirs, оба изменились → конфликт.</p>`,
 				Solution: `<pre><code>package main
 import "fmt"
 func main() { var n int;fmt.Scan(&n);for i:=0;i<n;i++{var b,o,t string;fmt.Scan(&b,&o,&t)

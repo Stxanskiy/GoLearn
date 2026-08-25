@@ -9,7 +9,7 @@ func mod_testing_full() M {
 	return M{
 		Slug: "testing", Title: "Тестирование в Go", Order: 12,
 		Description: "Unit тесты, table-driven, моки, интеграционные тесты, benchmarks, coverage.",
-		Track: "backend", Difficulty: "advanced", Prerequisites: []string{"architecture"},
+		Track:       "backend", Difficulty: "advanced", Prerequisites: []string{"architecture"},
 		Lessons: []L{
 			{
 				Slug: "unit-testing", Title: "Unit тесты — основы", Order: 1,

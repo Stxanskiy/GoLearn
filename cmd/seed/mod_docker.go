@@ -9,7 +9,7 @@ func mod_docker_full() M {
 	return M{
 		Slug: "docker", Title: "Docker — контейнеризация", Order: 15,
 		Description: "Контейнеры под капотом, Dockerfile, multi-stage, compose, networking, volumes, отладка.",
-		Track: "devops", Difficulty: "intermediate", Prerequisites: []string{"packages"},
+		Track:       "devops", Difficulty: "intermediate", Prerequisites: []string{"packages"},
 		Lessons: []L{
 			{
 				Slug: "docker-basics", Title: "Что такое Docker и зачем он нужен", Order: 1,

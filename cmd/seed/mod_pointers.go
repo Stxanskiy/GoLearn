@@ -197,7 +197,7 @@ func main() {
     swap(&a, &b)
     fmt.Printf("After: a=%d, b=%d\n", a, b)
 }`,
-						Hints:    `<p><code>*a, *b = *b, *a</code> — множественное присваивание работает и через указатели.</p>`,
+						Hints: `<p><code>*a, *b = *b, *a</code> — множественное присваивание работает и через указатели.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -248,7 +248,7 @@ func main() {
     clamp(&val, min, max)
     fmt.Println(val)
 }`,
-						Hints:    `<p><code>if *val < min { *val = min } else if *val > max { *val = max }</code></p>`,
+						Hints: `<p><code>if *val < min { *val = min } else if *val > max { *val = max }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -296,7 +296,7 @@ func main() {
     increment(&count)
     fmt.Println(count)
 }`,
-						Hints:    `<p><code>*n++</code> или <code>*n = *n + 1</code></p>`,
+						Hints: `<p><code>*n++</code> или <code>*n = *n + 1</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -344,7 +344,7 @@ func main() {
     fmt.Printf("Value: %d\n", safeDeref(&n, 0))
     fmt.Printf("Default: %d\n", safeDeref(nil, 0))
 }`,
-						Hints:    `<p>Проверь <code>if p == nil</code> перед разыменованием.</p>`,
+						Hints: `<p>Проверь <code>if p == nil</code> перед разыменованием.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -420,7 +420,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>push: <code>*top = &Node{val: val, next: *top}</code>. pop: <code>*top = (*top).next</code>.</p>`,
+						Hints: `<p>push: <code>*top = &Node{val: val, next: *top}</code>. pop: <code>*top = (*top).next</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -668,7 +668,7 @@ func main() {
     appendFixed(&test2, extra)
     fmt.Println("After fixed:", test2)
 }`,
-						Hints:    `<p><code>*s = append(*s, val)</code> — разыменовать, добавить, записать обратно.</p>`,
+						Hints: `<p><code>*s = append(*s, val)</code> — разыменовать, добавить, записать обратно.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -746,7 +746,7 @@ func main() {
         fmt.Printf("%s: %d\n", k, counts[k])
     }
 }`,
-						Hints:    `<p><code>strings.Fields(text)</code> разбивает на слова. В цикле: <code>counts[word]++</code></p>`,
+						Hints: `<p><code>strings.Fields(text)</code> разбивает на слова. В цикле: <code>counts[word]++</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -815,7 +815,7 @@ func main() {
 
     fmt.Println(original)
 }`,
-						Hints:    `<p><code>independent := make([]int, len(sub)); copy(independent, sub)</code></p>`,
+						Hints: `<p><code>independent := make([]int, len(sub)); copy(independent, sub)</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -897,7 +897,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Deposit: <code>a.Balance += amount</code>. Withdraw: проверь <code>a.Balance >= amount</code>, потом <code>a.Balance -= amount</code>.</p>`,
+						Hints: `<p>Deposit: <code>a.Balance += amount</code>. Withdraw: проверь <code>a.Balance >= amount</code>, потом <code>a.Balance -= amount</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -996,7 +996,7 @@ func main() {
     rotateLeft(original, k)
     fmt.Println("Rotated:", original)
 }`,
-						Hints:    `<p>reverse: <code>s[l], s[r] = s[r], s[l]</code>. rotateLeft: <code>reverse(s[:k]); reverse(s[k:]); reverse(s)</code>.</p>`,
+						Hints: `<p>reverse: <code>s[l], s[r] = s[r], s[l]</code>. rotateLeft: <code>reverse(s[:k]); reverse(s[k:]); reverse(s)</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"

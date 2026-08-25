@@ -6,12 +6,12 @@ package main
 
 func mod03_functions_new() M {
 	return M{
-		Slug:        "functions",
-		Title:       "Функции",
-		Description: "Как разбивать код на переиспользуемые блоки. Параметры, возвращаемые значения, замыкания.",
-		Order:       3,
-		Track:       "shared",
-		Difficulty:  "beginner",
+		Slug:          "functions",
+		Title:         "Функции",
+		Description:   "Как разбивать код на переиспользуемые блоки. Параметры, возвращаемые значения, замыкания.",
+		Order:         3,
+		Track:         "shared",
+		Difficulty:    "beginner",
 		Prerequisites: []string{"collections"},
 		Lessons: []L{
 			{
@@ -167,7 +167,7 @@ func main() {
     fmt.Printf("Abs(%d): %d\n", a, abs(a))
     fmt.Printf("IsEven(%d): %v\n", b, isEven(b))
 }`,
-						Hints:    `<p>max: <code>if a > b { return a } return b</code>. abs: <code>if n < 0 { return -n } return n</code>. isEven: <code>return n%2 == 0</code></p>`,
+						Hints: `<p>max: <code>if a > b { return a } return b</code>. abs: <code>if n < 0 { return -n } return n</code>. isEven: <code>return n%2 == 0</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -235,7 +235,7 @@ func main() {
     min, max, sum := stats(nums)
     fmt.Printf("Min: %d, Max: %d, Sum: %d\n", min, max, sum)
 }`,
-						Hints:    `<p>Начни: <code>min = nums[0]; max = nums[0]</code>. В цикле обновляй min, max, sum.</p>`,
+						Hints: `<p>Начни: <code>min = nums[0]; max = nums[0]</code>. В цикле обновляй min, max, sum.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -293,7 +293,7 @@ func main() {
     fmt.Scan(&n)
     fmt.Println(factorial(n))
 }`,
-						Hints:    `<p>Условие выхода: <code>if n == 0 { return 1 }</code>. Рекурсия: <code>return n * factorial(n-1)</code>.</p>`,
+						Hints: `<p>Условие выхода: <code>if n == 0 { return 1 }</code>. Рекурсия: <code>return n * factorial(n-1)</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -355,7 +355,7 @@ func main() {
     }
     fmt.Println()
 }`,
-						Hints:    `<p>Создай <code>result := make([]int, len(nums))</code>. В цикле: <code>result[i] = fn(nums[i])</code>.</p>`,
+						Hints: `<p>Создай <code>result := make([]int, len(nums))</code>. В цикле: <code>result[i] = fn(nums[i])</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -425,7 +425,7 @@ func main() {
     cache := make(map[int]int)
     fmt.Println(fibMemo(n, cache))
 }`,
-						Hints:    `<p>Перед рекурсией: <code>if val, ok := cache[n]; ok { return val }</code>. После вычисления: <code>cache[n] = result</code>.</p>`,
+						Hints: `<p>Перед рекурсией: <code>if val, ok := cache[n]; ok { return val }</code>. После вычисления: <code>cache[n] = result</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -578,7 +578,7 @@ func main() {
     fmt.Println(c())
     fmt.Println(c())
 }`,
-						Hints:    `<p>Код уже написан. Запусти и убедись что каждый вызов возвращает следующее число.</p>`,
+						Hints: `<p>Код уже написан. Запусти и убедись что каждый вызов возвращает следующее число.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -641,7 +641,7 @@ func main() {
     }
     fmt.Println()
 }`,
-						Hints:    `<p>Создай <code>result := []int{}</code>, в цикле: <code>if pred(v) { result = append(result, v) }</code>.</p>`,
+						Hints: `<p>Создай <code>result := []int{}</code>, в цикле: <code>if pred(v) { result = append(result, v) }</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -720,7 +720,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Внутри newLimiter создай <code>count := 0</code>. Верни <code>func() bool { count++; return count <= maxCalls }</code></p>`,
+						Hints: `<p>Внутри newLimiter создай <code>count := 0</code>. Верни <code>func() bool { count++; return count <= maxCalls }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -779,7 +779,7 @@ func main() {
     fmt.Println(nextID())
     fmt.Println(nextID())
 }`,
-						Hints:    `<p>Замыкание захватывает <code>id := 0</code>. При каждом вызове: <code>id++; return fmt.Sprintf("%s-%d", prefix, id)</code>.</p>`,
+						Hints: `<p>Замыкание захватывает <code>id := 0</code>. При каждом вызове: <code>id++; return fmt.Sprintf("%s-%d", prefix, id)</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -842,7 +842,7 @@ func main() {
     fmt.Println(cachedSquare(n)) // вычисляет
     fmt.Println(cachedSquare(n)) // из кэша
 }`,
-						Hints:    `<p>Код уже почти готов в StarterCode — изучи его и запусти. Задача помочь понять как работает мемоизация на практике.</p>`,
+						Hints: `<p>Код уже почти готов в StarterCode — изучи его и запусти. Задача помочь понять как работает мемоизация на практике.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1189,7 +1189,7 @@ func main() {
     logged := withLogging("processData", work)
     logged()
 }`,
-						Hints:    `<p>Возвращаемая функция вызывает <code>fn()</code> между двумя fmt.Printf. Код уже написан — изучи и запусти.</p>`,
+						Hints: `<p>Возвращаемая функция вызывает <code>fn()</code> между двумя fmt.Printf. Код уже написан — изучи и запусти.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1267,7 +1267,7 @@ func main() {
     fmt.Printf("Host: %s\n", cfg.Host)
     fmt.Printf("Verbose: %v\n", cfg.Verbose)
 }`,
-						Hints:    `<p>Код полностью написан — изучи структуру. Каждая WithX функция возвращает func(*Config) которая меняет одно поле. NewConfig применяет их все.</p>`,
+						Hints: `<p>Код полностью написан — изучи структуру. Каждая WithX функция возвращает func(*Config) которая меняет одно поле. NewConfig применяет их все.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"

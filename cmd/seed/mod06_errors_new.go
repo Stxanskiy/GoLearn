@@ -6,12 +6,12 @@ package main
 
 func mod06_errors_new() M {
 	return M{
-		Slug:        "errors",
-		Title:       "Обработка ошибок",
-		Description: "Как Go обрабатывает ошибки без исключений. Паттерн val, err, создание своих ошибок, errors.Is/As.",
-		Order:       6,
-		Track:       "shared",
-		Difficulty:  "intermediate",
+		Slug:          "errors",
+		Title:         "Обработка ошибок",
+		Description:   "Как Go обрабатывает ошибки без исключений. Паттерн val, err, создание своих ошибок, errors.Is/As.",
+		Order:         6,
+		Track:         "shared",
+		Difficulty:    "intermediate",
 		Prerequisites: []string{"interfaces"},
 		Lessons: []L{
 			{
@@ -191,7 +191,7 @@ func main() {
         fmt.Printf("Result: %d\n", result)
     }
 }`,
-						Hints:    `<p>switch op: case "+": return a+b, nil. case "/": if b == 0 { return 0, fmt.Errorf("division by zero") }. default: return 0, fmt.Errorf("unknown operator: %s", op).</p>`,
+						Hints: `<p>switch op: case "+": return a+b, nil. case "/": if b == 0 { return 0, fmt.Errorf("division by zero") }. default: return 0, fmt.Errorf("unknown operator: %s", op).</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -270,7 +270,7 @@ func main() {
         fmt.Printf("Valid user: %s, age %d\n", name, age)
     }
 }`,
-						Hints:    `<p><code>if name == "" { return errors.New("name is required") }</code></p>`,
+						Hints: `<p><code>if name == "" { return errors.New("name is required") }</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -349,7 +349,7 @@ func main() {
         fmt.Printf("%.2f meters\n", result)
     }
 }`,
-						Hints:    `<p>ParseFloat для парсинга. При ошибке: <code>fmt.Errorf("invalid number: %s", valueStr)</code>. switch unit для конвертации.</p>`,
+						Hints: `<p>ParseFloat для парсинга. При ошибке: <code>fmt.Errorf("invalid number: %s", valueStr)</code>. switch unit для конвертации.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -442,7 +442,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>strings.SplitN(line, "=", 2)</code> и проверяй <code>len(parts) != 2</code>.</p>`,
+						Hints: `<p><code>strings.SplitN(line, "=", 2)</code> и проверяй <code>len(parts) != 2</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -524,7 +524,7 @@ func main() {
         fmt.Printf("Found: %s\n", name)
     }
 }`,
-						Hints:    `<p>Каждый уровень: <code>fmt.Errorf("context: %w", err)</code>. Ошибки вкладываются как матрёшки.</p>`,
+						Hints: `<p>Каждый уровень: <code>fmt.Errorf("context: %w", err)</code>. Ошибки вкладываются как матрёшки.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -758,7 +758,7 @@ func main() {
         fmt.Println("200: ok")
     }
 }`,
-						Hints:    `<p>switch path: case "/users/999": return &APIError{404, "user not found"}. case "/admin": return &APIError{403, "forbidden"}.</p>`,
+						Hints: `<p>switch path: case "/users/999": return &APIError{404, "user not found"}. case "/admin": return &APIError{403, "forbidden"}.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -857,7 +857,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>errors.Is проверяет всю цепочку. Найдёт sentinel даже если обёрнут через %w.</p>`,
+						Hints: `<p>errors.Is проверяет всю цепочку. Найдёт sentinel даже если обёрнут через %w.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -958,7 +958,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>var fe *FieldError; if errors.As(err, &fe) { fe.Field, fe.Reason }</code></p>`,
+						Hints: `<p><code>var fe *FieldError; if errors.As(err, &fe) { fe.Field, fe.Reason }</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1053,7 +1053,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Named return (err error) + defer { recover() → err = fmt.Errorf(...) }</p>`,
+						Hints: `<p>Named return (err error) + defer { recover() → err = fmt.Errorf(...) }</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1141,7 +1141,7 @@ func main() {
         fmt.Println("Valid!")
     }
 }`,
-						Hints:    `<p>Не возвращай рано. Проверяй ВСЕ условия, потом HasErrors().</p>`,
+						Hints: `<p>Не возвращай рано. Проверяй ВСЕ условия, потом HasErrors().</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"

@@ -4,7 +4,7 @@ func mod10_database() M {
 	m := M{
 		Slug: "database", Title: "PostgreSQL и pgx", Order: 10,
 		Description: "SQL глубоко, pgx driver, connection pool, транзакции, миграции, индексы, N+1.",
-		Track: "backend", Difficulty: "intermediate", Prerequisites: []string{"http"},
+		Track:       "backend", Difficulty: "intermediate", Prerequisites: []string{"http"},
 		Lessons: []L{
 			{
 				Slug: "sql-fundamentals", Title: "SQL: основы и подводные камни", Order: 1,
@@ -132,7 +132,7 @@ for rows.Next() { ... }
 				},
 				Tasks: []T{
 					{
-						Title: "SQL-билдер с пагинацией",
+						Title:      "SQL-билдер с пагинацией",
 						Difficulty: "medium",
 						Glossary: []GlossaryItem{
 							{Term: "LIMIT $1 OFFSET $2", Definition: "Пагинация в PostgreSQL. LIMIT — сколько записей, OFFSET — сколько пропустить."},
@@ -216,7 +216,7 @@ func main() {
 						},
 					},
 					{
-						Title: "Детектор N+1 проблемы",
+						Title:      "Детектор N+1 проблемы",
 						Difficulty: "hard",
 						Glossary: []GlossaryItem{
 							{Term: "N+1 problem", Definition: "1 запрос на список + N запросов на каждый элемент. Решение: JOIN или batch-запрос."},
@@ -324,7 +324,7 @@ INSERT INTO videos (title) VALUES ($1)</code></pre>
 <p>Вывод:</p><pre><code>SAFE: parameterized query
 DANGER: possible SQL injection
 SAFE: parameterized query</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "SQL injection", Definition: "Атака через конкатенацию: name = ''; DROP TABLE--. Защита: $1 параметры."}},
+						Glossary:  []GlossaryItem{{Term: "SQL injection", Definition: "Атака через конкатенацию: name = ''; DROP TABLE--. Защита: $1 параметры."}},
 						TestCases: []TestCase{{Input: "3\nSELECT * FROM users WHERE id = $1\nSELECT * FROM users WHERE name = 'admin' OR '1'='1'\nINSERT INTO videos (title) VALUES ($1)", ExpectedOutput: "SAFE: parameterized query\nDANGER: possible SQL injection\nSAFE: parameterized query"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -347,7 +347,7 @@ Table: videos
 Where: year > 2000
 Order: year
 Limit: 10</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "SELECT anatomy", Definition: "SELECT columns FROM table WHERE condition ORDER BY col LIMIT n."}},
+						Glossary:  []GlossaryItem{{Term: "SELECT anatomy", Definition: "SELECT columns FROM table WHERE condition ORDER BY col LIMIT n."}},
 						TestCases: []TestCase{{Input: "SELECT id, title, year FROM videos WHERE year > 2000 ORDER BY year LIMIT 10", ExpectedOutput: "Columns: id, title, year\nTable: videos\nWhere: year > 2000\nOrder: year\nLimit: 10"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -388,7 +388,7 @@ c2: acquired (2/2 used)
 c3: WAIT (pool exhausted)
 c1: released (1/2 used)
 c4: acquired (2/2 used)</code></pre>`,
-						Glossary: []GlossaryItem{{Term: "Connection Pool", Definition: "Фиксированное количество соединений. acquire берёт свободное, release возвращает."}},
+						Glossary:  []GlossaryItem{{Term: "Connection Pool", Definition: "Фиксированное количество соединений. acquire берёт свободное, release возвращает."}},
 						TestCases: []TestCase{{Input: "2\n5\nacquire c1\nacquire c2\nacquire c3\nrelease c1\nacquire c4", ExpectedOutput: "c1: acquired (1/2 used)\nc2: acquired (2/2 used)\nc3: WAIT (pool exhausted)\nc1: released (1/2 used)\nc4: acquired (2/2 used)"}},
 						StarterCode: `package main
 import ("bufio";"fmt";"os";"strings")
@@ -424,7 +424,7 @@ func mod11_architecture() M {
 	return M{
 		Slug: "architecture", Title: "Чистая архитектура", Order: 11,
 		Description: "Handler → Service → Repository, когда это нужно, когда оверинжиниринг, реальные примеры.",
-		Track: "backend", Difficulty: "advanced", Prerequisites: []string{"database"},
+		Track:       "backend", Difficulty: "advanced", Prerequisites: []string{"database"},
 		Lessons: []L{
 			{
 				Slug: "layers-deep", Title: "Трёхслойная архитектура на практике", Order: 1,
@@ -647,7 +647,7 @@ func mod12_testing() M {
 	return M{
 		Slug: "testing", Title: "Тестирование", Order: 12,
 		Description: "Unit тесты, table-driven, моки, testcontainers, benchmarks, coverage, race detector.",
-		Track: "backend", Difficulty: "advanced", Prerequisites: []string{"architecture"},
+		Track:       "backend", Difficulty: "advanced", Prerequisites: []string{"architecture"},
 		Lessons: []L{
 			{
 				Slug: "testing-deep", Title: "Тестирование: от unit до integration", Order: 1,
@@ -874,10 +874,10 @@ func main() {
 }</code></pre>`,
 					},
 					{Title: "Тесты для WatchTogether", Difficulty: "hard", Glossary: []GlossaryItem{
-					{Term: "func TestXxx(t *testing.T)", Definition: "Функция теста. Имя начинается с Test, принимает *testing.T для проверок."},
-					{Term: "t.Run(name, func(t *testing.T))", Definition: "Подтест. Позволяет группировать тест-кейсы в table-driven стиле."},
-					{Term: "httptest.NewRecorder()", Definition: "Мок http.ResponseWriter. Записывает ответ сервера для проверки: Code, Body."},
-				}, Description: `<p>Напиши тесты: 1) Table-driven для formatSize/formatDuration. 2) Мок VideoStore + тесты VideoService. 3) HTTP тест для /api/health через httptest.</p>`, Hints: `<p>httptest.NewRequest + httptest.NewRecorder + router.ServeHTTP(w, req). Проверяй w.Code и w.Body.</p>`, Solution: `<p>Паттерн из урока. Мок с полями videos/err. t.Run для подтестов. httptest для HTTP.</p>`}},
+						{Term: "func TestXxx(t *testing.T)", Definition: "Функция теста. Имя начинается с Test, принимает *testing.T для проверок."},
+						{Term: "t.Run(name, func(t *testing.T))", Definition: "Подтест. Позволяет группировать тест-кейсы в table-driven стиле."},
+						{Term: "httptest.NewRecorder()", Definition: "Мок http.ResponseWriter. Записывает ответ сервера для проверки: Code, Body."},
+					}, Description: `<p>Напиши тесты: 1) Table-driven для formatSize/formatDuration. 2) Мок VideoStore + тесты VideoService. 3) HTTP тест для /api/health через httptest.</p>`, Hints: `<p>httptest.NewRequest + httptest.NewRecorder + router.ServeHTTP(w, req). Проверяй w.Code и w.Body.</p>`, Solution: `<p>Паттерн из урока. Мок с полями videos/err. t.Run для подтестов. httptest для HTTP.</p>`}},
 			},
 		},
 	}
@@ -887,7 +887,7 @@ func mod13_auth() M {
 	return M{
 		Slug: "auth", Title: "Аутентификация и безопасность", Order: 13,
 		Description: "JWT под капотом, bcrypt, auth middleware, CORS, OWASP, security headers.",
-		Track: "backend", Difficulty: "advanced", Prerequisites: []string{"testing"},
+		Track:       "backend", Difficulty: "advanced", Prerequisites: []string{"testing"},
 		Lessons: []L{
 			{
 				Slug: "jwt-deep", Title: "JWT, bcrypt и auth middleware", Order: 1,
@@ -1131,10 +1131,10 @@ func main() {
 }</code></pre>`,
 					},
 					{Title: "Auth система для WatchTogether", Difficulty: "hard", Glossary: []GlossaryItem{
-					{Term: "bcrypt.GenerateFromPassword(pw, cost)", Definition: "Хеширует пароль. cost — сложность (10-12 для прод). Результат содержит соль внутри."},
-					{Term: "jwt.NewWithClaims(method, claims)", Definition: "Создаёт JWT токен. claims — данные (user_id, exp). method — алгоритм подписи (HS256)."},
-					{Term: "r.Header.Get(\"Authorization\")", Definition: "Читает HTTP заголовок. Для JWT: 'Bearer <token>'. Отрежь 'Bearer ' чтобы получить токен."},
-				}, Description: `<p>1) Таблица users (id, username, email, password_hash). 2) POST /auth/register (bcrypt). 3) POST /auth/login (JWT). 4) Auth middleware. 5) GET /api/me — данные текущего пользователя.</p>`, Hints: `<p>Register: bcrypt.GenerateFromPassword. Login: bcrypt.CompareHashAndPassword → GenerateToken. Middleware: Bearer token → ParseToken → context.</p>`, Solution: `<p>Полный flow: Register → hash password → save. Login → check password → generate JWT. Middleware → parse JWT → ctx с user_id.</p>`}},
+						{Term: "bcrypt.GenerateFromPassword(pw, cost)", Definition: "Хеширует пароль. cost — сложность (10-12 для прод). Результат содержит соль внутри."},
+						{Term: "jwt.NewWithClaims(method, claims)", Definition: "Создаёт JWT токен. claims — данные (user_id, exp). method — алгоритм подписи (HS256)."},
+						{Term: "r.Header.Get(\"Authorization\")", Definition: "Читает HTTP заголовок. Для JWT: 'Bearer <token>'. Отрежь 'Bearer ' чтобы получить токен."},
+					}, Description: `<p>1) Таблица users (id, username, email, password_hash). 2) POST /auth/register (bcrypt). 3) POST /auth/login (JWT). 4) Auth middleware. 5) GET /api/me — данные текущего пользователя.</p>`, Hints: `<p>Register: bcrypt.GenerateFromPassword. Login: bcrypt.CompareHashAndPassword → GenerateToken. Middleware: Bearer token → ParseToken → context.</p>`, Solution: `<p>Полный flow: Register → hash password → save. Login → check password → generate JWT. Middleware → parse JWT → ctx с user_id.</p>`}},
 			},
 		},
 	}
@@ -1145,7 +1145,7 @@ func mod14_concurrency_old_UNUSED() M {
 	return M{
 		Slug: "concurrency-old", Title: "UNUSED", Order: 99,
 		Description: "REPLACED by mod_concurrency.go",
-		Track: "backend", Difficulty: "expert", Prerequisites: []string{"auth"},
+		Track:       "backend", Difficulty: "expert", Prerequisites: []string{"auth"},
 		Lessons: []L{
 			{
 				Slug: "goroutines-deep", Title: "Горутины: как это работает внутри", Order: 1,
@@ -1379,7 +1379,7 @@ func mod15_devops() M {
 	return M{
 		Slug: "devops", Title: "Docker и Linux", Order: 15,
 		Description: "Docker под капотом, multi-stage, docker-compose, Linux, Nginx, systemd, сети.",
-		Track: "devops", Difficulty: "intermediate", Prerequisites: []string{"packages"},
+		Track:       "devops", Difficulty: "intermediate", Prerequisites: []string{"packages"},
 		Lessons: []L{
 			{
 				Slug: "docker-deep", Title: "Docker: от Dockerfile до продакшена", Order: 1,
@@ -1485,19 +1485,19 @@ ENV JWT_SECRET=mysecret  # видно в docker history!
 					{Question: "Что делает depends_on с condition: service_healthy?", Options: []string{"Ничего", "Ждёт пока healthcheck сервиса не пройдёт успешно перед запуском зависимого", "Перезапускает сервис", "Проверяет порт"}, Correct: 1, Explanation: "Без condition app может стартовать раньше, чем БД готова принимать соединения. service_healthy ждёт успешного healthcheck."},
 				},
 				Tasks: []T{
-				{
-					Title: "Dockerfile layer optimizer", Difficulty: "medium",
-					Glossary: []GlossaryItem{
-						{Term: "COPY go.mod → go sum → download → COPY . .", Definition: "Порядок слоёв: зависимости кешируются, код — нет. Быстрый ребилд."},
-					},
-					Description: `<p>На вход — Dockerfile (по строкам). Проанализируй и выведи проблемы:</p>
+					{
+						Title: "Dockerfile layer optimizer", Difficulty: "medium",
+						Glossary: []GlossaryItem{
+							{Term: "COPY go.mod → go sum → download → COPY . .", Definition: "Порядок слоёв: зависимости кешируются, код — нет. Быстрый ребилд."},
+						},
+						Description: `<p>На вход — Dockerfile (по строкам). Проанализируй и выведи проблемы:</p>
 <ul>
 <li><code>COPY . .</code> перед <code>RUN go mod download</code> → <code>WARN: COPY before deps — cache invalidation</code></li>
 <li>Нет <code>USER</code> → <code>WARN: no USER — running as root</code></li>
 <li>Нет multi-stage (нет второго FROM) → <code>WARN: no multi-stage — large image</code></li>
 <li>Если всё ок → <code>OK</code></li>
 </ul>`,
-					StarterCode: `package main
+						StarterCode: `package main
 
 import (
 	"bufio"
@@ -1538,12 +1538,12 @@ func main() {
 	if fromCount < 2 { fmt.Println("WARN: no multi-stage — large image"); warned = true }
 	if !warned { fmt.Println("OK") }
 }`,
-					TestCases: []TestCase{
-						{Input: "FROM golang:1.22\nCOPY . .\nRUN go mod download\nRUN go build -o app\nCMD [\"./app\"]", ExpectedOutput: "WARN: COPY before deps — cache invalidation\nWARN: no USER — running as root\nWARN: no multi-stage — large image"},
-						{Input: "FROM golang:1.22 AS builder\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o app\nFROM alpine\nCOPY --from=builder /app /app\nUSER appuser\nCMD [\"/app\"]", ExpectedOutput: "OK"},
-					},
-					Hints: `<p>Отслеживай флаг copySeen. Если COPY встречается до RUN с "go mod download" → проблема. Считай FROM для multi-stage.</p>`,
-					Solution: `<pre><code>package main
+						TestCases: []TestCase{
+							{Input: "FROM golang:1.22\nCOPY . .\nRUN go mod download\nRUN go build -o app\nCMD [\"./app\"]", ExpectedOutput: "WARN: COPY before deps — cache invalidation\nWARN: no USER — running as root\nWARN: no multi-stage — large image"},
+							{Input: "FROM golang:1.22 AS builder\nCOPY go.mod go.sum ./\nRUN go mod download\nCOPY . .\nRUN go build -o app\nFROM alpine\nCOPY --from=builder /app /app\nUSER appuser\nCMD [\"/app\"]", ExpectedOutput: "OK"},
+						},
+						Hints: `<p>Отслеживай флаг copySeen. Если COPY встречается до RUN с "go mod download" → проблема. Считай FROM для multi-stage.</p>`,
+						Solution: `<pre><code>package main
 
 import (
 	"bufio"
@@ -1581,18 +1581,18 @@ func main() {
 	if fromCount < 2 { fmt.Println("WARN: no multi-stage — large image"); warned = true }
 	if !warned { fmt.Println("OK") }
 }</code></pre>`,
-				},
-				{Title: "Dockerize WatchTogether", Difficulty: "hard", Glossary: []GlossaryItem{
-				{Term: "FROM golang:1.22 AS builder", Definition: "Multi-stage build: первый этап компилирует, второй — только бинарник. Итоговый образ маленький."},
-				{Term: "CGO_ENABLED=0", Definition: "Отключает C-зависимости. Нужно для alpine/scratch — нет glibc."},
-				{Term: "COPY --from=builder", Definition: "Копирует файл из предыдущего этапа (builder). Только бинарник, без исходников."},
-				{Term: "depends_on + healthcheck", Definition: "docker-compose: depends_on ждёт запуска контейнера, healthcheck — ждёт готовности (порт отвечает)."},
-			}, Description: `<p>1) Multi-stage Dockerfile. 2) docker-compose: app + PostgreSQL + Redis. 3) Healthchecks. 4) Volume для видео. 5) .dockerignore.</p>`, Hints: `<p>CGO_ENABLED=0. USER appuser. depends_on с condition. .dockerignore: .git, .idea, tmp/.</p>`, Solution: `<p>Шаблон из урока. Добавь .dockerignore, volumes для видео, явные версии образов.</p>`},
-				{Title: "Docker debug — найди и исправь", Difficulty: "medium", Glossary: []GlossaryItem{
-					{Term: "docker logs container", Definition: "Показать логи контейнера. Первое место для отладки."},
-					{Term: "docker exec -it container sh", Definition: "Войти внутрь контейнера. Полезно для отладки файлов, сети, переменных."},
-					{Term: "docker compose ps", Definition: "Показать статус всех контейнеров. Restarting = проблема."},
-				}, Description: `<p>Практическая отладка Docker:</p>
+					},
+					{Title: "Dockerize WatchTogether", Difficulty: "hard", Glossary: []GlossaryItem{
+						{Term: "FROM golang:1.22 AS builder", Definition: "Multi-stage build: первый этап компилирует, второй — только бинарник. Итоговый образ маленький."},
+						{Term: "CGO_ENABLED=0", Definition: "Отключает C-зависимости. Нужно для alpine/scratch — нет glibc."},
+						{Term: "COPY --from=builder", Definition: "Копирует файл из предыдущего этапа (builder). Только бинарник, без исходников."},
+						{Term: "depends_on + healthcheck", Definition: "docker-compose: depends_on ждёт запуска контейнера, healthcheck — ждёт готовности (порт отвечает)."},
+					}, Description: `<p>1) Multi-stage Dockerfile. 2) docker-compose: app + PostgreSQL + Redis. 3) Healthchecks. 4) Volume для видео. 5) .dockerignore.</p>`, Hints: `<p>CGO_ENABLED=0. USER appuser. depends_on с condition. .dockerignore: .git, .idea, tmp/.</p>`, Solution: `<p>Шаблон из урока. Добавь .dockerignore, volumes для видео, явные версии образов.</p>`},
+					{Title: "Docker debug — найди и исправь", Difficulty: "medium", Glossary: []GlossaryItem{
+						{Term: "docker logs container", Definition: "Показать логи контейнера. Первое место для отладки."},
+						{Term: "docker exec -it container sh", Definition: "Войти внутрь контейнера. Полезно для отладки файлов, сети, переменных."},
+						{Term: "docker compose ps", Definition: "Показать статус всех контейнеров. Restarting = проблема."},
+					}, Description: `<p>Практическая отладка Docker:</p>
 <ol>
 <li>Контейнер падает с CrashLoopBackOff — как найти причину? Напиши последовательность команд.</li>
 <li>Приложение не подключается к БД — как проверить что контейнеры видят друг друга?</li>
@@ -1701,7 +1701,7 @@ func mod16_cicd() M {
 	return M{
 		Slug: "cicd", Title: "CI/CD", Order: 16,
 		Description: "GitHub Actions, pipeline stages, secrets, environments, автодеплой.",
-		Track: "devops", Difficulty: "advanced", Prerequisites: []string{"devops"},
+		Track:       "devops", Difficulty: "advanced", Prerequisites: []string{"devops"},
 		Lessons: []L{{
 			Slug: "github-actions-deep", Title: "GitHub Actions: полный pipeline", Order: 1,
 			Content: `<h1>CI/CD с GitHub Actions</h1>
@@ -1871,7 +1871,7 @@ func mod17_monitoring() M {
 	return M{
 		Slug: "monitoring", Title: "Мониторинг и логирование", Order: 17,
 		Description: "slog structured logging, Prometheus metrics, Grafana, health checks, alerting.",
-		Track: "devops", Difficulty: "advanced", Prerequisites: []string{"cicd"},
+		Track:       "devops", Difficulty: "advanced", Prerequisites: []string{"cicd"},
 		Lessons: []L{
 			{
 				Slug: "slog-deep", Title: "Structured logging с slog", Order: 1,
@@ -2070,7 +2070,7 @@ func mod18_advanced() M {
 	return M{
 		Slug: "advanced", Title: "WebSocket и Redis", Order: 18,
 		Description: "Realtime-синхронизация через WebSocket и кеширование на Redis.",
-		Track: "backend", Difficulty: "expert", Prerequisites: []string{},
+		Track:       "backend", Difficulty: "expert", Prerequisites: []string{},
 		Lessons: []L{
 			{
 				Slug: "websocket-deep", Title: "WebSocket для синхронного просмотра", Order: 1,

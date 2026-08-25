@@ -19,8 +19,8 @@ func TestCleanContent(t *testing.T) {
 func TestSlugify(t *testing.T) {
 	cases := map[string]string{
 		"ch_lnav_1_intro": "ch-lnav-1-intro",
-		"Some Title":       "some-title",
-		"a/b_c":            "a-b-c",
+		"Some Title":      "some-title",
+		"a/b_c":           "a-b-c",
 	}
 	for in, want := range cases {
 		if got := slugify(in, 1); got != want {

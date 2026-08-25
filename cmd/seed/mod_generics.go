@@ -178,7 +178,7 @@ func main() {
 
     fmt.Println(Contains(nums, target))
 }`,
-						Hints:    `<p>Перебери слайс: <code>for _, v := range slice { if v == target { return true } }</code></p>`,
+						Hints: `<p>Перебери слайс: <code>for _, v := range slice { if v == target { return true } }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -258,7 +258,7 @@ func main() {
     }
     fmt.Println()
 }`,
-						Hints:    `<p>Map: создай <code>result := make([]U, len(slice))</code>, в цикле <code>result[i] = fn(v)</code>. Filter: <code>append</code> при <code>pred(v)</code>.</p>`,
+						Hints: `<p>Map: создай <code>result := make([]U, len(slice))</code>, в цикле <code>result[i] = fn(v)</code>. Filter: <code>append</code> при <code>pred(v)</code>.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -343,7 +343,7 @@ func main() {
     fmt.Sscan(scanner.Text(), &s1, &s2)
     fmt.Printf("Max string: %s\n", Max(s1, s2))
 }`,
-						Hints:    `<p><code>if a > b { return a }; return b</code> — одна функция для int и string.</p>`,
+						Hints: `<p><code>if a > b { return a }; return b</code> — одна функция для int и string.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -448,7 +448,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Pop: сохрани последний элемент, обрежь слайс на 1. var zero T — для возврата при пустом стеке.</p>`,
+						Hints: `<p>Pop: сохрани последний элемент, обрежь слайс на 1. var zero T — для возврата при пустом стеке.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -525,7 +525,7 @@ func main() {
     fmt.Scan(&target)
     fmt.Println(Index(words, target))
 }`,
-						Hints:    `<p>Перебери с индексом: <code>for i, v := range slice { if v == target { return i } }</code></p>`,
+						Hints: `<p>Перебери с индексом: <code>for i, v := range slice { if v == target { return i } }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -913,7 +913,7 @@ func main() {
     fmt.Printf("Min: %d
 ", Min(a, b))
 }`,
-						Hints:    `<p><code>if a &lt; b { return a }; return b</code></p>`,
+						Hints: `<p><code>if a &lt; b { return a }; return b</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -977,7 +977,7 @@ func main() {
     for _, k := range keys { fmt.Printf("%s: %v
 ", k, grouped[k]) }
 }`,
-						Hints:    `<p><code>result[key] = append(result[key], item)</code></p>`,
+						Hints: `<p><code>result[key] = append(result[key], item)</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1042,7 +1042,7 @@ func main() {
     swapped := p.Swap()
     fmt.Printf("Swapped: {%v %v}\n", swapped.First, swapped.Second)
 }`,
-						Hints:    `<p>Swap возвращает Pair[B, A]{First: p.Second, Second: p.First}</p>`,
+						Hints: `<p>Swap возвращает Pair[B, A]{First: p.Second, Second: p.First}</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"

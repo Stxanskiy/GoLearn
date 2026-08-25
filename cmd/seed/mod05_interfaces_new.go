@@ -6,12 +6,12 @@ package main
 
 func mod05_interfaces_new() M {
 	return M{
-		Slug:        "interfaces",
-		Title:       "Интерфейсы",
-		Description: "Контракты поведения: как писать гибкий код, который работает с разными типами данных через единый интерфейс.",
-		Order:       5,
-		Track:       "shared",
-		Difficulty:  "intermediate",
+		Slug:          "interfaces",
+		Title:         "Интерфейсы",
+		Description:   "Контракты поведения: как писать гибкий код, который работает с разными типами данных через единый интерфейс.",
+		Order:         5,
+		Track:         "shared",
+		Difficulty:    "intermediate",
 		Prerequisites: []string{"structs"},
 		Lessons: []L{
 			{
@@ -182,7 +182,7 @@ func main() {
         printShape(Rectangle{Width: w, Height: h})
     }
 }`,
-						Hints:    `<p>Circle: Area = Pi*r², Perimeter = 2*Pi*r. Rectangle: Area = w*h, Perimeter = 2*(w+h).</p>`,
+						Hints: `<p>Circle: Area = Pi*r², Perimeter = 2*Pi*r. Rectangle: Area = w*h, Perimeter = 2*(w+h).</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -253,7 +253,7 @@ func main() {
     fmt.Scan(&u.Name, &u.Age)
     fmt.Println(u)
 }`,
-						Hints:    `<p><code>func (u User) String() string { return fmt.Sprintf("User(%s, age %d)", u.Name, u.Age) }</code></p>`,
+						Hints: `<p><code>func (u User) String() string { return fmt.Sprintf("User(%s, age %d)", u.Name, u.Age) }</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -313,7 +313,7 @@ func main() {
     }
     fmt.Println()
 }`,
-						Hints:    `<p><code>sort.Slice(words, func(i, j int) bool { if len(words[i]) == len(words[j]) { return words[i] < words[j] } return len(words[i]) < len(words[j]) })</code></p>`,
+						Hints: `<p><code>sort.Slice(words, func(i, j int) bool { if len(words[i]) == len(words[j]) { return words[i] < words[j] } return len(words[i]) < len(words[j]) })</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -397,7 +397,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>fmt.Sprintf("Crypto payment: %d USDT", amount)</code></p>`,
+						Hints: `<p><code>fmt.Sprintf("Crypto payment: %d USDT", amount)</code></p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -492,7 +492,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p><code>fmt.Sprintf("SMS to %s: %s", to, msg)</code></p>`,
+						Hints: `<p><code>fmt.Sprintf("SMS to %s: %s", to, msg)</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -687,7 +687,7 @@ func wordCount(r io.Reader) int {
 func main() {
     fmt.Println(wordCount(os.Stdin))
 }`,
-						Hints:    `<p><code>scanner := bufio.NewScanner(r); scanner.Split(bufio.ScanWords); count := 0; for scanner.Scan() { count++ }</code></p>`,
+						Hints: `<p><code>scanner := bufio.NewScanner(r); scanner.Split(bufio.ScanWords); count := 0; for scanner.Scan() { count++ }</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -750,7 +750,7 @@ func main() {
     fmt.Fprint(counter, line)
     fmt.Printf("Written: %d bytes\n", counter.count)
 }`,
-						Hints:    `<p><code>bc.count += len(p); return len(p), nil</code></p>`,
+						Hints: `<p><code>bc.count += len(p); return len(p), nil</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -817,7 +817,7 @@ func main() {
     }
     fmt.Print(dst.String())
 }`,
-						Hints:    `<p><code>io.Copy(&dst, src)</code> — копирует всё из Reader в Writer. <code>dst.String()</code> — содержимое буфера.</p>`,
+						Hints: `<p><code>io.Copy(&dst, src)</code> — копирует всё из Reader в Writer. <code>dst.String()</code> — содержимое буфера.</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -884,7 +884,7 @@ func main() {
     io.Copy(&buf, upper)
     fmt.Print(buf.String())
 }`,
-						Hints:    `<p>После <code>n, err := u.r.Read(p)</code>: <code>copy(p[:n], bytes.ToUpper(p[:n]))</code></p>`,
+						Hints: `<p>После <code>n, err := u.r.Read(p)</code>: <code>copy(p[:n], bytes.ToUpper(p[:n]))</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1012,7 +1012,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>UserService не знает о MemoryStore — только об интерфейсе UserStore. Это позволяет подменить хранилище на PostgresStore.</p>`,
+						Hints: `<p>UserService не знает о MemoryStore — только об интерфейсе UserStore. Это позволяет подменить хранилище на PostgresStore.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"
@@ -1376,7 +1376,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>switch val := v.(type) { case string: return val; case int: return strconv.Itoa(val) }</p>`,
+						Hints: `<p>switch val := v.(type) { case string: return val; case int: return strconv.Itoa(val) }</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1467,7 +1467,7 @@ func main() {
     }
     fmt.Println(sumInts(vals))
 }`,
-						Hints:    `<p><code>if n, ok := v.(int); ok { sum += n }</code></p>`,
+						Hints: `<p><code>if n, ok := v.(int); ok { sum += n }</code></p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1559,7 +1559,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>switch e := err.(type) { case *ValidationError: fmt.Printf(..., e.Field, e.Message) }</p>`,
+						Hints: `<p>switch e := err.(type) { case *ValidationError: fmt.Printf(..., e.Field, e.Message) }</p>`,
 						Solution: `<pre><code>package main
 
 import (
@@ -1675,7 +1675,7 @@ func main() {
         }
     }
 }`,
-						Hints:    `<p>Crypto.Pay: <code>fmt.Sprintf("Crypto: paid $%d for %s", amount, desc)</code>. pm.method — интерфейс, подменяется на лету.</p>`,
+						Hints: `<p>Crypto.Pay: <code>fmt.Sprintf("Crypto: paid $%d for %s", amount, desc)</code>. pm.method — интерфейс, подменяется на лету.</p>`,
 						Solution: `<pre><code>package main
 
 import "fmt"

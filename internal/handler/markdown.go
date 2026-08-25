@@ -5,9 +5,9 @@ import (
 	"html/template"
 
 	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
 	ghtml "github.com/yuin/goldmark/renderer/html"
-	highlighting "github.com/yuin/goldmark-highlighting/v2"
 )
 
 // mdConv renders Markdown with GitHub-flavoured extensions, dark code highlighting
