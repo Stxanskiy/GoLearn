@@ -33,6 +33,7 @@ jobs:
           exec > >(tee -a /tmp/ci-deploy.log) 2>&1
           echo "===== deploy run $(date -u) ====="
           id; echo "PATH=$PATH"
+          set -x   # trace commands so a failure points at the exact one
           docker version --format 'server={{.Server.Version}}' || echo "!! DOCKER ACCESS FAIL"
           docker compose version || echo "!! COMPOSE FAIL"
           set -e
@@ -50,3 +51,30 @@ jobs:
           docker compose run --rm app /app/seed
           docker compose up -d --force-recreate app
           curl -sf -o /dev/null -w "deploy check /login -> %{http_code}\n" http://127.0.0.1:8081/login
+
+      # The runner's logs need repo-admin rights to download, so on failure the
+      # diagnostics are published into the job summary instead — that is readable
+      # through the check-runs API.
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          {
+            echo '## deploy failed'
+            echo '### tail of /tmp/ci-deploy.log'
+            echo '```'
+            tail -n 120 /tmp/ci-deploy.log 2>/dev/null || echo '(no log file)'
+            echo '```'
+            echo '### disk'
+            echo '```'
+            df -h / 2>/dev/null | head -3
+            docker system df 2>&1 | head -6
+            echo '```'
+            echo '### containers'
+            echo '```'
+            docker ps -a --filter name=golearn --format '{{.Names}} {{.Status}}' 2>&1 | head -10
+            echo '```'
+            echo '### compose logs'
+            echo '```'
+            (cd /opt/golearn && docker compose logs --tail=40 2>&1 | tail -60) || echo '(no compose logs)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
