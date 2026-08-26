@@ -23,11 +23,17 @@
 
         {{if .HasQuiz}}<script id="quiz-data" type="application/json">{{.QuestionsJSON}}</script>{{end}}
 
+        <div class="lab2-prog">
+            <div class="lab2-prog-row">
+                <span id="lab2-pos">Шаг 1</span>
+                <span id="lab2-done" class="lab2-done-count">0 выполнено</span>
+            </div>
+            <div class="progress-bar" style="height:6px;"><div class="progress-fill" id="lab2-fill" style="width:0;"></div></div>
+        </div>
         <div class="lab2-steps" id="lab2-pills"></div>
         <div class="lab2-stepnav">
-            <button class="btn btn-outline" id="lab2-prev" onclick="stepBy(-1)">Назад</button>
-            <span class="muted" id="lab2-pos"></span>
-            <button class="btn btn-outline" id="lab2-next" onclick="stepBy(1)">Вперёд</button>
+            <button class="btn btn-outline" id="lab2-prev" onclick="stepBy(-1)">← Назад</button>
+            <button class="btn btn-outline" id="lab2-next" onclick="stepBy(1)">Вперёд →</button>
         </div>
 
         {{/* Quiz steps render here (one question at a time) */}}
@@ -67,14 +73,20 @@
             <span class="lab2-spacer"></span>
             <span class="lab2-status" id="lab2-status"><span class="led"></span>Не запущена</span>
             <span class="lab2-timer" id="lab2-timer">00:00</span>
-            <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Сбросить песочницу — чистое окружение">⟳ Сбросить</button>
+            <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Вернуть чистое окружение: файлы задания на месте, твои изменения пропадут">⟳ Сбросить окружение</button>
             <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
-            <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить">⨯ Остановить</button>
+            <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;">⨯ Остановить</button>
         </div>
         <div class="lab2-term" id="lab2-host">
             <div class="lab2-launch" id="lab2-launch">
-                <button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button>
-                <div class="muted" style="margin-top:10px;font-size:.84em;max-width:420px;">Настоящий Linux-терминал в изолированной одноразовой песочнице (сессия ~1 час). Ничего не сломаешь: всё, что наделаешь, остаётся внутри — кнопка «⟳ Сбросить» вернёт чистое окружение.</div>
+                <div class="lab2-launch-card">
+                    <div class="lab2-launch-ico">▶_</div>
+                    <div class="lab2-launch-title">Песочница готова к запуску</div>
+                    <div class="lab2-launch-text">Настоящий Linux-терминал в изолированном контейнере. Файлы задания уже внутри,
+                        утилиты установлены, сеть отключена — сломать что-то снаружи невозможно.</div>
+                    <button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button>
+                    <div class="lab2-launch-hint">Сломал окружение? «⟳ Сбросить окружение» вернёт его в исходное состояние.</div>
+                </div>
             </div>
         </div>
     </section>
@@ -94,13 +106,30 @@
     var quizPanel = document.getElementById('lab2-quizpanel');
     var quizAction = quizPanel.dataset.action;
 
-    // unified step pills: quizzes (1..NQ) then tasks (NQ+1..TOTAL)
+    // Unified step rail: quizzes (1..NQ) then tasks (NQ+1..TOTAL). Each pill
+    // carries its step's title, so hovering tells you what the step is about
+    // instead of leaving a wall of bare numbers.
+    function stepTitle(i) {
+        if (i < NQ) return 'Вопрос ' + (i + 1);
+        var card = document.querySelector('.lab2-task[data-task="' + (i - NQ) + '"] .lab2-step-title');
+        return card ? card.textContent.trim() : 'Задание ' + (i - NQ + 1);
+    }
     for (var i = 0; i < TOTAL; i++) {
         var b = document.createElement('button');
         b.className = 'lab2-pill ' + (i < NQ ? 'kq' : 'kt');
         b.textContent = i + 1;
+        b.title = stepTitle(i);
         (function (k) { b.onclick = function () { showStep(k); }; })(i);
         pillsEl.appendChild(b);
+    }
+
+    var posEl = document.getElementById('lab2-pos');
+    var doneEl = document.getElementById('lab2-done');
+    var fillEl = document.getElementById('lab2-fill');
+    function refreshProgress() {
+        var done = pillsEl.querySelectorAll('.lab2-pill.done, .lab2-pill.correct').length;
+        doneEl.textContent = done + ' из ' + TOTAL + ' выполнено';
+        fillEl.style.width = (TOTAL ? Math.round(done * 100 / TOTAL) : 0) + '%';
     }
 
     // Restore steps this user already solved (server truth, survives reload).
@@ -118,26 +147,34 @@
         document.querySelectorAll('.lab2-task').forEach(function (el) { el.style.display = 'none'; });
         if (i < NQ) { quizPanel.style.display = 'block'; renderQuiz(i); }
         else { quizPanel.style.display = 'none'; var c = document.querySelector('.lab2-task[data-task="' + (i - NQ) + '"]'); if (c) c.style.display = 'block'; }
-        document.getElementById('lab2-pos').textContent = (i + 1) + ' / ' + TOTAL;
+        posEl.textContent = 'Шаг ' + (i + 1) + ' из ' + TOTAL + ' · ' + (i < NQ ? 'вопрос' : 'задание');
         document.getElementById('lab2-prev').disabled = i === 0;
         document.getElementById('lab2-next').disabled = i === TOTAL - 1;
         Array.prototype.forEach.call(pillsEl.children, function (p, idx) { p.classList.toggle('current', idx === step); });
+        refreshProgress();
     }
 
     function renderQuiz(qi) {
         var q = QUIZ[qi], ans = answers[qi];
         var h = '<div class="lq-card"><div class="lq-q">' + q.q + '</div>';
-        q.o.forEach(function (o, j) { var cls = 'lq-opt'; if (ans !== null) { if (j === q.c) cls += ' correct'; else if (j === ans) cls += ' wrong'; } h += '<button class="' + cls + '" data-i="' + j + '"' + (ans !== null ? ' disabled' : '') + '>' + o + '</button>'; });
+        q.o.forEach(function (o, j) {
+            var cls = 'lq-opt';
+            if (ans !== null) { if (j === q.c) cls += ' correct'; else if (j === ans) cls += ' wrong'; }
+            h += '<button class="' + cls + '" data-i="' + j + '"' + (ans !== null ? ' disabled' : '') + '>' +
+                 '<span class="lq-letter">' + String.fromCharCode(65 + j) + '</span>' +
+                 '<span class="lq-text">' + o + '</span></button>';
+        });
         if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + e + '</div>'; }
         h += '</div>';
         quizPanel.innerHTML = h;
         quizPanel.querySelectorAll('.lq-opt').forEach(function (btn) { btn.onclick = function () { if (answers[qi] !== null) return; answers[qi] = parseInt(btn.dataset.i, 10); markQuizPill(qi); renderQuiz(qi); maybeSave(); }; });
     }
-    function markQuizPill(qi) { var p = pillsEl.children[qi]; if (p) { p.classList.remove('correct', 'wrong'); p.classList.add(answers[qi] === QUIZ[qi].c ? 'correct' : 'wrong'); } }
+    function markQuizPill(qi) { var p = pillsEl.children[qi]; if (p) { p.classList.remove('correct', 'wrong'); p.classList.add(answers[qi] === QUIZ[qi].c ? 'correct' : 'wrong'); } refreshProgress(); }
     function maybeSave() { if (quizSaved || NQ === 0) return; if (answers.every(function (a) { return a !== null; })) { quizSaved = true; var body = answers.map(function (a, i) { return 'q' + i + '=' + a; }).join('&'); fetch(quizAction, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }).catch(function () {}); } }
 
     window.labTaskDone = function (taskId, ti) {
         var p = pillsEl.children[NQ + ti]; if (p) p.classList.add('done');
+        refreshProgress();
         fetch('/api/shell/' + taskId + '/done', { method: 'POST' }).catch(function () {});
         if (step < TOTAL - 1) showStep(step + 1);
     };
@@ -175,10 +212,14 @@
         ws = new WebSocket(proto + '://' + location.host + '/api/term?lesson=' + LESSON);
         ws.binaryType = 'arraybuffer';
         manualStop = false;
-        ws.onopen = function () { setStatus('Запущена', true); startTimer(); sendResize(); term.focus(); };
+        ws.onopen = function () {
+            setStatus('Запущена', true); startTimer(); sendResize(); term.focus();
+            document.getElementById('lab2-stop').style.display = '';
+        };
         ws.onmessage = function (e) { gotOutput = true; term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
         ws.onclose = function () {
             setStatus('Остановлена', false); stopTimer();
+            document.getElementById('lab2-stop').style.display = 'none';
             var hadOutput = gotOutput, closed = term;
             term = null; ws = null;
             if (manualStop) return;
@@ -210,6 +251,7 @@
         if (ws) { try { ws.close(); } catch (e) {} }
         if (term) { try { term.dispose(); } catch (e) {} }
         term = null; ws = null; secs = 0; stopTimer();
+        document.getElementById('lab2-stop').style.display = 'none';
         document.getElementById('lab2-timer').textContent = '00:00';
         document.getElementById('lab2-host').innerHTML = '<div class="lab2-launch"><button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button></div>';
         setStatus('Не запущена', false);
@@ -246,6 +288,7 @@
                     box.appendChild(pre);
                 }
                 var p = pillsEl.children[NQ + taskIndex]; if (p) p.classList.toggle('done', !!d.passed);
+                refreshProgress();
             }).catch(function (e) { box.className = 'check-result fail'; box.textContent = 'Ошибка: ' + e.message; });
     };
 
@@ -269,8 +312,12 @@
 .lq-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; }
 .lq-q { font-weight:700; margin-bottom:12px; font-size:.92em; line-height:1.4; }
 .lq-q code, .lq-expl code { background:var(--code-bg); padding:1px 5px; border-radius:4px; font-size:.9em; }
-.lq-opt { display:block; width:100%; text-align:left; margin-bottom:8px; padding:10px 12px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.88em; cursor:pointer; }
-.lq-opt:hover:not(:disabled) { border-color:var(--accent); }
+.lq-opt { display:flex; align-items:flex-start; gap:11px; width:100%; text-align:left; margin-bottom:8px; padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.88em; line-height:1.45; cursor:pointer; transition:border-color .15s, background .15s, transform .12s; }
+.lq-opt:hover:not(:disabled) { border-color:var(--accent); background:var(--bg-card); transform:translateX(2px); }
+.lq-opt:disabled { cursor:default; }
+.lq-letter { flex:0 0 22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.78em; font-weight:800; background:var(--bg); border:1px solid var(--border); color:var(--text-muted); }
+.lq-opt.correct .lq-letter, .lq-opt.wrong .lq-letter { background:rgba(0,0,0,.22); border-color:transparent; color:inherit; }
+.lq-text { flex:1; }
 .lq-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
 .lq-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lq-expl { margin-top:10px; padding:10px 12px; border-radius:9px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.85em; line-height:1.5; }
@@ -280,15 +327,22 @@
 .lab2-back { font-size:.82em; color:var(--text-muted); text-decoration:none; }
 .lab2-back:hover { color:var(--accent); }
 .lab2-title { font-size:1.2em; font-weight:800; margin:8px 0 14px; line-height:1.25; }
+.lab2-prog { margin-bottom:12px; }
+.lab2-prog-row { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:7px; font-size:.8em; }
+.lab2-prog-row #lab2-pos { font-weight:700; color:var(--text); }
+.lab2-done-count { color:var(--text-muted); font-weight:600; }
 .lab2-steps { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
 .lab2-pill { width:34px; height:34px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; transition:all .15s; }
 .lab2-pill.current { outline:2px solid var(--accent); color:var(--text); }
 .lab2-pill.done { background:var(--green); color:#04210d; border-color:transparent; }
+.lab2-pill.done::after { content:"✓"; position:absolute; right:-2px; top:-3px; font-size:.62em; }
+.lab2-pill { position:relative; }
 .lab2-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
 .lab2-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lab2-pill.kq { box-shadow:inset 0 -3px 0 rgba(227,179,65,.5); }
 .lab2-pill.kt { box-shadow:inset 0 -3px 0 rgba(247,120,186,.5); }
-.lab2-stepnav { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; }
+.lab2-stepnav { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.lab2-stepnav .btn { flex:1; justify-content:center; }
 .lab2-stepnav .btn { padding:5px 12px; font-size:.82em; }
 .lab2-step-title { font-weight:700; margin-bottom:12px; }
 .lab2-desc { font-size:.92em; line-height:1.6; margin-bottom:14px; }
@@ -311,7 +365,13 @@
 .lab2-stop:hover { background:var(--red); color:#fff; }
 .lab2-term { flex:1; position:relative; padding:8px 6px 8px 10px; min-height:60vh; }
 .lab2-term .xterm { height:100%; }
-.lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
+.lab2-launch-card { max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px 26px; box-shadow:0 18px 44px rgba(0,0,0,.5); }
+.lab2-launch-ico { width:46px; height:46px; margin:0 auto 14px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:var(--bg-elevated); border:1px solid var(--border); font-family:'JetBrains Mono',ui-monospace,monospace; color:var(--green); font-size:1.05em; }
+.lab2-launch-title { font-size:1.05em; font-weight:800; margin-bottom:8px; }
+.lab2-launch-text { font-size:.86em; color:var(--text-muted); line-height:1.55; margin-bottom:18px; }
+.lab2-launch-hint { font-size:.78em; color:var(--text-dim); margin-top:12px; }
 .lab2-relaunch { position:absolute; left:0; right:0; bottom:14px; display:flex; justify-content:center; }
 
 .check-result { display:none; margin-top:6px; padding:10px 12px; border-radius:9px; font-size:.85em; }
