@@ -63,19 +63,50 @@ jobs:
           [ "$code" = 200 ]
 
       # The public site (learn.prod-factory.ru) is NOT this compose stack: it is
-      # a k3s deployment behind Traefik, with its own database. Deploying only
-      # the stack above looks green while leaving the live site untouched.
-      - name: Publish to the cluster (public site)
+      # a k3s deployment behind Traefik, reconciled by ArgoCD from
+      # Stxanskiy/vibiay_manifests. A release is therefore a git change in that
+      # repo — never a mutation of the running image.
+      - name: Release to the cluster (GitOps)
         run: |
+          exec > >(tee -a /tmp/ci-release.log) 2>&1
           set -x
           set -e
-          # k3s has its own containerd, so the image Docker just built must be
-          # imported there — otherwise the pod keeps running the old one.
-          docker save golearn:local | sudo k3s ctr images import -
-          sudo k3s kubectl -n golearn rollout restart deploy/golearn
+          SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          # There is no registry on this box, so the image is built here and
+          # imported into k3s containerd. It has to exist there BEFORE git
+          # points at it, or ArgoCD would roll out a tag nothing can pull.
+          cd /opt/golearn
+          docker build -t "golearn:$SHA" ./src
+          docker save "golearn:$SHA" | sudo k3s ctr images import -
+
+          # Declare the version in the manifests repo; ArgoCD applies it.
+          rm -rf /tmp/gl-manifests
+          git clone -q git@github.com:Stxanskiy/vibiay_manifests.git /tmp/gl-manifests
+          cd /tmp/gl-manifests
+          sed -i "s|^\( *image: \)golearn:.*|\1golearn:$SHA|" golearn/golearn-deployment.yml
+          if git diff --quiet; then
+            echo "manifests already reference golearn:$SHA"
+          else
+            git -c user.name="golearn-ci" -c user.email="ci@prod-factory.ru" \
+                commit -am "golearn: release $SHA"
+            git push origin main
+          fi
+
+          # Nudge ArgoCD instead of waiting out its poll interval.
+          sudo k3s kubectl -n argocd annotate application golearn \
+              argocd.argoproj.io/refresh=normal --overwrite >/dev/null
+          for i in $(seq 1 60); do
+            img=$(sudo k3s kubectl -n golearn get deploy golearn \
+                  -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)
+            [ "$img" = "golearn:$SHA" ] && break
+            sleep 5
+          done
           sudo k3s kubectl -n golearn rollout status deploy/golearn --timeout=180s
+
           # Course content lives in the cluster's own database.
           sudo k3s kubectl -n golearn exec deploy/golearn -- /app/seed | tail -1
+
           code=""
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' https://learn.prod-factory.ru/ || true)
@@ -85,9 +116,11 @@ jobs:
           echo "public check https://learn.prod-factory.ru/ -> ${code:-none}"
           [ "$code" = 200 ]
 
-      # The runner's logs need repo-admin rights to download, so on failure the
-      # diagnostics are published into the job summary instead — that is readable
-      # through the check-runs API.
+          # Keep the last few releases importable for a quick rollback, drop older ones.
+          sudo k3s ctr images ls -q 2>/dev/null | grep '^docker.io/library/golearn:' \
+            | grep -v ':local$' | sort | head -n -5 \
+            | xargs -r -n1 sudo k3s ctr images rm >/dev/null || true
+
       - name: Diagnostics on failure
         if: failure()
         run: |
@@ -95,19 +128,15 @@ jobs:
             echo '## deploy failed'
             echo '### tail of /tmp/ci-deploy.log'
             echo '```'
-            tail -n 120 /tmp/ci-deploy.log 2>/dev/null || echo '(no log file)'
+            tail -n 80 /tmp/ci-deploy.log 2>/dev/null || echo '(no log file)'
             echo '```'
-            echo '### disk'
+            echo '### tail of /tmp/ci-release.log'
             echo '```'
-            df -h / 2>/dev/null | head -3
-            docker system df 2>&1 | head -6
+            tail -n 80 /tmp/ci-release.log 2>/dev/null || echo '(no log file)'
             echo '```'
-            echo '### containers'
+            echo '### cluster'
             echo '```'
-            docker ps -a --filter name=golearn --format '{{.Names}} {{.Status}}' 2>&1 | head -10
-            echo '```'
-            echo '### compose logs'
-            echo '```'
-            (cd /opt/golearn && docker compose logs --tail=40 2>&1 | tail -60) || echo '(no compose logs)'
+            sudo k3s kubectl -n golearn get pods 2>&1 | head -6
+            sudo k3s kubectl -n argocd get application golearn 2>&1 | head -3
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

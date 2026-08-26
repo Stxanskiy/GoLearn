@@ -13,12 +13,28 @@ key are involved.
 | Database | its own `golearn-db` pod | its own `golearn-db` container |
 | Image | `golearn:local` in **k3s containerd** | `golearn:local` in **Docker** |
 
-Both use the tag `golearn:local`, but Docker and containerd are separate image
-stores: building with Docker alone leaves the pod on its old image. The
-workflow therefore imports the built image into containerd
-(`docker save … | k3s ctr images import -`), restarts the deployment and seeds
-the cluster's database. Deploying only the compose stack looks green while the
-live site stays untouched — that is exactly what happened before this was added.
+Deploying only the compose stack looks green while the live site stays
+untouched — that is exactly what happened before the release step below existed.
+
+## How a release reaches the public site
+
+ArgoCD reconciles the deployment from git with `selfHeal`, so the running
+version has to be *declared*, not pushed in place. There is no registry on this
+box, which shapes the order:
+
+1. the workflow builds `golearn:<commit>` and imports it into **k3s containerd**
+   (`docker save … | k3s ctr images import -`) — the image must exist there
+   before git points at it, or ArgoCD rolls out a tag nothing can pull;
+2. it bumps `image:` in `golearn/golearn-deployment.yml` of
+   `Stxanskiy/vibiay_manifests` and pushes;
+3. ArgoCD applies it, the workflow waits for the rollout, seeds the cluster's
+   database and checks the public URL;
+4. the last five release images are kept in containerd, older ones are dropped.
+
+`imagePullPolicy` must stay `IfNotPresent`: the tag only exists locally.
+
+**Rollback** is a revert of the release commit in the manifests repo — the
+previous image is still in containerd.
 
 The app itself needs nothing else. The **labs**, however, run inside a separate
 sandbox VM reached over SSH (`SANDBOX_SSH_*` in `docker-compose.yml`), and that
