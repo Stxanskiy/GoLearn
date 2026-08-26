@@ -1,0 +1,201 @@
+{{define "landing"}}<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.PageTitle}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <style>
+        .lp-top { position:sticky; top:0; z-index:50; background:rgba(12,15,20,.72); backdrop-filter:saturate(160%) blur(12px); border-bottom:1px solid var(--border); padding:14px 0; }
+        .lp-top .container { display:flex; align-items:center; gap:14px; }
+        .lp-top .logo { display:flex; align-items:center; gap:9px; text-decoration:none; }
+        .lp-top .logo-text { font-size:1.25em; font-weight:800; letter-spacing:-.02em; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .lp-top .lp-login { margin-left:auto; }
+
+        .lp-hero { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:48px; align-items:center; padding:56px 0 44px; }
+        .lp-badge { display:inline-flex; align-items:center; gap:8px; font-size:.82em; font-weight:600; color:var(--green);
+                    background:var(--green-bg); border:1px solid rgba(52,211,153,.32); padding:6px 14px; border-radius:999px; }
+        .lp-badge code { font-family:'JetBrains Mono',ui-monospace,monospace; color:var(--green); }
+        .lp-hero h1 { font-size:clamp(2.6em,5.2vw,4em); font-weight:800; line-height:1.03; letter-spacing:-.03em; margin:22px 0 18px; }
+        .lp-hero h1 em { font-style:normal; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .lp-lead { font-size:1.06em; line-height:1.65; color:var(--text-muted); max-width:34em; }
+        .lp-cta { display:flex; gap:12px; flex-wrap:wrap; margin:28px 0 34px; }
+        .lp-cta .btn { padding:12px 24px; font-size:1em; }
+
+        .lp-features { display:flex; flex-direction:column; gap:10px; }
+        .lp-feature { display:flex; align-items:center; gap:14px; padding:13px 16px; background:var(--bg-card);
+                      border:1px solid var(--border); border-radius:12px; }
+        .lp-feature-ico { width:36px; height:36px; flex:0 0 36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+                          background:var(--bg-elevated); border:1px solid var(--border); font-size:1.05em; }
+        .lp-feature b { display:block; font-size:.94em; font-weight:700; }
+        .lp-feature span { font-size:.84em; color:var(--text-muted); }
+
+        /* Terminal mock — a real check run, not decorative filler. */
+        .lp-term { border:1px solid var(--border-strong); border-radius:14px; overflow:hidden; background:#05070a; box-shadow:0 24px 60px rgba(0,0,0,.55); }
+        .lp-term-bar { display:flex; align-items:center; gap:8px; padding:11px 14px; background:var(--bg-elevated); border-bottom:1px solid var(--border); }
+        .lp-dot { width:11px; height:11px; border-radius:50%; }
+        .lp-term-title { margin-left:8px; font-size:.78em; color:var(--text-dim); font-family:'JetBrains Mono',ui-monospace,monospace; }
+        .lp-term-body { padding:18px 18px 22px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:13px; line-height:1.75; color:#d6e2ee; white-space:pre-wrap; }
+        .lp-p { color:var(--green); } .lp-c { color:#e6edf3; } .lp-o { color:var(--text-muted); } .lp-ok { color:var(--green); font-weight:500; }
+        .lp-cursor { display:inline-block; width:8px; height:15px; background:var(--green); vertical-align:-2px; animation:lpBlink 1.1s steps(1) infinite; }
+        @keyframes lpBlink { 50% { opacity:0; } }
+
+        .lp-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:6px 0 56px; }
+        .lp-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:22px; text-align:center; }
+        .lp-stat b { display:block; font-size:2.1em; font-weight:800; line-height:1.1; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .lp-stat span { font-size:.86em; color:var(--text-muted); }
+
+        .lp-section { padding:10px 0 56px; }
+        .lp-section h2 { font-size:1.7em; font-weight:800; letter-spacing:-.02em; margin-bottom:8px; }
+        .lp-section .lp-sub { color:var(--text-muted); margin-bottom:26px; }
+        .lp-tracks { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+        .lp-track { display:flex; gap:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:22px;
+                    text-decoration:none; color:var(--text); transition:transform .18s, border-color .18s, box-shadow .18s; }
+        .lp-track:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:0 16px 36px rgba(0,0,0,.45); }
+        .lp-track-ico { font-size:34px; line-height:1; }
+        .lp-track h3 { font-size:1.12em; font-weight:800; margin-bottom:5px; }
+        .lp-track p { font-size:.88em; color:var(--text-muted); line-height:1.5; margin-bottom:10px; }
+        .lp-track-count { font-size:.76em; font-weight:700; color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); padding:3px 11px; border-radius:999px; }
+
+        .lp-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; counter-reset:lpstep; }
+        .lp-step { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; position:relative; }
+        .lp-step::before { counter-increment:lpstep; content:counter(lpstep,decimal-leading-zero);
+                           font-family:'JetBrains Mono',ui-monospace,monospace; font-size:.78em; font-weight:800; color:var(--text-dim); letter-spacing:.08em; }
+        .lp-step h3 { font-size:1.05em; font-weight:800; margin:10px 0 7px; }
+        .lp-step p { font-size:.88em; color:var(--text-muted); line-height:1.55; }
+
+        .lp-foot { border-top:1px solid var(--border); padding:26px 0 40px; color:var(--text-dim); font-size:.86em;
+                   display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+
+        @media (max-width:900px) {
+            .lp-hero { grid-template-columns:1fr; gap:34px; padding:40px 0 36px; }
+            .lp-stats { grid-template-columns:repeat(2,1fr); }
+        }
+    </style>
+</head>
+<body>
+<header class="lp-top">
+    <div class="container">
+        <a href="/" class="logo">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect width="32" height="32" rx="8" fill="url(#lp-g)"/>
+                <path d="M9 11l5 5-5 5" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16.5 21H23" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round"/>
+                <defs><linearGradient id="lp-g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient></defs>
+            </svg>
+            <span class="logo-text">TOT</span>
+        </a>
+        <a href="/login" class="btn btn-primary lp-login">Войти</a>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <section class="lp-hero">
+            <div>
+                <span class="lp-badge">DevOps: курсы, тренажёры и лаборатории</span>
+                <h1>Учись <em>на практике</em></h1>
+                <p class="lp-lead">Не просто читать про Linux, Git, Docker и Kubernetes, а работать руками:
+                    открыть терминал, выполнить команду, сломать, починить — и сразу увидеть результат проверки.</p>
+                <div class="lp-cta">
+                    <a href="/login" class="btn btn-primary">Начать с Linux →</a>
+                    <a href="/login" class="btn btn-outline">Посмотреть маршрут</a>
+                </div>
+                <div class="lp-features">
+                    <div class="lp-feature">
+                        <span class="lp-feature-ico">▶_</span>
+                        <span><b>Настоящий терминал</b><span>Одноразовая песочница с реальным Linux — ломать можно</span></span>
+                    </div>
+                    <div class="lp-feature">
+                        <span class="lp-feature-ico">✓</span>
+                        <span><b>Автопроверка заданий</b><span>Проверяется результат, а не текст команды — решай как хочешь</span></span>
+                    </div>
+                    <div class="lp-feature">
+                        <span class="lp-feature-ico">🗺</span>
+                        <span><b>Понятный порядок</b><span>Курсы идут один за другим: терминал → Linux → Git → контейнеры → кластер</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lp-term" aria-hidden="true">
+                <div class="lp-term-bar">
+                    <span class="lp-dot" style="background:#ff5f56;"></span>
+                    <span class="lp-dot" style="background:#ffbd2e;"></span>
+                    <span class="lp-dot" style="background:#27c93f;"></span>
+                    <span class="lp-term-title">лаборатория · Linux: чтение и поиск</span>
+                </div>
+<div class="lp-term-body"><span class="lp-o"># задание: собрать все строки ERROR из лога сервера</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-c">ls /opt/devops/lab5</span>
+<span class="lp-o">part1.txt  part2.txt  server.log</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-c">grep ERROR /opt/devops/lab5/server.log &gt; errors.txt</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-c">wc -l errors.txt</span>
+<span class="lp-o">3 errors.txt</span>
+<span class="lp-ok">✓ все строки ERROR выбраны — шаг засчитан</span>
+
+<span class="lp-o"># следующий шаг: поднять сервис через systemd</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-c">systemctl start demo-http</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-c">systemctl is-active demo-http</span>
+<span class="lp-o">active</span>
+<span class="lp-p">student@sandbox</span>:<span class="lp-o">~</span>$ <span class="lp-cursor"></span></div>
+            </div>
+        </section>
+
+        <section class="lp-stats">
+            <div class="lp-stat"><b>{{.Stats.Courses}}</b><span>курсов</span></div>
+            <div class="lp-stat"><b>{{.Stats.Lessons}}</b><span>уроков и тестов</span></div>
+            <div class="lp-stat"><b>{{.Stats.Labs}}</b><span>лабораторных</span></div>
+            <div class="lp-stat"><b>{{.Stats.AutoChecked}}</b><span>заданий с автопроверкой</span></div>
+        </section>
+
+        {{if .Tracks}}
+        <section class="lp-section">
+            <h2>Направления</h2>
+            <p class="lp-sub">Каждое — законченный путь: от первой команды до продакшн-практик.</p>
+            <div class="lp-tracks">
+                {{range .Tracks}}
+                <a class="lp-track" href="/login">
+                    <span class="lp-track-ico">{{.Icon}}</span>
+                    <span>
+                        <h3>{{.Name}}</h3>
+                        <p>{{.Desc}}</p>
+                        <span class="lp-track-count">{{.Courses}} курс.</span>
+                    </span>
+                </a>
+                {{end}}
+            </div>
+        </section>
+        {{end}}
+
+        <section class="lp-section">
+            <h2>Как это работает</h2>
+            <p class="lp-sub">Один урок — это теория, короткий тест и лабораторная в живом терминале.</p>
+            <div class="lp-steps">
+                <div class="lp-step">
+                    <h3>Читаешь теорию</h3>
+                    <p>Коротко и по делу: что за инструмент, зачем он и как им пользуются в реальной работе.</p>
+                </div>
+                <div class="lp-step">
+                    <h3>Открываешь песочницу</h3>
+                    <p>Изолированный контейнер с нужными утилитами и файлами задания. Сломал — кнопка «Сбросить» вернёт чистое окружение.</p>
+                </div>
+                <div class="lp-step">
+                    <h3>Решаешь и проверяешь</h3>
+                    <p>Проверка смотрит на результат: создан ли файл, слушается ли порт, поднялся ли сервис. Не сошлось — подскажет, чего не хватает.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer class="lp-foot">
+    <div class="container" style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <span>TOT — практический курс DevOps</span>
+        <a href="/login">Войти в аккаунт →</a>
+    </div>
+</footer>
+</body>
+</html>
+{{end}}

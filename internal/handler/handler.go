@@ -43,11 +43,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/register", h.RegisterPage)
 	r.Post("/register", h.Register)
 	r.Get("/logout", h.Logout)
+	// "/" is public: visitors get the landing page, signed-in users the dashboard.
+	r.Get("/", h.Home)
 
 	// Protected routes (require auth)
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
-		r.Get("/", h.Dashboard)
 		r.Get("/courses", h.CoursesPage)
 		r.Get("/courses/{track}", h.SectionPage)
 		r.Get("/api/courses/{slug}/cover", h.CourseCover)

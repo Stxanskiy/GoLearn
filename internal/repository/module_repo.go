@@ -140,3 +140,24 @@ func (r *ModuleRepo) Neighbors(ctx context.Context, m model.Module, tracks []str
 	}
 	return prev, next, nil
 }
+
+// PlatformStats are the headline numbers shown on the public landing page.
+type PlatformStats struct {
+	Courses     int
+	Lessons     int
+	Labs        int
+	AutoChecked int
+}
+
+// Stats counts what the platform currently offers. Shown to visitors, so the
+// numbers come from the database rather than from a hand-written claim.
+func (r *ModuleRepo) Stats(ctx context.Context) (PlatformStats, error) {
+	var s PlatformStats
+	err := r.pool.QueryRow(ctx, `
+		SELECT (SELECT count(*) FROM modules),
+		       (SELECT count(*) FROM lessons),
+		       (SELECT count(*) FROM lessons WHERE kind = 'lab'),
+		       (SELECT count(*) FROM tasks  WHERE check_script <> '')`).
+		Scan(&s.Courses, &s.Lessons, &s.Labs, &s.AutoChecked)
+	return s, err
+}
