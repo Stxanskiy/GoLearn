@@ -88,7 +88,7 @@
     var PASSED = {{.PassedJSON}};
     var QUIZ = []; var qd = document.getElementById('quiz-data'); if (qd) { try { QUIZ = JSON.parse(qd.textContent); } catch (e) {} }
     var NQ = QUIZ.length, TOTAL = NQ + NT;
-    var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0, manualStop = false;
+    var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0, manualStop = false, gotOutput = false;
     var answers = new Array(NQ).fill(null), quizSaved = false;
     var pillsEl = document.getElementById('lab2-pills');
     var quizPanel = document.getElementById('lab2-quizpanel');
@@ -164,8 +164,9 @@
             h0.innerHTML = '<div class="lab2-launch" style="color:var(--red);text-align:center;padding:20px;">Не удалось загрузить терминал (xterm). Обнови страницу.</div>';
             return;
         }
-        document.getElementById('lab2-launch').style.display = 'none';
         var host = document.getElementById('lab2-host');
+        host.innerHTML = ''; // drop the launch overlay or a previous finished session
+        gotOutput = false;
         term = new Terminal({ fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
         fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(host);
         try { fit.fit(); } catch (e) {}
@@ -175,16 +176,27 @@
         ws.binaryType = 'arraybuffer';
         manualStop = false;
         ws.onopen = function () { setStatus('Запущена', true); startTimer(); sendResize(); term.focus(); };
-        ws.onmessage = function (e) { term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
+        ws.onmessage = function (e) { gotOutput = true; term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
         ws.onclose = function () {
-            setStatus('Остановлена', false); stopTimer(); term = null; ws = null;
-            if (!manualStop) {
-                document.getElementById('lab2-host').innerHTML =
-                    '<div class="lab2-launch"><div style="font-size:30px;">⏹</div>' +
-                    '<div style="margin:8px 0;font-weight:600;">Сессия завершена</div>' +
-                    '<button class="btn btn-primary" onclick="labStart()">▶ Запустить заново</button>' +
-                    '<div class="muted" style="margin-top:8px;font-size:.82em;">Сломал окружение? «⟳ Сбросить» вернёт чистую песочницу.</div></div>';
+            setStatus('Остановлена', false); stopTimer();
+            var hadOutput = gotOutput, closed = term;
+            term = null; ws = null;
+            if (manualStop) return;
+            // The server writes the reason (Docker down, image missing, …) into
+            // the terminal before closing — keep it on screen instead of wiping it.
+            if (hadOutput && closed) {
+                try { closed.write('\r\n\x1b[90m[сессия завершена]\x1b[0m\r\n'); } catch (e) {}
+                var bar = document.createElement('div');
+                bar.className = 'lab2-relaunch';
+                bar.innerHTML = '<button class="btn btn-primary" onclick="labStart()">▶ Запустить заново</button>';
+                document.getElementById('lab2-host').appendChild(bar);
+                return;
             }
+            document.getElementById('lab2-host').innerHTML =
+                '<div class="lab2-launch"><div style="font-size:30px;">⏹</div>' +
+                '<div style="margin:8px 0;font-weight:600;">Сессия завершена</div>' +
+                '<button class="btn btn-primary" onclick="labStart()">▶ Запустить заново</button>' +
+                '<div class="muted" style="margin-top:8px;font-size:.82em;">Сломал окружение? «⟳ Сбросить» вернёт чистую песочницу.</div></div>';
         };
         term.onData(function (d) { if (ws && ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
         term.onResize(sendResize);
@@ -199,7 +211,7 @@
         if (term) { try { term.dispose(); } catch (e) {} }
         term = null; ws = null; secs = 0; stopTimer();
         document.getElementById('lab2-timer').textContent = '00:00';
-        document.getElementById('lab2-host').innerHTML = '<div class="lab2-launch" id="lab2-launch"><button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button></div>';
+        document.getElementById('lab2-host').innerHTML = '<div class="lab2-launch"><button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button></div>';
         setStatus('Не запущена', false);
     };
     // Reset = throw away the container and start a clean one (recovers from rm -rf etc.)
@@ -300,6 +312,7 @@
 .lab2-term { flex:1; position:relative; padding:8px 6px 8px 10px; min-height:60vh; }
 .lab2-term .xterm { height:100%; }
 .lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.lab2-relaunch { position:absolute; left:0; right:0; bottom:14px; display:flex; justify-content:center; }
 
 .check-result { display:none; margin-top:6px; padding:10px 12px; border-radius:9px; font-size:.85em; }
 .check-result.pass { background:var(--green-bg); color:var(--green); border:1px solid rgba(63,185,80,.4); }

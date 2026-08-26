@@ -182,9 +182,13 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 			"Проходить их можно в локальной установке")
 	}
 	c := sessionName(userID, key)
-	out, _, err := s.run(ctx, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s 2>/dev/null", c))
+	out, _, err := s.run(ctx, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s 2>&1", c))
 	if err != nil {
 		return "", err
+	}
+	if dockerUnavailable(out) {
+		return "", fmt.Errorf("Docker не запущен — песочница не может создать контейнер. " +
+			"Запусти Docker Desktop (или `sudo systemctl start docker` на сервере) и открой лабораторную заново")
 	}
 	if strings.TrimSpace(out) == "true" {
 		s.touch(c)
@@ -207,6 +211,10 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	}
 	if !strings.Contains(out, "OK") {
 		msg := strings.TrimSpace(out)
+		if dockerUnavailable(msg) {
+			return "", fmt.Errorf("Docker не запущен — песочница не может создать контейнер. " +
+				"Запусти Docker Desktop (или `sudo systemctl start docker` на сервере) и открой лабораторную заново")
+		}
 		if strings.Contains(msg, "Unable to find image") || strings.Contains(msg, "No such image") ||
 			strings.Contains(msg, "manifest unknown") || strings.Contains(msg, "pull access denied") {
 			return "", fmt.Errorf("образ песочницы %s не собран на этом хосте — "+
@@ -216,6 +224,24 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	}
 	s.touch(c)
 	return c, nil
+}
+
+// dockerUnavailable reports whether the failure was the Docker daemon being
+// unreachable rather than anything about the lab itself — by far the most
+// common cause of "the terminal will not start", and worth saying plainly.
+func dockerUnavailable(out string) bool {
+	for _, marker := range []string{
+		"Cannot connect to the Docker daemon",
+		"docker daemon is not running",
+		"failed to connect to the docker API",
+		"Is the docker daemon running",
+		"docker: command not found",
+	} {
+		if strings.Contains(out, marker) {
+			return true
+		}
+	}
+	return false
 }
 
 // wrap persists the working directory between exec calls, since each

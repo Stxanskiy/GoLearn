@@ -76,13 +76,6 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 		image, setup = h.labSandbox(r, task.LessonID)
 	}
 
-	container, err := h.shell.EnsureSession(r.Context(), user.ID, key, image, setup)
-	if err != nil {
-		h.log.Error("term ensure session", "error", err)
-		http.Error(w, "sandbox start failed", 500)
-		return
-	}
-
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -90,6 +83,18 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	_ = conn.WriteMessage(websocket.TextMessage, []byte(bergBanner))
+
+	// The sandbox is started AFTER the upgrade so that a failure can be
+	// explained inside the terminal. Failing before it leaves the browser with
+	// nothing but a closed socket — the "terminal just does not start" case.
+	_ = conn.WriteMessage(websocket.TextMessage, []byte("\x1b[90mЗапускаю песочницу…\x1b[0m\r\n"))
+	container, err := h.shell.EnsureSession(r.Context(), user.ID, key, image, setup)
+	if err != nil {
+		h.log.Error("term ensure session", "error", err)
+		_ = conn.WriteMessage(websocket.TextMessage,
+			[]byte("\r\n\x1b[31m"+err.Error()+"\x1b[0m\r\n"))
+		return
+	}
 
 	pty, err := h.shell.OpenPTY(container, 100, 28)
 	if err != nil {
