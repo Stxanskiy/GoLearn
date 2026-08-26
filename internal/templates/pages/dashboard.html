@@ -73,10 +73,6 @@
 <div class="section-title">♾️ DevOps</div>
 <div class="courses-grid">{{range .DevopsModules}}{{template "module_card" .}}{{end}}</div>
 {{end}}
-{{if .GolangModules}}
-<div class="section-title">💻 Golang</div>
-<div class="courses-grid">{{range .GolangModules}}{{template "module_card" .}}{{end}}</div>
-{{end}}
 {{if .DatabaseModules}}
 <div class="section-title">🗄️ База данных</div>
 <div class="courses-grid">{{range .DatabaseModules}}{{template "module_card" .}}{{end}}</div>

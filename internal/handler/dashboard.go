@@ -17,7 +17,6 @@ type DashboardData struct {
 	Overview        *model.ProgressOverview
 	Weeks           [][]HeatCell
 	MonthLabels     []MonthLabel
-	GolangModules   []ModuleWithProgress
 	DevopsModules   []ModuleWithProgress
 	DatabaseModules []ModuleWithProgress
 	SecurityModules []ModuleWithProgress
@@ -190,14 +189,14 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 		switch mod.Track {
-		case "devops":
-			data.DevopsModules = append(data.DevopsModules, mwp)
 		case "database":
 			data.DatabaseModules = append(data.DatabaseModules, mwp)
 		case "security", "security-offense", "security-defense":
 			data.SecurityModules = append(data.SecurityModules, mwp)
+		case "gym":
+			// trainers have their own page
 		default:
-			data.GolangModules = append(data.GolangModules, mwp)
+			data.DevopsModules = append(data.DevopsModules, mwp)
 		}
 	}
 

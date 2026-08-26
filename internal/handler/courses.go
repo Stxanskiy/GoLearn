@@ -83,7 +83,7 @@ func specForTrack(track string) string {
 	case "security", "security-offense", "security-defense":
 		return "security"
 	default:
-		return "golang"
+		return "devops"
 	}
 }
 
@@ -100,7 +100,7 @@ func specTracks(spec string) []string {
 	case "security":
 		return []string{"security", "security-offense", "security-defense"}
 	default:
-		return []string{"golang", "backend", "shared"}
+		return []string{"devops"}
 	}
 }
 

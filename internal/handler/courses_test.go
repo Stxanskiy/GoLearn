@@ -58,7 +58,9 @@ func TestLessonKindLabel(t *testing.T) {
 func TestSpecForTrack(t *testing.T) {
 	cases := map[string]string{
 		"devops": "devops", "database": "database", "gym": "gym",
-		"security": "security", "security-offense": "security", "golang": "golang", "weird": "golang",
+		// The Go track was removed from the platform, so anything unrecognised
+		// now falls back to DevOps rather than to a specialization that is gone.
+		"security": "security", "security-offense": "security", "golang": "devops", "weird": "devops",
 	}
 	for in, want := range cases {
 		if got := specForTrack(in); got != want {

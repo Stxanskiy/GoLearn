@@ -219,34 +219,9 @@ type T struct {
 // ── Registry ──
 
 func getAllModules() []M {
-	// ── Section: Golang (Go fundamentals + основы, merged) ──
-	golang := []M{
-		mod01_basics_new(),
-		mod02_collections_new(),
-		mod03_functions_new(),
-		mod_pointers(),
-		mod04_structs_new(),
-		mod05_interfaces_new(),
-		mod06_errors_new(),
-		mod_milestone_beginner(),
-		mod_generics(),
-		mod08_packages(),
-		mod_context(),
-		mod_git(),
-		mod07_files_json(),
-		mod09_http(),
-		mod10_database(),
-		mod_architecture_full(),
-		mod_testing_full(),
-		mod_milestone_intermediate(),
-		mod13_auth(),
-		mod14_concurrency_full(),
-		mod18_advanced(),
-		mod_go_internals(),
-	}
-	for i := range golang {
-		golang[i].Track = "golang"
-	}
+	// The Go courses were removed from the platform: GoLearn is a DevOps course
+	// now. Their content still lives in cmd/seed/mod*.go — registering that list
+	// here again is all it takes to bring them back.
 
 	// ── Section: Кибербезопасность ──
 	security := []M{
@@ -259,7 +234,6 @@ func getAllModules() []M {
 
 	// DevOps + Database sections come fully from the devops404 export.
 	var mods []M
-	mods = append(mods, golang...)
 	mods = append(mods, mod_linux_terminal()) // interactive Linux module with auto-checked shell tasks
 	mods = append(mods, importedModules()...)
 	mods = append(mods, sqlAcademyModules()...)

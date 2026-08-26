@@ -25,13 +25,6 @@ var curriculum = map[string][]string{
 		"k8s-ckad",             // оркестрация: продвинутая практика
 		"helm",                 // пакетирование и деплой в кластер
 	},
-	"golang": {
-		"basics", "collections", "functions", "pointers", "structs",
-		"interfaces", "errors", "project-cli", "generics", "packages",
-		"context", "git", "files-json", "http", "database", "architecture",
-		"testing", "project-api", "auth", "concurrency", "advanced",
-		"go-internals",
-	},
 	"database": {
 		"sql-express", // быстрый старт по SQL
 		"sql-easy",    // затем практика по возрастанию сложности
@@ -53,7 +46,6 @@ var curriculum = map[string][]string{
 // also fix the order the specializations themselves appear in.
 var specBand = map[string]int{
 	"devops":   100,
-	"golang":   200,
 	"database": 300,
 	"security": 400,
 	"gym":      500,
@@ -71,7 +63,7 @@ func specForTrack(track string) string {
 	case "security", "security-offense", "security-defense":
 		return "security"
 	default:
-		return "golang"
+		return "devops"
 	}
 }
 
