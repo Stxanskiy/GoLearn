@@ -1,9 +1,24 @@
 # Deploying GoLearn on Berg
 
 CD is automatic: a push to `main` triggers `.github/workflows/deploy.yml`, which
-runs on the self-hosted runner **on the server**. It syncs the checkout into
-`/opt/golearn/src`, builds the image, applies migrations, seeds the content and
-restarts the app. No inbound SSH and no stored key are involved.
+runs on the self-hosted runner **on the server**. No inbound SSH and no stored
+key are involved.
+
+## Two instances live on this box — know which one is public
+
+| | Public site | Compose stack |
+|---|---|---|
+| URL | `https://learn.prod-factory.ru` (Traefik → k3s) | `127.0.0.1:8081`, nginx `:8445` behind basic auth |
+| Runs as | k3s deployment `golearn` in namespace `golearn`, managed by ArgoCD (manifests in `Stxanskiy/vibiay_manifests`, path `golearn`) | `docker compose` in `/opt/golearn` |
+| Database | its own `golearn-db` pod | its own `golearn-db` container |
+| Image | `golearn:local` in **k3s containerd** | `golearn:local` in **Docker** |
+
+Both use the tag `golearn:local`, but Docker and containerd are separate image
+stores: building with Docker alone leaves the pod on its old image. The
+workflow therefore imports the built image into containerd
+(`docker save … | k3s ctr images import -`), restarts the deployment and seeds
+the cluster's database. Deploying only the compose stack looks green while the
+live site stays untouched — that is exactly what happened before this was added.
 
 The app itself needs nothing else. The **labs**, however, run inside a separate
 sandbox VM reached over SSH (`SANDBOX_SSH_*` in `docker-compose.yml`), and that

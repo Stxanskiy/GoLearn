@@ -62,6 +62,29 @@ jobs:
           echo "deploy check /login -> ${code:-none}"
           [ "$code" = 200 ]
 
+      # The public site (learn.prod-factory.ru) is NOT this compose stack: it is
+      # a k3s deployment behind Traefik, with its own database. Deploying only
+      # the stack above looks green while leaving the live site untouched.
+      - name: Publish to the cluster (public site)
+        run: |
+          set -x
+          set -e
+          # k3s has its own containerd, so the image Docker just built must be
+          # imported there — otherwise the pod keeps running the old one.
+          docker save golearn:local | sudo k3s ctr images import -
+          sudo k3s kubectl -n golearn rollout restart deploy/golearn
+          sudo k3s kubectl -n golearn rollout status deploy/golearn --timeout=180s
+          # Course content lives in the cluster's own database.
+          sudo k3s kubectl -n golearn exec deploy/golearn -- /app/seed | tail -1
+          code=""
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://learn.prod-factory.ru/ || true)
+            [ "$code" = 200 ] && break
+            sleep 2
+          done
+          echo "public check https://learn.prod-factory.ru/ -> ${code:-none}"
+          [ "$code" = 200 ]
+
       # The runner's logs need repo-admin rights to download, so on failure the
       # diagnostics are published into the job summary instead — that is readable
       # through the check-runs API.
