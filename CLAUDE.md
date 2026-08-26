@@ -1,8 +1,12 @@
 # GoLearn — Learning Management System
 
 ## What This Is
-A local LMS (Learning Management System) for learning Go backend development + DevOps.
-This is the **platform** project. The **learning** project is WatchTogether (../WatchTogether/).
+An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm, SQL — theory,
+quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
+(see `deploy/berg/README.md`).
+
+The Go courses were removed (migration `013`); their content still lives in
+`cmd/seed/mod*.go` but is no longer registered in `getAllModules()`.
 
 ## Stack
 - **Backend:** Go 1.22+, chi router, pgx (PostgreSQL)
