@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/admin">Админка</a> / <span>Разделы</span></div>
 <h1 style="margin-bottom:18px;">Разделы (специализации)</h1>
 
@@ -15,8 +16,8 @@
         <span class="muted">{{.Slug}}</span>
         <span>{{.OrderNum}}</span>
         <span class="admin-actions">
-            <button class="btn btn-outline btn-xs" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}})">✎</button>
-            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+            <button class="btn btn-outline btn-xs" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}})"><i class="ph ph-pencil-simple"></i></button>
+            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
         </span>
     </div>
     {{end}}
@@ -41,6 +42,7 @@
     </form>
 </div>
 
+</div><!-- /.page -->
 <style>
 .admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .admin-row { display:grid; grid-template-columns:60px 1fr 120px 80px 90px; gap:10px; align-items:center; padding:11px 14px; border-bottom:1px solid var(--border); font-size:.9em; }

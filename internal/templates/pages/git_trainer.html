@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <link rel="stylesheet" href="/static/vendor/xterm/xterm.css">
 <script src="/static/vendor/xterm/xterm.js"></script>
 <script src="/static/vendor/xterm/addon-fit.js"></script>
@@ -59,6 +60,7 @@
     </section>
 </div>
 
+</div><!-- /.page -->
 <style>
 .git2 { display:grid; grid-template-columns:360px minmax(0,1fr); gap:0; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:70vh; }
 .git2-side { padding:16px; border-right:1px solid var(--border); background:var(--bg-card); overflow-y:auto; max-height:78vh; }

@@ -3,22 +3,23 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="page-head">
     <h1>Тренажёры</h1>
     <p class="muted">Интерактивные инструменты с настоящим рантаймом и практические тренажёры с автопроверкой.</p>
 </div>
 
-<div class="section-title">🛠 Инструменты</div>
+<div class="section-title"> Инструменты</div>
 <div class="courses-grid">
     <a class="course-card" href="/git-trainer">
-        <div class="course-cover" data-cat="Git"><span class="course-icon">🌿</span></div>
+        <div class="course-cover" data-cat="Git"><span class="course-icon"></span></div>
         <div class="course-body">
             <h3 class="course-title">Git Trainer</h3>
             <div class="course-meta muted">Настоящий git: коммиты, ветки, merge — с живым графом истории.</div>
         </div>
     </a>
     <a class="course-card" href="/playground">
-        <div class="course-cover" data-cat="Golang"><span class="course-icon">🐹</span></div>
+        <div class="course-cover" data-cat="Golang"><span class="course-icon"></span></div>
         <div class="course-body">
             <h3 class="course-title">Go Playground</h3>
             <div class="course-meta muted">Пиши и запускай Go-код в песочнице, смотри вывод сразу.</div>
@@ -27,7 +28,7 @@
 </div>
 
 {{if .Gyms}}
-<div class="section-title">🏋 Практические тренажёры</div>
+<div class="section-title"> Практические тренажёры</div>
 <div class="courses-grid">
     {{range .Gyms}}
     <a class="course-card" href="/module/{{.Slug}}">
@@ -46,6 +47,7 @@
 </div>
 {{end}}
 
+</div><!-- /.page -->
 <style>
 .courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
 .course-body { padding:16px; }

@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/lesson/{{.LessonID}}">Глава</a> / <span>{{if .IsNew}}Новое задание{{else}}{{.Task.Title}}{{end}}</span></div>
 <h1 style="margin-bottom:18px;">{{if .IsNew}}Новое задание{{else}}Задание: {{.Task.Title}}{{end}}</h1>
 
@@ -54,6 +55,7 @@
     </div>
 </form>
 
+</div><!-- /.page -->
 <style>
 .adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }

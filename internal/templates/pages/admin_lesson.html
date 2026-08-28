@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/module/{{.ModuleID}}">Курс</a> / <span>{{if .IsNew}}Новая глава{{else}}{{.Lesson.Title}}{{end}}</span></div>
 
 <h1 style="margin-bottom:18px;">{{if .IsNew}}Новая глава{{else}}Глава: {{.Lesson.Title}}{{end}}</h1>
@@ -66,8 +67,8 @@
         <span class="muted">{{add $i 1}}</span>
         <a href="/admin/question/{{$q.ID}}" class="admin-name">{{safeHTML $q.Question}}</a>
         <span class="admin-actions">
-            <a href="/admin/question/{{$q.ID}}" class="btn btn-outline btn-xs">✎</a>
-            <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить вопрос?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+            <a href="/admin/question/{{$q.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
+            <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить вопрос?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
         </span>
     </div>
     {{else}}<div class="admin-row muted">Вопросов пока нет.</div>{{end}}
@@ -84,13 +85,14 @@
         <a href="/admin/task/{{$t.ID}}" class="admin-name">{{$t.Title}}</a>
         <span><span class="kind-badge">{{$t.Kind}}</span></span>
         <span class="admin-actions">
-            <a href="/admin/task/{{$t.ID}}" class="btn btn-outline btn-xs">✎</a>
-            <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить задание?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+            <a href="/admin/task/{{$t.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
+            <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить задание?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
         </span>
     </div>
     {{else}}<div class="admin-row muted">Заданий пока нет.</div>{{end}}
 </div>
 
+</div><!-- /.page -->
 <style>
 .admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-top:6px; }
 .admin-row { display:grid; gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:.9em; }

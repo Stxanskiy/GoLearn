@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/courses">Курсы</a> / <span>{{.Spec.Name}}</span></div>
 
 <div class="page-head" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -62,6 +63,7 @@
 </div>
 <div id="no-results" class="no-results" style="display:none;">Ничего не найдено</div>
 
+</div><!-- /.page -->
 <style>
 .sec-toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
 .filter-row { display:flex; flex-wrap:wrap; gap:8px; }

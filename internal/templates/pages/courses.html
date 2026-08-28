@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
     <div>
         <h1>Курсы</h1>
@@ -32,6 +33,7 @@
     {{end}}
 </div>
 
+</div><!-- /.page -->
 <style>
 .courses-count { display:flex; align-items:center; gap:18px; }
 .courses-count .cc-num { display:block; font-size:1.6em; font-weight:800; line-height:1; }
@@ -49,7 +51,7 @@
 .spec-card:hover { transform:translateY(-4px); border-color:var(--border-strong); box-shadow:0 16px 38px rgba(0,0,0,.5); }
 @keyframes cardUp { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;} }
 .spec-ico { font-size:46px; line-height:1; }
-.spec-cover { width:96px; height:96px; flex-shrink:0; border-radius:14px; overflow:hidden; border:1px solid var(--border); }
+.spec-cover { width:96px; height:96px; flex-shrink:0; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--accent-soft); }
 .spec-cover img { width:100%; height:100%; object-fit:cover; display:block; }
 .spec-body { flex:1; min-width:0; }
 .spec-name { font-size:1.4em; font-weight:800; margin-bottom:6px; }
@@ -59,9 +61,9 @@
 .spec-done { font-size:.78em; font-weight:700; color:var(--green); }
 .spec-go { margin-left:auto; font-size:.85em; font-weight:700; color:var(--accent); }
 
-.spec-devops::before   { background:linear-gradient(180deg,#6ea8ff,#b98cff); }
-.spec-golang::before   { background:linear-gradient(180deg,#00add8,#5dc9e2); }
-.spec-security::before { background:linear-gradient(180deg,#f85149,#da3633); }
-.spec-database::before { background:linear-gradient(180deg,#36c5f0,#1f6feb); }
+.spec-devops::before   { background:var(--accent); }
+.spec-golang::before   { background:var(--teal); }
+.spec-security::before { background:var(--clay); }
+.spec-database::before { background:var(--amber); }
 </style>
 {{end}}

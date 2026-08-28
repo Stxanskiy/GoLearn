@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb">
     <a href="/">Дашборд</a> / <a href="/courses">Курсы</a> / <span>{{.Module.Title}}</span>
 </div>
@@ -57,6 +58,7 @@
 </div>
 {{end}}
 
+</div><!-- /.page -->
 <style>
 .course-hero { display:flex; gap:22px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:10px; }
 .course-hero-cover { flex:0 0 320px; max-width:40%; }

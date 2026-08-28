@@ -3,44 +3,22 @@
 {{end}}
 
 {{define "content"}}
-<div class="lesson-layout">
-<aside class="lesson-toc">
-    <div class="toc-head">
-        <a href="/module/{{.Module.Slug}}" class="toc-course">{{.Module.Title}}</a>
-        <div class="toc-progress-row">
-            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:{{.ModuleProgress}}%;"></div></div>
-            <span class="toc-pct">{{.ModuleProgress}}%</span>
-        </div>
-        <div class="toc-count muted">Глава {{.CurrentIndex}} из {{len .Chapters}}</div>
-    </div>
-    <ol class="toc-list">
-        {{$slug := .Module.Slug}}
-        {{$cur := .Lesson.ID}}
-        {{range .Chapters}}
-        <li class="toc-item {{.Status}} {{if eq .ID $cur}}current{{end}}">
-            <a href="/module/{{$slug}}/lesson/{{.Slug}}">
-                <span class="toc-marker">{{if eq .Status "completed"}}✓{{else}}{{.OrderNum}}{{end}}</span>
-                <span class="toc-title">{{.Title}}</span>
-            </a>
-        </li>
-        {{end}}
-    </ol>
-</aside>
-<div class="lesson-main">
-<div class="breadcrumb">
-    <a href="/">Дашборд</a> /
-    <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
-    <span>{{.Lesson.Title}}</span>
-</div>
+<div class="page page-narrow lesson-wrap">
+<a href="/module/{{.Module.Slug}}" class="btn btn-ghost" style="margin-bottom:8px;"><i class="ph ph-arrow-left"></i> {{.Module.Title}}</a>
 
 <div class="lesson-head">
-    <h1>{{.Lesson.Title}}</h1>
+    <div class="row" style="gap:10px;">
+        <span class="chip chip-accent chip-uc">Урок · глава {{.CurrentIndex}}</span>
+        <span class="faint" style="font-size:12.5px;">Глава {{.CurrentIndex}} из {{len .Chapters}}</span>
+    </div>
     {{if and .Progress (eq .Progress.Status "completed")}}
-        <span class="badge badge-completed">✓ Пройдено</span>
+        <span class="badge badge-completed"><i class="ph ph-check" style="font-size:13px;"></i> Пройдено</span>
     {{else}}
         <button class="btn btn-success" onclick="updateProgress({{.Lesson.ID}}, 'completed')">Отметить пройденным</button>
     {{end}}
 </div>
+<h1 style="font-size:34px;letter-spacing:-.025em;margin:14px 0 0;">{{.Lesson.Title}}</h1>
+<div class="progress-bar" style="height:5px;margin-top:22px;"><div class="progress-fill" style="width:{{.ModuleProgress}}%;"></div></div>
 
 {{if and (eq .Kind "sim") (not .ContentHTML)}}
 <div class="card" style="text-align:center;padding:48px;">
@@ -57,7 +35,7 @@
 {{if eq .Kind "sql"}}
 <div class="sql-runner">
     <div class="sql-bar">
-        <span style="font-weight:700;">🗄️ SQL-редактор</span>
+        <span style="font-weight:700;">SQL-редактор</span>
         <span class="muted" style="font-size:.82em;">SQLite в браузере · проверка по колонкам результата</span>
     </div>
     <textarea id="sql-input" class="sql-input" spellcheck="false" placeholder="SELECT ...">SELECT </textarea>
@@ -123,17 +101,17 @@
 {{if .HasTasks}}
 <div class="lab-cta card">
     <div>
-        <div style="font-weight:700;">🧪 Лабораторная работа</div>
+        <div style="font-weight:700;display:flex;align-items:center;gap:8px;"><i class="ph ph-flask" style="color:var(--teal);"></i> Лабораторная работа</div>
         <div class="muted" style="font-size:.88em;">Реальный терминал с автопроверкой заданий.</div>
     </div>
-    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/tasks" class="btn btn-primary">Открыть лабораторию →</a>
+    <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/tasks" class="btn btn-teal">Открыть лабораторию →</a>
 </div>
 {{end}}
 
 <style>
-.lesson-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
-.lesson-head h1 { font-size:1.7em; font-weight:800; line-height:1.25; }
-.lesson-content { max-width:840px; animation:lessonFade .4s ease; }
+.lesson-head { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-top:20px; flex-wrap:wrap; }
+.lesson-content { animation:lessonFade .4s ease; }
+.lesson-nav { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:32px; padding-top:22px; border-top:1px solid var(--line); }
 .lesson-content img { max-width:100%; height:auto; border-radius:10px; display:block; margin:14px 0; }
 .lesson-content pre { max-width:100%; overflow-x:auto; }
 .lesson-content table { display:block; max-width:100%; overflow-x:auto; }
@@ -563,42 +541,11 @@ function gtUpdateGraph(uid) {
         {{end}}
     </div>
 </div>
-</div><!-- /lesson-main -->
-</div><!-- /lesson-layout -->
+</div><!-- /lesson-wrap -->
 
 <style>
-.lesson-layout { display:grid; grid-template-columns:266px minmax(0,1fr); gap:28px; align-items:start; }
-.lesson-main { min-width:0; }
-
-.lesson-toc {
-    position:sticky; top:84px; background:var(--bg-card); border:1px solid var(--border);
-    border-radius:14px; padding:16px; max-height:calc(100vh - 104px); overflow-y:auto;
-}
-.toc-head { padding-bottom:12px; border-bottom:1px solid var(--border); margin-bottom:10px; }
-.toc-course { display:block; font-weight:700; font-size:.96em; color:var(--text); text-decoration:none; margin-bottom:10px; line-height:1.3; }
-.toc-course:hover { color:var(--accent); }
-.toc-progress-row { display:flex; align-items:center; gap:8px; }
-.toc-pct { font-size:.74em; font-weight:700; color:var(--text-muted); }
-.toc-count { font-size:.74em; margin-top:6px; }
-
-.toc-list { list-style:none; margin:0; padding:0; counter-reset:none; }
-.toc-item a { display:flex; align-items:flex-start; gap:9px; padding:7px 8px; border-radius:8px; text-decoration:none; color:var(--text-muted); font-size:.84em; line-height:1.35; transition:background .15s, color .15s; }
-.toc-item a:hover { background:var(--bg-elevated); color:var(--text); }
-.toc-marker {
-    flex-shrink:0; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:.72em; font-weight:700; background:var(--bg-elevated); color:var(--text-muted); border:1px solid var(--border);
-}
-.toc-item.completed .toc-marker { background:var(--green,#3fb950); color:#04210d; border-color:transparent; }
-.toc-item.completed .toc-title { color:var(--text); }
-.toc-item.in_progress .toc-marker { border-color:var(--accent); color:var(--accent); }
-.toc-item.current > a { background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--text); font-weight:600; }
-.toc-item.current .toc-marker { background:var(--accent); color:#0a0c10; border-color:transparent; }
-
-@media (max-width: 900px) {
-    .lesson-layout { grid-template-columns:1fr; }
-    .lesson-toc { position:static; max-height:none; order:2; }
-    .lesson-main { order:1; }
-}
+.lesson-wrap { max-width:820px; }
+.lesson-content { margin-top:24px; }
 
 /* Lab CTA */
 .lab-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; flex-wrap:wrap; }
@@ -628,14 +575,14 @@ function gtUpdateGraph(uid) {
 .lq-pills { display:flex; flex-wrap:wrap; gap:7px; }
 .lq-pill { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; }
 .lq-pill.current { outline:2px solid var(--accent); }
-.lq-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lq-pill.correct { background:var(--green); color:var(--surface); border-color:transparent; }
 .lq-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lq-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:22px; }
 .lq-q { font-size:1.08em; font-weight:700; margin-bottom:16px; line-height:1.45; }
 .lq-q code, .lq-expl code { background:var(--code-bg); padding:1px 6px; border-radius:5px; font-size:.9em; }
 .lq-opt { display:block; width:100%; text-align:left; margin-bottom:10px; padding:13px 15px; border-radius:11px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text); font-size:.95em; cursor:pointer; transition:all .15s; }
 .lq-opt:hover:not(:disabled) { border-color:var(--accent); transform:translateX(2px); }
-.lq-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
+.lq-opt.correct { background:var(--green); color:var(--surface); border-color:transparent; font-weight:700; }
 .lq-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lq-expl { margin-top:13px; padding:13px 15px; border-radius:11px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.92em; line-height:1.55; }
 .lq-expl.ok { border-color:rgba(63,185,80,.4); } .lq-expl.no { border-color:rgba(248,81,73,.4); }
@@ -653,7 +600,7 @@ function gtUpdateGraph(uid) {
     var cur = 0, saved = false;
 
     root.innerHTML =
-        '<div class="lq-head"><h3 style="font-size:1.15em;font-weight:800;">📝 Проверь себя</h3><div class="lq-pills"></div></div>' +
+        '<div class="lq-head"><h3 style="font-size:1.15em;font-weight:800;">Проверь себя</h3><div class="lq-pills"></div></div>' +
         '<div class="lq-card" id="lq-card"></div>' +
         '<div class="lq-foot"><div class="lq-nav">' +
         '<button class="btn btn-outline" id="lq-prev">← Назад</button>' +

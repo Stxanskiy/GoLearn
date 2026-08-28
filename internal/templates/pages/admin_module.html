@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/admin">Админка</a> / <span>{{if .IsNew}}Новый курс{{else}}{{.Module.Title}}{{end}}</span></div>
 
 <h1 style="margin-bottom:18px;">{{if .IsNew}}Новый курс{{else}}Курс: {{.Module.Title}}{{end}}</h1>
@@ -62,14 +63,15 @@
         <span><span class="kind-badge k-{{.Kind}}">{{.Kind}}</span></span>
         <span><span class="src src-{{.Source}}">{{if eq .Source "admin"}}админ{{else}}seed{{end}}</span></span>
         <span class="admin-actions">
-            <a href="/admin/lesson/{{.ID}}" class="btn btn-outline btn-xs">✎</a>
-            <form method="POST" action="/admin/lesson/{{.ID}}/delete" onsubmit="return confirm('Удалить главу?');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button></form>
+            <a href="/admin/lesson/{{.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
+            <form method="POST" action="/admin/lesson/{{.ID}}/delete" onsubmit="return confirm('Удалить главу?');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
         </span>
     </div>
     {{end}}
 </div>
 {{end}}
 
+</div><!-- /.page -->
 <style>
 .adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }

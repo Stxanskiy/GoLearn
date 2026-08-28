@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/lesson/{{.LessonID}}">Глава</a> / <span>{{if .IsNew}}Новый вопрос{{else}}Вопрос{{end}}</span></div>
 <h1 style="margin-bottom:18px;">{{if .IsNew}}Новый вопрос{{else}}Редактировать вопрос{{end}}</h1>
 
@@ -19,6 +20,7 @@
     </div>
 </form>
 
+</div><!-- /.page -->
 <style>
 .adm-form { max-width:720px; display:flex; flex-direction:column; gap:14px; }
 .adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }

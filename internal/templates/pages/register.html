@@ -1,52 +1,58 @@
 {{define "register"}}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOT — Регистрация</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #e6edf3;
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background:
-                radial-gradient(900px 500px at 100% -10%, rgba(110,168,255,.10), transparent 60%),
-                radial-gradient(800px 500px at -10% 0%, rgba(185,140,255,.09), transparent 55%), #0a0c10;
-        }
-        .card { background: #141a22; border: 1px solid #232b36; border-radius: 16px; padding: 36px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-        .brand-text { font-size: 1.5em; font-weight: 800; background: linear-gradient(135deg,#6ea8ff,#b98cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        p.sub { color: #9aa7b4; margin-bottom: 22px; font-size: .9em; }
-        label { display: block; font-size: .85em; color: #9aa7b4; margin-bottom: 5px; margin-top: 14px; }
-        input { width: 100%; padding: 11px 13px; background: #0a0c10; border: 1px solid #232b36; border-radius: 9px; color: #e6edf3; font-size: 1em; }
-        input:focus { outline: none; border-color: #6ea8ff; }
-        button { width: 100%; margin-top: 22px; padding: 12px; background: linear-gradient(135deg,#6ea8ff,#b98cff); border: none; border-radius: 9px; color: #0a0c10; font-size: 1em; font-weight: 700; cursor: pointer; transition: box-shadow .2s; }
-        button:hover { box-shadow: 0 6px 20px rgba(110,168,255,.35); }
-        .error { background: rgba(248,81,73,.12); border: 1px solid #f85149; color: #f85149; padding: 10px; border-radius: 8px; margin-bottom: 14px; font-size: .85em; }
-        .link { text-align: center; margin-top: 18px; font-size: .85em; color: #9aa7b4; }
-        .link a { color: #6ea8ff; text-decoration: none; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
-<div class="card">
-    <div class="brand">
-        <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M9 11l5 5-5 5" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 21H23" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient></defs></svg>
-        <span class="brand-text">TOT</span>
+<div style="min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;">
+    <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;padding:46px 54px;background:var(--surface);border-right:1px solid var(--line);">
+        <div class="row" style="gap:10px;">
+            <span class="brand-mark">›_</span>
+            <span style="font-size:17px;letter-spacing:.18em;">TOT</span>
+        </div>
+        <div style="max-width:430px;animation:v2-rise .55s ease forwards;">
+            <div class="kicker" style="margin-bottom:14px;">Практика в реальном терминале</div>
+            <div style="font-size:36px;line-height:1.14;letter-spacing:-.022em;font-weight:700;">Заведи аккаунт и начни с первого урока Linux уже сегодня.</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px;">
+                <div style="padding:14px 16px;border-radius:12px;background:var(--accent-soft);"><div style="font-size:22px;font-weight:600;">18</div><div style="font-size:12px;color:var(--muted);">курсов</div></div>
+                <div style="padding:14px 16px;border-radius:12px;background:var(--teal-tint);"><div style="font-size:22px;font-weight:600;">133</div><div style="font-size:12px;color:var(--muted);">лабораторных</div></div>
+                <div style="padding:14px 16px;border-radius:12px;background:var(--amber-tint);"><div style="font-size:22px;font-weight:600;">476</div><div style="font-size:12px;color:var(--muted);">глав</div></div>
+            </div>
+        </div>
+        <div style="color:var(--faint);font-size:12px;">Песочницы запускаются в изолированных контейнерах.</div>
     </div>
-    <p class="sub">Создай аккаунт для отслеживания прогресса</p>
-    {{if and .Error (ne .Error "")}}<div class="error">{{.Error}}</div>{{end}}
-    <form method="POST" action="/register">
-        <label for="name">Имя</label>
-        <input type="text" id="name" name="name" required placeholder="Как тебя зовут?">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required placeholder="you@example.com">
-        <label for="password">Пароль (мин. 6 символов)</label>
-        <input type="password" id="password" name="password" required minlength="6" placeholder="••••••">
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-    <div class="link">Уже есть аккаунт? <a href="/login">Войти</a></div>
+    <div style="display:grid;place-items:center;padding:40px;overflow:auto;">
+        <div style="width:100%;max-width:372px;animation:v2-rise .5s .06s ease forwards;">
+            <div class="seg" style="margin-bottom:22px;">
+                <a class="seg-opt" href="/login" style="color:var(--muted);">Вход</a>
+                <span class="seg-opt" style="color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);border-radius:8px;">Регистрация</span>
+            </div>
+            <div style="font-size:25px;font-weight:700;">Создать аккаунт</div>
+            <div style="color:var(--muted);font-size:13.5px;margin-top:4px;margin-bottom:22px;">Прогресс и лабораторные сохранятся за тобой.</div>
+            {{if and .Error (ne .Error "")}}<div class="callout" style="background:var(--danger-tint);color:var(--danger);padding:11px 14px;margin:0 0 16px;font-size:13.5px;">{{.Error}}</div>{{end}}
+            <form method="POST" action="/register" style="display:flex;flex-direction:column;gap:13px;">
+                <div class="field"><label>Имя</label><input class="input" type="text" name="name" required placeholder="Как тебя зовут?"></div>
+                <div class="field"><label>Email</label><input class="input" type="email" name="email" required placeholder="you@example.com"></div>
+                <div class="field"><label>Пароль (мин. 6 символов)</label><input class="input" type="password" name="password" required minlength="6" placeholder="••••••"></div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px;padding:12px;">Зарегистрироваться</button>
+            </form>
+            <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--muted);">Уже есть аккаунт? <a href="/login">Войти</a></div>
+        </div>
+    </div>
 </div>
+<style>
+@media (max-width:800px){ body > div { grid-template-columns:1fr !important; } .auth-left { display:none !important; } }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
+.seg-opt { display:inline-flex; align-items:center; padding:8px 16px; font-size:13px; cursor:pointer; text-decoration:none; }
+.seg-opt + .seg-opt { border-left:1px solid var(--line); }
+</style>
 </body>
 </html>
 {{end}}

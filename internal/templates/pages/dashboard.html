@@ -3,125 +3,113 @@
 {{end}}
 
 {{define "content"}}
-<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
-    <div>
-        <h1>{{if .UserName}}Привет, {{.UserName}} 👋{{else}}Мой прогресс{{end}}</h1>
-        <p class="muted">Linux · Git · Docker · Kubernetes · SQL — от первой команды до продакшн-практик.</p>
-    </div>
-    <div class="row">
-        <a href="/courses" class="btn btn-primary">Все курсы</a>
-        <a href="/trainers" class="btn btn-outline">Тренажёры</a>
-        {{if .IsAdmin}}<a href="/admin" class="btn btn-outline">⚙ Админка</a>{{end}}
-    </div>
-</div>
-
-{{if .ContinueURL}}
-<a class="continue-card" href="{{.ContinueURL}}">
-    <div class="continue-ico">▶</div>
-    <div class="continue-body">
-        <div class="continue-label">Продолжить обучение</div>
-        <div class="continue-title">{{.ContinueTitle}}</div>
-        <div class="continue-module muted">{{.ContinueModule}}</div>
-    </div>
-    <div class="continue-go">→</div>
-</a>
-<style>
-.continue-card { display:flex; align-items:center; gap:16px; background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:14px; padding:16px 20px; margin-bottom:22px; text-decoration:none; color:var(--text); transition:transform .2s, border-color .2s; }
-.continue-card:hover { transform:translateY(-2px); border-color:var(--border-strong); }
-.continue-ico { width:42px; height:42px; border-radius:50%; background:var(--grad); color:#0a0c10; display:flex; align-items:center; justify-content:center; font-size:1.1em; flex-shrink:0; }
-.continue-body { flex:1; min-width:0; }
-.continue-label { font-size:.74em; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
-.continue-title { font-size:1.1em; font-weight:700; }
-.continue-module { font-size:.84em; }
-.continue-go { font-size:1.4em; color:var(--accent); }
-</style>
-{{end}}
-
-{{with .Overview}}
-<div class="metrics-grid">
-    <div class="metric-card"><div class="metric-ico" style="color:#f0883e;">🔥</div><div><div class="metric-num">{{.Streak}}</div><div class="metric-lbl">Серия дней</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#a371f7;">📅</div><div><div class="metric-num">{{.ActiveDays}}</div><div class="metric-lbl">Активных дней</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#3fb950;">✅</div><div><div class="metric-num">{{.TasksSolved}}</div><div class="metric-lbl">Задач решено</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#bc8cff;">🧪</div><div><div class="metric-num">{{.LabsDone}}<span class="metric-tot">/{{.LabsTotal}}</span></div><div class="metric-lbl">Лабораторных</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#58a6ff;">📖</div><div><div class="metric-num">{{.ArticlesRead}}<span class="metric-tot">/{{.ArticlesTotal}}</span></div><div class="metric-lbl">Статей прочитано</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#e3b341;">💬</div><div><div class="metric-num">{{.TestsPassed}}</div><div class="metric-lbl">Тестов пройдено</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#f85149;">🎮</div><div><div class="metric-num">{{.Simulators}}<span class="metric-tot">/{{.SimulatorsTot}}</span></div><div class="metric-lbl">Симуляторов</div></div></div>
-    <div class="metric-card"><div class="metric-ico" style="color:#39c5cf;">🖥️</div><div><div class="metric-num">{{.Trainers}}<span class="metric-tot">/{{.TrainersTot}}</span></div><div class="metric-lbl">Тренажёров</div></div></div>
-</div>
-{{end}}
-
-<div class="card heatmap-card">
-    <div class="heatmap-title">Активность за год</div>
-    <div class="heatmap-scroll">
-        <div class="heatmap" style="position:relative;padding-top:18px;">
-            <div class="heat-months">
-                {{range .MonthLabels}}<span class="heat-month" style="left:{{pct .Col (len $.Weeks)}}%;">{{.Name}}</span>{{end}}
-            </div>
-            <div class="heat-grid">
-                {{range .Weeks}}
-                <div class="heat-col">
-                    {{range .}}<span class="heat-cell lvl{{.Level}}{{if .Empty}} empty{{end}}"{{if not .Empty}} title="{{.Date}}: {{.Count}}"{{end}}></span>{{end}}
-                </div>
-                {{end}}
-            </div>
+<div class="page">
+    <div class="page-head" style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;">
+        <div>
+            <h1>{{if .UserName}}Привет, {{.UserName}}{{else}}Мой прогресс{{end}}</h1>
+            {{with .Overview}}<p class="page-sub">{{.ActiveDays}} активных дней · {{.LabsDone}} лаб пройдено</p>{{end}}
+        </div>
+        <span class="spacer"></span>
+        <div class="row">
+            <a href="/courses" class="btn btn-primary">Все курсы</a>
+            <a href="/trainers" class="btn btn-outline">Тренажёры</a>
+            {{if .IsAdmin}}<a href="/admin" class="btn btn-outline"><i class="ph ph-gear-six"></i> Админка</a>{{end}}
         </div>
     </div>
-    <div class="heat-legend">Меньше <span class="heat-cell lvl0"></span><span class="heat-cell lvl1"></span><span class="heat-cell lvl2"></span><span class="heat-cell lvl3"></span><span class="heat-cell lvl4"></span> Больше</div>
+
+    {{if .ContinueURL}}
+    <a class="card card-hover" href="{{.ContinueURL}}" style="display:flex;align-items:center;gap:16px;animation:v2-rise .45s ease forwards;">
+        <div style="width:46px;height:46px;flex:none;border-radius:12px;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;"><i class="ph ph-play" style="font-size:18px;"></i></div>
+        <div style="min-width:0;">
+            <div class="kicker">Продолжить</div>
+            <div style="font-size:19px;margin-top:3px;">{{.ContinueTitle}}</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px;">{{.ContinueModule}}</div>
+        </div>
+        <span class="spacer"></span>
+        <i class="ph ph-arrow-right" style="font-size:19px;color:var(--muted);"></i>
+    </a>
+    {{end}}
+
+    {{with .Overview}}
+    <div class="section-title">Сводка</div>
+    <div class="stats-grid">
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--clay);"></span>Серия дней</div><div class="stat-value"><b>{{.Streak}}</b></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--accent);"></span>Активных дней</div><div class="stat-value"><b>{{.ActiveDays}}</b></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--ok);"></span>Задач решено</div><div class="stat-value"><b>{{.TasksSolved}}</b></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--teal);"></span>Лабораторных</div><div class="stat-value"><b>{{.LabsDone}}</b><small>/{{.LabsTotal}}</small></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--accent);"></span>Статей прочитано</div><div class="stat-value"><b>{{.ArticlesRead}}</b><small>/{{.ArticlesTotal}}</small></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--amber);"></span>Тестов пройдено</div><div class="stat-value"><b>{{.TestsPassed}}</b></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--clay);"></span>Симуляторов</div><div class="stat-value"><b>{{.Simulators}}</b><small>/{{.SimulatorsTot}}</small></div></div>
+        <div class="stat"><div class="stat-head"><span class="stat-dot" style="background:var(--teal);"></span>Тренажёров</div><div class="stat-value"><b>{{.Trainers}}</b><small>/{{.TrainersTot}}</small></div></div>
+    </div>
+    {{end}}
+
+    <div class="card" style="margin-top:26px;">
+        <div class="row" style="margin-bottom:16px;">
+            <div style="font-size:16px;font-weight:600;">Активность за год</div>
+            <span class="spacer"></span>
+            {{with .Overview}}<div style="font-size:12px;color:var(--muted);">{{.ActiveDays}} дней</div>{{end}}
+        </div>
+        <div class="heatmap-scroll">
+            <div class="heatmap" style="position:relative;padding-top:18px;">
+                <div class="heat-months">
+                    {{range .MonthLabels}}<span class="heat-month" style="left:{{pct .Col (len $.Weeks)}}%;">{{.Name}}</span>{{end}}
+                </div>
+                <div class="heat-grid">
+                    {{range .Weeks}}
+                    <div class="heat-col">
+                        {{range .}}<span class="heat-cell lvl{{.Level}}{{if .Empty}} empty{{end}}"{{if not .Empty}} title="{{.Date}}: {{.Count}}"{{end}}></span>{{end}}
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        <div class="heat-legend">Меньше <span class="heat-cell lvl0"></span><span class="heat-cell lvl1"></span><span class="heat-cell lvl2"></span><span class="heat-cell lvl3"></span><span class="heat-cell lvl4"></span> Больше</div>
+    </div>
+
+    {{if .DevopsModules}}
+    <div class="section-title">DevOps</div>
+    <div class="courses-grid">{{range .DevopsModules}}{{template "module_card" .}}{{end}}</div>
+    {{end}}
+    {{if .DatabaseModules}}
+    <div class="section-title">Базы данных</div>
+    <div class="courses-grid">{{range .DatabaseModules}}{{template "module_card" .}}{{end}}</div>
+    {{end}}
+    {{if .SecurityModules}}
+    <div class="section-title">Кибербезопасность</div>
+    <div class="courses-grid">{{range .SecurityModules}}{{template "module_card" .}}{{end}}</div>
+    {{end}}
 </div>
 
-{{if .DevopsModules}}
-<div class="section-title">♾️ DevOps</div>
-<div class="courses-grid">{{range .DevopsModules}}{{template "module_card" .}}{{end}}</div>
-{{end}}
-{{if .DatabaseModules}}
-<div class="section-title">🗄️ База данных</div>
-<div class="courses-grid">{{range .DatabaseModules}}{{template "module_card" .}}{{end}}</div>
-{{end}}
-{{if .SecurityModules}}
-<div class="section-title">🛡️ Кибербезопасность</div>
-<div class="courses-grid">{{range .SecurityModules}}{{template "module_card" .}}{{end}}</div>
-{{end}}
-
 <style>
-.metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:22px; }
-.metric-card { display:flex; align-items:center; gap:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; transition:border-color .2s, transform .2s; }
-.metric-card:hover { border-color:var(--border-strong); transform:translateY(-2px); }
-.metric-ico { font-size:26px; line-height:1; }
-.metric-num { font-size:1.7em; font-weight:800; line-height:1; }
-.metric-tot { font-size:.55em; font-weight:700; color:var(--text-muted); }
-.metric-lbl { font-size:.78em; color:var(--text-muted); margin-top:4px; }
-
-.heatmap-card { margin-bottom:32px; }
-.heatmap-title { font-weight:700; margin-bottom:14px; }
-.heatmap-scroll { overflow-x:auto; padding-bottom:6px; }
+.heatmap-scroll { overflow-x:auto; padding-bottom:4px; }
 .heatmap { min-width:560px; }
 .heat-months { position:relative; height:18px; width:100%; }
-.heat-month { position:absolute; top:0; font-size:.74em; color:var(--text-muted); }
+.heat-month { position:absolute; top:0; font-size:.74em; color:var(--muted); }
 .heat-grid { display:flex; gap:3px; width:100%; }
 .heat-col { flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.heat-cell { width:100%; aspect-ratio:1; border-radius:3px; background:var(--bg-elevated); display:block; }
+.heat-cell { width:100%; aspect-ratio:1; border-radius:3px; background:var(--sunk); display:block; }
 .heat-cell.empty { background:transparent; }
-.heat-cell.lvl0 { background:#161b22; border:1px solid #21262d; }
-.heat-cell.lvl1 { background:#0e4429; }
-.heat-cell.lvl2 { background:#006d32; }
-.heat-cell.lvl3 { background:#26a641; }
-.heat-cell.lvl4 { background:#39d353; }
+.heat-cell.lvl0 { background:var(--sunk); }
+.heat-cell.lvl1 { background:var(--accent-tint); }
+.heat-cell.lvl2 { background:color-mix(in srgb,var(--accent) 40%,transparent); }
+.heat-cell.lvl3 { background:color-mix(in srgb,var(--accent) 70%,transparent); }
+.heat-cell.lvl4 { background:var(--accent); }
 .heat-cell:hover { outline:1px solid var(--accent); }
-.heat-legend { display:flex; align-items:center; gap:4px; justify-content:flex-end; margin-top:12px; font-size:.74em; color:var(--text-muted); }
-.heat-legend .heat-cell { width:13px; height:13px; aspect-ratio:auto; flex:none; }
+.heat-legend { display:flex; align-items:center; gap:5px; justify-content:flex-end; margin-top:12px; font-size:11px; color:var(--faint); }
+.heat-legend .heat-cell { width:11px; height:11px; aspect-ratio:auto; flex:none; border-radius:3px; }
 </style>
 {{end}}
 
 {{define "module_card"}}
 <a class="course-card" href="/module/{{.Slug}}">
-    <div class="course-cover">
-        <img loading="lazy" src="/api/courses/{{.Slug}}/cover" alt="{{.Title}}">
-        {{if gt .Completed 0}}<span class="course-cover-pct">{{pct .Completed .Total}}%</span>{{end}}
+    <div class="course-card-top">
+        {{if .Category}}<span class="chip chip-accent">{{.Category}}</span>{{end}}
+        <span class="spacer"></span>
+        {{if gt .Total 0}}<span style="font-size:12px;color:var(--faint);">{{pct .Completed .Total}}%</span>{{end}}
     </div>
-    <div class="course-body">
-        <h3 class="course-title">{{.Title}}</h3>
-        <div class="course-meta muted">{{.Completed}}/{{.Total}} уроков</div>
-        <div class="progress-bar"><div class="progress-fill" style="width:{{pct .Completed .Total}}%;"></div></div>
-    </div>
+    <div class="course-card-title">{{.Title}}</div>
+    <div class="course-card-meta">{{.Completed}}/{{.Total}} уроков</div>
+    <div class="progress-bar" style="margin-top:12px;"><div class="progress-fill" style="width:{{pct .Completed .Total}}%;"></div></div>
 </a>
 {{end}}

@@ -16,7 +16,7 @@
 
         {{if .ContentHTML}}
         <details class="lab2-material">
-            <summary>📖 Теория к лабораторной</summary>
+            <summary><i class="ph ph-book-open" style="font-size:14px;"></i> Теория к лабораторной</summary>
             <div class="lesson-content lab2-content">{{content .Lesson.Format .ContentHTML}}</div>
         </details>
         {{end}}
@@ -42,7 +42,7 @@
         {{/* Task steps (server-rendered, shown one at a time by the controller) */}}
         {{range $i, $t := .Tasks}}
         <div class="lab2-task" data-task="{{$i}}" style="display:none;">
-            <div class="lab2-step-title">🧪 {{$t.Title}}</div>
+            <div class="lab2-step-title">{{$t.Title}}</div>
             {{if $t.Glossary}}
             <div class="glossary-block">
                 <div class="glossary-title">Что понадобится:</div>
@@ -51,7 +51,7 @@
             {{end}}
             <div class="lab2-desc">{{content $t.Format $t.Description}}</div>
             {{if $t.Hints}}
-            <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">💡 Подсказка</button>
+            <button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">Подсказка</button>
             <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{content $t.Format $t.Hints}}</div></div>
             {{end}}
             <div class="lab2-actions">
@@ -60,7 +60,7 @@
                 {{else}}
                 <button class="btn btn-success" onclick="labTaskDone({{$t.ID}}, {{$i}})">✓ Готово</button>
                 {{end}}
-                <button class="btn btn-ghost" title="Фокус в терминал" onclick="labFocus()">⌨</button>
+                <button class="btn btn-ghost" title="Фокус в терминал" onclick="labFocus()"><i class="ph ph-keyboard"></i></button>
             </div>
             <div class="check-result" id="check-{{$t.ID}}"></div>
         </div>
@@ -297,7 +297,7 @@
 </script>
 
 <style>
-.lab2 { display:grid; grid-template-columns:380px minmax(0,1fr); gap:0; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:74vh; }
+.lab2 { display:grid; grid-template-columns:404px minmax(0,1fr); gap:0; overflow:hidden; height:calc(100vh - 58px); }
 .lab2-material { margin-bottom:14px; border:1px solid var(--border); border-radius:10px; padding:8px 12px; background:var(--bg-elevated); }
 .lab2-material summary { cursor:pointer; font-size:.86em; font-weight:600; color:var(--accent); }
 .lab2-content { max-height:300px; overflow-y:auto; margin-top:10px; font-size:.88em; }
@@ -307,7 +307,7 @@
 .lq-pills { display:flex; flex-wrap:wrap; gap:5px; }
 .lq-pill { width:26px; height:26px; border-radius:7px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.78em; cursor:pointer; }
 .lq-pill.current { outline:2px solid var(--accent); }
-.lq-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lq-pill.correct { background:var(--green); color:var(--surface); border-color:transparent; }
 .lq-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lq-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; }
 .lq-q { font-weight:700; margin-bottom:12px; font-size:.92em; line-height:1.4; }
@@ -318,12 +318,12 @@
 .lq-letter { flex:0 0 22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.78em; font-weight:800; background:var(--bg); border:1px solid var(--border); color:var(--text-muted); }
 .lq-opt.correct .lq-letter, .lq-opt.wrong .lq-letter { background:rgba(0,0,0,.22); border-color:transparent; color:inherit; }
 .lq-text { flex:1; }
-.lq-opt.correct { background:var(--green); color:#04210d; border-color:transparent; font-weight:700; }
+.lq-opt.correct { background:var(--green); color:var(--surface); border-color:transparent; font-weight:700; }
 .lq-opt.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lq-expl { margin-top:10px; padding:10px 12px; border-radius:9px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.85em; line-height:1.5; }
 .lq-expl.ok { border-color:rgba(63,185,80,.4); } .lq-expl.no { border-color:rgba(248,81,73,.4); }
 .lq-foot { display:flex; align-items:center; gap:6px; margin-top:10px; }
-.lab2-side { padding:18px; border-right:1px solid var(--border); overflow-y:auto; max-height:80vh; background:var(--bg-card); }
+.lab2-side { padding:18px; border-right:1px solid var(--line); overflow-y:auto; height:100%; background:var(--surface); }
 .lab2-back { font-size:.82em; color:var(--text-muted); text-decoration:none; }
 .lab2-back:hover { color:var(--accent); }
 .lab2-title { font-size:1.2em; font-weight:800; margin:8px 0 14px; line-height:1.25; }
@@ -334,10 +334,10 @@
 .lab2-steps { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
 .lab2-pill { width:34px; height:34px; border-radius:9px; border:1px solid var(--border); background:var(--bg-elevated); color:var(--text-muted); font-weight:700; cursor:pointer; transition:all .15s; }
 .lab2-pill.current { outline:2px solid var(--accent); color:var(--text); }
-.lab2-pill.done { background:var(--green); color:#04210d; border-color:transparent; }
+.lab2-pill.done { background:var(--green); color:var(--surface); border-color:transparent; }
 .lab2-pill.done::after { content:"✓"; position:absolute; right:-2px; top:-3px; font-size:.62em; }
 .lab2-pill { position:relative; }
-.lab2-pill.correct { background:var(--green); color:#04210d; border-color:transparent; }
+.lab2-pill.correct { background:var(--green); color:var(--surface); border-color:transparent; }
 .lab2-pill.wrong { background:var(--red); color:#fff; border-color:transparent; }
 .lab2-pill.kq { box-shadow:inset 0 -3px 0 rgba(227,179,65,.5); }
 .lab2-pill.kt { box-shadow:inset 0 -3px 0 rgba(247,120,186,.5); }
@@ -350,7 +350,7 @@
 .lab2-actions { display:flex; gap:8px; margin-bottom:10px; }
 .lab2-actions .btn { flex:0 0 auto; }
 
-.lab2-main { display:flex; flex-direction:column; background:#05070a; }
+.lab2-main { display:flex; flex-direction:column; background:var(--term-bg); min-width:0; }
 .lab2-bar { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border-bottom:1px solid var(--border); }
 .lab2-navbtn { font-size:.82em; color:var(--text-muted); text-decoration:none; padding:5px 10px; border:1px solid var(--border); border-radius:8px; }
 .lab2-navbtn:hover { color:var(--text); border-color:var(--border-strong); }
@@ -363,7 +363,7 @@
 .lab2-iconbtn:hover { color:var(--accent); border-color:var(--accent); }
 .lab2-stop { background:var(--red-bg); border:1px solid var(--red); color:var(--red); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:.82em; font-weight:700; }
 .lab2-stop:hover { background:var(--red); color:#fff; }
-.lab2-term { flex:1; position:relative; padding:8px 6px 8px 10px; min-height:60vh; }
+.lab2-term { flex:1; position:relative; padding:12px; min-height:0; }
 .lab2-term .xterm { height:100%; }
 .lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
 .lab2-launch-card { max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px 26px; box-shadow:0 18px 44px rgba(0,0,0,.5); }
@@ -390,6 +390,7 @@
 
 {{else}}
 {{/* ─────────── GO / CODE TASKS: editor layout ─────────── */}}
+<div class="page page-narrow">
 <div class="breadcrumb">
     <a href="/">Дашборд</a> / <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
     <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}">{{.Lesson.Title}}</a> / <span>Задания</span>
@@ -415,7 +416,7 @@
                 style="width:100%;min-height:200px;padding:16px;font-family:'SF Mono',monospace;font-size:.9em;background:var(--code-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);resize:vertical;line-height:1.5;">{{$t.StarterCode}}</textarea>
             <div id="output-{{$t.ID}}" style="display:none;margin-top:8px;padding:12px 16px;font-family:'SF Mono',monospace;font-size:.85em;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);white-space:pre-wrap;max-height:300px;overflow-y:auto;"></div>
         </div>{{end}}
-        {{if $t.Hints}}<button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">💡 Подсказка</button>
+        {{if $t.Hints}}<button class="hint-toggle" onclick="toggleElement('hint-{{$t.ID}}')">Подсказка</button>
         <div id="hint-{{$t.ID}}" class="hint-content" style="display:none;"><div class="explanation">{{content $t.Format $t.Hints}}</div></div>{{end}}
     </div>
 </div>
@@ -437,6 +438,7 @@ async function runTests(id){
     }catch(e){ out.textContent='Ошибка: '+e.message; }
 }
 </script>
+</div><!-- /.page -->
 {{end}}
 
 <script>

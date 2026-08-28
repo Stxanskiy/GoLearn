@@ -3,10 +3,11 @@
 {{end}}
 
 {{define "content"}}
+<div class="page">
 <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
-    <div><h1>⚙ Админка</h1><p class="muted">Управление курсами, главами и разделами.</p></div>
+    <div><h1>Администрирование</h1><p class="muted">Управление курсами, главами и разделами.</p></div>
     <div class="row">
-        <a href="/admin/module/new" class="btn btn-primary">+ Новый курс</a>
+        <a href="/admin/module/new" class="btn btn-primary">Новый курс</a>
         <a href="/admin/specs" class="btn btn-outline">Разделы</a>
         <a href="/admin/users" class="btn btn-outline">Пользователи</a>
         <a href="/" class="btn btn-ghost">На сайт</a>
@@ -25,15 +26,16 @@
         <span>{{.Lessons}}</span>
         <span><span class="src src-{{.Module.Source}}">{{if eq .Module.Source "admin"}}админ{{else}}seed{{end}}</span></span>
         <span class="admin-actions">
-            <a href="/admin/module/{{.ID}}" class="btn btn-outline btn-xs">✎</a>
+            <a href="/admin/module/{{.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
             <form method="POST" action="/admin/module/{{.ID}}/delete" onsubmit="return confirm('Удалить курс «{{.Title}}»?');" style="display:inline;">
-                <button class="btn btn-ghost btn-xs" style="color:var(--red);">🗑</button>
+                <button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button>
             </form>
         </span>
     </div>
     {{end}}
 </div>
 
+</div><!-- /.page -->
 <style>
 .admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .admin-row { display:grid; grid-template-columns:1fr 120px 120px 70px 90px 90px; gap:10px; align-items:center; padding:11px 14px; border-bottom:1px solid var(--border); font-size:.9em; }

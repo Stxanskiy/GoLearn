@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "content"}}
+<div class="page page-narrow">
 <div class="breadcrumb">
     <a href="/">Dashboard</a> /
     <a href="/module/{{.Module.Slug}}">{{.Module.Title}}</a> /
@@ -44,4 +45,5 @@
     <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}/quiz" class="btn btn-outline">Retry Quiz</a>
     <a href="/module/{{.Module.Slug}}/lesson/{{.Lesson.Slug}}" class="btn btn-primary">Back to Lesson</a>
 </div>
+</div><!-- /.page -->
 {{end}}

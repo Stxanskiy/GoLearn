@@ -5,65 +5,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.PageTitle}}</title>
+    <script>
+      // Apply the saved theme/rail before first paint to avoid a flash.
+      (function () {
+        try {
+          var t = localStorage.getItem('gl-theme') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+          if (localStorage.getItem('gl-rail') === 'on') document.documentElement.setAttribute('data-rail', 'on');
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
-    <nav>
-        <div class="container nav-inner">
-            <a href="/" class="logo" title="TOT">
-                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                    <rect width="32" height="32" rx="8" fill="url(#tot-g)"/>
-                    <path d="M9 11l5 5-5 5" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16.5 21H23" stroke="#0a0c10" stroke-width="2.6" stroke-linecap="round"/>
-                    <defs><linearGradient id="tot-g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6ea8ff"/><stop offset="1" stop-color="#b98cff"/></linearGradient></defs>
-                </svg>
-                <span class="logo-text">TOT</span>
+    <div class="app">
+        <aside class="side" id="side">
+            <div class="side-top">
+                <a href="/" class="brand-mark" title="TOT">›_</a>
+                <span class="brand-text">TOT</span>
+                <span class="spacer"></span>
+                <button class="side-rail-btn" onclick="glToggleRail()" title="Свернуть меню"><i class="ph ph-sidebar-simple"></i></button>
+            </div>
+            <nav class="side-nav">
+                <div class="nav-group">
+                    <div class="nav-group-label">Обучение</div>
+                    <div class="nav-items">
+                        <a class="nav-link" data-path="/" href="/"><i class="ph ph-chart-line-up"></i><span>Прогресс</span></a>
+                        <a class="nav-link" data-path="/roadmap" href="/roadmap"><i class="ph ph-signpost"></i><span>Маршрут</span></a>
+                        <a class="nav-link" data-path="/courses" href="/courses"><i class="ph ph-books"></i><span>Курсы</span></a>
+                    </div>
+                </div>
+                <div class="nav-group">
+                    <div class="nav-group-label">Практика</div>
+                    <div class="nav-items">
+                        <a class="nav-link" data-path="/trainers" href="/trainers"><i class="ph ph-barbell"></i><span>Тренажёры</span></a>
+                        <a class="nav-link" data-path="/simulators" href="/simulators"><i class="ph ph-monitor-play"></i><span>Симуляторы</span></a>
+                    </div>
+                </div>
+                <div class="nav-group" id="nav-admin-group" style="display:none;">
+                    <div class="nav-group-label">Администрирование</div>
+                    <div class="nav-items">
+                        <a class="nav-link" data-path="/admin" href="/admin"><i class="ph ph-gear-six"></i><span>Админка</span></a>
+                    </div>
+                </div>
+            </nav>
+            <a class="side-user" href="/logout" title="Выйти">
+                <span class="avatar" id="side-avatar">B</span>
+                <span class="side-user-name"><b id="side-user-name">Аккаунт</b><small>выйти</small></span>
             </a>
-            <div class="nav-main">
-                <a href="/" class="nav-link" data-path="/">Прогресс</a>
-                <a href="/roadmap" class="nav-link" data-path="/roadmap">Маршрут</a>
-                <a href="/courses" class="nav-link" data-path="/courses">Курсы</a>
-                <a href="/trainers" class="nav-link" data-path="/trainers">Тренажёры</a>
-                <a href="/simulators" class="nav-link" data-path="/simulators">Симуляторы</a>
-            </div>
-            <div class="nav-side">
-                <a href="/admin" class="nav-link nav-admin" data-path="/admin" id="nav-admin" style="display:none;">⚙ Админка</a>
-                <a href="/logout" class="nav-link nav-exit" title="Выйти из аккаунта">Выход</a>
-            </div>
+        </aside>
+
+        <div class="shell">
+            <header class="topbar">
+                <button class="topbar-menu" onclick="glToggleSide()" title="Меню"><i class="ph ph-list"></i></button>
+                <div class="crumbs">
+                    <a href="/">TOT</a>
+                    <i class="ph ph-caret-right"></i>
+                    <span class="cur">{{.PageTitle}}</span>
+                </div>
+                <span class="topbar-spacer"></span>
+                <button class="icon-btn" onclick="glToggleTheme()" title="Сменить тему" id="theme-btn"><i class="ph ph-moon"></i></button>
+                <a class="icon-btn danger" href="/logout" title="Выйти"><i class="ph ph-sign-out"></i></a>
+            </header>
+            <main class="main">
+                {{template "content" .}}
+            </main>
         </div>
-    </nav>
-    <main>
-        <div class="container">
-            {{template "content" .}}
-        </div>
-    </main>
+    </div>
+
     <script>
-        // Mark active nav link + reveal admin link for admins
         (function () {
             var p = location.pathname;
-            document.querySelectorAll('nav .nav-link[data-path]').forEach(function (a) {
+            document.querySelectorAll('.nav-link[data-path]').forEach(function (a) {
                 var dp = a.getAttribute('data-path');
                 if (dp === '/' ? p === '/' : p.indexOf(dp) === 0) a.classList.add('active');
             });
-            if (/(^|;\s*)gl_role=admin/.test(document.cookie)) {
-                var na = document.getElementById('nav-admin'); if (na) na.style.display = '';
-            }
+            var m = document.cookie.match(/(?:^|;\s*)gl_role=admin/);
+            if (m) { var g = document.getElementById('nav-admin-group'); if (g) g.style.display = ''; }
+            // sync theme button icon
+            var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            var ic = document.querySelector('#theme-btn i');
+            if (ic) ic.className = dark ? 'ph ph-sun' : 'ph ph-moon';
         })();
-
-        function toggleElement(id) {
-            const el = document.getElementById(id);
-            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        function glToggleTheme() {
+            var el = document.documentElement;
+            var next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            el.setAttribute('data-theme', next);
+            try { localStorage.setItem('gl-theme', next); } catch (e) {}
+            var ic = document.querySelector('#theme-btn i');
+            if (ic) ic.className = next === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
         }
-
+        function glToggleRail() {
+            var el = document.documentElement;
+            var on = el.getAttribute('data-rail') === 'on';
+            if (on) el.removeAttribute('data-rail'); else el.setAttribute('data-rail', 'on');
+            try { localStorage.setItem('gl-rail', on ? 'off' : 'on'); } catch (e) {}
+        }
+        function glToggleSide() { document.getElementById('side').classList.toggle('open'); }
+        function toggleElement(id) { var el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none'; }
         async function updateProgress(lessonID, status) {
-            await fetch('/api/progress/' + lessonID + '/status', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status: status})
-            });
+            await fetch('/api/progress/' + lessonID + '/status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:status}) });
             location.reload();
         }
     </script>
