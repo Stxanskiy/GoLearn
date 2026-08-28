@@ -123,7 +123,7 @@
             var ok = ans === q.c;
             var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e;
             var expl = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, '');
-            html += '<div class="quiz-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + expl + '</div>';
+            html += '<div class="quiz-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? 'Верно! ' : 'Неверно. ') + expl + '</div>';
         }
         cardEl.innerHTML = html;
         cardEl.querySelectorAll('.quiz-opt').forEach(function (b) {

@@ -6,12 +6,9 @@
 <div class="page">
 <div class="breadcrumb"><a href="/courses">Курсы</a> / <span>{{.Spec.Name}}</span></div>
 
-<div class="page-head" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-    <div style="font-size:42px;line-height:1;">{{.Spec.Icon}}</div>
-    <div>
-        <h1>{{.Spec.Name}}</h1>
-        <p class="muted">{{.Spec.Desc}}</p>
-    </div>
+<div class="page-head">
+    <h1>{{.Spec.Name}}</h1>
+    <p class="muted">{{.Spec.Desc}}</p>
 </div>
 
 <div class="sec-toolbar">
@@ -38,26 +35,23 @@
 
 <div class="courses-grid" id="sec-grid">
     {{range $i, $c := .Cards}}
-    <a class="course-card {{$c.Status}}" data-cat="{{$c.Category}}" data-title="{{$c.Title}}"
+    <a class="course-card" data-cat="{{$c.Category}}" data-title="{{$c.Title}}"
        data-order="{{$c.Num}}" data-pct="{{$c.Pct}}" data-min="{{$c.EstMinutes}}"
        href="/module/{{$c.Slug}}" style="animation-delay:{{$i}}0ms;">
-        <div class="course-cover">
-            <img loading="lazy" src="{{$c.Cover}}" alt="{{$c.Title}}">
-            <span class="course-cover-tag">{{$c.Category}}</span>
-            <span class="course-cover-num">{{printf "%02d" $c.Num}}</span>
-            {{if gt $c.Pct 0}}<span class="course-cover-pct">{{$c.Pct}}%</span>{{end}}
+        <div class="course-card-top">
+            <span class="mono" style="font-size:11px;color:var(--faint);letter-spacing:.06em;">{{printf "%02d" $c.Num}}</span>
+            <span class="chip chip-accent">{{$c.Category}}</span>
+            <span class="spacer"></span>
+            <span class="course-state course-state-{{$c.Status}}">{{if eq $c.Status "completed"}}Пройден{{else if eq $c.Status "in_progress"}}В процессе{{else}}Не начат{{end}}</span>
         </div>
-        <div class="course-body">
-            <h3 class="course-title">{{$c.Title}}</h3>
-            <span class="course-state course-state-{{$c.Status}}">{{if eq $c.Status "completed"}}✓ Пройден{{else if eq $c.Status "in_progress"}}◐ В процессе{{else}}○ Не начат{{end}}</span>
-            <div class="course-meta">
-                <span class="meta-pill">{{$c.Chapters}} глав</span>
-                {{if $c.Duration}}<span class="meta-pill">{{$c.Duration}}</span>{{end}}
-                <span class="meta-pill meta-label">{{$c.Label}}</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:{{$c.Pct}}%;"></div></div>
-            <span class="course-cta">{{if $c.Started}}Продолжить →{{else}}Старт →{{end}}</span>
+        <div class="course-card-title">{{$c.Title}}</div>
+        <div class="course-meta">
+            <span class="meta-pill">{{$c.Chapters}} глав</span>
+            {{if $c.Duration}}<span class="meta-pill">{{$c.Duration}}</span>{{end}}
+            <span class="meta-pill meta-label">{{$c.Label}}</span>
         </div>
+        <div class="progress-bar" style="margin-top:auto;"><div class="progress-fill" style="width:{{$c.Pct}}%;"></div></div>
+        <span class="course-cta">{{if $c.Started}}Продолжить →{{else}}Старт →{{end}}</span>
     </a>
     {{end}}
 </div>
@@ -75,9 +69,9 @@
 .chip-count { opacity:.65; font-weight:700; margin-left:2px; }
 
 .courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
-.course-card { display:flex; flex-direction:column; }
-.course-cover { aspect-ratio:600/340; height:auto; }
-.course-body { padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.course-card { display:flex; flex-direction:column; gap:10px; padding:16px 18px; }
+
+
 .course-title { font-size:1.04em; line-height:1.3; font-weight:700; }
 .course-meta { display:flex; flex-wrap:wrap; gap:6px; }
 .meta-pill { font-size:.72em; color:var(--text-muted); background:var(--bg-elevated); border:1px solid var(--border); padding:2px 9px; border-radius:999px; }
@@ -94,7 +88,7 @@
 .course-state-completed { color:var(--green); background:var(--green-bg); }
 .course-state-in_progress { color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
 .course-state-not_started { color:var(--text-dim); background:var(--bg-elevated); }
-.course-card.completed .course-cover img { opacity:.75; }
+
 </style>
 
 <script>

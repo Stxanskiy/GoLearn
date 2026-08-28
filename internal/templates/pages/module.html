@@ -9,7 +9,6 @@
 </div>
 
 <div class="course-hero">
-    <div class="course-hero-cover"><img src="{{.Cover}}" alt="{{.Module.Title}}"></div>
     <div class="course-hero-body">
         <span class="course-hero-tag">{{.Category}}</span>
         <h1>{{.Module.Title}}</h1>
@@ -22,14 +21,14 @@
     </div>
 </div>
 
-<div class="section-title">📚 Содержание курса</div>
+<div class="section-title">Содержание курса</div>
 <div class="toc-rows">
     {{range .Items}}
     <a class="toc-row {{.Status}} {{.KindKey}}" href="{{.URL}}">
         <span class="toc-row-status">
             {{if eq .Status "completed"}}<span class="trs-done">✓</span>{{else}}<span class="trs-num">{{.Num}}</span>{{end}}
         </span>
-        <span class="toc-row-icon">{{if eq .KindKey "lesson"}}📖{{else if eq .KindKey "quiz"}}💬{{else if eq .KindKey "sim"}}🎮{{else if eq .KindKey "sql"}}🗄️{{else}}🧪{{end}}</span>
+        <span class="toc-row-icon"><i class="ph {{if eq .KindKey "lesson"}}ph-book-open{{else if eq .KindKey "quiz"}}ph-chat-circle{{else if eq .KindKey "sim"}}ph-game-controller{{else if eq .KindKey "sql"}}ph-database{{else}}ph-flask{{end}}"></i></span>
         <span class="toc-row-title">{{.Title}}</span>
         <span class="toc-row-badge badge-{{.KindKey}}">{{.Kind}}</span>
         <span class="toc-row-end">

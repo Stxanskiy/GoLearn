@@ -7,12 +7,12 @@
 <div class="breadcrumb"><a href="/admin">Админка</a> / <span>Пользователи</span></div>
 
 <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:18px;">
-    <div><h1>👤 Пользователи</h1><p class="muted">Создание аккаунтов вручную (даже если регистрация закрыта).</p></div>
+    <div><h1>Пользователи</h1><p class="muted">Создание аккаунтов вручную (даже если регистрация закрыта).</p></div>
     <a href="/admin" class="btn btn-ghost">← В админку</a>
 </div>
 
-{{if .Created}}<div class="flash flash-ok">✅ Пользователь <b>{{.Created}}</b> создан.</div>{{end}}
-{{if .Error}}<div class="flash flash-err">⚠ {{.Error}}</div>{{end}}
+{{if .Created}}<div class="flash flash-ok">Пользователь <b>{{.Created}}</b> создан.</div>{{end}}
+{{if .Error}}<div class="flash flash-err">{{.Error}}</div>{{end}}
 
 <form class="adm-form" method="POST" action="/admin/users" autocomplete="off">
     <div class="adm-grid">

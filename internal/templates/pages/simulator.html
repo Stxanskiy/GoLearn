@@ -99,9 +99,9 @@
         S.metrics.forEach(function (m) { score += m.higher ? state[m.key] : (100 - state[m.key]); n++; });
         var sat = state['satisfaction'] || 0, debt = state['techdebt'] || 100;
         var verdict, sub;
-        if (sat >= 75 && debt <= 45) { verdict = '🏆 Отличный год!'; sub = 'Ты автоматизировал процессы, снял зависимость от одного человека и наладил надёжные релизы.'; }
-        else if (sat >= 55 && debt <= 65) { verdict = '👍 Достойно'; sub = 'Команда стабильна, но часть техдолга осталась — есть куда расти.'; }
-        else { verdict = '😬 Тяжёлый год'; sub = 'Ручные процессы и техдолг съели команду. В следующий раз инвестируй в автоматизацию раньше.'; }
+        if (sat >= 75 && debt <= 45) { verdict = 'Отличный год!'; sub = 'Ты автоматизировал процессы, снял зависимость от одного человека и наладил надёжные релизы.'; }
+        else if (sat >= 55 && debt <= 65) { verdict = 'Достойно'; sub = 'Команда стабильна, но часть техдолга осталась — есть куда расти.'; }
+        else { verdict = 'Тяжёлый год'; sub = 'Ручные процессы и техдолг съели команду. В следующий раз инвестируй в автоматизацию раньше.'; }
         stageEl.innerHTML = '<div class="sim-card"><div class="sim-verdict">' + verdict + '</div>' +
             '<div class="sim-situation">' + sub + '</div>' +
             '<button class="btn btn-outline" id="sim-restart">↻ Пройти заново</button> ' +

@@ -58,7 +58,7 @@
 
 {{if not .IsNew}}
 <div class="section-title" style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
-    <span>💬 Вопросы теста ({{len .Questions}})</span>
+    <span>Вопросы теста ({{len .Questions}})</span>
     <a href="/admin/lesson/{{.Lesson.ID}}/question/new" class="btn btn-outline btn-xs">+ Вопрос</a>
 </div>
 <div class="admin-table">
@@ -75,7 +75,7 @@
 </div>
 
 <div class="section-title" style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;">
-    <span>🧪 Задания / лаба ({{len .Tasks}})</span>
+    <span>Задания / лаба ({{len .Tasks}})</span>
     <a href="/admin/lesson/{{.Lesson.ID}}/task/new" class="btn btn-outline btn-xs">+ Задание</a>
 </div>
 <div class="admin-table">

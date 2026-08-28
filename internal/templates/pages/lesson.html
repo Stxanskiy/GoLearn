@@ -22,7 +22,7 @@
 
 {{if and (eq .Kind "sim") (not .ContentHTML)}}
 <div class="card" style="text-align:center;padding:48px;">
-    <div style="font-size:42px;">🎮</div>
+    <div style="font-size:34px;color:var(--accent);"><i class="ph ph-game-controller"></i></div>
     <h2 style="margin:10px 0;">Симулятор</h2>
     <p class="muted">Интерактивный бизнес-симулятор появится в следующем обновлении.</p>
 </div>
@@ -395,7 +395,7 @@ function gtUpdateGraph(uid) {
             <div class="gt-node-info">
                 ${branchLabels ? '<div class="gt-node-branches">'+branchLabels+'</div>' : ''}
                 <div class="gt-node-msg">${c.message}</div>
-                <div class="gt-node-id">${c.id}${c.isMerge?' (merge)':''}${c.isConflict?' ⚠️ conflict resolved':''}</div>
+                <div class="gt-node-id">${c.id}${c.isMerge?' (merge)':''}${c.isConflict?' (conflict resolved)':''}</div>
             </div>
         </div>`;
 
@@ -651,7 +651,7 @@ function gtUpdateGraph(uid) {
             var ok = ans === q.c;
             var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e;
             var expl = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, '');
-            html += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + expl + '</div>';
+            html += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? 'Верно! ' : 'Неверно. ') + expl + '</div>';
         }
         cardEl.innerHTML = html;
         cardEl.querySelectorAll('.lq-opt').forEach(function (b) { b.onclick = function () { choose(parseInt(b.dataset.i, 10)); }; });

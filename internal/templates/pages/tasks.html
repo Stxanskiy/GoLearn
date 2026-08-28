@@ -164,7 +164,7 @@
                  '<span class="lq-letter">' + String.fromCharCode(65 + j) + '</span>' +
                  '<span class="lq-text">' + o + '</span></button>';
         });
-        if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? '✅ Верно! ' : '❌ Неверно. ') + e + '</div>'; }
+        if (ans !== null) { var ok = ans === q.c; var oe = (q.oe && q.oe[ans]) ? q.oe[ans] : q.e; var e = (oe || '').replace(/^\s*(верно|нет)[!,.—\-:\s]*/i, ''); h += '<div class="lq-expl ' + (ok ? 'ok' : 'no') + '">' + (ok ? 'Верно! ' : 'Неверно. ') + e + '</div>'; }
         h += '</div>';
         quizPanel.innerHTML = h;
         quizPanel.querySelectorAll('.lq-opt').forEach(function (btn) { btn.onclick = function () { if (answers[qi] !== null) return; answers[qi] = parseInt(btn.dataset.i, 10); markQuizPill(qi); renderQuiz(qi); maybeSave(); }; });
