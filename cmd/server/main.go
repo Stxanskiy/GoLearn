@@ -76,9 +76,15 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 
-	// Serve static files
+	// Serve static files. Assets are linked with a ?v=<version> query that
+	// changes when they change, so the browser refetches after a redesign;
+	// must-revalidate keeps a cached copy honest even without the query.
 	fs := http.FileServer(http.Dir("internal/static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+	staticHandler := http.StripPrefix("/static/", fs)
+	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=300, must-revalidate")
+		staticHandler.ServeHTTP(w, req)
+	}))
 
 	h.RegisterRoutes(r)
 

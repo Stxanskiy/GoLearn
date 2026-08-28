@@ -4,6 +4,9 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
@@ -134,8 +137,20 @@ func templateFuncs() template.FuncMap {
 		},
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 		"content":  func(format, raw string) template.HTML { return RenderContent(format, raw) },
+		"assetVer": func() string { return assetVersion },
 	}
 }
+
+// assetVersion busts the browser cache for /static assets after a redesign.
+// The static files are served without an ETag, so a stale app.css can survive a
+// deploy; appending ?v=<version> to the link forces a refetch when it changes.
+// Derived once from the app.css modtime, with a build-time fallback.
+var assetVersion = func() string {
+	if fi, err := os.Stat("internal/static/css/app.css"); err == nil {
+		return strconv.FormatInt(fi.ModTime().Unix(), 36)
+	}
+	return strconv.FormatInt(time.Now().Unix(), 36)
+}()
 
 func (h *Handler) render(w http.ResponseWriter, tmplName string, data any) {
 	w.Header().Set("Cache-Control", "no-store")
