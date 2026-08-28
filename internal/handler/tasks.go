@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
@@ -16,6 +17,7 @@ type TasksPageData struct {
 	ContentHTML   string
 	Tasks         []model.Task
 	IsShellLab    bool
+	IsGitLab      bool         // a Git-course lab: show the live commit-graph panel
 	PassedIDs     map[int]bool // steps already solved by this user
 	DoneCount     int
 	HasQuiz       bool
@@ -57,6 +59,9 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 	if len(tasks) > 0 && tasks[0].Kind == "shell" {
 		data.IsShellLab = true
 	}
+	// Git-course labs get a live commit-graph beside the terminal.
+	data.IsGitLab = strings.EqualFold(mod.Category, "Git") ||
+		strings.Contains(strings.ToLower(mod.Slug), "git")
 
 	// Solved steps are restored from the database, so reloading the page (or
 	// coming back a week later) keeps the lab's completed steps marked.

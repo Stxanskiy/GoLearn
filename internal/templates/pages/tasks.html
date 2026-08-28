@@ -77,6 +77,16 @@
             <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
             <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;">⨯ Остановить</button>
         </div>
+        {{if .IsGitLab}}
+        <div class="lab2-git" id="lab2-git">
+            <div class="lab2-git-head">
+                <span><i class="ph ph-git-branch"></i> Граф репозитория</span>
+                <span class="spacer"></span>
+                <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
+            </div>
+            <pre id="lab2-git-graph" class="lab2-git-graph">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</pre>
+        </div>
+        {{end}}
         <div class="lab2-term" id="lab2-host">
             <div class="lab2-launch" id="lab2-launch">
                 <div class="lab2-launch-card">
@@ -215,10 +225,11 @@
         ws.onopen = function () {
             setStatus('Запущена', true); startTimer(); sendResize(); term.focus();
             document.getElementById('lab2-stop').style.display = '';
+            gitGraphStart();
         };
         ws.onmessage = function (e) { gotOutput = true; term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
         ws.onclose = function () {
-            setStatus('Остановлена', false); stopTimer();
+            setStatus('Остановлена', false); stopTimer(); gitGraphStop();
             document.getElementById('lab2-stop').style.display = 'none';
             var hadOutput = gotOutput, closed = term;
             term = null; ws = null;
@@ -289,8 +300,30 @@
                 }
                 var p = pillsEl.children[NQ + taskIndex]; if (p) p.classList.toggle('done', !!d.passed);
                 refreshProgress();
+                gitGraphRefresh();
             }).catch(function (e) { box.className = 'check-result fail'; box.textContent = 'Ошибка: ' + e.message; });
     };
+
+    // ── Live commit-graph for Git-course labs ──────────────────────────────
+    // The panel exists only when the server marked this a Git lab. It reads the
+    // repository the tasks build (/root/project) through the same sandbox the
+    // terminal runs in, and refreshes on a timer plus after each check.
+    var IS_GIT = {{if .IsGitLab}}true{{else}}false{{end}};
+    var gitGraphEl = document.getElementById('lab2-git-graph');
+    var gitPoll = null;
+    var GIT_CMD = 'git -C /root/project log --oneline --graph --all --decorate --color=never 2>/dev/null | head -60' +
+                  ' || echo "(репозиторий ещё не создан — сделай git init)"';
+    window.gitGraphRefresh = function () {
+        if (!IS_GIT || !gitGraphEl || !TASK_IDS.length) return;
+        fetch('/api/shell/' + TASK_IDS[0] + '/exec', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: GIT_CMD })
+        }).then(function (r) { return r.json(); })
+          .then(function (d) { var o = (d.output || '').replace(/\s+$/, ''); gitGraphEl.textContent = o || '(пока нет коммитов)'; })
+          .catch(function () {});
+    };
+    function gitGraphStart() { if (!IS_GIT) return; gitGraphRefresh(); clearInterval(gitPoll); gitPoll = setInterval(gitGraphRefresh, 3000); }
+    function gitGraphStop() { clearInterval(gitPoll); gitPoll = null; }
 
     showStep(0);
 })();
@@ -351,6 +384,9 @@
 .lab2-actions .btn { flex:0 0 auto; }
 
 .lab2-main { display:flex; flex-direction:column; background:var(--term-bg); min-width:0; }
+.lab2-git { flex:none; max-height:230px; display:flex; flex-direction:column; border-bottom:1px solid var(--line); background:var(--surface); }
+.lab2-git-head { display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:.8em; font-weight:700; color:var(--muted); }
+.lab2-git-graph { margin:0; padding:10px 14px; overflow:auto; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.55; white-space:pre; color:var(--text); background:var(--bg); }
 .lab2-bar { display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border-bottom:1px solid var(--border); }
 .lab2-navbtn { font-size:.82em; color:var(--text-muted); text-decoration:none; padding:5px 10px; border:1px solid var(--border); border-radius:8px; }
 .lab2-navbtn:hover { color:var(--text); border-color:var(--border-strong); }
