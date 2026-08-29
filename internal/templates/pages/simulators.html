@@ -12,11 +12,14 @@
 <div class="courses-grid">
     {{range .Scenarios}}
     <a class="course-card" href="/simulator/{{.Slug}}">
-        <div class="course-cover" data-cat="DevOps"><span class="course-icon">{{.Icon}}</span></div>
-        <div class="course-body">
-            <h3 class="course-title">{{.Title}}</h3>
-            <div class="course-meta muted">Роль: {{.Role}} · {{len .Turns}} решений</div>
+        <div class="course-card-top">
+            <span class="chip chip-accent">DevOps</span>
+            <span class="spacer"></span>
+            <i class="ph ph-strategy" style="font-size:18px;color:var(--faint);"></i>
         </div>
+        <div class="course-card-title">{{.Title}}</div>
+        <div class="course-card-meta">Роль: {{.Role}} · {{len .Turns}} решений</div>
+        <span class="course-cta">Открыть →</span>
     </a>
     {{end}}
 </div>
@@ -24,6 +27,9 @@
 </div><!-- /.page -->
 <style>
 .courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
-.course-body { padding:16px; } .course-title { font-size:1.05em; font-weight:700; margin-bottom:6px; } .course-meta { font-size:.8em; }
+.course-card { display:flex; flex-direction:column; gap:10px; padding:16px 18px; }
+.course-card-title { font-size:1.05em; font-weight:700; }
+.course-card-meta { font-size:.84em; color:var(--muted); }
+.course-cta { margin-top:auto; font-size:.82em; font-weight:700; color:var(--accent); }
 </style>
 {{end}}

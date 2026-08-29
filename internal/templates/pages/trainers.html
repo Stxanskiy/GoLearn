@@ -9,39 +9,44 @@
     <p class="muted">Интерактивные инструменты с настоящим рантаймом и практические тренажёры с автопроверкой.</p>
 </div>
 
-<div class="section-title"> Инструменты</div>
+<div class="section-title">Инструменты</div>
 <div class="courses-grid">
     <a class="course-card" href="/git-trainer">
-        <div class="course-cover" data-cat="Git"><span class="course-icon"></span></div>
-        <div class="course-body">
-            <h3 class="course-title">Git Trainer</h3>
-            <div class="course-meta muted">Настоящий git: коммиты, ветки, merge — с живым графом истории.</div>
+        <div class="course-card-top">
+            <span class="chip chip-accent">Git</span>
+            <span class="spacer"></span>
+            <i class="ph ph-git-branch" style="font-size:18px;color:var(--faint);"></i>
         </div>
+        <div class="course-card-title">Git Trainer</div>
+        <div class="course-card-meta">Настоящий git: коммиты, ветки, merge — с живым графом истории.</div>
+        <span class="course-cta">Открыть →</span>
     </a>
     <a class="course-card" href="/playground">
-        <div class="course-cover" data-cat="Golang"><span class="course-icon"></span></div>
-        <div class="course-body">
-            <h3 class="course-title">Go Playground</h3>
-            <div class="course-meta muted">Пиши и запускай Go-код в песочнице, смотри вывод сразу.</div>
+        <div class="course-card-top">
+            <span class="chip chip-teal">Go</span>
+            <span class="spacer"></span>
+            <i class="ph ph-code" style="font-size:18px;color:var(--faint);"></i>
         </div>
+        <div class="course-card-title">Go Playground</div>
+        <div class="course-card-meta">Пиши и запускай Go-код в песочнице, смотри вывод сразу.</div>
+        <span class="course-cta">Открыть →</span>
     </a>
 </div>
 
 {{if .Gyms}}
-<div class="section-title"> Практические тренажёры</div>
+<div class="section-title">Практические тренажёры</div>
 <div class="courses-grid">
     {{range .Gyms}}
     <a class="course-card" href="/module/{{.Slug}}">
-        <div class="course-cover">
-            <img loading="lazy" src="{{.Cover}}" alt="{{.Title}}">
-            <span class="course-cover-tag">{{.Category}}</span>
-            {{if gt .Pct 0}}<span class="course-cover-pct">{{.Pct}}%</span>{{end}}
+        <div class="course-card-top">
+            <span class="chip chip-accent">{{.Category}}</span>
+            <span class="spacer"></span>
+            {{if gt .Pct 0}}<span style="font-size:12px;color:var(--faint);">{{.Pct}}%</span>{{end}}
         </div>
-        <div class="course-body">
-            <h3 class="course-title">{{.Title}}</h3>
-            <div class="course-meta muted">{{.Chapters}} заданий · практика в терминале</div>
-            <div class="progress-bar"><div class="progress-fill" style="width:{{.Pct}}%;"></div></div>
-        </div>
+        <div class="course-card-title">{{.Title}}</div>
+        <div class="course-card-meta">{{.Chapters}} заданий · практика в терминале</div>
+        <div class="progress-bar" style="margin-top:auto;"><div class="progress-fill" style="width:{{.Pct}}%;"></div></div>
+        <span class="course-cta">Открыть →</span>
     </a>
     {{end}}
 </div>
@@ -50,8 +55,9 @@
 </div><!-- /.page -->
 <style>
 .courses-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
-.course-body { padding:16px; }
-.course-title { font-size:1.04em; font-weight:700; margin-bottom:6px; }
-.course-meta { font-size:.8em; }
+.course-card { display:flex; flex-direction:column; gap:10px; padding:16px 18px; }
+.course-card-title { font-size:1.04em; font-weight:700; }
+.course-card-meta { font-size:.84em; color:var(--muted); }
+.course-cta { margin-top:auto; font-size:.82em; font-weight:700; color:var(--accent); }
 </style>
 {{end}}
