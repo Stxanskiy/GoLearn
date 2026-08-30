@@ -29,6 +29,7 @@ var labFixtures = map[string]map[string]labSpec{
 	"linux-core":             linuxCoreLabs,
 	"linux-advanced":         linuxAdvancedLabs,
 	"git-basics":             gitBasicsLabs,
+	"gitlab-ci":              gitlabCILabs,
 	"express-devops":         expressDevopsLabs,
 	"gym-git":                gymGitLabs,
 	"sql-express":            sqlExpressLabs,
