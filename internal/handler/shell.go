@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -182,4 +183,82 @@ func (h *Handler) LabRetry(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = h.shell.Reset(r.Context(), user.ID, labKey(lessonID))
 	writeJSON(w, map[string]any{"ok": true})
+}
+
+// LabPreview handles GET /api/lab/{lessonID}/preview/{port}/* — a tiny reverse
+// proxy that shows, inside an iframe, whatever HTTP server the student started
+// in their sandbox (e.g. `python3 -m http.server` or a container they ran). The
+// port is part of the path so relative asset URLs on the previewed page resolve
+// back through this same proxy.
+func (h *Handler) LabPreview(w http.ResponseWriter, r *http.Request) {
+	if !h.shell.Enabled() {
+		http.Error(w, "sandbox disabled", 503)
+		return
+	}
+	user := GetUser(r.Context())
+	if user == nil {
+		http.Error(w, "unauthorized", 401)
+		return
+	}
+	lessonID, err := strconv.Atoi(chi.URLParam(r, "lessonID"))
+	if err != nil {
+		http.Error(w, "bad lesson id", 400)
+		return
+	}
+	port, _ := strconv.Atoi(chi.URLParam(r, "port"))
+	if port <= 0 {
+		port = 80
+	}
+	path := "/" + chi.URLParam(r, "*")
+	if r.URL.RawQuery != "" {
+		path += "?" + r.URL.RawQuery
+	}
+	image, setup := h.labSandbox(r, lessonID)
+	body, ct, status, err := h.shell.Preview(r.Context(), user.ID, labKey(lessonID), image, setup, port, path)
+	if err != nil {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(previewErrPage(port, err)))
+		return
+	}
+	if strings.HasPrefix(ct, "text/html") {
+		body = injectBase(body, fmt.Sprintf("/api/lab/%d/preview/%d/", lessonID, port))
+	}
+	if ct == "" {
+		ct = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", ct)
+	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+	if status == 0 {
+		status = http.StatusOK
+	}
+	w.WriteHeader(status)
+	_, _ = w.Write(body)
+}
+
+// injectBase inserts a <base> tag so relative links on the previewed page point
+// back through the proxy prefix instead of the LMS origin.
+func injectBase(body []byte, base string) []byte {
+	tag := []byte(`<base href="` + base + `">`)
+	lower := strings.ToLower(string(body))
+	if i := strings.Index(lower, "<head>"); i >= 0 {
+		i += len("<head>")
+		return append(append(append([]byte{}, body[:i]...), tag...), body[i:]...)
+	}
+	return append(tag, body...)
+}
+
+func previewErrPage(port int, err error) string {
+	reason := "на этом порту пока никто не отвечает"
+	if strings.Contains(err.Error(), "curl-missing") {
+		reason = "в этой песочнице нет curl"
+	}
+	return fmt.Sprintf(`<!doctype html><html lang="ru"><head><meta charset="utf-8">`+
+		`<style>body{margin:0;font-family:system-ui,sans-serif;background:#22201b;color:#d6c9b6;`+
+		`display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}`+
+		`.c{max-width:420px;padding:24px}h2{margin:0 0 8px;font-size:1.1em;color:#e8dcc8}`+
+		`code{background:#000;padding:2px 7px;border-radius:5px;color:#7fd6c2}p{line-height:1.6;font-size:.9em;color:#a89a85}</style>`+
+		`</head><body><div class="c"><h2>Пока нечего показать</h2>`+
+		`<p>Web Preview обращается к <code>127.0.0.1:%d</code> внутри песочницы — %s.<br><br>`+
+		`Запусти сервер в терминале (например <code>python3 -m http.server %d</code> или свой контейнер), затем нажми «Обновить».</p></div></body></html>`,
+		port, reason, port)
 }

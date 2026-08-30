@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -299,6 +300,64 @@ func (s *ShellRunner) Check(ctx context.Context, userID int, key, image, setup, 
 		return false, out, err
 	}
 	return exit == 0, out, nil
+}
+
+// Preview fetches one HTTP resource from a server the student started INSIDE the
+// sandbox. The container has no network of its own (--network none), so we reach
+// the server through `docker exec ... curl 127.0.0.1:<port>`. The body is
+// base64'd in the container so binary assets (images, fonts) survive the trip,
+// and the target URL is passed in base64 too, so a hostile path cannot break out
+// of the shell command. Returns body, content-type and HTTP status.
+func (s *ShellRunner) Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	c, err := s.ensure(ctx, userID, key, image, setup)
+	if err != nil {
+		return nil, "", 0, err
+	}
+	if port <= 0 {
+		port = 80
+	}
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	urlB64 := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("http://127.0.0.1:%d%s", port, path)))
+	script := fmt.Sprintf(`
+url=$(printf %%s '%s' | base64 -d)
+if ! command -v curl >/dev/null 2>&1; then echo "GLPREVERR curl-missing"; exit 0; fi
+if ! curl -s -m 8 -D /tmp/.glph -o /tmp/.glpb "$url" 2>/dev/null; then echo "GLPREVERR no-server"; exit 0; fi
+code=$(head -1 /tmp/.glph 2>/dev/null | tr -d '\r' | awk '{print $2}')
+ct=$(grep -i '^content-type:' /tmp/.glph 2>/dev/null | head -1 | tr -d '\r' | cut -d' ' -f2-)
+echo "GLPREVIEW ${code:-200} ${ct:-text/html}"
+base64 /tmp/.glpb 2>/dev/null
+`, urlB64)
+	b64 := base64.StdEncoding.EncodeToString([]byte(script))
+	remote := fmt.Sprintf(`docker exec %s sh -c 'echo %s | base64 -d | bash' 2>/dev/null`, c, b64)
+	out, _, err := s.run(ctx, remote)
+	if err != nil {
+		return nil, "", 0, err
+	}
+	s.touch(c)
+	nl := strings.IndexByte(out, '\n')
+	if nl < 0 {
+		return nil, "", 0, fmt.Errorf("preview: пустой ответ песочницы")
+	}
+	head := strings.TrimSpace(out[:nl])
+	bodyB64 := strings.TrimSpace(out[nl+1:])
+	if strings.HasPrefix(head, "GLPREVERR") {
+		return nil, "", 0, fmt.Errorf("preview: %s", strings.TrimSpace(strings.TrimPrefix(head, "GLPREVERR")))
+	}
+	fields := strings.SplitN(strings.TrimPrefix(head, "GLPREVIEW "), " ", 2)
+	status, _ := strconv.Atoi(strings.TrimSpace(fields[0]))
+	ct := "text/html"
+	if len(fields) > 1 && strings.TrimSpace(fields[1]) != "" {
+		ct = strings.TrimSpace(fields[1])
+	}
+	body, derr := base64.StdEncoding.DecodeString(strings.ReplaceAll(bodyB64, "\n", ""))
+	if derr != nil {
+		return nil, "", 0, fmt.Errorf("preview: не удалось раскодировать тело: %w", derr)
+	}
+	return body, ct, status, nil
 }
 
 // execTimeout picks the deadline for one command in this kind of sandbox.
