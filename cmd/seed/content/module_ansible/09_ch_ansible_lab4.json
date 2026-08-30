@@ -1,0 +1,19 @@
+{
+  "n": 9, "id": "ch_ansible_lab4", "title": "Лабораторная 4: template и handler",
+  "type": "chapter", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Лабораторная 4: template и handler</h1>\n<p>Папка <code>/root/ansible-lab</code>. Playbook — <code>/root/ansible-lab/tpl.yml</code>, шаблоны — в <code>/root/ansible-lab/templates/</code>. <code>cd /root/ansible-lab</code>.</p>",
+  "tasks": [
+    { "type": "check", "title": "Отрендерить шаблон",
+      "hint": "Создай templates/service.conf.j2 со строкой 'port = {{ svc_port }}'. В play добавь vars: svc_port: 9090 и задачу template (src: templates/service.conf.j2, dest: /root/ansible-lab/service.conf). Запусти ansible-playbook tpl.yml.",
+      "question_html": "<p>Создай шаблон <code>templates/service.conf.j2</code> с содержимым <code>port = {{ svc_port }}</code> и playbook <code>tpl.yml</code> (vars <code>svc_port: 9090</code>), который рендерит его в <code>/root/ansible-lab/service.conf</code> модулем <code>template</code>. В результате в файле должна появиться строка <code>port = 9090</code>.</p>",
+      "options": [] },
+    { "type": "check", "title": "Условие в шаблоне (Jinja2)",
+      "hint": "В шаблон добавь: {% if enable_debug %}debug = on{% endif %}. В vars добавь enable_debug: true. Перезапусти playbook.",
+      "question_html": "<p>Добавь в шаблон условие Jinja2: если переменная <code>enable_debug</code> истинна — в файл попадает строка <code>debug = on</code>. Задай <code>enable_debug: true</code> и перезапусти playbook, чтобы строка появилась в <code>service.conf</code>.</p><pre>{% if enable_debug %}debug = on{% endif %}</pre>",
+      "options": [] },
+    { "type": "check", "title": "Handler + notify",
+      "hint": "Смени svc_port на 9091. У задачи template добавь notify: reload service. Добавь handlers: - name: reload service, задача copy content: \"reloaded\\n\" dest: /root/ansible-lab/reloaded.marker. Перезапусти — изменившийся шаблон дёрнет handler.",
+      "question_html": "<p>Поменяй <code>svc_port</code> на <code>9091</code>, добавь задаче <code>template</code> строку <code>notify: reload service</code> и опиши handler <code>reload service</code>, который создаёт файл-маркер <code>/root/ansible-lab/reloaded.marker</code> (например задачей <code>copy</code> с content <code>reloaded</code>). Перезапусти playbook: изменившийся конфиг должен через <code>notify</code> запустить handler.</p>",
+      "options": [] }
+  ]
+}

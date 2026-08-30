@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       rsync cron at sudo openssh-client tmux \
       man-db manpages \
       python3 python3-venv zsh \
+      ansible-core \
       nginx-light \
     && yes | unminimize >/dev/null 2>&1 || true \
     && rm -rf /var/lib/apt/lists/*

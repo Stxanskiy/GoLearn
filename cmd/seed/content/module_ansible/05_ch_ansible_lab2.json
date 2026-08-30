@@ -1,0 +1,23 @@
+{
+  "n": 5, "id": "ch_ansible_lab2", "title": "Лабораторная 2: модули для файлов",
+  "type": "chapter", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Лабораторная 2: модули для файлов</h1>\n<p>Папка <code>/root/ansible-lab</code> (та же, с <code>ansible.cfg</code> и inventory). Все задачи пиши в playbook <code>/root/ansible-lab/files.yml</code> (play на <code>hosts: localhost</code>, <code>connection: local</code>) и запускай <code>ansible-playbook files.yml</code>. Начни с <code>cd /root/ansible-lab</code>.</p>",
+  "tasks": [
+    { "type": "check", "title": "Каталог модулем file",
+      "hint": "Задача file: path: /root/ansible-lab/app, state: directory, mode: '0755'.",
+      "question_html": "<p>В <code>files.yml</code> задачей <code>file</code> создай каталог <code>/root/ansible-lab/app</code> с правами <code>0755</code> (<code>state: directory</code>). Запусти playbook.</p>",
+      "options": [] },
+    { "type": "check", "title": "Файл модулем copy",
+      "hint": "Задача copy: content: \"port=8080\\n\", dest: /root/ansible-lab/app/app.conf.",
+      "question_html": "<p>Добавь задачу <code>copy</code>, которая кладёт в <code>/root/ansible-lab/app/app.conf</code> содержимое <code>port=8080</code>.</p><pre>- copy:\n    content: \"port=8080\\n\"\n    dest: /root/ansible-lab/app/app.conf</pre>",
+      "options": [] },
+    { "type": "check", "title": "Строка модулем lineinfile",
+      "hint": "Задача lineinfile: path: /root/ansible-lab/app/app.conf, line: 'debug=true'.",
+      "question_html": "<p>Модулем <code>lineinfile</code> добавь в тот же <code>app.conf</code> строку <code>debug=true</code>.</p>",
+      "options": [] },
+    { "type": "check", "title": "Удалить файл (state: absent)",
+      "hint": "Сначала создай /root/ansible-lab/old.txt любым способом, затем задачей file со state: absent убери его через playbook.",
+      "question_html": "<p>Добавь задачу <code>file</code> с <code>state: absent</code>, которая гарантирует, что файла <code>/root/ansible-lab/old.txt</code> не существует. (Создай его заранее — <code>touch old.txt</code> — чтобы увидеть, как Ansible его удаляет.)</p>",
+      "options": [] }
+  ]
+}

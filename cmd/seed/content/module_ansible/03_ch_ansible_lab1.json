@@ -1,0 +1,23 @@
+{
+  "n": 3, "id": "ch_ansible_lab1", "title": "Лабораторная 1: ad-hoc и первый playbook",
+  "type": "chapter", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Лабораторная 1: ad-hoc и первый playbook</h1>\n<p>Рабочая папка — <code>/root/ansible-lab</code>. В ней уже есть <code>ansible.cfg</code> и <code>inventory.ini</code> с хостом <code>localhost ansible_connection=local</code>, поэтому SSH не нужен. Начни с <code>cd /root/ansible-lab</code>.</p>",
+  "tasks": [
+    { "type": "check", "title": "Ad-hoc: создать файл модулем file",
+      "hint": "cd /root/ansible-lab && ansible localhost -c local -m file -a \"path=/root/ansible-lab/hello.txt state=touch\"",
+      "question_html": "<p>Одной ad-hoc командой создай файл <code>/root/ansible-lab/hello.txt</code> с помощью модуля <code>file</code> (<code>state=touch</code>).</p><pre>ansible localhost -c local -m file -a \"path=/root/ansible-lab/hello.txt state=touch\"</pre>",
+      "options": [] },
+    { "type": "check", "title": "Первый playbook: скопировать контент",
+      "hint": "Создай /root/ansible-lab/site.yml с play на hosts: localhost, connection: local и задачей copy (content: \"Managed by Ansible\", dest: /root/ansible-lab/managed.txt). Запусти: ansible-playbook site.yml",
+      "question_html": "<p>Напиши playbook <code>/root/ansible-lab/site.yml</code>: один play на <code>hosts: localhost</code> с <code>connection: local</code> и задачей модуля <code>copy</code>, которая создаёт <code>/root/ansible-lab/managed.txt</code> с содержимым <code>Managed by Ansible</code>. Запусти его.</p><pre>- hosts: localhost\n  connection: local\n  tasks:\n    - name: create managed file\n      copy:\n        content: \"Managed by Ansible\\n\"\n        dest: /root/ansible-lab/managed.txt</pre><pre>ansible-playbook site.yml</pre>",
+      "options": [] },
+    { "type": "check", "title": "Добавить создание каталога",
+      "hint": "Добавь в site.yml задачу file с state: directory для /root/ansible-lab/data, снова запусти ansible-playbook site.yml.",
+      "question_html": "<p>Добавь в <code>site.yml</code> ещё одну задачу — модулем <code>file</code> создай каталог <code>/root/ansible-lab/data</code> (<code>state: directory</code>). Перезапусти playbook.</p>",
+      "options": [] },
+    { "type": "check", "title": "Проверить идемпотентность",
+      "hint": "Запусти ansible-playbook site.yml ещё раз — во второй раз всё уже в нужном состоянии, поэтому в итоге должно быть changed=0. Проверка сама прогонит playbook.",
+      "question_html": "<p>Идемпотентность — суть Ansible. Запусти <code>ansible-playbook site.yml</code> ещё раз: раз состояние уже достигнуто, повторный прогон должен дать <code>changed=0</code>. Проверка запустит playbook и убедится в этом.</p>",
+      "options": [] }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "n": 13, "id": "ch_ansible_lab6", "title": "Лабораторная 6: роль и идемпотентность",
+  "type": "chapter", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Лабораторная 6: роль и идемпотентность</h1>\n<p>Собираем всё вместе: роль, идемпотентный прогон и Vault. Папка <code>/root/ansible-lab</code>. <code>cd /root/ansible-lab</code>.</p>",
+  "tasks": [
+    { "type": "check", "title": "Создать заготовку роли",
+      "hint": "cd /root/ansible-lab && ansible-galaxy init roles/webapp — создаст стандартную структуру роли.",
+      "question_html": "<p>Создай заготовку роли <code>webapp</code> командой <code>ansible-galaxy init</code>. Должен появиться каталог <code>roles/webapp/</code> со стандартной структурой (tasks/, handlers/, templates/…).</p><pre>cd /root/ansible-lab\nansible-galaxy init roles/webapp</pre>",
+      "options": [] },
+    { "type": "check", "title": "Задача в роли + playbook",
+      "hint": "В roles/webapp/tasks/main.yml добавь задачу copy (content: \"<h1>ok</h1>\\n\", dest: /root/ansible-lab/webapp/index.html) — каталог создай задачей file заранее. Создай site.yml: - hosts: localhost, connection: local, roles: [webapp]. Запусти ansible-playbook site.yml.",
+      "question_html": "<p>В <code>roles/webapp/tasks/main.yml</code> опиши задачи, которые создают каталог <code>/root/ansible-lab/webapp</code> и кладут в него <code>index.html</code> (модулем <code>copy</code>). Создай playbook <code>site.yml</code>, подключающий роль <code>webapp</code> к <code>localhost</code> (<code>connection: local</code>), и запусти его.</p><pre>- hosts: localhost\n  connection: local\n  roles:\n    - webapp</pre>",
+      "options": [] },
+    { "type": "check", "title": "Проверить идемпотентность",
+      "hint": "Запусти ansible-playbook site.yml второй раз — всё уже создано, поэтому changed=0. Проверка прогонит playbook сама.",
+      "question_html": "<p>Убедись, что роль идемпотентна: повторный <code>ansible-playbook site.yml</code> не меняет ничего (<code>changed=0</code>). Проверка запустит playbook и убедится в этом. Если получаешь <code>changed</code> каждый раз — вероятно, где-то <code>command</code>/<code>shell</code> без <code>creates</code>.</p>",
+      "options": [] },
+    { "type": "check", "title": "Зашифровать секрет через Vault",
+      "hint": "Создай secrets.yml (например: db_password: s3cret), затем ansible-vault encrypt secrets.yml (введи пароль дважды). Первая строка файла станет $ANSIBLE_VAULT;1.1;AES256.",
+      "question_html": "<p>Создай файл <code>/root/ansible-lab/secrets.yml</code> с любой переменной-секретом и зашифруй его: <code>ansible-vault encrypt secrets.yml</code> (Vault спросит пароль). После этого первая строка файла начинается с <code>$ANSIBLE_VAULT</code>.</p>",
+      "options": [] }
+  ]
+}

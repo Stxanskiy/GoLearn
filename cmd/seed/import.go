@@ -103,6 +103,7 @@ func importedModules() []M {
 		{Dir: "module_linux_advanced", Slug: "linux-advanced", Track: "devops", Difficulty: "advanced", Category: "Linux"},
 		{Dir: "module_git_basics", Slug: "git-basics", Track: "devops", Difficulty: "beginner", Category: "Git"},
 		{Dir: "crs_gitlab_ci", Slug: "gitlab-ci", Track: "devops", Difficulty: "intermediate", Category: "CI/CD"},
+		{Dir: "module_ansible", Slug: "ansible", Track: "devops", Difficulty: "intermediate", Category: "Ansible"},
 		{Dir: "module_docker_basics", Slug: "docker-basics", Track: "devops", Difficulty: "intermediate", Category: "Docker"},
 		{Dir: "module_docker_compose", Slug: "docker-compose", Track: "devops", Difficulty: "intermediate", Category: "Docker"},
 		{Dir: "module_k8s_intro", Slug: "k8s-intro", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes"},

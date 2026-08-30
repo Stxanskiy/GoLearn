@@ -1,0 +1,19 @@
+{
+  "n": 11, "id": "ch_ansible_lab5", "title": "Лабораторная 5: when и loop",
+  "type": "chapter", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Лабораторная 5: when и loop</h1>\n<p>Папка <code>/root/ansible-lab</code>. Playbook — <code>/root/ansible-lab/flow.yml</code> (<code>hosts: localhost</code>, <code>connection: local</code>). <code>cd /root/ansible-lab</code>.</p>",
+  "tasks": [
+    { "type": "check", "title": "Цикл loop: создать каталоги",
+      "hint": "Задача file (state: directory, path: /root/ansible-lab/{{ item }}) с loop: [logs, data, cache]. Запусти ansible-playbook flow.yml.",
+      "question_html": "<p>Одной задачей <code>file</code> с <code>loop</code> создай три каталога: <code>/root/ansible-lab/logs</code>, <code>/root/ansible-lab/data</code>, <code>/root/ansible-lab/cache</code>.</p><pre>- file:\n    path: \"/root/ansible-lab/{{ item }}\"\n    state: directory\n  loop: [logs, data, cache]</pre>",
+      "options": [] },
+    { "type": "check", "title": "loop + when: пропустить один элемент",
+      "hint": "Задача copy (dest: /root/ansible-lab/{{ item }}.flag, content: ok) с loop: [alpha, beta, gamma] и when: item != 'beta'. Файлы alpha.flag и gamma.flag появятся, beta.flag — нет.",
+      "question_html": "<p>Задачей с <code>loop: [alpha, beta, gamma]</code> создай файлы-флаги <code>/root/ansible-lab/&lt;item&gt;.flag</code>, но с условием <code>when: item != 'beta'</code> — так <code>beta.flag</code> создан не будет. Запусти playbook.</p>",
+      "options": [] },
+    { "type": "check", "title": "when по переменной",
+      "hint": "Добавь vars: make_prod: true. Задача file (touch /root/ansible-lab/prod.marker) с when: make_prod | bool.",
+      "question_html": "<p>Добавь переменную <code>make_prod: true</code> и задачу, которая создаёт файл <code>/root/ansible-lab/prod.marker</code> только когда <code>make_prod</code> истинна (<code>when: make_prod | bool</code>). Запусти playbook.</p>",
+      "options": [] }
+  ]
+}

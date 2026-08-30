@@ -1,0 +1,24 @@
+{
+  "id": "module_ansible",
+  "title": "Ansible: автоматизация без агентов",
+  "meta": {
+    "title": "Ansible: автоматизация без агентов",
+    "description": "От первого ad-hoc до ролей и идемпотентных playbook'ов — учимся управлять конфигурацией на реальных примерах прямо в терминале."
+  },
+  "chapter_list": [
+    { "id": "ch_ansible_1_intro",     "title": "Что такое Ansible и зачем он нужен",        "type": "chapter", "task_id": null, "position": 1,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_2_inventory", "title": "Inventory и ad-hoc команды",                 "type": "chapter", "task_id": null, "position": 2,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab1",        "title": "Лабораторная 1: ad-hoc и первый playbook",   "type": "chapter", "task_id": null, "position": 3,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_3_modules",   "title": "Модули: file, copy, lineinfile, command",    "type": "chapter", "task_id": null, "position": 4,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab2",        "title": "Лабораторная 2: модули для файлов",          "type": "chapter", "task_id": null, "position": 5,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_4_vars",      "title": "Переменные, facts и register",               "type": "chapter", "task_id": null, "position": 6,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab3",        "title": "Лабораторная 3: переменные и register",      "type": "chapter", "task_id": null, "position": 7,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_5_templates", "title": "Шаблоны Jinja2 и handlers",                  "type": "chapter", "task_id": null, "position": 8,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab4",        "title": "Лабораторная 4: template и handler",         "type": "chapter", "task_id": null, "position": 9,  "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_6_flow",      "title": "Условия (when) и циклы (loop)",              "type": "chapter", "task_id": null, "position": 10, "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab5",        "title": "Лабораторная 5: when и loop",                "type": "chapter", "task_id": null, "position": 11, "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_7_roles",     "title": "Роли, идемпотентность и Vault",              "type": "chapter", "task_id": null, "position": 12, "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_lab6",        "title": "Лабораторная 6: роль и идемпотентность",     "type": "chapter", "task_id": null, "position": 13, "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] },
+    { "id": "ch_ansible_8_quiz",      "title": "Квиз: Ansible",                              "type": "quiz",    "task_id": null, "position": 14, "isPublished": true, "isFree": true, "courseId": "module_ansible", "userProgress": [] }
+  ]
+}

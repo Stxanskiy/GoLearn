@@ -1,0 +1,49 @@
+{
+  "n": 14, "id": "ch_ansible_8_quiz", "title": "Квиз: Ansible",
+  "type": "quiz", "isFree": true, "kind": "tasks", "vm_image": null, "vm_init": null,
+  "content_html": "<h1>Квиз: Ansible</h1><p>Проверь, как усвоились agentless-модель, модули, идемпотентность, переменные, шаблоны и роли.</p>",
+  "tasks": [
+    { "type": "quiz", "title": "agentless", "question_html": "Что значит «Ansible agentless»?",
+      "options": [
+        {"text": "На управляемые хосты не нужно ставить агента — Ansible работает по SSH через уже имеющийся Python", "correct": true, "explanation": "Верно: в этом ключевое отличие от Puppet/Chef с их агентами."},
+        {"text": "Ansible вообще не подключается к хостам", "correct": false, "explanation": "Подключается — по SSH (или локально), просто без постоянного агента."},
+        {"text": "Нужно ставить агент Ansible на каждый сервер", "correct": false, "explanation": "Наоборот — агент не нужен."},
+        {"text": "Ansible работает только на localhost", "correct": false, "explanation": "Он управляет многими хостами; localhost — частный случай."}
+      ] },
+    { "type": "quiz", "title": "идемпотентность", "question_html": "Что такое идемпотентность в Ansible?",
+      "options": [
+        {"text": "Повторный запуск playbook не меняет систему, если она уже в нужном состоянии (changed=0)", "correct": true, "explanation": "Именно: задача описывает желаемое состояние, а не команды."},
+        {"text": "Playbook можно запустить только один раз", "correct": false, "explanation": "Наоборот — его можно запускать сколько угодно с одинаковым результатом."},
+        {"text": "Каждый запуск обязательно что-то меняет", "correct": false, "explanation": "Это признак НЕидемпотентности (например command без creates)."},
+        {"text": "Это способ шифрования секретов", "correct": false, "explanation": "Шифрование — это Ansible Vault, другое понятие."}
+      ] },
+    { "type": "quiz", "title": "command vs модуль", "question_html": "Почему модуль <code>command</code> обычно не идемпотентен?",
+      "options": [
+        {"text": "Ansible не знает, что делает произвольная команда, и всегда помечает задачу changed (если не задать creates/removes/changed_when)", "correct": true, "explanation": "Верно. Спец-модули (file, copy, apt) знают состояние и потому идемпотентны."},
+        {"text": "command вообще не выполняется", "correct": false, "explanation": "Выполняется — просто не отслеживает изменение состояния."},
+        {"text": "command работает только на Windows", "correct": false, "explanation": "Нет, это кроссплатформенный модуль."},
+        {"text": "command всегда падает с ошибкой", "correct": false, "explanation": "Нет, он нормально работает, вопрос лишь в идемпотентности."}
+      ] },
+    { "type": "quiz", "title": "template vs copy", "question_html": "Чем модуль <code>template</code> отличается от <code>copy</code>?",
+      "options": [
+        {"text": "template рендерит файл через Jinja2 (подставляет переменные, условия, циклы), а copy кладёт файл как есть", "correct": true, "explanation": "Верно: template — для конфигов с переменными, copy — для статичных файлов."},
+        {"text": "template работает только с бинарными файлами", "correct": false, "explanation": "Наоборот — с текстовыми шаблонами."},
+        {"text": "Разницы нет", "correct": false, "explanation": "Есть: рендеринг Jinja2."},
+        {"text": "copy умеет Jinja2, а template — нет", "correct": false, "explanation": "Ровно наоборот."}
+      ] },
+    { "type": "quiz", "title": "handlers", "question_html": "Когда выполняется handler, вызванный через <code>notify</code>?",
+      "options": [
+        {"text": "В конце play и только если вызвавшая задача была changed", "correct": true, "explanation": "Верно: это и делает перезапуск сервиса идемпотентным."},
+        {"text": "Сразу же, до остальных задач", "correct": false, "explanation": "Нет, handlers копятся и запускаются в конце play."},
+        {"text": "Всегда, независимо от изменений", "correct": false, "explanation": "Нет — только при changed у задачи с notify."},
+        {"text": "Только при запуске с --check", "correct": false, "explanation": "--check — это dry-run, к запуску handlers отношения не имеет."}
+      ] },
+    { "type": "quiz", "title": "роли", "question_html": "Что такое роль в Ansible?",
+      "options": [
+        {"text": "Каталог со стандартной структурой (tasks/, handlers/, templates/, defaults/…), делающий код переиспользуемым", "correct": true, "explanation": "Верно: Ansible сам подхватывает файлы из подкаталогов роли."},
+        {"text": "Пользователь операционной системы", "correct": false, "explanation": "Нет, это про структуру кода, а не про учётки."},
+        {"text": "Синоним слова playbook", "correct": false, "explanation": "Роль — переиспользуемая часть, playbook её подключает."},
+        {"text": "Права доступа к серверу", "correct": false, "explanation": "Нет, роль — это организация задач и файлов."}
+      ] }
+  ]
+}
