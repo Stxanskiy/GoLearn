@@ -74,6 +74,7 @@
             <span class="lab2-status" id="lab2-status"><span class="led"></span>Не запущена</span>
             <span class="lab2-timer" id="lab2-timer" title="Осталось времени сессии (лимит 1 час)">60:00</span>
             <button class="lab2-iconbtn" id="lab2-preview-btn" onclick="labTogglePreview()" title="Web Preview: показать веб-страницу, которую отдаёт сервер внутри песочницы (для Docker и web-заданий)"><i class="ph ph-globe"></i> Web Preview</button>
+            <button class="lab2-iconbtn" id="lab2-vscode-btn" onclick="labToggleVscode()" title="Редактор файлов (VS Code) — та же файловая система, что в терминале"><i class="ph ph-code"></i> VSCode</button>
             <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Вернуть чистое окружение: файлы задания на месте, твои изменения пропадут">⟳ Сбросить окружение</button>
             <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
             <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;">⨯ Остановить</button>
@@ -109,6 +110,20 @@
                 <button onclick="labTogglePreview()" title="Назад к терминалу"><i class="ph ph-x"></i></button>
             </div>
             <iframe id="lab2-preview-frame" class="lab2-preview-frame" sandbox="allow-scripts allow-forms" title="Web Preview"></iframe>
+        </div>
+        <div class="lab2-vscode" id="lab2-vscode" style="display:none;">
+            <div class="lab2-vscode-bar">
+                <i class="ph ph-file-code"></i>&nbsp;<span class="lab2-vscode-path" id="lab2-vscode-path">выбери файл слева</span>
+                <span class="spacer"></span>
+                <span class="lab2-vscode-status" id="lab2-vscode-status"></span>
+                <button onclick="labVscodeSave()" title="Сохранить (Ctrl+S)"><i class="ph ph-floppy-disk"></i></button>
+                <button onclick="labVscodeRefreshTree()" title="Обновить дерево файлов"><i class="ph ph-arrows-clockwise"></i></button>
+                <button onclick="labToggleVscode()" title="Назад к терминалу"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="lab2-vscode-body">
+                <div class="lab2-vscode-tree" id="lab2-vscode-tree"></div>
+                <div class="lab2-vscode-editor" id="lab2-monaco"></div>
+            </div>
         </div>
     </section>
 </div>
@@ -306,6 +321,108 @@
         document.getElementById('lab2-preview-open').href = base;
     };
 
+    // VSCode: Monaco editor over the sandbox filesystem (docker exec R/W).
+    var vscodeOn = false, monacoReady = false, monacoEd = null, curFile = null;
+    window.labToggleVscode = function () {
+        vscodeOn = !vscodeOn;
+        document.getElementById('lab2-vscode').style.display = vscodeOn ? 'flex' : 'none';
+        document.getElementById('lab2-host').style.display = vscodeOn ? 'none' : '';
+        document.getElementById('lab2-vscode-btn').classList.toggle('active', vscodeOn);
+        if (vscodeOn) ensureMonaco(function () { labVscodeRefreshTree(); if (monacoEd) monacoEd.layout(); });
+    };
+    function ensureMonaco(cb) {
+        if (monacoReady) { cb(); return; }
+        self.MonacoEnvironment = { getWorkerUrl: function () {
+            var base = location.origin + '/static/vendor/monaco/vs';
+            return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(
+                'self.MonacoEnvironment={baseUrl:"' + base + '/"};importScripts("' + base + '/base/worker/workerMain.js");');
+        } };
+        function boot() {
+            require.config({ paths: { vs: '/static/vendor/monaco/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                monacoEd = monaco.editor.create(document.getElementById('lab2-monaco'), {
+                    value: '', language: 'plaintext', theme: 'vs-dark', automaticLayout: true,
+                    minimap: { enabled: false }, fontSize: 13, scrollBeyondLastLine: false
+                });
+                monacoEd.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () { labVscodeSave(); });
+                monacoReady = true; cb();
+            });
+        }
+        if (window.require && window.require.config) { boot(); return; }
+        var s = document.createElement('script'); s.src = '/static/vendor/monaco/vs/loader.js';
+        s.onload = boot; s.onerror = function () { setVscStatus('не удалось загрузить редактор'); };
+        document.head.appendChild(s);
+    }
+    function langFor(name) {
+        var n = name.toLowerCase();
+        if (/\.ya?ml$/.test(n)) return 'yaml';
+        if (/\.json$/.test(n)) return 'json';
+        if (/\.(sh|bash)$/.test(n)) return 'shell';
+        if (/\.py$/.test(n)) return 'python';
+        if (/dockerfile/.test(n)) return 'dockerfile';
+        if (/\.(conf|ini|cfg|env|toml)$/.test(n)) return 'ini';
+        if (/\.md$/.test(n)) return 'markdown';
+        if (/\.(js|ts)$/.test(n)) return 'javascript';
+        return 'plaintext';
+    }
+    function setVscStatus(t) { document.getElementById('lab2-vscode-status').textContent = t; }
+    window.labVscodeRefreshTree = function () {
+        var tree = document.getElementById('lab2-vscode-tree');
+        tree.innerHTML = '<div class="muted" style="padding:8px;">Загрузка…</div>';
+        fetch('/api/lab/' + LESSON + '/fs/list?path=/root').then(function (r) { return r.json(); }).then(function (d) {
+            tree.innerHTML = '';
+            if (d.error) { tree.innerHTML = '<div class="muted" style="padding:8px;">' + d.error + '</div>'; return; }
+            renderTreeInto(tree, '/root', d.entries || []);
+        }).catch(function () { tree.innerHTML = '<div class="muted" style="padding:8px;">Запусти лабораторную, чтобы открыть файлы.</div>'; });
+    };
+    function renderTreeInto(container, basePath, entries) {
+        entries.forEach(function (e) {
+            var full = basePath + '/' + e.name;
+            var node = document.createElement('div');
+            node.className = 'lab2-vscode-node';
+            node.innerHTML = '<i class="ph ' + (e.dir ? 'ph-folder' : 'ph-file') + '"></i><span></span>';
+            node.lastChild.textContent = e.name;
+            var wrap = document.createElement('div'); wrap.appendChild(node);
+            if (e.dir) {
+                var kids = document.createElement('div'); kids.className = 'lab2-vscode-children'; kids.style.display = 'none';
+                var loaded = false;
+                node.onclick = function () {
+                    kids.style.display = kids.style.display === 'none' ? 'block' : 'none';
+                    if (!loaded) {
+                        loaded = true;
+                        fetch('/api/lab/' + LESSON + '/fs/list?path=' + encodeURIComponent(full)).then(function (r) { return r.json(); }).then(function (d) { renderTreeInto(kids, full, d.entries || []); });
+                    }
+                };
+                wrap.appendChild(kids);
+            } else {
+                node.onclick = function () {
+                    var a = document.querySelector('.lab2-vscode-node.active'); if (a) a.classList.remove('active');
+                    node.classList.add('active');
+                    labVscodeOpen(full, e.name);
+                };
+            }
+            container.appendChild(wrap);
+        });
+    }
+    function labVscodeOpen(full, name) {
+        setVscStatus('открываю…');
+        fetch('/api/lab/' + LESSON + '/fs/read?path=' + encodeURIComponent(full)).then(function (r) { return r.json(); }).then(function (d) {
+            if (d.error) { setVscStatus(d.error); return; }
+            curFile = full;
+            document.getElementById('lab2-vscode-path').textContent = full;
+            monaco.editor.setModelLanguage(monacoEd.getModel(), langFor(name));
+            monacoEd.setValue(d.content || '');
+            setVscStatus('');
+        }).catch(function () { setVscStatus('не удалось открыть файл'); });
+    }
+    window.labVscodeSave = function () {
+        if (!curFile || !monacoEd) { setVscStatus('нет открытого файла'); return; }
+        setVscStatus('сохраняю…');
+        fetch('/api/lab/' + LESSON + '/fs/write?path=' + encodeURIComponent(curFile), { method: 'PUT', body: monacoEd.getValue() })
+            .then(function (r) { return r.json(); }).then(function (d) { setVscStatus(d.ok ? 'сохранено ✓' : ('ошибка: ' + (d.error || ''))); })
+            .catch(function () { setVscStatus('ошибка сети'); });
+    };
+
     window.labStop = function () {
         manualStop = true;
         if (ws) { try { ws.close(); } catch (e) {} }
@@ -463,6 +580,20 @@
 .lab2-preview-bar button:hover, .lab2-preview-bar a:hover { color:var(--accent); border-color:var(--accent); }
 .lab2-preview-frame { flex:1; width:100%; border:0; background:#fff; }
 .lab2-iconbtn.active { color:var(--accent); border-color:var(--accent); }
+.lab2-vscode { width:100%; max-width:1100px; flex:1; min-height:0; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.lab2-vscode-bar { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--bg-card); border-bottom:1px solid var(--border); font-size:.82em; color:var(--text-muted); }
+.lab2-vscode-bar .spacer { flex:1; }
+.lab2-vscode-path { font-family:'SF Mono',monospace; color:var(--text); }
+.lab2-vscode-status { font-size:.8em; color:var(--muted); }
+.lab2-vscode-bar button { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); width:28px; height:28px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+.lab2-vscode-bar button:hover { color:var(--accent); border-color:var(--accent); }
+.lab2-vscode-body { flex:1; display:flex; min-height:0; }
+.lab2-vscode-tree { width:220px; flex:none; overflow:auto; border-right:1px solid var(--line); background:var(--bg); padding:6px 4px; font-size:.85em; }
+.lab2-vscode-editor { flex:1; min-width:0; }
+.lab2-vscode-node { display:flex; align-items:center; gap:5px; padding:2px 6px; border-radius:5px; cursor:pointer; white-space:nowrap; color:var(--text); }
+.lab2-vscode-node:hover { background:var(--bg-elevated); }
+.lab2-vscode-node.active { background:var(--accent); color:var(--surface); }
+.lab2-vscode-children { margin-left:12px; }
 .lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
 .lab2-launch-card { max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px 26px; box-shadow:0 18px 44px rgba(0,0,0,.5); }
 .lab2-launch-ico { width:46px; height:46px; margin:0 auto 14px; border-radius:12px; display:flex; align-items:center; justify-content:center;

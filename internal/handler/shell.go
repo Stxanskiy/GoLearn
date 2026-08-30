@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -245,6 +247,96 @@ func injectBase(body []byte, base string) []byte {
 		return append(append(append([]byte{}, body[:i]...), tag...), body[i:]...)
 	}
 	return append(tag, body...)
+}
+
+// fsEditRoot is what the in-lab editor may browse and edit.
+const fsEditRoot = "/root"
+
+// jailPath cleans p and confirms it stays under /root — the editor must not read
+// or write anywhere else in the container.
+func jailPath(p string) (string, bool) {
+	if strings.TrimSpace(p) == "" {
+		p = fsEditRoot
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = fsEditRoot + "/" + p
+	}
+	p = path.Clean(p)
+	if p != fsEditRoot && !strings.HasPrefix(p, fsEditRoot+"/") {
+		return "", false
+	}
+	return p, true
+}
+
+// fsLessonID resolves the lesson id and jailed path shared by the FS handlers.
+func (h *Handler) fsCommon(w http.ResponseWriter, r *http.Request) (userID, lessonID int, p, image, setup string, ok bool) {
+	if !h.shell.Enabled() {
+		http.Error(w, "sandbox disabled", 503)
+		return
+	}
+	user := GetUser(r.Context())
+	if user == nil {
+		http.Error(w, "unauthorized", 401)
+		return
+	}
+	lessonID, err := strconv.Atoi(chi.URLParam(r, "lessonID"))
+	if err != nil {
+		http.Error(w, "bad lesson id", 400)
+		return
+	}
+	p, jok := jailPath(r.URL.Query().Get("path"))
+	if !jok {
+		http.Error(w, "path outside /root", 400)
+		return
+	}
+	image, setup = h.labSandbox(r, lessonID)
+	return user.ID, lessonID, p, image, setup, true
+}
+
+// LabFSList — GET /api/lab/{lessonID}/fs/list?path=/root — file tree children.
+func (h *Handler) LabFSList(w http.ResponseWriter, r *http.Request) {
+	userID, lessonID, p, image, setup, ok := h.fsCommon(w, r)
+	if !ok {
+		return
+	}
+	entries, err := h.shell.FSList(r.Context(), userID, labKey(lessonID), image, setup, p)
+	if err != nil {
+		writeJSON(w, map[string]any{"error": err.Error()})
+		return
+	}
+	writeJSON(w, map[string]any{"path": p, "entries": entries})
+}
+
+// LabFSRead — GET /api/lab/{lessonID}/fs/read?path=/root/project/app.yml.
+func (h *Handler) LabFSRead(w http.ResponseWriter, r *http.Request) {
+	userID, lessonID, p, image, setup, ok := h.fsCommon(w, r)
+	if !ok {
+		return
+	}
+	data, err := h.shell.FSRead(r.Context(), userID, labKey(lessonID), image, setup, p)
+	if err != nil {
+		writeJSON(w, map[string]any{"error": err.Error()})
+		return
+	}
+	writeJSON(w, map[string]any{"path": p, "content": string(data)})
+}
+
+// LabFSWrite — PUT /api/lab/{lessonID}/fs/write?path=/root/project/app.yml, body = content.
+func (h *Handler) LabFSWrite(w http.ResponseWriter, r *http.Request) {
+	userID, lessonID, p, image, setup, ok := h.fsCommon(w, r)
+	if !ok {
+		return
+	}
+	body, err := io.ReadAll(io.LimitReader(r.Body, 2<<20)) // 2 MB cap
+	if err != nil {
+		http.Error(w, "read body", 400)
+		return
+	}
+	if err := h.shell.FSWrite(r.Context(), userID, labKey(lessonID), image, setup, p, body); err != nil {
+		writeJSON(w, map[string]any{"error": err.Error()})
+		return
+	}
+	writeJSON(w, map[string]any{"ok": true, "path": p})
 }
 
 func previewErrPage(port int, err error) string {

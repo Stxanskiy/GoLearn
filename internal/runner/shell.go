@@ -360,6 +360,86 @@ base64 /tmp/.glpb 2>/dev/null
 	return body, ct, status, nil
 }
 
+// ── In-lab file editor (Monaco) backend ──
+//
+// The editor reads and writes files inside the sandbox over docker exec, the
+// same channel the terminal uses (the container has no network). Paths are
+// base64'd into the container so a hostile name cannot break out of the shell;
+// the handler additionally jails every path under /root before calling here.
+
+// FSEntry is one directory child for the editor's file tree.
+type FSEntry struct {
+	Name string `json:"name"`
+	Dir  bool   `json:"dir"`
+}
+
+func (s *ShellRunner) fsExec(ctx context.Context, userID int, key, image, setup, script string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+	c, err := s.ensure(ctx, userID, key, image, setup)
+	if err != nil {
+		return "", err
+	}
+	b64 := base64.StdEncoding.EncodeToString([]byte(script))
+	remote := fmt.Sprintf(`docker exec %s sh -c 'echo %s | base64 -d | bash' 2>/dev/null`, c, b64)
+	out, _, err := s.run(ctx, remote)
+	if err == nil {
+		s.touch(c)
+	}
+	return out, err
+}
+
+// FSList returns the immediate children of dir (dirs first, then files).
+func (s *ShellRunner) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
+	db := base64.StdEncoding.EncodeToString([]byte(dir))
+	script := fmt.Sprintf(`d=$(printf %%s '%s' | base64 -d)
+find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C sort -t'\t' -k1,1 -k2,2`, db)
+	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	if err != nil {
+		return nil, err
+	}
+	var entries []FSEntry
+	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, "\t", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		entries = append(entries, FSEntry{Name: parts[1], Dir: parts[0] == "d"})
+	}
+	return entries, nil
+}
+
+// FSRead returns up to 512 KB of a file's content.
+func (s *ShellRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
+	fb := base64.StdEncoding.EncodeToString([]byte(file))
+	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
+[ -f "$f" ] && head -c 524288 "$f" | base64`, fb)
+	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	if err != nil {
+		return nil, err
+	}
+	return base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out), "\n", ""))
+}
+
+// FSWrite creates/overwrites a file with content (parent dirs are created).
+func (s *ShellRunner) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
+	fb := base64.StdEncoding.EncodeToString([]byte(file))
+	cb := base64.StdEncoding.EncodeToString(content)
+	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
+mkdir -p "$(dirname "$f")" && printf %%s '%s' | base64 -d > "$f" && echo GLOK`, fb, cb)
+	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(out, "GLOK") {
+		return fmt.Errorf("запись не удалась: %s", strings.TrimSpace(out))
+	}
+	return nil
+}
+
 // execTimeout picks the deadline for one command in this kind of sandbox.
 func execTimeout(image string) time.Duration {
 	if needsDocker(image) {
