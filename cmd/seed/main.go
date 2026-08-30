@@ -231,6 +231,9 @@ func getAllModules() []M {
 	for i := range security {
 		security[i].Track = "security"
 	}
+	// Replace the legacy Go-coding tasks with real shell labs (auto-checked in
+	// the sandbox terminal), matching the DevOps courses.
+	applySecurityLabs(security)
 
 	// DevOps + Database sections come fully from the devops404 export.
 	var mods []M
