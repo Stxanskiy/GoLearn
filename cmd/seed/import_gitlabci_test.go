@@ -143,3 +143,50 @@ func TestGitlabCILab1Fixtures(t *testing.T) {
 	}
 	t.Logf("lab1: %d tasks, %d with auto-checks", len(lab.Tasks), checks)
 }
+
+// TestGitlabCIAllLabFixtures checks every CI lab (1..7) has a Setup and
+// auto-checks, and that all generated Setup/Check scripts are valid bash.
+func TestGitlabCIAllLabFixtures(t *testing.T) {
+	m, err := buildModule(importSpec{Dir: "crs_gitlab_ci", Slug: "gitlab-ci", Track: "devops", Difficulty: "intermediate", Category: "CI/CD"})
+	if err != nil {
+		t.Fatalf("buildModule: %v", err)
+	}
+	want := map[string]bool{}
+	for _, s := range []string{"lab1", "lab2", "lab3", "lab4", "lab5", "lab6", "lab7"} {
+		want["ch-gitlab-ci-"+s] = false
+	}
+	for i := range m.Lessons {
+		l := &m.Lessons[i]
+		if _, ok := want[l.Slug]; !ok {
+			continue
+		}
+		want[l.Slug] = true
+		if len(l.Tasks) == 0 || l.Tasks[0].SetupScript == "" {
+			t.Errorf("%s: no setup/tasks", l.Slug)
+		}
+		checks := 0
+		for _, task := range l.Tasks {
+			for _, script := range []string{task.SetupScript, task.CheckScript} {
+				if strings.TrimSpace(script) == "" {
+					continue
+				}
+				cmd := exec.Command("bash", "-n")
+				cmd.Stdin = strings.NewReader(script)
+				if out, err := cmd.CombinedOutput(); err != nil {
+					t.Errorf("%s: invalid bash: %v\n%s", l.Slug, err, out)
+				}
+			}
+			if task.CheckScript != "" {
+				checks++
+			}
+		}
+		if checks == 0 {
+			t.Errorf("%s: no auto-checks", l.Slug)
+		}
+	}
+	for slug, seen := range want {
+		if !seen {
+			t.Errorf("CI lab %s not found", slug)
+		}
+	}
+}
