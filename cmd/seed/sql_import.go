@@ -64,9 +64,9 @@ func sqlAcademyModules() []M {
 	groups := []struct {
 		diff, slug, title string
 	}{
-		{"easy", "sql-easy", "SQL Academy: Лёгкие задачи"},
-		{"medium", "sql-medium", "SQL Academy: Средние задачи"},
-		{"hard", "sql-hard", "SQL Academy: Сложные задачи"},
+		{"easy", "sql-easy", "Лёгкие задачи"},
+		{"medium", "sql-medium", "Средние задачи"},
+		{"hard", "sql-hard", "Сложные задачи"},
 	}
 	var mods []M
 	for _, g := range groups {
