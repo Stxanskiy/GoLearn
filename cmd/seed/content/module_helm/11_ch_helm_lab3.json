@@ -30,9 +30,9 @@
       "title": "Изменить Chart.yaml",
       "taskid": "helm_lab3_t3_chart_yaml",
       "hint": "<p>Используй <code>helm</code>: определи release, chart и namespace, затем выбери действие по цели — install, upgrade, template, history или uninstall.</p>",
-      "question_html": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: Devops404 training chart</code>.</p>",
+      "question_html": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: TOT training chart</code>.</p>",
       "options": [],
-      "raw_description": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: Devops404 training chart</code>.</p>"
+      "raw_description": "<p>Обнови метаданные в <code>/root/myapp-chart/Chart.yaml</code>: выставь <code>name: myapp-chart</code> и <code>description: TOT training chart</code>.</p>"
     },
     {
       "type": "check",
