@@ -1,0 +1,79 @@
+{
+  "n": 19,
+  "id": "ch_git_11_advquiz",
+  "title": "Квиз: продвинутый Git",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "vm_image": null,
+  "vm_init": null,
+  "content_html": "<h1>Квиз: продвинутый Git</h1><p>Проверь, как усвоились rebase, reset, reflog и bisect.</p>",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "rebase vs merge",
+      "question_html": "Чем <code>git rebase main</code> в ветке feature отличается от <code>git merge main</code>?",
+      "options": [
+        {"text": "rebase заново применяет коммиты feature поверх main, делая историю линейной (без merge-коммита)", "correct": true, "explanation": "Именно так: rebase «пересаживает» коммиты на новое основание, merge — соединяет ветки коммитом слияния."},
+        {"text": "rebase и merge — это одно и то же, просто разные названия", "correct": false, "explanation": "Нет: merge сохраняет обе истории и создаёт merge-коммит, rebase переписывает историю линейно."},
+        {"text": "rebase удаляет ветку main", "correct": false, "explanation": "rebase ничего не удаляет, он лишь переносит коммиты текущей ветки."},
+        {"text": "merge работает только с удалёнными ветками", "correct": false, "explanation": "merge работает с любыми ветками, локальными и удалёнными."}
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "squash",
+      "question_html": "В <code>git rebase -i</code> какая команда вливает коммит в предыдущий?",
+      "options": [
+        {"text": "squash (или fixup)", "correct": true, "explanation": "squash объединяет с предыдущим и даёт отредактировать сообщение; fixup — то же, но отбрасывает сообщение."},
+        {"text": "pick", "correct": false, "explanation": "pick оставляет коммит как есть."},
+        {"text": "drop", "correct": false, "explanation": "drop выкидывает коммит целиком."},
+        {"text": "reword", "correct": false, "explanation": "reword меняет только сообщение коммита."}
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "reset --soft",
+      "question_html": "Что делает <code>git reset --soft HEAD~1</code>?",
+      "options": [
+        {"text": "Сдвигает ветку на коммит назад, оставляя изменения в индексе (staging)", "correct": true, "explanation": "--soft двигает только указатель; индекс и рабочие файлы не трогает — удобно пересобрать коммит."},
+        {"text": "Удаляет последний коммит вместе со всеми изменениями", "correct": false, "explanation": "Это делает --hard, а не --soft."},
+        {"text": "Создаёт новую ветку", "correct": false, "explanation": "reset не создаёт веток."},
+        {"text": "Отправляет изменения на удалённый сервер", "correct": false, "explanation": "reset — локальная операция."}
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "reset --hard риск",
+      "question_html": "Чем опасен <code>git reset --hard</code>?",
+      "options": [
+        {"text": "Он выкидывает незакоммиченные изменения из индекса и рабочих файлов — их не вернуть обычным способом", "correct": true, "explanation": "Верно. Закоммиченное можно найти в reflog, а вот незакоммиченные правки --hard теряет безвозвратно."},
+        {"text": "Он ничем не опасен", "correct": false, "explanation": "--hard уничтожает незакоммиченную работу — это самый «острый» режим."},
+        {"text": "Он меняет историю на сервере у всех коллег", "correct": false, "explanation": "reset локален; на сервер он сам ничего не отправляет."},
+        {"text": "Он удаляет .git и разрушает репозиторий", "correct": false, "explanation": "reset не трогает сам репозиторий целиком."}
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "reflog",
+      "question_html": "Зачем нужен <code>git reflog</code>?",
+      "options": [
+        {"text": "Это журнал перемещений HEAD — по нему можно найти хеш «потерянного» коммита и восстановить ветку", "correct": true, "explanation": "reflog — страховка: пока коммит в журнале (~90 дней), его можно вернуть через reset --hard <hash>."},
+        {"text": "Показывает историю удалённого репозитория", "correct": false, "explanation": "reflog — локальный журнал HEAD, не про удалёнку."},
+        {"text": "Логирует сетевые запросы git", "correct": false, "explanation": "reflog не про сеть, а про перемещения ссылок."},
+        {"text": "Ведёт список веток на сервере", "correct": false, "explanation": "Это делают git branch -r / git remote, а не reflog."}
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "bisect",
+      "question_html": "Как <code>git bisect</code> помогает найти сломавший коммит?",
+      "options": [
+        {"text": "Двоичным поиском: помечаешь хороший и плохой коммиты, git проверяет середину — так число проверок логарифмическое", "correct": true, "explanation": "Именно: bisect делит диапазон пополам на каждом шаге, а git bisect run автоматизирует проверку тестом."},
+        {"text": "Перебирает все коммиты подряд от первого до последнего", "correct": false, "explanation": "Это линейный поиск; bisect как раз избегает его двоичным делением."},
+        {"text": "Откатывает все коммиты по одному, пока не заработает", "correct": false, "explanation": "bisect ничего не откатывает — он только checkout-ит коммиты для проверки."},
+        {"text": "Ищет коммит по тексту сообщения", "correct": false, "explanation": "Поиск по сообщению — это git log --grep, а не bisect."}
+      ]
+    }
+  ]
+}

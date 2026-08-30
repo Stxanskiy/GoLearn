@@ -1,0 +1,34 @@
+{
+  "n": 16,
+  "id": "ch_git_lab8",
+  "title": "Лабораторная 8: Интерактивный rebase (squash, reword)",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "vm_image": null,
+  "vm_init": null,
+  "content_html": "<h1>Лабораторная 8: Интерактивный rebase</h1>\n<p>В репозитории <code>/root/project</code> история замусорена: осмысленный коммит <code>Add login</code> и два наспех сделанных <code>wip</code>. Наведём порядок интерактивным rebase, прежде чем показывать историю кому-то.</p>\n<p>Открой список для правки: <code>git rebase -i HEAD~3</code>. Строки идут <b>сверху вниз от старых к новым</b>.</p>",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Собрать три коммита в один",
+      "hint": "git rebase -i HEAD~3 — у второй и третьей строки замени 'pick' на 'squash' (или 'fixup'), сохрани и выйди. В итоге останется один коммит поверх init. Итоговое сообщение оставь 'Add login'.",
+      "question_html": "<p>Собери коммиты <code>Add login</code>, <code>wip</code> и <code>wip fix</code> в <b>один</b> коммит с сообщением <code>Add login</code>. После этого в истории должно остаться два коммита: <code>init</code> и <code>Add login</code>, а весь код из wip-коммитов — на месте.</p><pre>git rebase -i HEAD~3</pre>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Переименовать коммит",
+      "hint": "Самый простой способ для последнего коммита — git commit --amend -m 'Add login feature'. Или снова git rebase -i HEAD~1 с командой reword.",
+      "question_html": "<p>Переименуй верхний коммит из <code>Add login</code> в <code>Add login feature</code>.</p><pre>git commit --amend -m \"Add login feature\"</pre>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Убедиться, что дерево чистое",
+      "hint": "git status должен показывать 'nothing to commit, working tree clean'. Если есть незакоммиченное — закоммить или отмени.",
+      "question_html": "<p>После переписывания истории рабочее дерево должно быть чистым, без незакоммиченных изменений.</p><pre>git status</pre>",
+      "options": []
+    }
+  ]
+}

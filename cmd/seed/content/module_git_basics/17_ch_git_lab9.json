@@ -1,0 +1,34 @@
+{
+  "n": 17,
+  "id": "ch_git_lab9",
+  "title": "Лабораторная 9: reset (--soft/--hard) и восстановление через reflog",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "vm_image": null,
+  "vm_init": null,
+  "content_html": "<h1>Лабораторная 9: reset и reflog</h1>\n<p>В репозитории <code>/root/project</code> три коммита: <code>init</code>, <code>add a.txt</code> и <code>add b.txt</code>. Поиграем с <code>reset</code> в разных режимах, «потеряем» коммит и вернём его через <code>reflog</code>.</p>",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Мягкий reset: отменить коммит, сохранив изменения",
+      "hint": "git reset --soft HEAD~1 — ветка сдвинется на коммит назад, а изменения из отменённого коммита (b.txt) останутся в индексе (staging).",
+      "question_html": "<p>Отмени последний коммит (<code>add b.txt</code>), но сохрани его изменения <b>в индексе</b> — как будто ты только что сделал <code>git add b.txt</code>, но ещё не коммитил.</p><pre>git reset --soft HEAD~1</pre><p>Проверка: в истории останется 2 коммита, а <code>b.txt</code> будет в staging.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Жёсткий reset: убрать коммит вместе с изменениями",
+      "hint": "Сначала верни staging в норму при желании, затем git reset --hard HEAD~1 — уберёт коммит 'add a.txt' и удалит a.txt из рабочей директории. Незакоммиченное пропадёт.",
+      "question_html": "<p>Теперь жёстко откати ещё один коммit — <code>add a.txt</code> — так, чтобы и коммит, и сам файл <code>a.txt</code> исчезли. В истории должен остаться только <code>init</code>.</p><pre>git reset --hard HEAD~1</pre>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Восстановить потерянное через reflog",
+      "hint": "git reflog покажет строки HEAD@{0}, HEAD@{1}... Найди хеш коммита 'add a.txt' и верни ветку туда: git reset --hard <hash>. Файл a.txt вернётся.",
+      "question_html": "<p>Кажется, <code>add a.txt</code> потерян навсегда — но нет. Открой <code>git reflog</code>, найди хеш этого коммита и восстанови ветку на него, чтобы <code>a.txt</code> снова появился.</p><pre>git reflog\ngit reset --hard &lt;hash-коммита-add-a.txt&gt;</pre>",
+      "options": []
+    }
+  ]
+}

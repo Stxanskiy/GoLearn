@@ -49,6 +49,55 @@ func containsImg(s string) bool {
 	return imgTag.MatchString(s)
 }
 
+// TestGitBasicsAdvancedLessons verifies the advanced Git block (rebase, reset,
+// reflog, bisect) is wired into git-basics: 19 lessons total, and each new lab
+// has fixtures with syntactically valid bash. The check LOGIC is verified
+// separately by simulating the reference solutions against real git repos.
+func TestGitBasicsAdvancedLessons(t *testing.T) {
+	m, err := buildModule(importSpec{Dir: "module_git_basics", Slug: "git-basics", Track: "devops", Difficulty: "beginner", Category: "Git"})
+	if err != nil {
+		t.Fatalf("buildModule: %v", err)
+	}
+	if got := len(m.Lessons); got != 19 {
+		t.Fatalf("git-basics lessons = %d, want 19", got)
+	}
+	newLabs := map[string]bool{"ch-git-lab8": false, "ch-git-lab9": false, "ch-git-lab10": false}
+	for i := range m.Lessons {
+		l := &m.Lessons[i]
+		if _, ok := newLabs[l.Slug]; !ok {
+			continue
+		}
+		newLabs[l.Slug] = true
+		if len(l.Tasks) == 0 || l.Tasks[0].SetupScript == "" {
+			t.Errorf("%s has no setup/tasks", l.Slug)
+		}
+		checks := 0
+		for _, task := range l.Tasks {
+			for _, script := range []string{task.SetupScript, task.CheckScript} {
+				if strings.TrimSpace(script) == "" {
+					continue
+				}
+				cmd := exec.Command("bash", "-n")
+				cmd.Stdin = strings.NewReader(script)
+				if out, err := cmd.CombinedOutput(); err != nil {
+					t.Errorf("%s script invalid bash: %v\n%s", l.Slug, err, out)
+				}
+			}
+			if task.CheckScript != "" {
+				checks++
+			}
+		}
+		if checks == 0 {
+			t.Errorf("%s has no auto-checks", l.Slug)
+		}
+	}
+	for slug, seen := range newLabs {
+		if !seen {
+			t.Errorf("lesson %s not found in git-basics", slug)
+		}
+	}
+}
+
 // TestGitlabCILab1Fixtures checks that lab 1's fixtures attach and that every
 // generated Setup/Check script is syntactically valid bash (bash -n). It does
 // not run the checks (that needs a live sandbox) — only that they parse.

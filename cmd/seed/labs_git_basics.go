@@ -237,4 +237,79 @@ rm -f /root/student_commits.txt /root/readme_history.txt /root/branch_diff.txt`,
 				"git -C /root/project diff --name-only main develop > /root/branch_diff.txt"),
 		},
 	},
+
+	// ── Lab 8: интерактивный rebase (squash, reword) ──
+	"ch-git-lab8": {
+		Setup: `set -e
+rm -rf /root/project
+` + gitInit + `
+printf '# App\n' > /root/project/README.md
+git -C /root/project add -A && git -C /root/project commit -qm "init"
+printf 'def login(): pass\n' > /root/project/login.py
+git -C /root/project add -A && git -C /root/project commit -qm "Add login"
+printf 'x = 1\n' >> /root/project/login.py
+git -C /root/project add -A && git -C /root/project commit -qm "wip"
+printf 'y = 2\n' >> /root/project/login.py
+git -C /root/project add -A && git -C /root/project commit -qm "wip fix"`,
+		Checks: map[int]string{
+			1: check(`[ "$(git -C /root/project rev-list --count HEAD)" = 2 ] && git -C /root/project log -1 --format=%s | grep -qE '^Add login( feature)?$' && grep -q 'def login' /root/project/login.py && grep -q 'x = 1' /root/project/login.py && grep -q 'y = 2' /root/project/login.py`,
+				"три коммита собраны в один, код на месте",
+				"git rebase -i HEAD~3 — у строк 'wip' и 'wip fix' замени pick на squash/fixup; должно остаться 2 коммита (init + Add login)"),
+			2: check(`git -C /root/project log -1 --format=%s | grep -qx 'Add login feature'`,
+				"верхний коммит переименован в 'Add login feature'",
+				"git commit --amend -m \"Add login feature\""),
+			3: check(`[ -z "$(git -C /root/project status --porcelain 2>/dev/null)" ]`,
+				"рабочее дерево чистое",
+				"после rebase не должно остаться незакоммиченного: git status"),
+		},
+	},
+
+	// ── Lab 9: reset (--soft/--hard) и восстановление через reflog ──
+	"ch-git-lab9": {
+		Setup: `set -e
+rm -rf /root/project
+` + gitInit + `
+printf 'readme\n' > /root/project/README.md
+git -C /root/project add -A && git -C /root/project commit -qm "init"
+printf 'A\n' > /root/project/a.txt
+git -C /root/project add -A && git -C /root/project commit -qm "add a.txt"
+printf 'B\n' > /root/project/b.txt
+git -C /root/project add -A && git -C /root/project commit -qm "add b.txt"`,
+		Checks: map[int]string{
+			1: check(`[ "$(git -C /root/project rev-list --count HEAD)" = 2 ] && git -C /root/project diff --cached --name-only | grep -qx 'b.txt'`,
+				"коммит отменён мягко, b.txt остался в staging",
+				"git -C /root/project reset --soft HEAD~1"),
+			2: check(`[ "$(git -C /root/project rev-list --count HEAD)" = 1 ] && [ ! -e /root/project/a.txt ]`,
+				"жёсткий reset убрал коммит и файл a.txt",
+				"git -C /root/project reset --hard HEAD~1 (останется только init)"),
+			3: check(`[ -e /root/project/a.txt ] && [ "$(git -C /root/project rev-list --count HEAD)" -ge 2 ]`,
+				"коммит восстановлен через reflog, a.txt на месте",
+				"git -C /root/project reflog — найди хеш 'add a.txt' и: git -C /root/project reset --hard <hash>"),
+		},
+	},
+
+	// ── Lab 10: git bisect ──
+	"ch-git-lab10": {
+		Setup: `set -e
+rm -rf /root/project
+` + gitInit + `
+printf 'echo 42\n' > /root/project/calc.sh
+printf '#!/bin/sh\n[ "$(sh calc.sh)" = "42" ]\n' > /root/project/test.sh
+chmod +x /root/project/test.sh
+git -C /root/project add -A && git -C /root/project commit -qm "init: calc + test"
+git -C /root/project tag good-start
+printf 'x\n' > /root/project/x.txt && git -C /root/project add -A && git -C /root/project commit -qm "add feature x"
+printf 'y\n' > /root/project/y.txt && git -C /root/project add -A && git -C /root/project commit -qm "add feature y"
+printf 'echo 41\n' > /root/project/calc.sh && git -C /root/project add -A && git -C /root/project commit -qm "tweak calc"
+printf 'z\n' > /root/project/z.txt && git -C /root/project add -A && git -C /root/project commit -qm "add feature z"
+printf 'docs\n' > /root/project/docs.txt && git -C /root/project add -A && git -C /root/project commit -qm "docs"`,
+		Checks: map[int]string{
+			1: check(`[ -e /root/project/.git/BISECT_LOG ] && git -C /root/project log -1 --format=%s 2>/dev/null | grep -qx 'tweak calc'`,
+				"bisect нашёл первый плохой коммит — 'tweak calc'",
+				"cd /root/project && git bisect start HEAD good-start && git bisect run ./test.sh (не делай reset на этом шаге)"),
+			2: check(`[ ! -e /root/project/.git/BISECT_LOG ] && git -C /root/project symbolic-ref -q HEAD >/dev/null 2>&1`,
+				"вышел из режима bisect, снова на ветке",
+				"git -C /root/project bisect reset"),
+		},
+	},
 }

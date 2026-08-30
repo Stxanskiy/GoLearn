@@ -1,0 +1,27 @@
+{
+  "n": 18,
+  "id": "ch_git_lab10",
+  "title": "Лабораторная 10: git bisect — поиск сломавшего коммита",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "vm_image": null,
+  "vm_init": null,
+  "content_html": "<h1>Лабораторная 10: git bisect</h1>\n<p>В репозитории <code>/root/project</code> есть скрипт <code>calc.sh</code>, который <b>должен</b> выводить <code>42</code>, и проверка <code>test.sh</code>, которая это подтверждает (<code>exit 0</code> — хорошо, <code>1</code> — сломано). В какой-то момент истории кто-то сломал <code>calc.sh</code>. Коммитов много — искать вручную долго. <code>git bisect</code> найдёт виновника двоичным поиском.</p>\n<p>На старте: <code>git bisect start HEAD good-start</code> (тег <code>good-start</code> помечает заведомо рабочий коммит). Затем можно отмечать вручную (<code>git bisect good</code> / <code>git bisect bad</code>) — или доверить всё скрипту.</p>",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Найти первый плохой коммит",
+      "hint": "cd /root/project && git bisect start HEAD good-start && git bisect run ./test.sh — bisect сам прогонит тест по коммитам и остановится на первом плохом. НЕ делай bisect reset на этом шаге.",
+      "question_html": "<p>Запусти автоматический bisect, чтобы он сам нашёл первый коммит, где <code>test.sh</code> начинает падать:</p><pre>cd /root/project\ngit bisect start HEAD good-start\ngit bisect run ./test.sh</pre><p>После этого HEAD будет стоять на первом «плохом» коммите. <b>Не выходи</b> из bisect на этом шаге — проверка убедится, что виновник найден.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Выйти из режима bisect",
+      "hint": "git bisect reset — вернёт HEAD на ветку и завершит bisect.",
+      "question_html": "<p>Заверши расследование и вернись на ветку:</p><pre>git bisect reset</pre><p>После этого ты снова на обычной ветке, а не в «отсоединённом» состоянии bisect.</p>",
+      "options": []
+    }
+  ]
+}
