@@ -23,14 +23,14 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// bergBanner is shown when a sandbox terminal opens (ANSI green, CRLF endings).
-const bergBanner = "\x1b[1;36m" +
-	"\r\n ██████   ███████  ██████    ██████ " +
-	"\r\n ██   ██  ██       ██   ██  ██      " +
-	"\r\n ██████   █████    ██████   ██   ███" +
-	"\r\n ██   ██  ██       ██   ██  ██    ██" +
-	"\r\n ██████   ███████  ██   ██   ██████ " +
-	"\x1b[0m\r\n\x1b[90m Welcome to your BERG lab environment!\x1b[0m\r\n\r\n"
+// labBanner is shown when a sandbox terminal opens (ANSI cyan, CRLF endings).
+const labBanner = "\x1b[1;36m" +
+	"\r\n ████████   ██████   ████████" +
+	"\r\n    ██     ██    ██     ██   " +
+	"\r\n    ██     ██    ██     ██   " +
+	"\r\n    ██     ██    ██     ██   " +
+	"\r\n    ██      ██████      ██   " +
+	"\x1b[0m\r\n\x1b[90m Welcome to your TOT lab environment!\x1b[0m\r\n\r\n"
 
 // TermWS upgrades to a WebSocket and attaches a real interactive PTY shell to
 // the user's sandbox container. Query: ?kind=git  OR  ?task=<id>.
@@ -82,7 +82,7 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	_ = conn.WriteMessage(websocket.TextMessage, []byte(bergBanner))
+	_ = conn.WriteMessage(websocket.TextMessage, []byte(labBanner))
 
 	// The sandbox is started AFTER the upgrade so that a failure can be
 	// explained inside the terminal. Failing before it leaves the browser with

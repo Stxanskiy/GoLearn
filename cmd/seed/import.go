@@ -18,12 +18,23 @@ var rscFlight = regexp.MustCompile(`\["\$","[^"]+",null,`)
 // trailingChunkID strips a leftover flight chunk id like "\nf:" or "\n28:".
 var trailingChunkID = regexp.MustCompile(`[0-9A-Za-z]{1,5}:\s*$`)
 
+// imgTag / pictureBlock strip lesson illustrations and cover art. The course
+// images are being removed (to be replaced later); the embedded data-URI covers
+// also bloat every lesson by hundreds of KB. Migration 014 does the same to
+// rows already in the database.
+var imgTag = regexp.MustCompile(`(?is)<img\b[^>]*>`)
+var pictureBlock = regexp.MustCompile(`(?is)<picture\b[^>]*>.*?</picture>`)
+var emptyMediaWrap = regexp.MustCompile(`(?is)<(figure|figcaption)\b[^>]*>\s*</(figure|figcaption)>`)
+
 func cleanContent(h string) string {
 	if loc := rscFlight.FindStringIndex(h); loc != nil {
 		h = h[:loc[0]]
 		h = strings.TrimRight(h, " \t\r\n")
 		h = trailingChunkID.ReplaceAllString(h, "")
 	}
+	h = pictureBlock.ReplaceAllString(h, "")
+	h = imgTag.ReplaceAllString(h, "")
+	h = emptyMediaWrap.ReplaceAllString(h, "")
 	return strings.TrimSpace(h)
 }
 

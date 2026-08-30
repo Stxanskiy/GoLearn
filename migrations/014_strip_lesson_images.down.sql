@@ -1,0 +1,3 @@
+-- 014 down: irreversible. The removed <img>/<picture> tags carried their image
+-- data inline (data: URIs), so there is nothing to restore them from. Re-seed
+-- from source JSON if the images are ever needed again.

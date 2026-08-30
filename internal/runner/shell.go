@@ -21,8 +21,13 @@ const (
 	// Docker labs boot an engine and load images on first use, which is far
 	// slower than a shell command.
 	dockerExecTimeout = 3 * time.Minute
-	shellSessionTTL   = 30 * time.Minute
-	maxShellOutput    = 64 * 1024
+	// shellSessionTTL reaps a container after this much *idle* time (no exec,
+	// no keystrokes) — cleans up abandoned tabs.
+	shellSessionTTL = 30 * time.Minute
+	// shellSessionMax is a hard cap from container start: even a busy session is
+	// torn down after this, so nobody holds a sandbox forever.
+	shellSessionMax = 1 * time.Hour
+	maxShellOutput  = 64 * 1024
 )
 
 // ShellRunner runs student shell commands inside per-(user,task) ephemeral
@@ -38,7 +43,8 @@ type ShellRunner struct {
 	// SANDBOX_PRIVILEGED is set explicitly.
 	privileged bool
 	mu         sync.Mutex
-	sessions   map[string]time.Time
+	sessions   map[string]time.Time // container -> last activity (idle TTL)
+	started    map[string]time.Time // container -> first start (hard cap)
 }
 
 func NewShellRunner() *ShellRunner {
@@ -49,6 +55,7 @@ func NewShellRunner() *ShellRunner {
 		user:       shellEnv("SANDBOX_SSH_USER", "sandbox"),
 		image:      shellEnv("SANDBOX_IMAGE", "golearn/sandbox:latest"),
 		sessions:   make(map[string]time.Time),
+		started:    make(map[string]time.Time),
 	}
 	// Local mode: execute docker on the host directly. Suited to a single-user
 	// local install where a dedicated sandbox VM is overkill.
@@ -223,6 +230,9 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 		return "", fmt.Errorf("sandbox start failed: %s", msg)
 	}
 	s.touch(c)
+	s.mu.Lock()
+	s.started[c] = time.Now() // fresh container — start the hard-cap clock
+	s.mu.Unlock()
 	return c, nil
 }
 
@@ -312,6 +322,7 @@ func (s *ShellRunner) Reset(ctx context.Context, userID int, key string) error {
 		c, dindVolume(userID, key)))
 	s.mu.Lock()
 	delete(s.sessions, c)
+	delete(s.started, c)
 	s.mu.Unlock()
 	return err
 }
@@ -324,12 +335,15 @@ func (s *ShellRunner) reaper() {
 		now := time.Now()
 		var stale []string
 		for c, last := range s.sessions {
-			if now.Sub(last) > shellSessionTTL {
+			// Reap on idle timeout OR on the hard cap from first start.
+			if now.Sub(last) > shellSessionTTL ||
+				(!s.started[c].IsZero() && now.Sub(s.started[c]) > shellSessionMax) {
 				stale = append(stale, c)
 			}
 		}
 		for _, c := range stale {
 			delete(s.sessions, c)
+			delete(s.started, c)
 		}
 		s.mu.Unlock()
 		for _, c := range stale {
