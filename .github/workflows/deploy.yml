@@ -17,7 +17,27 @@ jobs:
   deploy:
     runs-on: [self-hosted, berg]
     steps:
-      - uses: actions/checkout@v4
+      # Checkout WITHOUT actions/checkout. The self-hosted runner repeatedly
+      # failed to download the action from GitHub's CDN ("Failed to resolve
+      # action download info / HTTP request timed out"), which blocked every
+      # deploy. A plain git checkout needs no action download, so an Actions CDN
+      # hiccup can no longer stop a release. Auth uses the ephemeral GITHUB_TOKEN,
+      # exactly like actions/checkout does.
+      - name: Checkout ${{ github.sha }} (no action download)
+        run: |
+          set -e
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          AUTH="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if [ -d .git ]; then
+            git remote set-url origin "$AUTH"
+          else
+            git init -q
+            git remote add origin "$AUTH"
+          fi
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout -f "$GITHUB_SHA"
+          git clean -ffdx
 
       - name: Sync source to /opt/golearn/src
         run: |
