@@ -1,0 +1,161 @@
+{
+  "n": 16,
+  "id": "ch_gitlab_ci_lab7",
+  "title": "Лабораторная 6: reports и production controls",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем открой подготовленный проект.</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>В этой лабораторной мы посмотрим, как GitLab показывает тестовые reports в интерфейсе.</p>\n<p>В реальной работе на этом месте запускается тестовая программа: backend tests, frontend tests, проверки API или другой набор тестов. Она проверяет код и создаёт файл отчёта в формате JUnit. Разработчик не пишет XML руками: его формирует тестовый инструмент, а GitLab читает результат и показывает его в удобном виде.</p>\n<p>В нашем учебном проекте такой report будет создавать подготовленный скрипт <code>scripts/write-junit.sh</code>. В следующей задаче мы запустим его не вручную, а внутри GitLab job.</p>26:T58d,<p>Теперь добавь в тот же job <code>optional-lint</code> строку <code>allow_failure: true</code>. Job всё ещё будет завершаться с ошибкой из-за <code>exit 1</code>, но GitLab больше не будет считать это критическим падением всего pipeline.</p>\n<pre><code>optional-lint:\n  stage: test\n  image: alpine:3.20\n  allow_failure: true\n  script:\n    - echo \"optional lint\"\n    - exit 1</code></pre>\n<p>Закоммить и запушь изменения:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Allow optional lint failure\"\ngit push origin main</code></pre>\n<p>Открой <strong>Build → Pipelines → последний pi",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Подготовиться к reports в pipeline",
+      "taskid": "gitlab_ci_lab7_t1_reports_intro",
+      "hint": "<p>На этом шаге ничего запускать не нужно. Прочитай вводную и переходи к следующей задаче.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Добавить JUnit report",
+      "taskid": "gitlab_ci_lab7_t2_junit",
+      "hint": "<p><code>when: always</code> позволяет сохранить отчёт даже при падении тестов. В реальном проекте вместо <code>write-junit.sh</code> обычно будет команда запуска тестов, например unit tests приложения.</p>",
+      "question_html": "<p>Добавь job <code>unit-report</code>. В этой задаче мы эмулируем запуск тестов: скрипт <code>./scripts/write-junit.sh</code> уже подготовлен в репозитории и создаёт файл <code>report.xml</code> в формате JUnit.</p>\n<p>GitLab умеет читать такой файл не просто как обычный artifact, а как тестовый отчёт. Поэтому job должен запустить скрипт и сохранить <code>report.xml</code> через <code>artifacts.reports.junit</code>.</p>\n<p>По смыслу это то же место, где в реальном проекте стояла бы команда запуска тестов приложения. Например, тесты проверили новый код, сформировали JUnit report, а GitLab показал команде, какие проверки прошли и где есть ошибка.</p>\n<pre><code>unit-report:\n  stage: test\n  image: alpine:3.20\n  script:\n    - ./scripts/write-junit.sh\n  artifacts:\n    when: always\n    reports:\n      junit: report.xml\n    paths:\n      - report.xml\n    expire_in: 1 hour</code></pre>",
+      "options": [],
+      "raw_description": "<p>Добавь job <code>unit-report</code>. В этой задаче мы эмулируем запуск тестов: скрипт <code>./scripts/write-junit.sh</code> уже подготовлен в репозитории и создаёт файл <code>report.xml</code> в формате JUnit.</p>\n<p>GitLab умеет читать такой файл не просто как обычный artifact, а как тестовый отчёт. Поэтому job должен запустить скрипт и сохранить <code>report.xml</code> через <code>artifacts.reports.junit</code>.</p>\n<p>По смыслу это то же место, где в реальном проекте стояла бы команда запуска тестов приложения. Например, тесты проверили новый код, сформировали JUnit report, а GitLab показал команде, какие проверки прошли и где есть ошибка.</p>\n<pre><code>unit-report:\n  stage: test\n  image: alpine:3.20\n  script:\n    - ./scripts/write-junit.sh\n  artifacts:\n    when: always\n    reports:\n      junit: report.xml\n    paths:\n      - report.xml\n    expire_in: 1 hour</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Запушить report pipeline",
+      "taskid": "gitlab_ci_lab7_t3_report_pipeline",
+      "hint": "<p>Если job упал, открой <strong>Build → Pipelines → последний pipeline</strong>, затем на странице pipeline нажми на имя job <code>unit-report</code>. После этого GitLab откроет страницу job с log. Обычно проблема в отступах YAML или имени файла <code>report.xml</code>.</p>",
+      "question_html": "<p>Закоммить изменения и запушь pipeline.</p>\n<p>\n  <pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add junit report\"\ngit push origin main</code></pre>\n  Затем открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>unit-report</code>: откроется log job, где должен выполниться скрипт <code>write-junit.sh</code>.</p>\n<p>На странице job посмотри блок artifacts: там должен быть сохранён <code>report.xml</code>. Затем вернись на страницу этого pipeline. Справа от вкладки <strong>Pipeline Jobs</strong> должна появиться вкладка <strong>Test</strong>. Открой её: там будет видно, что 2 из 3 тестов прошли, а один тест упал.</p>\n<p>В этой же вкладке нажми на <code>unit-report</code>, чтобы посмотреть конкретные test cases и увидеть, какой тест упал и с какой ошибкой.</p>\n\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Закоммить изменения и запушь pipeline.</p>\n<p>\n  <pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add junit report\"\ngit push origin main</code></pre>\n  Затем открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>unit-report</code>: откроется log job, где должен выполниться скрипт <code>write-junit.sh</code>.</p>\n<p>На странице job посмотри блок artifacts: там должен быть сохранён <code>report.xml</code>. Затем вернись на страницу этого pipeline. Справа от вкладки <strong>Pipeline Jobs</strong> должна появиться вкладка <strong>Test</strong>. Открой её: там будет видно, что 2 из 3 тестов прошли, а один тест упал.</p>\n<p>В этой же вкладке нажми на <code>unit-report</code>, чтобы посмотреть конкретные test cases и увидеть, какой тест упал и с какой ошибкой.</p>\n\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Настроить retry и timeout",
+      "taskid": "gitlab_ci_lab7_t4_retry_timeout",
+      "hint": "<p>Не ставь большой retry на тесты, которые падают из-за бага в коде.</p>",
+      "question_html": "<p>У job <code>download-deps</code> добавь <code>retry: 1</code> и <code>timeout: 5 minutes</code>. Это уместно для временных сетевых сбоев, но не должно скрывать постоянную ошибку.</p>\n<pre><code>download-deps:\n  stage: prepare\n  image: alpine:3.20\n  retry: 1\n  timeout: 5 minutes\n  script:\n    - echo \"download dependencies\"</code></pre>",
+      "options": [],
+      "raw_description": "<p>У job <code>download-deps</code> добавь <code>retry: 1</code> и <code>timeout: 5 minutes</code>. Это уместно для временных сетевых сбоев, но не должно скрывать постоянную ошибку.</p>\n<pre><code>download-deps:\n  stage: prepare\n  image: alpine:3.20\n  retry: 1\n  timeout: 5 minutes\n  script:\n    - echo \"download dependencies\"</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Защитить production deploy через resource_group",
+      "taskid": "gitlab_ci_lab7_t5_resource_group",
+      "hint": "<p><code>allow_failure: true</code> здесь нужен, чтобы ручной deploy job не блокировал весь pipeline, если ты не нажал Play.</p>",
+      "question_html": "<p>Добавь manual job <code>deploy-production</code> с <code>environment: production</code> и <code>resource_group: production</code>.</p>\n\n<pre><code>deploy-production:\n  stage: deploy\n  image: alpine:3.20\n  allow_failure: true\n  resource_group: production\n  environment:\n    name: production\n  script:\n    - echo \"deploy production $CI_COMMIT_SHORT_SHA\"\n  rules:\n    - if: '$CI_COMMIT_BRANCH == \"main\"'\n      when: manual</code></pre>\n\n<p>Здесь мы проверяем саму конфигурацию. <code>resource_group</code> нужен, чтобы два deploy jobs не использовали одно и то же production-окружение одновременно.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь manual job <code>deploy-production</code> с <code>environment: production</code> и <code>resource_group: production</code>.</p>\n\n<pre><code>deploy-production:\n  stage: deploy\n  image: alpine:3.20\n  allow_failure: true\n  resource_group: production\n  environment:\n    name: production\n  script:\n    - echo \"deploy production $CI_COMMIT_SHORT_SHA\"\n  rules:\n    - if: '$CI_COMMIT_BRANCH == \"main\"'\n      when: manual</code></pre>\n\n<p>Здесь мы проверяем саму конфигурацию. <code>resource_group</code> нужен, чтобы два deploy jobs не использовали одно и то же production-окружение одновременно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Увидеть падение pipeline без allow_failure",
+      "taskid": "gitlab_ci_lab7_t6_optional_lint_failed",
+      "hint": "<p>На этом шаге специально не добавляй <code>allow_failure</code>. Нужно увидеть красный pipeline.</p>",
+      "question_html": "<p>Сначала добавь job <code>optional-lint</code> без <code>allow_failure</code>. Он специально завершится с ошибкой, чтобы ты увидел обычное поведение GitLab: если job упал, весь pipeline становится красным.</p>\n<pre><code>optional-lint:\n  stage: test\n  image: alpine:3.20\n  script:\n    - echo \"optional lint\"\n    - exit 1</code></pre>\n<p>Закоммить и запушь изменения:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add failing optional lint\"\ngit push origin main</code></pre>\n<p>Открой <strong>Build → Pipelines → последний pipeline</strong>. Он должен стать красным, потому что <code>optional-lint</code> упал и GitLab считает это ошибкой всего pipeline.</p>\n<p>Нажми на <code>optional-lint</code> и посмотри log: там будет видно <code>exit 1</code>. На следующем шаге мы оставим тот же падающий job, но добавим <code>allow_failure</code> и сравним поведение.</p>\n<p>Перед проверкой дождись, что pipeline завершился и больше не находится в running/pending.</p>",
+      "options": [],
+      "raw_description": "<p>Сначала добавь job <code>optional-lint</code> без <code>allow_failure</code>. Он специально завершится с ошибкой, чтобы ты увидел обычное поведение GitLab: если job упал, весь pipeline становится красным.</p>\n<pre><code>optional-lint:\n  stage: test\n  image: alpine:3.20\n  script:\n    - echo \"optional lint\"\n    - exit 1</code></pre>\n<p>Закоммить и запушь изменения:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add failing optional lint\"\ngit push origin main</code></pre>\n<p>Открой <strong>Build → Pipelines → последний pipeline</strong>. Он должен стать красным, потому что <code>optional-lint</code> упал и GitLab считает это ошибкой всего pipeline.</p>\n<p>Нажми на <code>optional-lint</code> и посмотри log: там будет видно <code>exit 1</code>. На следующем шаге мы оставим тот же падающий job, но добавим <code>allow_failure</code> и сравним поведение.</p>\n<p>Перед проверкой дождись, что pipeline завершился и больше не находится в running/pending.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Разрешить падение optional-lint через allow_failure",
+      "taskid": "gitlab_ci_lab7_t7_allow_failure_pipeline",
+      "hint": "<p><code>allow_failure</code> подходит для необязательных проверок, но не подходит для unit tests, build и production deploy.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем нужен reports.junit?",
+      "taskid": "gitlab_ci_lab7_t8_quiz_reports",
+      "hint": "",
+      "question_html": "<p>Зачем в job используют <code>artifacts.reports.junit</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы GitLab быстрее скачивал зависимости",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы GitLab понял файл как тестовый отчёт и показал результат в интерфейсе",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы job стал manual",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы запретить параллельный deploy",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем в job используют <code>artifacts.reports.junit</code>?</p>\n<ul>\n<li>Чтобы GitLab быстрее скачивал зависимости [Нет]</li>\n<li>+Чтобы GitLab понял файл как тестовый отчёт и показал результат в интерфейсе [Верно]</li>\n<li>Чтобы job стал manual [Нет]</li>\n<li>Чтобы запретить параллельный deploy [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем resource_group?",
+      "taskid": "gitlab_ci_lab7_t9_quiz_resource_group",
+      "hint": "",
+      "question_html": "<p>Зачем deploy job задают <code>resource_group</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы ускорить скачивание Docker image",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы GitLab создал новый branch",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы несколько deploy jobs не использовали одно и то же окружение одновременно",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы скрыть логи job",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем deploy job задают <code>resource_group</code>?</p>\n<ul>\n<li>Чтобы ускорить скачивание Docker image [Нет]</li>\n<li>Чтобы GitLab создал новый branch [Нет]</li>\n<li>+Чтобы несколько deploy jobs не использовали одно и то же окружение одновременно [Верно]</li>\n<li>Чтобы скрыть логи job [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с reports и controls",
+      "taskid": "gitlab_ci_lab7_t10_experiment",
+      "hint": "",
+      "question_html": "<p>В этой лабораторной попробуй поэкспериментировать с настройками, которые делают pipeline удобнее для команды.</p>\n<p>Что можно попробовать:</p>\n\n<p>Если pipeline показал ошибку, открой job log и найди конкретную команду, которая упала. Перед завершением верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "изменить содержимое <code>report.xml</code> в скрипте и посмотреть, как GitLab показывает report;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "изменить <code>retry</code> на другое небольшое значение и подумать, для каких jobs это уместно;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавить второй manual deploy job с тем же <code>resource_group</code> и убедиться, что такие jobs не должны использовать одно и то же окружение одновременно.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>В этой лабораторной попробуй поэкспериментировать с настройками, которые делают pipeline удобнее для команды.</p>\n<p>Что можно попробовать:</p>\n<ul>\n<li>изменить содержимое <code>report.xml</code> в скрипте и посмотреть, как GitLab показывает report;</li>\n<li>изменить <code>retry</code> на другое небольшое значение и подумать, для каких jobs это уместно;</li>\n<li>добавить второй manual deploy job с тем же <code>resource_group</code> и убедиться, что такие jobs не должны использовать одно и то же окружение одновременно.</li>\n</ul>\n<p>Если pipeline показал ошибку, открой job log и найди конкретную команду, которая упала. Перед завершением верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab7/setup.yaml"
+}

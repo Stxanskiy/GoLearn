@@ -1,0 +1,166 @@
+{
+  "n": 18,
+  "id": "ch_gitlab_ci_lab4",
+  "title": "Лабораторная 7: build, registry и деплой на сервер",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Это новая лабораторная VM, поэтому у неё свой пользователь GitLab и свой приватный проект. Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем в терминале посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>. Git push уже настроен заранее. Не выводи remote URL без необходимости: в нём может быть временный token лаборатории.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>В проекте уже есть простое статическое приложение, Dockerfile, готовый deploy-скрипт <code>scripts/deploy-compose.sh</code> и файл <code>deploy/docker-compose.yml</code>. Открой папку <code>/root/gitlab-ci-lab</code> в VS Code, посмотри каталог <code>public/</code>, файл <code>Dockerfile</code>, каталог <code>deploy/</code> и каталог <code>scripts/</code>.</p>\n<p>В этой лабораторной мы пройдём полный мини-путь CI/CD: изменённый код превращается в новый Docker image, image получает tag, сохраняется в GitLab Registry, а затем именно эта новая версия деплоится на учебный сервер.</p>\n<p>Dockerfile должен собирать nginx image из каталога <code>public/</code>. Для нас этот image и будет новой версией приложения.</p>26:Tbe1,<p>Замени TODO pipeline на рабочий вариант. Job <code>build-image</code> должен залогиниться в GitLab Registry, собрать Docker image новой версии приложения, поставить ему tag и сделать push.</p>\n<p>Открой файл <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code и замени его содержимое на YAML ниже. Сейчас делаем только первый этап: собираем image и отправляем его в GitLab Registry. Deploy добавим отдельным шагом дальше, чтобы было понятно, где заканчивается сборка новой версии и где начинается разворачивание этой версии на сервере.</p>\n<pre><code>stages:\n  - build\n\nvariables:\n  IMAGE_TAG: $CI_COMMIT_SHORT_SHA\n\nbuild-image:\n  stage: build\n  image: docker:27-cli\n  before",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Проверить приложение и Dockerfile",
+      "taskid": "gitlab_ci_lab4_t1_dockerfile",
+      "hint": "<p>Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>. Для этой лабораторной достаточно <code>FROM nginx:alpine</code> и <code>COPY public/ /usr/share/nginx/html/</code>.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Собрать и отправить image в GitLab Registry",
+      "taskid": "gitlab_ci_lab4_t2_registry",
+      "hint": "<p>Если registry пустой, открой <strong>Build → Pipelines → последний pipeline</strong>, нажми на job <code>build-image</code> и прочитай log. В log должны быть команды <code>docker login</code>, <code>docker build</code> и <code>docker push</code>. Если одна из них упала, GitLab покажет ошибку в конце log.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Добавить deploy-compose на учебный сервер",
+      "taskid": "gitlab_ci_lab4_t3_variables",
+      "hint": "<p>Если deploy job не появился, проверь, что в <code>stages</code> есть <code>deploy</code>, а job называется именно <code>deploy-compose</code>.</p>",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    },
+    {
+      "type": "check",
+      "title": "Дождаться deploy-compose",
+      "taskid": "gitlab_ci_lab4_t4_deploy",
+      "hint": "<p>Если SSH падает, открой <strong>Build → Pipelines → последний pipeline → deploy-compose</strong> и прочитай log deploy job. Ищи строку с <code>ssh root@...</code> и сообщение ошибки сразу после неё. Ключ приходит через <code>STUDENT_DEPLOY_KEY</code>.</p>",
+      "question_html": "$28",
+      "options": [],
+      "raw_description": "$28"
+    },
+    {
+      "type": "self",
+      "title": "Smoke test сервиса",
+      "taskid": "gitlab_ci_lab4_t5_smoke",
+      "hint": "<p>Если <code>curl</code> не отвечает, открой log job <code>deploy-compose</code> в GitLab и проверь <code>docker compose ps</code> в терминале VM.</p>",
+      "question_html": "<p>Проверь сервис из терминала учебной VM. В этой лабораторной кнопка <strong>Web Preview</strong> открывает GitLab, поэтому сайт после deploy проверяем через локальный HTTP-запрос к контейнеру.</p>\n<pre><code>curl -fsS http://localhost/\ncat /root/deployed-ci-app/deployed.txt</code></pre>\n<p>Если <code>curl</code> вернул HTML-страницу, значит контейнер отвечает на порту 80. Файл <code>deployed.txt</code> показывает, какой commit был развернут последним deploy job.</p>\n<p>Smoke test не доказывает, что всё идеально. Он быстро подтверждает главное: после pipeline сервис реально запущен и отвечает.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь сервис из терминала учебной VM. В этой лабораторной кнопка <strong>Web Preview</strong> открывает GitLab, поэтому сайт после deploy проверяем через локальный HTTP-запрос к контейнеру.</p>\n<pre><code>curl -fsS http://localhost/\ncat /root/deployed-ci-app/deployed.txt</code></pre>\n<p>Если <code>curl</code> вернул HTML-страницу, значит контейнер отвечает на порту 80. Файл <code>deployed.txt</code> показывает, какой commit был развернут последним deploy job.</p>\n<p>Smoke test не доказывает, что всё идеально. Он быстро подтверждает главное: после pipeline сервис реально запущен и отвечает.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Собрать и задеплоить image с release tag",
+      "taskid": "gitlab_ci_lab4_t6_image_tag",
+      "hint": "<p>Если pipeline для <code>v1.0.0</code> не появился, проверь, что ты сделал <code>git push origin v1.0.0</code>. Если deploy не изменил сервер, открой этот tag pipeline и запусти manual job <code>deploy-compose</code>.</p>",
+      "question_html": "$29",
+      "options": [],
+      "raw_description": "$29"
+    },
+    {
+      "type": "check",
+      "title": "Добавить pipeline id в обычный image tag",
+      "taskid": "gitlab_ci_lab4_t7_registry_variables",
+      "hint": "<p>Правильная строка: <code>- export IMAGE_TAG=\"${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}_${CI_PIPELINE_ID}}\"</code>. <code>CI_REGISTRY_USER</code> и <code>CI_REGISTRY_PASSWORD</code> нужны для <code>docker login</code>, <code>CI_REGISTRY_IMAGE</code> — для имени image, <code>CI_COMMIT_TAG</code> — для release tag.</p>",
+      "question_html": "$2a",
+      "options": [],
+      "raw_description": "$2a"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем хранить image в registry?",
+      "taskid": "gitlab_ci_lab4_t8_quiz_registry",
+      "hint": "",
+      "question_html": "<p>Зачем pipeline отправляет собранный Docker image в container registry перед deploy?</p>",
+      "options": [
+        {
+          "text": "Registry автоматически чинит баги приложения",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Image хранится как версия приложения, одинаково запускается и может быть скачан сервером",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Registry заменяет тесты",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Registry нужен только для красивого UI в GitLab",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем pipeline отправляет собранный Docker image в container registry перед deploy?</p>\n<ul>\n<li>Registry автоматически чинит баги приложения [Нет]</li>\n<li>+Image хранится как версия приложения, одинаково запускается и может быть скачан сервером [Верно]</li>\n<li>Registry заменяет тесты [Нет]</li>\n<li>Registry нужен только для красивого UI в GitLab [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что показывает deployed.txt?",
+      "taskid": "gitlab_ci_lab4_t9_quiz_deployed_trace",
+      "hint": "",
+      "question_html": "<p>Зачем deploy job записывает на сервер файл <code>deployed.txt</code> с commit, ref, build_job и image?</p>",
+      "options": [
+        {
+          "text": "Чтобы заменить GitLab Registry",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы Docker Compose запускался быстрее",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы было понятно, какая версия приложения сейчас развернута и какой pipeline её выкатил",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы скрыть image tag от пользователя",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем deploy job записывает на сервер файл <code>deployed.txt</code> с commit, ref, build_job и image?</p>\n<ul>\n<li>Чтобы заменить GitLab Registry [Нет]</li>\n<li>Чтобы Docker Compose запускался быстрее [Нет]</li>\n<li>+Чтобы было понятно, какая версия приложения сейчас развернута и какой pipeline её выкатил [Верно]</li>\n<li>Чтобы скрыть image tag от пользователя [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с image, registry и deploy",
+      "taskid": "gitlab_ci_lab4_t10_experiment",
+      "hint": "",
+      "question_html": "<p>Попробуй несколько безопасных изменений в pipeline сборки и deploy.</p>\n<p>Идеи:</p>\n\n<p>Перед завершением верни рабочий pipeline, запушь его и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "измени HTML в каталоге <code>public/</code>, запушь изменения и убедись, что deploy обновил контейнер;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавь в log <code>build-image</code> ещё одну встроенную переменную, например <code>CI_PIPELINE_ID</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавь дополнительный tag image, например <code>$CI_COMMIT_REF_NAME</code>, и посмотри log <code>docker push</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "временно измени команду <code>docker build</code>, посмотри сообщение об ошибке в job log и верни рабочий вариант.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Попробуй несколько безопасных изменений в pipeline сборки и deploy.</p>\n<p>Идеи:</p>\n<ul>\n<li>измени HTML в каталоге <code>public/</code>, запушь изменения и убедись, что deploy обновил контейнер;</li>\n<li>добавь в log <code>build-image</code> ещё одну встроенную переменную, например <code>CI_PIPELINE_ID</code>;</li>\n<li>добавь дополнительный tag image, например <code>$CI_COMMIT_REF_NAME</code>, и посмотри log <code>docker push</code>;</li>\n<li>временно измени команду <code>docker build</code>, посмотри сообщение об ошибке в job log и верни рабочий вариант.</li>\n</ul>\n<p>Перед завершением верни рабочий pipeline, запушь его и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab4/setup.yaml"
+}

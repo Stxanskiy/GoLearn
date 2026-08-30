@@ -1,0 +1,166 @@
+{
+  "n": 8,
+  "id": "ch_gitlab_ci_lab2",
+  "title": "Лабораторная 2: stages, variables и artifacts",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Это новая лабораторная VM, поэтому у неё свой пользователь GitLab и свой приватный проект. Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем в терминале посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>. Git push уже настроен заранее. Не выводи remote URL без необходимости: в нём может быть временный token лаборатории.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Открой файл <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code и найди stages <code>validate</code>, <code>build</code>, <code>test</code>. Сейчас ничего менять не нужно: задача про то, чтобы увидеть, как подготовленный pipeline разбит на этапы.</p>26:T67d,<p>До этого ты добавлял variables прямо в <code>.gitlab-ci.yml</code>. Теперь сделай другой вариант: создай переменную в интерфейсе GitLab и используй её в pipeline.</p>\n<p>В GitLab открой проект <code>ci-deploy-lab</code>, затем слева перейди в <strong>Settings → CI/CD</strong>. Найди блок <strong>Variables</strong>, раскрой его и нажми <strong>Add variable</strong>.</p>\n<p>Создай переменную:</p>\n<ul>\n<li><strong>Key</strong>: <code>APP_NAME</code></li>\n<li><stron",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Разобрать stages",
+      "taskid": "gitlab_ci_lab2_t1_stages",
+      "hint": "<p>Setup уже подготовил базовый pipeline. Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Добавить переменные",
+      "taskid": "gitlab_ci_lab2_t2_variables",
+      "hint": "<p>Например: <code>echo \"$PACKAGE_NAME:$APP_ENV:$CI_COMMIT_SHORT_SHA\" &gt; dist/version.txt</code>.</p>",
+      "question_html": "<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code. В блок <code>variables</code> добавь <code>APP_ENV: lab</code> и <code>PACKAGE_NAME: ci-demo-package</code>. Используй их в <code>build-package</code>, чтобы файл <code>dist/version.txt</code> содержал окружение и имя пакета.</p>\n<p>\nОбрати внимание сейчас в echo используется <code>APP_NAME</code>, а неоходимо <code>APP_ENV</code>\n</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code. В блок <code>variables</code> добавь <code>APP_ENV: lab</code> и <code>PACKAGE_NAME: ci-demo-package</code>. Используй их в <code>build-package</code>, чтобы файл <code>dist/version.txt</code> содержал окружение и имя пакета.</p>\n<p>\nОбрати внимание сейчас в echo используется <code>APP_NAME</code>, а неоходимо <code>APP_ENV</code>\n</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запушить artifacts pipeline",
+      "taskid": "gitlab_ci_lab2_t3_artifacts",
+      "hint": "<p>Если проверка падает, сначала дождись зелёного pipeline в GitLab. Если pipeline красный, открой <strong>Build → Pipelines → последний pipeline</strong>, нажми на красный job, и GitLab откроет страницу job с log. В этом log найди команду, которая завершилась ошибкой.</p>",
+      "question_html": "<p>Проверь, что у <code>build-package</code> есть <code>artifacts.paths: dist/</code> и <code>expire_in: 1 hour</code>. Затем закоммить и запушь изменения.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Use variables and artifacts\"\ngit push origin main</code></pre>\n<p>В GitLab открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>build-package</code>: откроется log job. Вверху или в боковой части страницы job GitLab покажет, что у job есть artifacts.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Проверь, что у <code>build-package</code> есть <code>artifacts.paths: dist/</code> и <code>expire_in: 1 hour</code>. Затем закоммить и запушь изменения.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Use variables and artifacts\"\ngit push origin main</code></pre>\n<p>В GitLab открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>build-package</code>: откроется log job. Вверху или в боковой части страницы job GitLab покажет, что у job есть artifacts.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Явная зависимость needs",
+      "taskid": "gitlab_ci_lab2_t4_needs",
+      "hint": "<p>Внутри <code>test-package</code> можно написать коротко <code>needs: [\"build-package\"]</code> или длиннее списком с элементом <code>build-package</code>.</p>",
+      "question_html": "<p>Добавь в job <code>test-package</code> явную зависимость от <code>build-package</code> через <code>needs</code>. Так GitLab понимает, что <code>test-package</code> нужен результат именно от <code>build-package</code>, а не просто весь предыдущий stage целиком.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add explicit needs dependency\"\ngit push origin main</code></pre>\n<p>Сам файл <code>.gitlab-ci.yml</code> редактируй в VS Code, затем выполни команды commit/push в терминале.</p>\n<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>test-package</code>: в log должно быть видно, что файл <code>dist/version.txt</code> доступен и job завершился успешно.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь в job <code>test-package</code> явную зависимость от <code>build-package</code> через <code>needs</code>. Так GitLab понимает, что <code>test-package</code> нужен результат именно от <code>build-package</code>, а не просто весь предыдущий stage целиком.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add explicit needs dependency\"\ngit push origin main</code></pre>\n<p>Сам файл <code>.gitlab-ci.yml</code> редактируй в VS Code, затем выполни команды commit/push в терминале.</p>\n<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. Нажми на job <code>test-package</code>: в log должно быть видно, что файл <code>dist/version.txt</code> доступен и job завершился успешно.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить параллельный validate job",
+      "taskid": "gitlab_ci_lab2_t5_parallel",
+      "hint": "<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. Jobs <code>lint</code> и <code>test-scripts</code> должны быть в одном stage <code>validate</code>. Нажми на каждый job, чтобы открыть log и убедиться, что один запускал <code>lint.sh</code>, а второй <code>test.sh</code>. В учебном стенде runner настроен на 4 параллельных job, но в реальных проектах параллельность выбирают по ресурсам.</p>",
+      "question_html": "<p>Добавь job <code>test-scripts</code> в stage <code>validate</code>, чтобы он запускал <code>./scripts/test.sh</code>. Он будет выполняться параллельно с <code>lint</code>.</p>\n<pre><code>test-scripts:\n  stage: validate\n  image: alpine:3.20\n  script:\n    - ./scripts/test.sh</code></pre>\n<p>Сделай commit/push. Затем открой <strong>Build → Pipelines → последний pipeline</strong>. На странице pipeline должны быть jobs <code>lint</code> и <code>test-scripts</code> в stage <code>validate</code>. Дождись, что оба стали зелёными.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь job <code>test-scripts</code> в stage <code>validate</code>, чтобы он запускал <code>./scripts/test.sh</code>. Он будет выполняться параллельно с <code>lint</code>.</p>\n<pre><code>test-scripts:\n  stage: validate\n  image: alpine:3.20\n  script:\n    - ./scripts/test.sh</code></pre>\n<p>Сделай commit/push. Затем открой <strong>Build → Pipelines → последний pipeline</strong>. На странице pipeline должны быть jobs <code>lint</code> и <code>test-scripts</code> в stage <code>validate</code>. Дождись, что оба стали зелёными.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить variable через GitLab UI",
+      "taskid": "gitlab_ci_lab2_t6_ui_variable",
+      "hint": "<p>Если job печатает пустое значение, проверь имя переменной: в UI должен быть <code>APP_NAME</code>, а в YAML используется <code>$APP_NAME</code>. После создания переменной нужен новый pipeline.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Что сохраняет artifacts?",
+      "taskid": "gitlab_ci_lab2_t7_predefined_variables",
+      "hint": "<p>Не создавай эти переменные руками. <code>CI_COMMIT_REF_NAME</code>, <code>CI_COMMIT_SHORT_SHA</code> и <code>CI_JOB_ID</code> GitLab передает сам.</p>",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    },
+    {
+      "type": "quiz",
+      "title": "Что сохраняет artifacts?",
+      "taskid": "gitlab_ci_lab2_t8_quiz_artifacts",
+      "hint": "",
+      "question_html": "<p>Зачем в этой лабораторной нужен <code>artifacts</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы ускорить скачивание Docker images",
+          "correct": false,
+          "explanation": "Нет: для этого нужен registry mirror/cache"
+        },
+        {
+          "text": "Чтобы заменить git commit",
+          "correct": false,
+          "explanation": "Нет: artifacts живут рядом с pipeline, а не в git history"
+        },
+        {
+          "text": "Чтобы передать <code>dist/version.txt</code> из build job в test job",
+          "correct": true,
+          "explanation": "Верно: job запускаются в разных контейнерах"
+        },
+        {
+          "text": "Чтобы дать root-права runner",
+          "correct": false,
+          "explanation": "Нет: artifacts не связаны с правами"
+        }
+      ],
+      "raw_description": "<p>Зачем в этой лабораторной нужен <code>artifacts</code>?</p>\n<ul>\n<li>Чтобы ускорить скачивание Docker images [Нет: для этого нужен registry mirror/cache]</li>\n<li>Чтобы заменить git commit [Нет: artifacts живут рядом с pipeline, а не в git history]</li>\n<li>+Чтобы передать <code>dist/version.txt</code> из build job в test job [Верно: job запускаются в разных контейнерах]</li>\n<li>Чтобы дать root-права runner [Нет: artifacts не связаны с правами]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Почему нужен expire_in?",
+      "taskid": "gitlab_ci_lab2_t9_quiz_expire",
+      "hint": "",
+      "question_html": "<p>Почему важно указывать <code>expire_in</code> у artifacts?</p>",
+      "options": [
+        {
+          "text": "Чтобы pipeline запускался быстрее на первом job",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы GitLab разрешил git push",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы runner получил SSH-доступ к VM",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы artifacts не копились бесконечно и не забивали диск",
+          "correct": true,
+          "explanation": "Верно"
+        }
+      ],
+      "raw_description": "<p>Почему важно указывать <code>expire_in</code> у artifacts?</p>\n<ul>\n<li>Чтобы pipeline запускался быстрее на первом job [Нет]</li>\n<li>Чтобы GitLab разрешил git push [Нет]</li>\n<li>Чтобы runner получил SSH-доступ к VM [Нет]</li>\n<li>+Чтобы artifacts не копились бесконечно и не забивали диск [Верно]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать со stages, variables и artifacts",
+      "taskid": "gitlab_ci_lab2_t10_experiment",
+      "hint": "",
+      "question_html": "<p>Попробуй несколько вариантов в своём <code>.gitlab-ci.yml</code>, чтобы лучше почувствовать stages, variables, artifacts и <code>needs</code>.</p>\n<p>Идеи для экспериментов:</p>\n\n<p>Если pipeline показал ошибку, открой красный job, прочитай log и исправь YAML. Перед финальной проверкой верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "добавь ещё одну переменную в общий блок <code>variables</code> и выведи её в двух jobs;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавь новый файл в <code>dist/</code> и сохрани его в artifacts;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "измени <code>expire_in</code> и посмотри, как это отображается в GitLab;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "убери <code>needs</code>, запушь pipeline и сравни порядок запуска jobs, затем верни <code>needs</code> обратно.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Попробуй несколько вариантов в своём <code>.gitlab-ci.yml</code>, чтобы лучше почувствовать stages, variables, artifacts и <code>needs</code>.</p>\n<p>Идеи для экспериментов:</p>\n<ul>\n<li>добавь ещё одну переменную в общий блок <code>variables</code> и выведи её в двух jobs;</li>\n<li>добавь новый файл в <code>dist/</code> и сохрани его в artifacts;</li>\n<li>измени <code>expire_in</code> и посмотри, как это отображается в GitLab;</li>\n<li>убери <code>needs</code>, запушь pipeline и сравни порядок запуска jobs, затем верни <code>needs</code> обратно.</li>\n</ul>\n<p>Если pipeline показал ошибку, открой красный job, прочитай log и исправь YAML. Перед финальной проверкой верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab2/setup.yaml"
+}

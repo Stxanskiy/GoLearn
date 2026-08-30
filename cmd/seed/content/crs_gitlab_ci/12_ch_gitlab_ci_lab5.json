@@ -1,0 +1,171 @@
+{
+  "n": 12,
+  "id": "ch_gitlab_ci_lab5",
+  "title": "Лабораторная 4: inputs, variables и environments",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Это новая лабораторная VM. Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code. В файле уже есть два jobs: <code>smoke</code> и <code>full-tests</code>.</p>\n<p><code>smoke</code> запускается всегда и просто показывает, что pipeline работает. <code>full-tests</code> запускается только тогда, когда в pipeline передали переменную <code>RUN_FULL_TESTS=true</code>. Так мы отделяем обычную быструю проверку от более полного запуска.</p>26:T9e5,<p>Variables можно передавать в pipeline, но для ручного запуска удобнее использовать <code>inputs</code>: GitLab покажет понятную форму с полями. У input может быть default-значение, а для некоторых полей можно задать список вариантов.</p>\n<p>В начало <code>.gitlab-ci.yml</code>, выше основного описания pipeline, добавь блок <code>spec: inputs</code> и разделитель <code>---</code>:</p>\n<pre><code>spec:\n  inpu",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Разобрать базовый pipeline",
+      "taskid": "gitlab_ci_lab5_t1_base_pipeline",
+      "hint": "<p>Обрати внимание на <code>rules</code> у job <code>full-tests</code>: именно они решают, появится этот job в pipeline или нет.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Запустить push pipeline",
+      "taskid": "gitlab_ci_lab5_t2_push",
+      "hint": "<p>После push открой <strong>Build → Pipelines → последний pipeline main</strong>. На странице pipeline должен быть job <code>smoke</code>. Нажми на его имя, чтобы открыть log и увидеть вывод <code>smoke</code>.</p>",
+      "question_html": "<p>Сделай любое небольшое изменение и отправь его в GitLab. Например, добавь строку в <code>README.md</code>, затем сделай обычный commit/push. В этом pipeline должен пройти job <code>smoke</code>, а <code>full-tests</code> не должен появиться без переменной <code>RUN_FULL_TESTS=true</code>.</p>\n<pre><code>cd /root/gitlab-ci-lab\necho \"default pipeline check\" >> README.md\ngit add README.md\ngit commit --allow-empty -m \"Run default pipeline\"\ngit push origin main</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Сделай любое небольшое изменение и отправь его в GitLab. Например, добавь строку в <code>README.md</code>, затем сделай обычный commit/push. В этом pipeline должен пройти job <code>smoke</code>, а <code>full-tests</code> не должен появиться без переменной <code>RUN_FULL_TESTS=true</code>.</p>\n<pre><code>cd /root/gitlab-ci-lab\necho \"default pipeline check\" >> README.md\ngit add README.md\ngit commit --allow-empty -m \"Run default pipeline\"\ngit push origin main</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить pipeline с переменной",
+      "taskid": "gitlab_ci_lab5_t3_ui_variable",
+      "hint": "<p>Если pipeline ещё <code>running</code>, подожди. В GitLab можно открыть <strong>Build → Pipelines</strong>, нажать на последний pipeline и увидеть, появился ли job <code>full-tests</code>. Нажми на <code>full-tests</code>, чтобы открыть log и проверить, что переменная <code>RUN_FULL_TESTS=true</code> попала в запуск.</p>",
+      "question_html": "<p>Запусти pipeline из интерфейса GitLab и передай переменную <code>RUN_FULL_TESTS=true</code>. Тогда появится job <code>full-tests</code>.</p>\n<p>Открой <strong>Build → Pipelines</strong>, нажми <strong>New pipeline</strong>, выбери ref <code>main</code>. В блоке variables добавь:</p>\n\n<p>Нажми <strong>Run pipeline</strong>. После запуска открой созданный pipeline: в нём должен появиться job <code>full-tests</code>.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "<strong>Key</strong>: <code>RUN_FULL_TESTS</code>",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "<strong>Value</strong>: <code>true</code>",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Запусти pipeline из интерфейса GitLab и передай переменную <code>RUN_FULL_TESTS=true</code>. Тогда появится job <code>full-tests</code>.</p>\n<p>Открой <strong>Build → Pipelines</strong>, нажми <strong>New pipeline</strong>, выбери ref <code>main</code>. В блоке variables добавь:</p>\n<ul>\n<li><strong>Key</strong>: <code>RUN_FULL_TESTS</code></li>\n<li><strong>Value</strong>: <code>true</code></li>\n</ul>\n<p>Нажми <strong>Run pipeline</strong>. После запуска открой созданный pipeline: в нём должен появиться job <code>full-tests</code>.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить pipeline inputs",
+      "taskid": "gitlab_ci_lab5_t4_inputs_yaml",
+      "hint": "<p>Разделитель <code>---</code> обязателен: выше него находится <code>spec</code>, ниже — обычный pipeline со <code>stages</code> и jobs.</p>",
+      "question_html": "$26",
+      "options": [],
+      "raw_description": "$26"
+    },
+    {
+      "type": "check",
+      "title": "Запустить pipeline с inputs из UI",
+      "taskid": "gitlab_ci_lab5_t5_run_inputs",
+      "hint": "<p>Если в log видны значения по умолчанию, значит inputs не были переопределены при запуске. Открой <strong>Build → Pipelines → New pipeline</strong> ещё раз и проверь выбранные значения.</p>",
+      "question_html": "<p>Теперь запусти pipeline вручную из интерфейса GitLab и переопредели inputs.</p>\n<p>Открой <strong>Build → Pipelines</strong> и нажми <strong>New pipeline</strong>. Выбери ref <code>main</code>. В форме inputs:</p>\n\n<p>Запусти pipeline. На странице pipeline открой job <code>input-preview</code>. В log должны быть строки:</p>\n<pre><code>input target=stage\ninput note=manual-input-note\nselected target=stage</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "в <code>deploy_target</code> выбери <code>stage</code> из выпадающего списка;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "в <code>deploy_note</code> введи <code>manual-input-note</code>.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Теперь запусти pipeline вручную из интерфейса GitLab и переопредели inputs.</p>\n<p>Открой <strong>Build → Pipelines</strong> и нажми <strong>New pipeline</strong>. Выбери ref <code>main</code>. В форме inputs:</p>\n<ul>\n<li>в <code>deploy_target</code> выбери <code>stage</code> из выпадающего списка;</li>\n<li>в <code>deploy_note</code> введи <code>manual-input-note</code>.</li>\n</ul>\n<p>Запусти pipeline. На странице pipeline открой job <code>input-preview</code>. В log должны быть строки:</p>\n<pre><code>input target=stage\ninput note=manual-input-note\nselected target=stage</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить variables для разных environments",
+      "taskid": "gitlab_ci_lab5_t6_scoped_variables",
+      "hint": "<p>Environment scope должен совпадать с <code>environment.name</code> в job. Здесь input выбирает <code>dev</code>, <code>stage</code> или <code>prod</code>, и такое же имя получает environment.</p>",
+      "question_html": "$27",
+      "options": [],
+      "raw_description": "$27"
+    },
+    {
+      "type": "check",
+      "title": "Проверить scoped variable для stage",
+      "taskid": "gitlab_ci_lab5_t7_stage_scope",
+      "hint": "<p>Если <code>DEPLOY_HOST</code> пустой, проверь, что в YAML есть <code>environment.name: $[[ inputs.deploy_target ]]</code>, а у переменной в GitLab указан scope <code>stage</code>.</p>",
+      "question_html": "<p>Снова запусти pipeline из интерфейса: <strong>Build → Pipelines → New pipeline</strong>. Выбери ref <code>main</code>, в input <code>deploy_target</code> выбери <code>stage</code>, а в <code>deploy_note</code> введи <code>scoped-stage-note</code>.</p>\n<p>Открой job <code>input-preview</code>. Так как environment называется <code>stage</code>, GitLab должен взять переменную <code>DEPLOY_HOST</code> со scope <code>stage</code>. В log должны быть строки:</p>\n<pre><code>input target=stage\ninput note=scoped-stage-note\ndeploy host=192.168.0.30</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Снова запусти pipeline из интерфейса: <strong>Build → Pipelines → New pipeline</strong>. Выбери ref <code>main</code>, в input <code>deploy_target</code> выбери <code>stage</code>, а в <code>deploy_note</code> введи <code>scoped-stage-note</code>.</p>\n<p>Открой job <code>input-preview</code>. Так как environment называется <code>stage</code>, GitLab должен взять переменную <code>DEPLOY_HOST</code> со scope <code>stage</code>. В log должны быть строки:</p>\n<pre><code>input target=stage\ninput note=scoped-stage-note\ndeploy host=192.168.0.30</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить scoped variable для prod",
+      "taskid": "gitlab_ci_lab5_t8_prod_scope",
+      "hint": "<p>Не создавай отдельный job для каждого стенда. В этой задаче важна связка: input выбирает environment, а environment scope выбирает значение переменной.</p>",
+      "question_html": "<p>Теперь запусти pipeline ещё раз через <strong>Build → Pipelines → New pipeline</strong>. Выбери ref <code>main</code>, в input <code>deploy_target</code> выбери <code>prod</code>, а в <code>deploy_note</code> введи <code>prod-input-note</code>.</p>\n<p>Открой job <code>input-preview</code>. Так как environment называется <code>prod</code>, GitLab должен взять переменную <code>DEPLOY_HOST</code> со scope <code>prod</code>. В log должны быть строки:</p>\n<pre><code>input target=prod\ninput note=prod-input-note\ndeploy host=192.168.0.40</code></pre>\n<p>Так на практике видно переопределение variables по окружениям: имя переменной одно, но значение зависит от выбранного input.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Теперь запусти pipeline ещё раз через <strong>Build → Pipelines → New pipeline</strong>. Выбери ref <code>main</code>, в input <code>deploy_target</code> выбери <code>prod</code>, а в <code>deploy_note</code> введи <code>prod-input-note</code>.</p>\n<p>Открой job <code>input-preview</code>. Так как environment называется <code>prod</code>, GitLab должен взять переменную <code>DEPLOY_HOST</code> со scope <code>prod</code>. В log должны быть строки:</p>\n<pre><code>input target=prod\ninput note=prod-input-note\ndeploy host=192.168.0.40</code></pre>\n<p>Так на практике видно переопределение variables по окружениям: имя переменной одно, но значение зависит от выбранного input.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить environments в интерфейсе",
+      "taskid": "gitlab_ci_lab5_t9_environments_ui",
+      "hint": "<p>Environment появляется после успешного job, где указан <code>environment.name</code>. Если видишь только <code>stage</code>, запусти pipeline с <code>deploy_target=prod</code>.</p>",
+      "question_html": "<p>Открой в GitLab <strong>Operate → Environments</strong>. Это отдельный раздел проекта: слева в меню нажми <strong>Operate</strong>, затем <strong>Environments</strong>. Там должны быть строки <code>stage</code> и <code>prod</code>.</p>\n<p>Эти environments появились после успешных запусков <code>input-preview</code>. GitLab использовал их имена не только для отображения в интерфейсе, но и для выбора подходящего значения <code>DEPLOY_HOST</code> по <strong>Environment scope</strong>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой в GitLab <strong>Operate → Environments</strong>. Это отдельный раздел проекта: слева в меню нажми <strong>Operate</strong>, затем <strong>Environments</strong>. Там должны быть строки <code>stage</code> и <code>prod</code>.</p>\n<p>Эти environments появились после успешных запусков <code>input-preview</code>. GitLab использовал их имена не только для отображения в интерфейсе, но и для выбора подходящего значения <code>DEPLOY_HOST</code> по <strong>Environment scope</strong>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем environments?",
+      "taskid": "gitlab_ci_lab5_t10_quiz_environment",
+      "hint": "",
+      "question_html": "<p>Зачем у deploy job задают <code>environment</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы заменить Dockerfile",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы runner получил root-права",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы GitLab мог выбрать variables с нужным Environment scope",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы pipeline не требовал git push",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем у deploy job задают <code>environment</code>?</p>\n<ul>\n<li>Чтобы заменить Dockerfile [Нет]</li>\n<li>Чтобы runner получил root-права [Нет]</li>\n<li>+Чтобы GitLab мог выбрать variables с нужным Environment scope [Верно]</li>\n<li>Чтобы pipeline не требовал git push [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с inputs, variables и environments",
+      "taskid": "gitlab_ci_lab5_t11_experiment",
+      "hint": "",
+      "question_html": "<p>Попробуй разные способы запускать один и тот же pipeline с разными параметрами.</p>\n<p>Что можно проверить:</p>\n\n<p>Если pipeline стал invalid или job исчез, открой <strong>Build → Pipeline editor</strong>, найди ошибку YAML и исправь её. Перед завершением верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "добавь новое значение в <code>inputs.deploy_target.options</code> и проверь, как оно попадает в log;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавь новое окружение в <code>inputs.deploy_target.options</code> и создай для него свой <code>DEPLOY_HOST</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "проверь, как меняется log при разных environment-scoped variables.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Попробуй разные способы запускать один и тот же pipeline с разными параметрами.</p>\n<p>Что можно проверить:</p>\n<ul>\n<li>добавь новое значение в <code>inputs.deploy_target.options</code> и проверь, как оно попадает в log;</li>\n<li>добавь новое окружение в <code>inputs.deploy_target.options</code> и создай для него свой <code>DEPLOY_HOST</code>;</li>\n<li>проверь, как меняется log при разных environment-scoped variables.</li>\n</ul>\n<p>Если pipeline стал invalid или job исчез, открой <strong>Build → Pipeline editor</strong>, найди ошибку YAML и исправь её. Перед завершением верни рабочий вариант и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab5/setup.yaml"
+}

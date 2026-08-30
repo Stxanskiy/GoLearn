@@ -1,0 +1,118 @@
+{
+  "n": 3,
+  "id": "ch_gitlab_ci_lab1",
+  "title": "Лабораторная 1: первый .gitlab-ci.yml",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Добавь второй job <code>shell-basics</code> в тот же stage <code>verify</code>. Он должен выводить рабочую директорию, дату и несколько переменных CI. Это показывает, что pipeline может выполнять не одну задачу, а несколько независимых jobs.</p>\n<p>Добавь в <code>.gitlab-ci.yml</code> новый блок:</p>\n<pre><code>shell-basics:\n  stage: verify\n  image: alpine:3.20\n  script:\n    - pwd\n    - date -Iseconds\n    - echo \"$CI_PROJECT_PATH\"\n    - echo \"$CI_COMMIT_SHORT_SHA\"</code></pre>\n<p>Сделай commit и push:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add shell basics job\"\ngit push origin main</code></pre>\n<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. На странице pipeline должны появиться два jobs: <code>hello-ci</code> и <code>shell-basics</code>. Так GitLab показывает параллельную работу внутри одного stage. В реальном проекте так часто запускают, например, тесты и линтер одновременно: они не зависят друг от друга, поэтому им не нужно ждать один другого.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L23\",null,{}],[\"$\",\"$L24\",null,{\"initialData\":{\"id\":\"ch_gitlab_ci_lab1\",\"title\":\"Лабораторная 1: первый .gitlab-ci.yml\",\"type\":\"lab\",\"description\":null,\"task_id\":",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Открыть GitLab и посмотреть env",
+      "taskid": "gitlab_ci_lab1_t1_open",
+      "hint": "<p>Если GitLab открылся на странице входа, используй <code>GITLAB_USERNAME</code> и <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>",
+      "question_html": "<p>Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Ты попадёшь в общий GitLab учебного стенда, но проект и пользователь созданы только для твоей лабораторной VM.</p>\n<p>В терминале посмотри данные подключения:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Projects -> Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Пароль нужен только для входа в веб-интерфейс. Git push уже настроен заранее. Не выводи и не копируй remote URL без необходимости: в нём может быть служебный token для этой временной лабораторной.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Ты попадёшь в общий GitLab учебного стенда, но проект и пользователь созданы только для твоей лабораторной VM.</p>\n<p>В терминале посмотри данные подключения:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Projects -> Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Пароль нужен только для входа в веб-интерфейс. Git push уже настроен заранее. Не выводи и не копируй remote URL без необходимости: в нём может быть служебный token для этой временной лабораторной.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать минимальный pipeline",
+      "taskid": "gitlab_ci_lab1_t2_first_yaml",
+      "hint": "<p>YAML чувствителен к отступам. Имя job <code>hello-ci:</code> должно быть на первом уровне, без отступа. Внутри <code>script</code> строки команд начинаются с <code>-</code>.</p>",
+      "question_html": "<p>В корне репозитория создай файл <code>.gitlab-ci.yml</code>. Удобнее открыть папку <code>/root/gitlab-ci-lab</code> в VSCode, создать файл через дерево файлов слева и вставить в него YAML ниже.</p>\n<p>Нам нужен самый маленький pipeline: один stage <code>verify</code> и один job <code>hello-ci</code>. Пока job просто печатает текст через <code>echo</code>. Это просто первый безопасный пример, чтобы увидеть, как GitLab запускает pipeline.</p>\n<pre><code>stages:\n  - verify\n\nhello-ci:\n  stage: verify\n  image: alpine:3.20\n  script:\n    - echo \"hello from GitLab CI\"</code></pre>",
+      "options": [],
+      "raw_description": "<p>В корне репозитория создай файл <code>.gitlab-ci.yml</code>. Удобнее открыть папку <code>/root/gitlab-ci-lab</code> в VSCode, создать файл через дерево файлов слева и вставить в него YAML ниже.</p>\n<p>Нам нужен самый маленький pipeline: один stage <code>verify</code> и один job <code>hello-ci</code>. Пока job просто печатает текст через <code>echo</code>. Это просто первый безопасный пример, чтобы увидеть, как GitLab запускает pipeline.</p>\n<pre><code>stages:\n  - verify\n\nhello-ci:\n  stage: verify\n  image: alpine:3.20\n  script:\n    - echo \"hello from GitLab CI\"</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить pipeline через push",
+      "taskid": "gitlab_ci_lab1_t3_push",
+      "hint": "<p>Если pipeline ещё <code>running</code>, подожди и нажми проверку позже. Если pipeline красный, нажми на красный job: GitLab откроет страницу job с log. Пролистай log к концу и посмотри последнюю ошибку.</p>",
+      "question_html": "<p>Закоммить файл и отправь его в GitLab. Pipeline запустится автоматически после <code>git push</code>, потому что GitLab увидит в корне репозитория файл <code>.gitlab-ci.yml</code>.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add first GitLab CI pipeline\"\ngit push origin main</code></pre>\n<p>Что произошло: GitLab получил новый commit, прочитал <code>.gitlab-ci.yml</code>, создал pipeline и передал job <code>hello-ci</code> заранее настроенному runner. Runner запустил контейнер <code>alpine:3.20</code> и выполнил команды из <code>script</code>.</p>\n<p>В GitLab открой <strong>Build → Pipelines</strong>. В списке нажми на верхний pipeline для ветки <code>main</code>. Откроется страница pipeline со списком jobs. Нажми на job <code>hello-ci</code>: откроется log job, где должен быть вывод твоей команды <code>echo</code>. Дождись, что pipeline и job станут зелёными.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Закоммить файл и отправь его в GitLab. Pipeline запустится автоматически после <code>git push</code>, потому что GitLab увидит в корне репозитория файл <code>.gitlab-ci.yml</code>.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml\ngit commit -m \"Add first GitLab CI pipeline\"\ngit push origin main</code></pre>\n<p>Что произошло: GitLab получил новый commit, прочитал <code>.gitlab-ci.yml</code>, создал pipeline и передал job <code>hello-ci</code> заранее настроенному runner. Runner запустил контейнер <code>alpine:3.20</code> и выполнил команды из <code>script</code>.</p>\n<p>В GitLab открой <strong>Build → Pipelines</strong>. В списке нажми на верхний pipeline для ветки <code>main</code>. Откроется страница pipeline со списком jobs. Нажми на job <code>hello-ci</code>: откроется log job, где должен быть вывод твоей команды <code>echo</code>. Дождись, что pipeline и job станут зелёными.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить job с bash-командами",
+      "taskid": "gitlab_ci_lab1_t4_shell",
+      "hint": "<p>Нажми на имя каждого job, чтобы открыть его log. В <code>shell-basics</code> ты должен увидеть вывод <code>pwd</code>, дату и значения встроенных переменных GitLab CI.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Использовать многострочный script",
+      "taskid": "gitlab_ci_lab1_t5_multiline",
+      "hint": "<p><code>set -e</code> важен в многострочных shell-блоках: он останавливает job при первой ошибке.</p>",
+      "question_html": "<p>Теперь добавь в <code>shell-basics</code> многострочный блок через <code>- |</code>. В YAML такая запись означает: “выполни один shell-блок, но напиши его в несколько строк”. Это удобно, когда внутри job нужно выполнить несколько связанных команд: создать файл, записать в него данные, затем сразу вывести содержимое.</p>\n<p>В начале блока поставь <code>set -e</code>. Эта настройка говорит shell: если одна из команд завершилась ошибкой, сразу остановить весь блок и сделать job красным. Без <code>set -e</code> часть ошибок внутри длинного блока можно случайно пропустить.</p>\n<pre><code>    - |\n      set -e\n      echo \"pipeline=$CI_PIPELINE_ID\" &gt; ci-info.txt\n      cat ci-info.txt</code></pre>\n<p>Сделай commit/push. Затем открой <strong>Build → Pipelines → последний pipeline → shell-basics</strong> и проверь в log, что там напечатался файл <code>ci-info.txt</code>.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Теперь добавь в <code>shell-basics</code> многострочный блок через <code>- |</code>. В YAML такая запись означает: “выполни один shell-блок, но напиши его в несколько строк”. Это удобно, когда внутри job нужно выполнить несколько связанных команд: создать файл, записать в него данные, затем сразу вывести содержимое.</p>\n<p>В начале блока поставь <code>set -e</code>. Эта настройка говорит shell: если одна из команд завершилась ошибкой, сразу остановить весь блок и сделать job красным. Без <code>set -e</code> часть ошибок внутри длинного блока можно случайно пропустить.</p>\n<pre><code>    - |\n      set -e\n      echo \"pipeline=$CI_PIPELINE_ID\" &gt; ci-info.txt\n      cat ci-info.txt</code></pre>\n<p>Сделай commit/push. Затем открой <strong>Build → Pipelines → последний pipeline → shell-basics</strong> и проверь в log, что там напечатался файл <code>ci-info.txt</code>.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что запускает pipeline?",
+      "taskid": "gitlab_ci_lab1_t6_quiz",
+      "hint": "",
+      "question_html": "<p>Когда в этой лабораторной запускался pipeline?</p>",
+      "options": [
+        {
+          "text": "После каждого <code>git add</code>",
+          "correct": false,
+          "explanation": "Нет: add меняет только staging area локального репозитория"
+        },
+        {
+          "text": "После <code>git push</code> в ветку <code>main</code>",
+          "correct": true,
+          "explanation": "Верно: GitLab читает .gitlab-ci.yml и создаёт pipeline на push"
+        },
+        {
+          "text": "После открытия Web Preview",
+          "correct": false,
+          "explanation": "Нет: Web Preview только открывает GitLab"
+        },
+        {
+          "text": "Только вручную администратором",
+          "correct": false,
+          "explanation": "Нет: push pipeline запускается автоматически"
+        }
+      ],
+      "raw_description": "<p>Когда в этой лабораторной запускался pipeline?</p>\n<ul>\n<li>После каждого <code>git add</code> [Нет: add меняет только staging area локального репозитория]</li>\n<li>+После <code>git push</code> в ветку <code>main</code> [Верно: GitLab читает .gitlab-ci.yml и создаёт pipeline на push]</li>\n<li>После открытия Web Preview [Нет: Web Preview только открывает GitLab]</li>\n<li>Только вручную администратором [Нет: push pipeline запускается автоматически]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с первым pipeline",
+      "taskid": "gitlab_ci_lab1_t7_experiment",
+      "hint": "",
+      "question_html": "<p>Перед завершением лабораторной попробуй несколько небольших изменений в своём первом pipeline. Это безопасная учебная VM: если ошибёшься в YAML, GitLab покажет ошибку, а ты сможешь вернуть файл в рабочее состояние.</p>\n<p>Что можно попробовать:</p>\n\n<p>Главная цель — руками увидеть связь: изменил <code>.gitlab-ci.yml</code>, сделал <code>git push</code>, GitLab создал новый pipeline, runner выполнил jobs, а результат появился в log.</p>",
+      "options": [
+        {
+          "text": "добавить третий job в stage <code>verify</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "изменить текст в <code>echo</code> и посмотреть новый log;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "временно изменить отступ в одном месте, запушить, посмотреть ошибку pipeline и вернуть правильный вариант;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "и тому подобное...",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Перед завершением лабораторной попробуй несколько небольших изменений в своём первом pipeline. Это безопасная учебная VM: если ошибёшься в YAML, GitLab покажет ошибку, а ты сможешь вернуть файл в рабочее состояние.</p>\n<p>Что можно попробовать:</p>\n<ul>\n<li>добавить третий job в stage <code>verify</code>;</li>\n<li>изменить текст в <code>echo</code> и посмотреть новый log;</li>\n<li>временно изменить отступ в одном месте, запушить, посмотреть ошибку pipeline и вернуть правильный вариант;</li>\n<li>и тому подобное...</li>\n</ul>\n<p>Главная цель — руками увидеть связь: изменил <code>.gitlab-ci.yml</code>, сделал <code>git push</code>, GitLab создал новый pipeline, runner выполнил jobs, а результат появился в log.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab1/setup.yaml"
+}

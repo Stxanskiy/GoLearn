@@ -1,0 +1,148 @@
+{
+  "n": 10,
+  "id": "ch_gitlab_ci_lab3",
+  "title": "Лабораторная 3: rules, manual и tag pipeline",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Это новая лабораторная VM, поэтому у неё свой пользователь GitLab и свой приватный проект. Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем в терминале посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>. Git push уже настроен заранее. Не выводи remote URL без необходимости: в нём может быть временный token лаборатории.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>В подготовленном pipeline есть job <code>manual-deploy</code>. Он не стартует автоматически, потому что у него <code>when: manual</code>.</p>\n<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code и найди блок <code>manual-deploy</code>. Обрати внимание на строку <code>when: manual</code>: из-за неё job ждёт ручного запуска.</p>\n<p>В GitLab открой <strong>Build → Pipelines</strong>, нажми на последний pipeline ветки <code>main</code>. Откроется страница pipeline со списком jobs. Найди job <code>manual-deploy</code>: рядом с ним будет кнопка Play, потому что этот job ручной. <code>Пока не запускайте его</code></p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L26\",null,{}],[\"$\",\"$L27\",null,{\"initialData\":{\"id\":\"ch_gitlab_ci_lab3\",\"title\":\"Лабораторная 3: rules, manual и tag pipeline\",\"type\":\"lab\",\"description\":null,\"task_id\":null,\"vm_image\":\"gitlab-ci\",\"vm_init\":\"module9_gitlab_ci/gitlab_ci/lab3/setup.yaml\",\"labs\":[{\"url\":\"module9_gitlab_ci/gitlab_ci/lab3/task_01.yaml\",\"hint\":\"<p>Если GitLab открылся на странице входа, ис",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Найти manual job",
+      "taskid": "gitlab_ci_lab3_t1_manual",
+      "hint": "<p>Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>. На странице pipeline у <code>manual-deploy</code> должен быть статус ручного job и кнопка Play.</p>",
+      "question_html": "$28",
+      "options": [],
+      "raw_description": "$28"
+    },
+    {
+      "type": "check",
+      "title": "Запустить manual job",
+      "taskid": "gitlab_ci_lab3_t2_play_manual",
+      "hint": "<p>После запуска дождись, что job стал зелёным. Если job стал красным, нажми на его имя и прочитай log: там будет команда, которая упала.</p>",
+      "question_html": "<p>Запусти <code>manual-deploy</code> в UI GitLab: открой <strong>Build → Pipelines → последний pipeline main</strong>, найди job <code>manual-deploy</code> и нажми кнопку Play рядом с ним.</p>\n<p>После запуска нажми на имя job <code>manual-deploy</code>: откроется log, где должен быть вывод команды deploy. Дождись, что job станет зелёным.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Запусти <code>manual-deploy</code> в UI GitLab: открой <strong>Build → Pipelines → последний pipeline main</strong>, найди job <code>manual-deploy</code> и нажми кнопку Play рядом с ним.</p>\n<p>После запуска нажми на имя job <code>manual-deploy</code>: откроется log, где должен быть вывод команды deploy. Дождись, что job станет зелёным.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Создать тег",
+      "taskid": "gitlab_ci_lab3_t3_tag",
+      "hint": "<p>Теговый pipeline отличается от branch pipeline: в нём заполнена переменная <code>CI_COMMIT_TAG</code>.</p>",
+      "question_html": "<p>Создай тег <code>v0.1.0</code> и отправь его в GitLab. Это запустит отдельный tag pipeline.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit tag v0.1.0\ngit push origin v0.1.0</code></pre>\n<p>В обычной работе release-теги не перезаписывают. Если в этой учебной VM тег уже был создан во время повторной попытки, удали его локально и в GitLab только для этой лабораторной, затем создай заново.</p>",
+      "options": [],
+      "raw_description": "<p>Создай тег <code>v0.1.0</code> и отправь его в GitLab. Это запустит отдельный tag pipeline.</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit tag v0.1.0\ngit push origin v0.1.0</code></pre>\n<p>В обычной работе release-теги не перезаписывают. Если в этой учебной VM тег уже был создан во время повторной попытки, удали его локально и в GitLab только для этой лабораторной, затем создай заново.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить release job",
+      "taskid": "gitlab_ci_lab3_t4_release",
+      "hint": "<p>Если pipeline ещё <code>running</code>, подожди. Если job <code>release-note</code> не появился на странице pipeline, значит GitLab не создал его по условиям <code>rules</code>; проверь блок <code>rules</code> у <code>release-note</code> в <code>.gitlab-ci.yml</code>.</p>",
+      "question_html": "<p>Открой pipeline тега <code>v0.1.0</code>: путь <strong>Build → Pipelines</strong>, затем найди строку, где ref равен <code>v0.1.0</code>, и перейди в этот pipeline.</p>\n<p>На странице pipeline найди job <code>release-note</code> и нажми на его имя. Откроется log job; в нём должно быть видно создание файла <code>release.txt</code>. У job также должен появиться artifact.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Открой pipeline тега <code>v0.1.0</code>: путь <strong>Build → Pipelines</strong>, затем найди строку, где ref равен <code>v0.1.0</code>, и перейди в этот pipeline.</p>\n<p>На странице pipeline найди job <code>release-note</code> и нажми на его имя. Откроется log job; в нём должно быть видно создание файла <code>release.txt</code>. У job также должен появиться artifact.</p>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Проверить rules",
+      "taskid": "gitlab_ci_lab3_t5_rules",
+      "hint": "<p>Такой job не будет шуметь в каждом push pipeline, но появится для release tag.</p>",
+      "question_html": "<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code и найди job <code>release-note</code>. Убедись, что он запускается только по тегу: <code>if: '$CI_COMMIT_TAG'</code>, а иначе использует <code>when: never</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>/root/gitlab-ci-lab/.gitlab-ci.yml</code> в VS Code и найди job <code>release-note</code>. Убедись, что он запускается только по тегу: <code>if: '$CI_COMMIT_TAG'</code>, а иначе использует <code>when: never</code>.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Где безопаснее deploy?",
+      "taskid": "gitlab_ci_lab3_t6_quiz_manual",
+      "hint": "",
+      "question_html": "<p>Почему deploy job часто делают manual?</p>",
+      "options": [
+        {
+          "text": "Чтобы GitLab не видел логи job",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы человек подтвердил действие перед изменением среды",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы job выполнялся без runner",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы не нужен был .gitlab-ci.yml",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Почему deploy job часто делают manual?</p>\n<ul>\n<li>Чтобы GitLab не видел логи job [Нет]</li>\n<li>+Чтобы человек подтвердил действие перед изменением среды [Верно]</li>\n<li>Чтобы job выполнялся без runner [Нет]</li>\n<li>Чтобы не нужен был .gitlab-ci.yml [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Что означает CI_COMMIT_TAG?",
+      "taskid": "gitlab_ci_lab3_t7_quiz_tag",
+      "hint": "",
+      "question_html": "<p>Когда переменная <code>CI_COMMIT_TAG</code> заполнена?</p>",
+      "options": [
+        {
+          "text": "При любом push в main",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Только после merge request",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Когда pipeline запущен для git tag",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Когда job manual",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Когда переменная <code>CI_COMMIT_TAG</code> заполнена?</p>\n<ul>\n<li>При любом push в main [Нет]</li>\n<li>Только после merge request [Нет]</li>\n<li>+Когда pipeline запущен для git tag [Верно]</li>\n<li>Когда job manual [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с rules, manual и tag",
+      "taskid": "gitlab_ci_lab3_t8_experiment",
+      "hint": "",
+      "question_html": "<p>Попробуй изменить условия запуска jobs и посмотреть, как меняется pipeline.</p>\n<p>Что можно сделать:</p>\n\n<p>После экспериментов верни рабочий вариант YAML, запушь его и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "добавить job, который появляется только для ветки <code>main</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавить job с <code>when: manual</code> и нажать Play в интерфейсе GitLab;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "временно убрать <code>when: never</code> и посмотреть, стал ли job появляться там, где ты его не ждал;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "создать новый учебный tag, например <code>v0.1.1</code>, и посмотреть отдельный tag pipeline.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Попробуй изменить условия запуска jobs и посмотреть, как меняется pipeline.</p>\n<p>Что можно сделать:</p>\n<ul>\n<li>добавить job, который появляется только для ветки <code>main</code>;</li>\n<li>добавить job с <code>when: manual</code> и нажать Play в интерфейсе GitLab;</li>\n<li>временно убрать <code>when: never</code> и посмотреть, стал ли job появляться там, где ты его не ждал;</li>\n<li>создать новый учебный tag, например <code>v0.1.1</code>, и посмотреть отдельный tag pipeline.</li>\n</ul>\n<p>После экспериментов верни рабочий вариант YAML, запушь его и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab3/setup.yaml"
+}

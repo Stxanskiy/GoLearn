@@ -1,0 +1,273 @@
+{
+  "id": "crs_gitlab_ci",
+  "title": "GitLab CI/CD: от первых проверок до деплоя",
+  "meta": {},
+  "chapter_list": [
+    {
+      "id": "ch_gitlab_ci_intro",
+      "title": "CI/CD без магии: зачем это вообще нужно",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": [
+        {
+          "id": "cmsqmdygn1302rx01dmi9nk0h",
+          "userId": "rlwvr1lxk5xoz181i2mb03ry",
+          "courseId": "crs_gitlab_ci",
+          "chapterId": "ch_gitlab_ci_intro",
+          "completedTasks": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "isCompleted": true,
+          "createdAt": "$D2026-08-12T21:47:18.840Z",
+          "updatedAt": "$D2026-08-12T21:47:18.840Z",
+          "properties": null
+        }
+      ]
+    },
+    {
+      "id": "ch_gitlab_ci_interface",
+      "title": "Знакомимся с интерфейсом GitLab",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab1",
+      "title": "Лабораторная 1: первый .gitlab-ci.yml",
+      "type": "lab",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_pipeline",
+      "title": "Pipeline, stage и job: порядок и параллельность",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_yaml",
+      "title": ".gitlab-ci.yml: команды, image, before_script и YAML",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_variables",
+      "title": "Variables в GitLab CI: настройки, секреты и встроенные значения",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_artifacts",
+      "title": "Artifacts и cache: что сохраняет pipeline",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab2",
+      "title": "Лабораторная 2: stages, variables и artifacts",
+      "type": "lab",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_rules",
+      "title": "Rules, manual jobs и pipeline по тегу",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab3",
+      "title": "Лабораторная 3: rules, manual и tag pipeline",
+      "type": "lab",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_environments_workflow",
+      "title": "Environments, inputs и разные сценарии запуска",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab5",
+      "title": "Лабораторная 4: inputs, variables и environments",
+      "type": "lab",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_reuse",
+      "title": "Переиспользование pipeline: include, extends и templates",
+      "type": "chapter",
+      "task_id": null,
+      "position": 13,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab6",
+      "title": "Лабораторная 5: include, extends и parallel matrix",
+      "type": "lab",
+      "task_id": null,
+      "position": 14,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_quality",
+      "title": "Дополнительные полезные настройки pipeline",
+      "type": "chapter",
+      "task_id": null,
+      "position": 15,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab7",
+      "title": "Лабораторная 6: reports и production controls",
+      "type": "lab",
+      "task_id": null,
+      "position": 16,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_registry_deploy",
+      "title": "Registry и деплой новой версии на сервер",
+      "type": "chapter",
+      "task_id": null,
+      "position": 17,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_lab4",
+      "title": "Лабораторная 7: build, registry и деплой на сервер",
+      "type": "lab",
+      "task_id": null,
+      "position": 18,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_branching",
+      "title": "Стратегии веток: Git flow, TBD и GitLab Flow",
+      "type": "chapter",
+      "task_id": null,
+      "position": 19,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": []
+    },
+    {
+      "id": "ch_gitlab_ci_next",
+      "title": "Что мы изучили и куда двигаться дальше",
+      "type": "chapter",
+      "task_id": null,
+      "position": 20,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "crs_gitlab_ci",
+      "userProgress": [
+        {
+          "id": "cmtf32xl60yf4mn018w7e4fa2",
+          "userId": "rlwvr1lxk5xoz181i2mb03ry",
+          "courseId": "crs_gitlab_ci",
+          "chapterId": "ch_gitlab_ci_next",
+          "completedTasks": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "isCompleted": true,
+          "createdAt": "$D2026-08-30T00:41:06.186Z",
+          "updatedAt": "$D2026-08-30T00:41:06.186Z",
+          "properties": null
+        }
+      ]
+    }
+  ]
+}

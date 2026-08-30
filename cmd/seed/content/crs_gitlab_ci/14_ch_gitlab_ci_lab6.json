@@ -1,0 +1,157 @@
+{
+  "n": 14,
+  "id": "ch_gitlab_ci_lab6",
+  "title": "Лабораторная 5: include, extends и parallel matrix",
+  "type": "lab",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<p>Теперь добавь свой <code>hidden job</code> .after-report в общий файл <code>ci/common.yml</code> и подключи его к уже существующему template <code>.test-template</code>.</p>\n<p>Идея такая: <code>.alpine-base</code> задаёт image и подготовку перед основными командами, а новый <code>.after-report</code> добавит общий <code>after_script</code>. GitLab позволяет указывать в <code>extends</code> несколько templates списком.</p>\n<p>В файл <code>ci/common.yml</code> добавь новый hidden job:</p>\n<pre><code>.after-report:\n  after_script:\n    - echo \"job finished with status $CI_JOB_STATUS\"</code></pre>\n<p>Затем измени <code>.test-template</code>, чтобы он наследовал сразу два templates:</p>\n<pre><code>.test-template:\n  extends:\n    - .alpine-base\n    - .after-report\n  stage: test\n  script:\n    - ./scripts/test.sh</code></pre>\n<p>Что получится: <code>unit-tests</code> наследует <code>.test-template</code>, <code>.test-template</code> берёт базовую подготовку из <code>.alpine-base</code> и общий завершающий шаг из <code>.after-report</code>. Запусти и проверь что после запуска в log должен появиться вывод из <code>after_script</code>.</p>f:[\"$\",\"div\",null,{\"className\":\"w-full min-w-0 flex-grow\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full w-full min-w-0 mx-auto\",\"children\":[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[false,[\"$\",\"div\",null,{\"className\":\"h-full\",\"children\":[[\"$\",\"$L23\",null,{}],[\"$\",\"$L24\",null,{\"initialData\":{\"id\":\"ch_gitlab_ci_lab6\",\"ti",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Найти local include",
+      "taskid": "gitlab_ci_lab6_t1_include_local",
+      "hint": "<p><code>include</code> должен быть на верхнем уровне <code>.gitlab-ci.yml</code>.</p>",
+      "question_html": "<p>Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем в терминале посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Открой папку <code>/root/gitlab-ci-lab</code> в VS Code. В проекте есть основной файл <code>.gitlab-ci.yml</code> и каталог <code>ci/</code>. Основной файл подключает <code>ci/common.yml</code> через <code>include: local</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <strong>Web Preview</strong>: кнопка находится справа вверху, слева от кнопки <strong>Остановить</strong>. Затем в терминале посмотри данные входа:</p>\n<pre><code>cat /root/gitlab-ci.env</code></pre>\n<p>В Web Preview войди с логином <code>GITLAB_USERNAME</code> и паролем <code>GITLAB_PASSWORD</code> из файла <code>/root/gitlab-ci.env</code>.</p>\n<p>После входа открой раздел <strong>Personal</strong>: там уже есть проект <code>ci-deploy-lab</code>. Этот же репозиторий уже склонирован на VM в папку <code>/root/gitlab-ci-lab</code>, поэтому команды Git и правки файлов выполняй именно там.</p>\n<p>Открой папку <code>/root/gitlab-ci-lab</code> в VS Code. В проекте есть основной файл <code>.gitlab-ci.yml</code> и каталог <code>ci/</code>. Основной файл подключает <code>ci/common.yml</code> через <code>include: local</code>.</p>"
+    },
+    {
+      "type": "self",
+      "title": "Использовать extends",
+      "taskid": "gitlab_ci_lab6_t2_extends",
+      "hint": "<p>Hidden job начинается с точки и сам не запускается.</p>",
+      "question_html": "<p>Открой <code>.gitlab-ci.yml</code> и файлы в каталоге <code>ci/</code> через VS Code. Проверь, что jobs наследуют hidden templates <code>.alpine-base</code> и <code>.test-template</code> через <code>extends</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Открой <code>.gitlab-ci.yml</code> и файлы в каталоге <code>ci/</code> через VS Code. Проверь, что jobs наследуют hidden templates <code>.alpine-base</code> и <code>.test-template</code> через <code>extends</code>.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить security include",
+      "taskid": "gitlab_ci_lab6_t3_security_include",
+      "hint": "<p>В GitLab include обрабатываются до создания pipeline, поэтому подключаемый YAML должен быть валидным сразу.</p>",
+      "question_html": "<p>Создай файл <code>ci/security.yml</code> с job <code>secret-scan</code> и подключи его вторым local include.</p>\n<p>Сначала создай файл <code>/root/gitlab-ci-lab/ci/security.yml</code> и вставь в него содержимое:</p>\n<pre><code>secret-scan:\n  extends: .alpine-base\n  stage: test\n  script:\n    - echo \"scan repository\"\n    - |\n      if grep -R \"PRIVATE KEY\" . --exclude-dir=.git; then\n        echo \"secret was found\"\n        exit 1\n      fi\n      echo \"no private keys in repository\"</code></pre>\n<p>Затем открой основной <code>.gitlab-ci.yml</code> и в верхний блок <code>include</code> добавь второй local include:</p>\n<pre><code>include:\n  - local: ci/common.yml\n  - local: ci/security.yml</code></pre>",
+      "options": [],
+      "raw_description": "<p>Создай файл <code>ci/security.yml</code> с job <code>secret-scan</code> и подключи его вторым local include.</p>\n<p>Сначала создай файл <code>/root/gitlab-ci-lab/ci/security.yml</code> и вставь в него содержимое:</p>\n<pre><code>secret-scan:\n  extends: .alpine-base\n  stage: test\n  script:\n    - echo \"scan repository\"\n    - |\n      if grep -R \"PRIVATE KEY\" . --exclude-dir=.git; then\n        echo \"secret was found\"\n        exit 1\n      fi\n      echo \"no private keys in repository\"</code></pre>\n<p>Затем открой основной <code>.gitlab-ci.yml</code> и в верхний блок <code>include</code> добавь второй local include:</p>\n<pre><code>include:\n  - local: ci/common.yml\n  - local: ci/security.yml</code></pre>"
+    },
+    {
+      "type": "check",
+      "title": "Запустить pipeline с шаблонами",
+      "taskid": "gitlab_ci_lab6_t4_security_pipeline",
+      "hint": "<p>Если pipeline получил статус invalid или job не появился, сначала проверь отступы в <code>ci/security.yml</code> и подключение файла в секции <code>include</code>. В GitLab можно открыть <strong>Build → Pipeline editor</strong>, чтобы увидеть ошибку YAML.</p>",
+      "question_html": "<p>Закоммить изменения и запушь pipeline. \n  <pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml ci/security.yml\ngit commit -m \"Add reusable security include\"\ngit push origin main</code></pre>\n  </p><p>\n  Затем открой <strong>Build → Pipelines → последний pipeline</strong>. На странице pipeline должен появиться job <code>secret-scan</code>. Нажми на его имя, чтобы открыть log и увидеть вывод проверки секретов.</p>\n\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>",
+      "options": [],
+      "raw_description": "<p>Закоммить изменения и запушь pipeline. \n  <pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml ci/security.yml\ngit commit -m \"Add reusable security include\"\ngit push origin main</code></pre>\n  </p><p>\n  Затем открой <strong>Build → Pipelines → последний pipeline</strong>. На странице pipeline должен появиться job <code>secret-scan</code>. Нажми на его имя, чтобы открыть log и увидеть вывод проверки секретов.</p>\n\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>"
+    },
+    {
+      "type": "check",
+      "title": "Добавить свой hidden job",
+      "taskid": "gitlab_ci_lab6_t5_after_template",
+      "hint": "<p><code>extends</code> может быть списком. Отступы важны: элементы списка <code>.alpine-base</code> и <code>.after-report</code> должны быть внутри <code>extends</code>.</p>",
+      "question_html": "$25",
+      "options": [],
+      "raw_description": "$25"
+    },
+    {
+      "type": "check",
+      "title": "Добавить parallel matrix",
+      "taskid": "gitlab_ci_lab6_t6_matrix",
+      "hint": "",
+      "question_html": "<p>Добавь job <code>compat-test</code>, который запускается на двух версиях Alpine через <code>parallel: matrix</code>.</p>\n<p>В конец <code>.gitlab-ci.yml</code> добавь блок:</p>\n<pre><code>compat-test:\n  stage: test\n  parallel:\n    matrix:\n      - ALPINE_VERSION: [\"3.19\", \"3.20\"]\n  image: alpine:$ALPINE_VERSION\n  script:\n    - echo \"compat on Alpine $ALPINE_VERSION\"\n    - test -n \"$ALPINE_VERSION\"</code></pre>\n<p>Сделай commit и push:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml ci/common.yml ci/security.yml\ngit commit -m \"Add matrix compatibility jobs\"\ngit push origin main</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>\n\n<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. GitLab покажет несколько jobs с одним базовым именем <code>compat-test</code> и разными значениями переменных. Нажми на каждый job <code>compat-test</code>, чтобы открыть log и увидеть, какая версия <code>ALPINE_VERSION</code> была использована.</p>",
+      "options": [],
+      "raw_description": "<p>Добавь job <code>compat-test</code>, который запускается на двух версиях Alpine через <code>parallel: matrix</code>.</p>\n<p>В конец <code>.gitlab-ci.yml</code> добавь блок:</p>\n<pre><code>compat-test:\n  stage: test\n  parallel:\n    matrix:\n      - ALPINE_VERSION: [\"3.19\", \"3.20\"]\n  image: alpine:$ALPINE_VERSION\n  script:\n    - echo \"compat on Alpine $ALPINE_VERSION\"\n    - test -n \"$ALPINE_VERSION\"</code></pre>\n<p>Сделай commit и push:</p>\n<pre><code>cd /root/gitlab-ci-lab\ngit add .gitlab-ci.yml ci/common.yml ci/security.yml\ngit commit -m \"Add matrix compatibility jobs\"\ngit push origin main</code></pre>\n<p>Перед проверкой дождись, что pipeline выполнен успешно.</p>\n\n<p>После push открой <strong>Build → Pipelines → последний pipeline</strong>. GitLab покажет несколько jobs с одним базовым именем <code>compat-test</code> и разными значениями переменных. Нажми на каждый job <code>compat-test</code>, чтобы открыть log и увидеть, какая версия <code>ALPINE_VERSION</code> была использована.</p>"
+    },
+    {
+      "type": "quiz",
+      "title": "Зачем include?",
+      "taskid": "gitlab_ci_lab6_t7_quiz_include",
+      "hint": "",
+      "question_html": "<p>Зачем выносить часть CI в include/template?</p>",
+      "options": [
+        {
+          "text": "Чтобы скрыть pipeline от GitLab",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы job выполнялся без runner",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы уменьшить повторение и поддерживать общие правила централизованно",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы отключить git history",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Зачем выносить часть CI в include/template?</p>\n<ul>\n<li>Чтобы скрыть pipeline от GitLab [Нет]</li>\n<li>Чтобы job выполнялся без runner [Нет]</li>\n<li>+Чтобы уменьшить повторение и поддерживать общие правила централизованно [Верно]</li>\n<li>Чтобы отключить git history [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "quiz",
+      "title": "Когда полезен parallel:matrix?",
+      "taskid": "gitlab_ci_lab6_t8_quiz_matrix",
+      "hint": "",
+      "question_html": "<p>Для чего чаще всего используют <code>parallel:matrix</code>?</p>",
+      "options": [
+        {
+          "text": "Чтобы вручную выключить pipeline",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы прогнать одинаковый job с разными версиями или параметрами",
+          "correct": true,
+          "explanation": "Верно"
+        },
+        {
+          "text": "Чтобы удалить artifacts",
+          "correct": false,
+          "explanation": "Нет"
+        },
+        {
+          "text": "Чтобы дать пользователю admin-права",
+          "correct": false,
+          "explanation": "Нет"
+        }
+      ],
+      "raw_description": "<p>Для чего чаще всего используют <code>parallel:matrix</code>?</p>\n<ul>\n<li>Чтобы вручную выключить pipeline [Нет]</li>\n<li>+Чтобы прогнать одинаковый job с разными версиями или параметрами [Верно]</li>\n<li>Чтобы удалить artifacts [Нет]</li>\n<li>Чтобы дать пользователю admin-права [Нет]</li>\n</ul>"
+    },
+    {
+      "type": "self",
+      "title": "Поэкспериментировать с include, extends и matrix",
+      "taskid": "gitlab_ci_lab6_t9_experiment",
+      "hint": "",
+      "question_html": "<p>Попробуй расширить шаблоны и matrix, чтобы увидеть, как GitLab собирает pipeline из нескольких YAML-блоков.</p>\n<p>Идеи:</p>\n\n<p>Перед завершением верни рабочую конфигурацию, запушь изменения и дождись, что pipeline выполнен успешно.</p>",
+      "options": [
+        {
+          "text": "добавь ещё один hidden template в <code>ci/common.yml</code> и унаследуйся от него через <code>extends</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "добавь третью версию Alpine в <code>parallel: matrix</code>;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "временно сделай небольшую ошибку в подключаемом файле <code>ci/security.yml</code>, посмотри сообщение pipeline и верни правильный вариант;",
+          "correct": false,
+          "explanation": ""
+        },
+        {
+          "text": "перенеси общий <code>image</code> в template и проверь, что jobs продолжают работать.",
+          "correct": false,
+          "explanation": ""
+        }
+      ],
+      "raw_description": "<p>Попробуй расширить шаблоны и matrix, чтобы увидеть, как GitLab собирает pipeline из нескольких YAML-блоков.</p>\n<p>Идеи:</p>\n<ul>\n<li>добавь ещё один hidden template в <code>ci/common.yml</code> и унаследуйся от него через <code>extends</code>;</li>\n<li>добавь третью версию Alpine в <code>parallel: matrix</code>;</li>\n<li>временно сделай небольшую ошибку в подключаемом файле <code>ci/security.yml</code>, посмотри сообщение pipeline и верни правильный вариант;</li>\n<li>перенеси общий <code>image</code> в template и проверь, что jobs продолжают работать.</li>\n</ul>\n<p>Перед завершением верни рабочую конфигурацию, запушь изменения и дождись, что pipeline выполнен успешно.</p>"
+    }
+  ],
+  "vm_image": "gitlab-ci",
+  "vm_init": "module9_gitlab_ci/gitlab_ci/lab6/setup.yaml"
+}
