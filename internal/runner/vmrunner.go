@@ -105,8 +105,23 @@ func NewVMRunner() *VMRunner {
 	v.freeSlot = make([]bool, v.maxVMs)
 	v.sessions = make(map[string]*vmSession)
 	v.enabled = true
+	go v.sweepOrphans()
 	go v.reaper()
 	return v
+}
+
+// sweepOrphans clears VMs left behind by a previous run of the app (a redeploy or
+// crash loses the in-memory session map, but the Firecracker processes, taps and
+// per-session dirs survive on the host). golearn is the only Firecracker user on
+// the FC host, so a blanket sweep at startup is safe and prevents leaks. Runs once.
+func (v *VMRunner) sweepOrphans() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	script := `pkill -u "$(whoami)" -f 'bin/firecracker --no-api' 2>/dev/null || true
+for t in $(ip -br link 2>/dev/null | awk '/^gltap/{print $1}'); do sudo /usr/local/sbin/gl-tap del "$t" 2>/dev/null || true; done
+rm -rf ` + v.dir + `/sessions/* 2>/dev/null || true
+echo GLSWEEP`
+	_, _, _ = v.runHost(ctx, script)
 }
 
 func (v *VMRunner) Enabled() bool { return v != nil && v.enabled }
