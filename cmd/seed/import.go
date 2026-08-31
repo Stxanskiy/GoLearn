@@ -90,6 +90,7 @@ type importSpec struct {
 	Track      string
 	Difficulty string
 	Category   string
+	Image      string // force this sandbox image on all shell tasks (empty = auto)
 }
 
 // importedModules builds GoLearn modules from embedded parser content.
@@ -107,8 +108,8 @@ func importedModules() []M {
 		{Dir: "module_docker_basics", Slug: "docker-basics", Track: "devops", Difficulty: "intermediate", Category: "Docker"},
 		{Dir: "module_docker_compose", Slug: "docker-compose", Track: "devops", Difficulty: "intermediate", Category: "Docker"},
 		{Dir: "module_k8s_intro", Slug: "k8s-intro", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes"},
-		{Dir: "module_k8s_ckad", Slug: "k8s-ckad", Track: "devops", Difficulty: "advanced", Category: "Kubernetes"},
-		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes"},
+		{Dir: "module_k8s_ckad", Slug: "k8s-ckad", Track: "devops", Difficulty: "advanced", Category: "Kubernetes", Image: sandboxImageK8s},
+		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes", Image: sandboxImageK8s},
 		// ── Database section ──
 		{Dir: "module_postgres_sql", Slug: "sql-express", Track: "database", Difficulty: "beginner", Category: "Database"},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
@@ -243,6 +244,16 @@ func buildModule(s importSpec) (M, error) {
 
 		// Attach fixtures + auto-checks where this course has them authored.
 		applyLabFixtures(s.Slug, &l)
+
+		// Force the course's sandbox image where the spec pins one (helm and
+		// k8s-ckad need the k3s image, not the base shell image).
+		if s.Image != "" {
+			for i := range l.Tasks {
+				if l.Tasks[i].Kind == "shell" {
+					l.Tasks[i].SandboxImage = s.Image
+				}
+			}
+		}
 
 		m.Lessons = append(m.Lessons, l)
 	}

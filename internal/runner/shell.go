@@ -43,14 +43,20 @@ type ShellRunner struct {
 	// on the sandbox host for anyone who can open a lab, so it is OFF unless
 	// SANDBOX_PRIVILEGED is set explicitly.
 	privileged bool
-	mu         sync.Mutex
-	sessions   map[string]time.Time // container -> last activity (idle TTL)
-	started    map[string]time.Time // container -> first start (hard cap)
+	// sysbox runs the Docker/Kubernetes sandboxes with the sysbox-runc runtime
+	// instead of --privileged: they get their own Docker/k3s WITHOUT host root, so
+	// one student's lab cannot escape to the VM or touch another student's session.
+	// Enabled with SANDBOX_SYSBOX (requires sysbox installed on the sandbox host).
+	sysbox   bool
+	mu       sync.Mutex
+	sessions map[string]time.Time // container -> last activity (idle TTL)
+	started  map[string]time.Time // container -> first start (hard cap)
 }
 
 func NewShellRunner() *ShellRunner {
 	s := &ShellRunner{
 		privileged: shellBool("SANDBOX_PRIVILEGED"),
+		sysbox:     shellBool("SANDBOX_SYSBOX"),
 		host:       shellEnv("SANDBOX_SSH_HOST", ""),
 		port:       shellEnv("SANDBOX_SSH_PORT", "2222"),
 		user:       shellEnv("SANDBOX_SSH_USER", "sandbox"),
@@ -154,19 +160,26 @@ func needsDocker(image string) bool {
 	return strings.Contains(image, "sandbox-docker") || strings.Contains(image, "sandbox-k8s")
 }
 
-// runOpts returns the docker run flags for one kind of sandbox.
-func runOpts(userID int, key, image string) string {
+// runOpts returns the docker run flags for one kind of sandbox. Docker/k8s
+// sandboxes run under sysbox-runc when available (their own runtime, no host
+// root) and fall back to --privileged otherwise.
+func (s *ShellRunner) runOpts(userID int, key, image string) string {
+	rt := "--privileged"
+	if s.sysbox {
+		// sysbox provides /run, cgroups and a virtualised /proc//sys itself, so
+		// the --privileged / --tmpfs /run hacks are neither needed nor wanted.
+		rt = "--runtime=sysbox-runc"
+	}
 	switch {
 	case strings.Contains(image, "sandbox-k8s"):
-		// k3s keeps its state (containerd, images, etcd) under /var/lib/rancher
-		// and wants a writable /run.
+		// k3s keeps its state (containerd, images, etcd) under /var/lib/rancher.
 		return fmt.Sprintf(
-			"--privileged --memory 4g --cpus 3 --pids-limit 4096 --tmpfs /run -v %s:/var/lib/rancher",
-			dindVolume(userID, key))
+			"%s --memory 3g --cpus 2 --pids-limit 4096 -v %s:/var/lib/rancher",
+			rt, dindVolume(userID, key))
 	case strings.Contains(image, "sandbox-docker"):
 		return fmt.Sprintf(
-			"--privileged --memory 2g --cpus 2 --pids-limit 2048 -v %s:/var/lib/docker",
-			dindVolume(userID, key))
+			"%s --memory 2g --cpus 2 --pids-limit 2048 -v %s:/var/lib/docker",
+			rt, dindVolume(userID, key))
 	default:
 		return "--memory 512m --cpus 1 --pids-limit 256"
 	}
@@ -184,9 +197,9 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	if image == "" {
 		image = s.image
 	}
-	if needsDocker(image) && !s.privileged {
+	if needsDocker(image) && !s.privileged && !s.sysbox {
 		return "", fmt.Errorf("курсы Docker и Kubernetes на этом сервере отключены: " +
-			"их лаборатории требуют привилегированной песочницы (SANDBOX_PRIVILEGED). " +
+			"их лаборатории требуют привилегированной песочницы (SANDBOX_PRIVILEGED или SANDBOX_SYSBOX). " +
 			"Проходить их можно в локальной установке")
 	}
 	c := sessionName(userID, key)
@@ -205,7 +218,7 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	b64 := base64.StdEncoding.EncodeToString([]byte(setup))
 	// Courses with their own runtime (Docker, Kubernetes) need elevated
 	// privileges and more headroom than a shell-only lab.
-	opts := runOpts(userID, key, image)
+	opts := s.runOpts(userID, key, image)
 	create := fmt.Sprintf(
 		`docker rm -f %s >/dev/null 2>&1; `+
 			`docker run -d --init --name %s --hostname sandbox --network none %s %s sleep infinity >/dev/null || exit 1; `+
