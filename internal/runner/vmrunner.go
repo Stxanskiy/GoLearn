@@ -73,8 +73,8 @@ func NewVMRunner() *VMRunner {
 	v := &VMRunner{
 		host:   shellEnv("FC_SSH_HOST", ""),
 		port:   shellEnv("FC_SSH_PORT", "22"),
-		user:   shellEnv("FC_SSH_USER", "berg"),
-		dir:    shellEnv("FC_DIR", "/home/berg/fc-build"),
+		user:   shellEnv("FC_SSH_USER", "glvm"),
+		dir:    shellEnv("FC_DIR", "/opt/fc"),
 		kernel: shellEnv("FC_KERNEL", "vmlinux-6.1.128-tot"),
 		rootfs: shellEnv("FC_ROOTFS", "rootfs-docker.ext4"),
 		vmkey:  shellEnv("FC_VMKEY", "vmkey"),
@@ -245,11 +245,8 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	script := fmt.Sprintf(`set -e
 WORK=%[1]s
 mkdir -p "$WORK"
-# fresh tap owned by the SSH user so Firecracker can open it
-sudo ip link del %[2]s 2>/dev/null || true
-sudo ip tuntap add %[2]s mode tap user "$(whoami)"
-sudo ip addr add %[3]s/30 dev %[2]s
-sudo ip link set %[2]s up
+# fresh tap via the restricted gl-tap wrapper (the only privileged op we may do)
+sudo /usr/local/sbin/gl-tap add %[2]s %[3]s
 # per-session writable rootfs (full copy for now; snapshot/CoW is a later step)
 cp -f %[4]s/%[5]s "$WORK/boot.ext4"
 # machine config
@@ -495,7 +492,7 @@ func (v *VMRunner) teardownLocked(sid string) {
 	work := fmt.Sprintf("%s/sessions/%s", v.dir, sid)
 	script := fmt.Sprintf(`
 [ -f %[1]s/fc.pid ] && kill "$(cat %[1]s/fc.pid)" 2>/dev/null || true
-sudo ip link del %[2]s 2>/dev/null || true
+sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
 rm -rf %[1]s
 `, work, tap)
 	go func() {
