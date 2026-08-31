@@ -48,9 +48,12 @@
 <script src="/static/vendor/sqljs/sql-wasm.js"></script>
 <script>
 (function () {
-    var metaEl = document.getElementById('sql-meta');
-    if (!metaEl) return;
-    var meta = JSON.parse(metaEl.textContent);
+    var erdEl = document.querySelector('.sql-erd');
+    if (!erdEl) return;
+    var meta = JSON.parse(erdEl.dataset.schema);
+
+    renderERD(erdEl, meta.tables || []);
+
     var dbReady = null;
     function ensureDB() {
         if (dbReady) return dbReady;
@@ -89,6 +92,72 @@
         });
     };
     function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // renderERD draws an entity-relationship diagram: one box per table with its
+    // columns, PK/FK badges, and SVG connector lines. Foreign keys are inferred
+    // by naming — a column whose name matches another table's id (e.g. trip.company
+    // -> company) — since the sql-academy schema carries no explicit constraints.
+    function renderERD(host, tables) {
+        if (!tables.length) return;
+        var ids = {};
+        tables.forEach(function (t) { ids[t.id] = true; });
+        function fkTarget(col, ownId) {
+            return (ids[col.name] && col.name !== ownId) ? col.name : null;
+        }
+        var wrap = document.createElement('div'); wrap.className = 'erd-wrap';
+        var NS = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'erd-lines');
+        var grid = document.createElement('div'); grid.className = 'erd-grid';
+        wrap.appendChild(svg); wrap.appendChild(grid);
+        var boxes = {}, edges = [];
+        tables.forEach(function (t) {
+            var box = document.createElement('div'); box.className = 'erd-table';
+            var head = document.createElement('div'); head.className = 'erd-th';
+            head.textContent = t.id; box.appendChild(head);
+            (t.cols || []).forEach(function (c) {
+                var row = document.createElement('div'); row.className = 'erd-col';
+                var fk = fkTarget(c, t.id);
+                var badges = (c.isKey ? '<span class="erd-pk">PK</span>' : '') +
+                             (fk ? '<span class="erd-fk">FK</span>' : '');
+                row.innerHTML = '<span class="erd-cn">' + escapeHtml(c.name) + '</span>' +
+                    '<span class="erd-meta"><span class="erd-ct">' + escapeHtml(c.type || '') + '</span>' + badges + '</span>';
+                if (c.desc) row.title = c.desc;
+                if (fk) edges.push({ row: row, to: fk });
+                box.appendChild(row);
+            });
+            grid.appendChild(box); boxes[t.id] = box;
+        });
+        host.appendChild(wrap);
+
+        function draw() {
+            var wr = wrap.getBoundingClientRect();
+            svg.setAttribute('width', wr.width); svg.setAttribute('height', wr.height);
+            svg.setAttribute('viewBox', '0 0 ' + wr.width + ' ' + wr.height);
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+            edges.forEach(function (e) {
+                var tb = boxes[e.to]; if (!tb) return;
+                var a = e.row.getBoundingClientRect();
+                var b = tb.querySelector('.erd-th').getBoundingClientRect();
+                var toRight = (b.left + b.width / 2) > (a.left + a.width / 2);
+                var sx = (toRight ? a.right : a.left) - wr.left;
+                var sy = a.top - wr.top + a.height / 2;
+                var tx = (toRight ? b.left : b.right) - wr.left;
+                var ty = b.top - wr.top + b.height / 2;
+                var mx = (sx + tx) / 2;
+                var path = document.createElementNS(NS, 'path');
+                path.setAttribute('class', 'erd-edge');
+                path.setAttribute('d', 'M' + sx + ',' + sy + ' C' + mx + ',' + sy + ' ' + mx + ',' + ty + ' ' + tx + ',' + ty);
+                svg.appendChild(path);
+                var dot = document.createElementNS(NS, 'circle');
+                dot.setAttribute('class', 'erd-dot');
+                dot.setAttribute('cx', tx); dot.setAttribute('cy', ty); dot.setAttribute('r', 3.5);
+                svg.appendChild(dot);
+            });
+        }
+        draw();
+        if (window.ResizeObserver) { new ResizeObserver(draw).observe(wrap); }
+        window.addEventListener('resize', draw);
+    }
 })();
 </script>
 {{end}}
@@ -550,13 +619,23 @@ function gtUpdateGraph(uid) {
 /* Lab CTA */
 .lab-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:22px; flex-wrap:wrap; }
 
-/* SQL schema (in content) + runner */
-.sql-schema-table { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:10px 0; }
-.sql-schema-name { font-family:'SF Mono',monospace; font-weight:700; color:var(--accent); margin-bottom:6px; }
-.sql-schema-table ul { list-style:none; margin:0; padding:0; }
-.sql-schema-table li { font-size:.86em; padding:2px 0; }
-.sql-type { color:var(--text-muted); font-size:.82em; }
-.sql-key { background:var(--yellow-bg); color:var(--yellow); font-size:.72em; padding:1px 6px; border-radius:4px; font-weight:700; }
+/* SQL ER diagram (schema graph in content) + runner */
+.sql-erd { margin:14px 0 6px; }
+.erd-wrap { position:relative; }
+.erd-lines { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
+.erd-edge { fill:none; stroke:var(--accent); stroke-width:1.6; opacity:.5; }
+.erd-dot { fill:var(--accent); }
+.erd-grid { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:26px 48px; align-items:flex-start; }
+.erd-table { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; min-width:196px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.18); }
+.erd-th { background:var(--bg-elevated); color:var(--accent); font-family:'SF Mono',monospace; font-weight:700; font-size:.86em; padding:7px 12px; border-bottom:1px solid var(--border); }
+.erd-col { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 12px; font-size:.82em; border-bottom:1px solid var(--border); }
+.erd-col:last-child { border-bottom:none; }
+.erd-cn { font-family:'SF Mono',monospace; color:var(--text); }
+.erd-meta { display:flex; align-items:center; gap:6px; }
+.erd-ct { color:var(--text-muted); font-size:.86em; }
+.erd-pk, .erd-fk { font-size:.62em; font-weight:700; padding:1px 5px; border-radius:4px; letter-spacing:.03em; }
+.erd-pk { background:var(--yellow-bg); color:var(--yellow); }
+.erd-fk { background:rgba(88,166,255,.15); color:var(--accent); }
 .sql-runner { margin-top:22px; background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; }
 .sql-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
 .sql-input { width:100%; min-height:120px; padding:14px; background:var(--code-bg); color:var(--text); border:1px solid var(--border); border-radius:10px; font-family:'SF Mono','Fira Code',monospace; font-size:.92em; resize:vertical; }

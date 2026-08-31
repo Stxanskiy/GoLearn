@@ -128,26 +128,40 @@ func renderSQL(q sqlQuestion) string {
 		b.WriteString(`</p>`)
 	}
 	b.WriteString(`<h3>Схема базы данных: ` + html.EscapeString(q.Database.Title) + `</h3>`)
-	for _, t := range q.Database.Tables {
-		b.WriteString(`<div class="sql-schema-table"><div class="sql-schema-name">` + html.EscapeString(t.ID) + `</div><ul>`)
-		for _, p := range t.Props {
-			key := ""
-			if p.IsKey {
-				key = ` <span class="sql-key">PK</span>`
-			}
-			desc := ""
-			if p.Description != "" {
-				desc = ` — ` + html.EscapeString(p.Description)
-			}
-			b.WriteString(`<li><code>` + html.EscapeString(p.Name) + `</code> <span class="sql-type">` + html.EscapeString(p.Type) + `</span>` + key + desc + `</li>`)
-		}
-		b.WriteString(`</ul></div>`)
-	}
 
-	meta := map[string]any{"ddl": sqlDDL(q.Database), "fields": q.Fields}
-	mj, _ := json.Marshal(meta) // escapes <,>,& -> safe inside <script>
-	b.WriteString(`<script type="application/json" id="sql-meta">` + string(mj) + `</script>`)
+	// Schema + DDL + expected columns travel as a data island on a plain <div>.
+	// Unlike <script>, a <div> survives neutralizeActiveHTML, so nothing leaks as
+	// raw text. The lesson's front-end reads data-schema to draw the ER diagram
+	// AND to seed the in-browser SQLite runner.
+	schema := sqlSchemaPayload(q)
+	sj, _ := json.Marshal(schema)
+	b.WriteString(`<div class="sql-erd" data-schema="` + html.EscapeString(string(sj)) + `"></div>`)
 	return b.String()
+}
+
+// sqlSchemaPayload is the JSON consumed by the SQL lesson front-end: table
+// structure (for the ER diagram) plus the DDL and expected result columns (for
+// the in-browser SQLite editor).
+func sqlSchemaPayload(q sqlQuestion) map[string]any {
+	tables := make([]map[string]any, 0, len(q.Database.Tables))
+	for _, t := range q.Database.Tables {
+		cols := make([]map[string]any, 0, len(t.Props))
+		for _, p := range t.Props {
+			cols = append(cols, map[string]any{
+				"name":  p.Name,
+				"type":  p.Type,
+				"isKey": p.IsKey,
+				"desc":  p.Description,
+			})
+		}
+		tables = append(tables, map[string]any{"id": t.ID, "cols": cols})
+	}
+	return map[string]any{
+		"title":  q.Database.Title,
+		"tables": tables,
+		"ddl":    sqlDDL(q.Database),
+		"fields": q.Fields,
+	}
 }
 
 // sqlDDL generates SQLite CREATE TABLE statements from the schema (no data — the
