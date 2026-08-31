@@ -21,9 +21,24 @@ services:
       # Docker/Kubernetes courses need a privileged sandbox = root on the
       # sandbox VM for anyone who can open a lab. Off on this server.
       SANDBOX_PRIVILEGED: "0"
+      # Firecracker micro-VM engine (pilot for the Docker course). The app SSHes to
+      # the host via the bridge gateway as the least-privilege glvm account (its
+      # sudoers grants only the gl-tap wrapper), which boots one micro-VM per
+      # (user, lesson) — a real isolated kernel with native dockerd, no host root.
+      # Lessons on golearn/sandbox-docker route here; everything else stays on the
+      # container ShellRunner. See the fc_pilot memory / deploy/berg/README for the
+      # host setup (glvm, /opt/fc, gl-tap, sudoers).
+      FC_ENABLED: "1"
+      FC_SSH_HOST: "172.30.0.1"
+      FC_SSH_PORT: "22"
+      FC_SSH_USER: "glvm"
+      FC_SSH_KEY: "/fc/appkey"
+      FC_DIR: "/opt/fc"
+      FC_MAX_VMS: "8"
       ADMIN_EMAILS: "berg@gmail.com"
     volumes:
       - ./sandbox-vm/id_ed25519:/sandbox/id_ed25519:ro
+      - ./fc/appkey:/fc/appkey:ro
     depends_on:
       db:
         condition: service_healthy
