@@ -163,8 +163,10 @@ func (v *VMRunner) runHost(ctx context.Context, script string) (string, int, err
 // vmkey to root@<ip>. `inner` is base64-decoded and piped to bash inside the VM.
 func (v *VMRunner) sshInto(ip, inner string) string {
 	b64 := base64.StdEncoding.EncodeToString([]byte(inner))
+	// -n is essential: this whole command is fed to the host bash over a pipe, and
+	// an ssh without -n would read the remaining piped script as its stdin.
 	return fmt.Sprintf(
-		`ssh -i %s/%s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `+
+		`ssh -n -i %s/%s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `+
 			`-o ConnectTimeout=5 -o LogLevel=ERROR root@%s `+
 			`'echo %s | base64 -d | bash' 2>&1`,
 		v.dir, v.vmkey, ip, b64)
@@ -276,15 +278,16 @@ JSON
 # launch
 setsid %[4]s/bin/firecracker --no-api --config-file "$WORK/fc.json" > "$WORK/fc.log" 2>&1 &
 echo $! > "$WORK/fc.pid"
-# wait for sshd inside the VM
+# wait for sshd inside the VM. -n on every ssh: this script is piped into the host
+# bash, so an ssh without -n would swallow the rest of the script as its stdin.
 for i in $(seq 1 %[11]d); do
   sleep 1
-  ssh -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=2 -o LogLevel=ERROR root@%[13]s true 2>/dev/null && { UP=1; break; }
+  ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=2 -o LogLevel=ERROR root@%[13]s true 2>/dev/null && { UP=1; break; }
 done
 [ "${UP:-0}" = 1 ] || { echo "GLVMERR boot-timeout"; tail -5 "$WORK/fc.log" 2>/dev/null; exit 0; }
 # apply lesson setup once
 if [ -n "%[14]s" ]; then
-  ssh -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' >/dev/null 2>&1 || true
+  ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' >/dev/null 2>&1 || true
 fi
 echo "GLVMOK %[13]s"
 `,
