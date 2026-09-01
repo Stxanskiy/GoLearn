@@ -10,24 +10,11 @@ services:
       PORT: "8080"
       DATABASE_URL: "postgres://golearn:golearn@db:5432/golearn?sslmode=disable"
       DATA_DIR: "/app/data"
-      # Sandbox VM transport: app -> (host socat on the fixed bridge gateway) -> VM:22
-      SANDBOX_SSH_HOST: "172.30.0.1"
-      SANDBOX_SSH_PORT: "2222"
-      SANDBOX_SSH_USER: "sandbox"
-      SANDBOX_SSH_KEY: "/sandbox/id_ed25519"
-      # Lab image built once on the sandbox VM (see deploy/berg/README.md).
-      # Per-task images in the database take precedence over this default.
-      SANDBOX_IMAGE: "golearn/sandbox:latest"
-      # Docker/Kubernetes courses need a privileged sandbox = root on the
-      # sandbox VM for anyone who can open a lab. Off on this server.
-      SANDBOX_PRIVILEGED: "0"
-      # Firecracker micro-VM engine (pilot for the Docker course). The app SSHes to
-      # the host via the bridge gateway as the least-privilege glvm account (its
-      # sudoers grants only the gl-tap wrapper), which boots one micro-VM per
-      # (user, lesson) — a real isolated kernel with native dockerd, no host root.
-      # Lessons on golearn/sandbox-docker route here; everything else stays on the
-      # container ShellRunner. See the fc_pilot memory / deploy/berg/README for the
-      # host setup (glvm, /opt/fc, gl-tap, sudoers).
+      # Firecracker micro-VM engine — the only lab backend. The app SSHes to the host
+      # via the bridge gateway as the least-privilege glvm account (its sudoers grants
+      # only the gl-tap wrapper) and boots one micro-VM per (user, lesson): a real
+      # isolated kernel with native dockerd/k3s, no host root. See deploy/berg/README
+      # for the host setup (glvm, /opt/fc, gl-tap, sudoers).
       FC_ENABLED: "1"
       FC_SSH_HOST: "172.30.0.1"
       FC_SSH_PORT: "22"
@@ -37,7 +24,6 @@ services:
       FC_MAX_VMS: "8"
       ADMIN_EMAILS: "berg@gmail.com"
     volumes:
-      - ./sandbox-vm/id_ed25519:/sandbox/id_ed25519:ro
       - ./fc/appkey:/fc/appkey:ro
     depends_on:
       db:
