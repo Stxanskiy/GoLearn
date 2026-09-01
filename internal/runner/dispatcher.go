@@ -26,16 +26,12 @@ func NewDispatcher(shell *ShellRunner, vm *VMRunner) *Dispatcher {
 }
 
 // pick chooses the engine for an image. When the micro-VM engine is on, every
-// shell course runs in a VM (the unified golden rootfs ships all their tools:
-// docker, git, ansible, go, kubectl/helm binaries, …). The one exception is the
-// Kubernetes course (golearn/sandbox-k8s): its labs need k3s actually *running*
-// inside the VM, which needs a bigger VM and airgap images — not wired yet — so it
-// stays on the container ShellRunner until that lands.
+// shell course runs in a VM: the default golden ships docker + all CLI tools, and
+// the Kubernetes course gets a k3s golden (bigger VM, k3s auto-starts) — the
+// vmrunner selects the profile from the image. Only when the VM engine is off does
+// anything fall back to the container ShellRunner.
 func (d *Dispatcher) pick(image string) Engine {
 	if d.VM == nil || !d.VM.Enabled() {
-		return d.Shell
-	}
-	if strings.Contains(image, "sandbox-k8s") {
 		return d.Shell
 	}
 	return d.VM

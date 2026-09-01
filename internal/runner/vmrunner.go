@@ -39,14 +39,16 @@ type VMRunner struct {
 	host, port, user, keyFile string
 
 	// Paths on the FC host.
-	dir     string // FC_DIR
-	bin     string // firecracker binary
-	kernel  string // guest kernel
-	rootfs  string // golden ext4
-	vmkey   string // key file (on the host) to reach a VM
+	dir       string // FC_DIR
+	bin       string // firecracker binary
+	kernel    string // guest kernel
+	rootfs    string // golden ext4 (default profile: docker + all CLI tools)
+	rootfsK8s string // Kubernetes profile golden (k3s auto-starts inside)
+	vmkey     string // key file (on the host) to reach a VM
 
 	vcpus  int
 	memMiB int
+	memK8s int // Kubernetes VMs need more RAM (k3s)
 	maxVMs int
 
 	mu       sync.Mutex
@@ -58,6 +60,7 @@ type vmSession struct {
 	sid     string
 	userID  int
 	key     string
+	image   string
 	slot    int
 	ip      string
 	started time.Time
@@ -75,12 +78,14 @@ func NewVMRunner() *VMRunner {
 		port:   shellEnv("FC_SSH_PORT", "22"),
 		user:   shellEnv("FC_SSH_USER", "glvm"),
 		dir:    shellEnv("FC_DIR", "/opt/fc"),
-		kernel: shellEnv("FC_KERNEL", "vmlinux-6.1.128-tot"),
-		rootfs: shellEnv("FC_ROOTFS", "rootfs-docker.ext4"),
-		vmkey:  shellEnv("FC_VMKEY", "vmkey"),
-		vcpus:  atoiDefault(shellEnv("FC_VCPUS", "1"), 1),
-		memMiB: atoiDefault(shellEnv("FC_MEM_MIB", "1024"), 1024),
-		maxVMs: atoiDefault(shellEnv("FC_MAX_VMS", "8"), 8),
+		kernel:    shellEnv("FC_KERNEL", "vmlinux-6.1.128-tot"),
+		rootfs:    shellEnv("FC_ROOTFS", "rootfs-docker.ext4"),
+		rootfsK8s: shellEnv("FC_ROOTFS_K8S", "rootfs-k8s.ext4"),
+		vmkey:     shellEnv("FC_VMKEY", "vmkey"),
+		vcpus:     atoiDefault(shellEnv("FC_VCPUS", "1"), 1),
+		memMiB:    atoiDefault(shellEnv("FC_MEM_MIB", "1024"), 1024),
+		memK8s:    atoiDefault(shellEnv("FC_MEM_K8S", "3072"), 3072),
+		maxVMs:    atoiDefault(shellEnv("FC_MAX_VMS", "8"), 8),
 	}
 	v.bin = shellEnv("FC_BIN", v.dir+"/bin/firecracker")
 	if !shellBool("FC_ENABLED") || v.host == "" {
@@ -225,7 +230,7 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 		v.mu.Unlock()
 		return "", fmt.Errorf("все VM-слоты заняты (лимит %d) — попробуй чуть позже", v.maxVMs)
 	}
-	sess := &vmSession{sid: sid, userID: userID, key: key, slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
+	sess := &vmSession{sid: sid, userID: userID, key: key, image: image, slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
 	v.sessions[sid] = sess
 	v.mu.Unlock()
 
@@ -254,6 +259,13 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	vmip := s.ip
 	mac := vmMAC(s.slot)
 	work := fmt.Sprintf("%s/sessions/%s", v.dir, s.sid)
+
+	// Kubernetes lessons get the k3s golden and a bigger VM; everything else uses
+	// the default docker+tools golden.
+	rootfs, mem, vcpus := v.rootfs, v.memMiB, v.vcpus
+	if strings.Contains(s.image, "sandbox-k8s") {
+		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 2
+	}
 	bootArgs := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 acpi=off net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
 		vmip)
@@ -295,12 +307,12 @@ echo "GLVMOK %[13]s"
 		tap,            // 2
 		hostIP,         // 3
 		v.dir,          // 4
-		v.rootfs,       // 5
+		rootfs,         // 5
 		v.kernel,       // 6
 		bootArgs,       // 7
 		mac,            // 8
-		v.vcpus,        // 9
-		v.memMiB,       // 10
+		vcpus,          // 9
+		mem,            // 10
 		int(vmBootWait/time.Second), // 11
 		v.vmkey,        // 12
 		vmip,           // 13
