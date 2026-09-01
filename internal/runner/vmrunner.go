@@ -263,8 +263,17 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	// Kubernetes lessons get the k3s golden and a bigger VM; everything else uses
 	// the default docker+tools golden.
 	rootfs, mem, vcpus := v.rootfs, v.memMiB, v.vcpus
+	// k8sWait (empty for non-k8s) blocks the boot until k3s registers the node as
+	// Ready, so the student's terminal opens onto a working cluster instead of a
+	// "connection refused" while k3s (~15s) is still coming up.
+	k8sWait := ""
 	if strings.Contains(s.image, "sandbox-k8s") {
 		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 2
+		k8sWait = fmt.Sprintf(
+			`echo "waiting for k3s..."; for i in $(seq 1 45); do `+
+				`ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -o LogLevel=ERROR root@%[3]s `+
+				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
+			v.dir, v.vmkey, vmip)
 	}
 	bootArgs := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 acpi=off net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
@@ -301,6 +310,7 @@ done
 if [ -n "%[14]s" ]; then
   ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' >/dev/null 2>&1 || true
 fi
+%[15]s
 echo "GLVMOK %[13]s"
 `,
 		work,           // 1
@@ -317,6 +327,7 @@ echo "GLVMOK %[13]s"
 		v.vmkey,        // 12
 		vmip,           // 13
 		setupB64,       // 14
+		k8sWait,        // 15
 	)
 
 	out, _, err := v.runHost(ctx, script)
