@@ -7,10 +7,12 @@ package main
 // deploy and brings up an offline registry mirror, so the cluster works without
 // any network.
 
-// k8sBoot starts (or reuses) the cluster at the beginning of every lesson setup.
+// k8sBoot waits for the cluster at the beginning of every lesson setup. In the
+// Firecracker k8s golden, k3s auto-starts via systemd (k3s.service) and KUBECONFIG
+// is exported globally, so the setup only has to wait until the API is ready.
 const k8sBoot = `set -e
-k8s-start
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml`
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+for i in $(seq 1 60); do kubectl get --raw=/readyz >/dev/null 2>&1 && break; sleep 1; done`
 
 // kcheck fails with a clear message while the cluster is still coming up.
 func kcheck(cond, good, bad string) string {
