@@ -23,6 +23,8 @@ type TasksPageData struct {
 	HasQuiz       bool
 	QuestionsJSON template.JS
 	PassedJSON    template.JS
+	PrevLesson    *model.Lesson
+	NextLesson    *model.Lesson
 }
 
 func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +64,22 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 	// Git-course labs get a live commit-graph beside the terminal.
 	data.IsGitLab = strings.EqualFold(mod.Category, "Git") ||
 		strings.Contains(strings.ToLower(mod.Slug), "git")
+
+	// Prev/next lesson so a finished lab offers a way forward (same order the
+	// lesson page uses).
+	if allLessons, lerr := h.lessonRepo.GetByModule(ctx, mod.ID); lerr == nil {
+		for i, l := range allLessons {
+			if l.ID == lesson.ID {
+				if i > 0 {
+					data.PrevLesson = &allLessons[i-1]
+				}
+				if i < len(allLessons)-1 {
+					data.NextLesson = &allLessons[i+1]
+				}
+				break
+			}
+		}
+	}
 
 	// Solved steps are restored from the database, so reloading the page (or
 	// coming back a week later) keeps the lab's completed steps marked.

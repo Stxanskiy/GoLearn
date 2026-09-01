@@ -65,6 +65,12 @@
             <div class="check-result" id="check-{{$t.ID}}"></div>
         </div>
         {{end}}
+
+        {{/* Move on when the lab is done */}}
+        <div class="lab2-lessonnav">
+            {{if .PrevLesson}}<a class="btn btn-outline" href="/module/{{.Module.Slug}}/lesson/{{.PrevLesson.Slug}}">← Предыдущий</a>{{else}}<span></span>{{end}}
+            {{if .NextLesson}}<a class="btn btn-primary" href="/module/{{.Module.Slug}}/lesson/{{.NextLesson.Slug}}">Следующий урок →</a>{{else}}<a class="btn btn-primary" href="/module/{{.Module.Slug}}">✓ Курс пройден</a>{{end}}
+        </div>
     </aside>
 
     <section class="lab2-main">
@@ -261,7 +267,7 @@
         var host = document.getElementById('lab2-host');
         host.innerHTML = ''; // drop the launch overlay or a previous finished session
         gotOutput = false;
-        term = new Terminal({ fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
+        term = new Terminal({ fontSize: 15.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
         fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(host);
         try { fit.fit(); } catch (e) {}
         setStatus('Подключаюсь…', true);
@@ -544,6 +550,8 @@
 .lab2-stepnav { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
 .lab2-stepnav .btn { flex:1; justify-content:center; }
 .lab2-stepnav .btn { padding:5px 12px; font-size:.82em; }
+.lab2-lessonnav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+.lab2-lessonnav .btn { text-decoration:none; }
 .lab2-step-title { font-weight:700; margin-bottom:12px; }
 .lab2-desc { font-size:.92em; line-height:1.6; margin-bottom:14px; }
 .lab2-desc code { background:var(--code-bg); padding:1px 6px; border-radius:5px; font-family:'SF Mono',monospace; font-size:.88em; border:1px solid var(--border); }

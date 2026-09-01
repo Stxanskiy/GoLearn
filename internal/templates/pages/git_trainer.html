@@ -106,7 +106,7 @@
         if (term) return;
         if (typeof Terminal === 'undefined') { document.getElementById('git-host').innerHTML = '<div class="git2-launch" style="color:var(--red);">Терминал не загрузился. Обнови страницу.</div>'; return; }
         document.getElementById('git-launch').style.display = 'none';
-        term = new Terminal({ fontSize: 13.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
+        term = new Terminal({ fontSize: 15.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
         fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(document.getElementById('git-host'));
         try { fit.fit(); } catch (e) {}
         setStatus('Подключаюсь…', true);
