@@ -25,13 +25,20 @@ func NewDispatcher(shell *ShellRunner, vm *VMRunner) *Dispatcher {
 	return &Dispatcher{Shell: shell, VM: vm}
 }
 
-// pick chooses the engine for an image. The Docker course is the pilot: its
-// lessons carry golearn/sandbox-docker and route to the micro-VM when it is on.
+// pick chooses the engine for an image. When the micro-VM engine is on, every
+// shell course runs in a VM (the unified golden rootfs ships all their tools:
+// docker, git, ansible, go, kubectl/helm binaries, …). The one exception is the
+// Kubernetes course (golearn/sandbox-k8s): its labs need k3s actually *running*
+// inside the VM, which needs a bigger VM and airgap images — not wired yet — so it
+// stays on the container ShellRunner until that lands.
 func (d *Dispatcher) pick(image string) Engine {
-	if d.VM != nil && d.VM.Enabled() && strings.Contains(image, "sandbox-docker") {
-		return d.VM
+	if d.VM == nil || !d.VM.Enabled() {
+		return d.Shell
 	}
-	return d.Shell
+	if strings.Contains(image, "sandbox-k8s") {
+		return d.Shell
+	}
+	return d.VM
 }
 
 // Enabled reports whether any backend can serve labs at all.
