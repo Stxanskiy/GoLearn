@@ -84,7 +84,7 @@ func NewVMRunner() *VMRunner {
 		vmkey:     shellEnv("FC_VMKEY", "vmkey"),
 		vcpus:     atoiDefault(shellEnv("FC_VCPUS", "1"), 1),
 		memMiB:    atoiDefault(shellEnv("FC_MEM_MIB", "1024"), 1024),
-		memK8s:    atoiDefault(shellEnv("FC_MEM_K8S", "3072"), 3072),
+		memK8s:    atoiDefault(shellEnv("FC_MEM_K8S", "1536"), 1536),
 		maxVMs:    atoiDefault(shellEnv("FC_MAX_VMS", "8"), 8),
 	}
 	v.bin = shellEnv("FC_BIN", v.dir+"/bin/firecracker")
@@ -268,7 +268,9 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	// "connection refused" while k3s (~15s) is still coming up.
 	k8sWait := ""
 	if strings.Contains(s.image, "sandbox-k8s") {
-		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 2
+		// k3s fits comfortably in ~1.5 GB / 1 vCPU (devops404 runs it in 1 GB); the
+		// old 3 GB / 2 vCPU was ~3x too generous.
+		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 1
 		k8sWait = fmt.Sprintf(
 			`echo "waiting for k3s..."; for i in $(seq 1 45); do `+
 				`ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -o LogLevel=ERROR root@%[3]s `+
