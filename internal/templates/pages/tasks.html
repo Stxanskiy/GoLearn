@@ -529,7 +529,7 @@
 .lq-expl { margin-top:10px; padding:10px 12px; border-radius:9px; background:var(--bg-elevated); border:1px solid var(--border); font-size:.85em; line-height:1.5; }
 .lq-expl.ok { border-color:rgba(63,185,80,.4); } .lq-expl.no { border-color:rgba(248,81,73,.4); }
 .lq-foot { display:flex; align-items:center; gap:6px; margin-top:10px; }
-.lab2-side { padding:18px; border-right:1px solid var(--line); overflow-y:auto; height:100%; background:var(--surface); }
+.lab2-side { padding:18px; border-right:1px solid var(--line); overflow-y:auto; height:100%; background:var(--surface); display:flex; flex-direction:column; }
 .lab2-back { font-size:.82em; color:var(--text-muted); text-decoration:none; }
 .lab2-back:hover { color:var(--accent); }
 .lab2-title { font-size:1.2em; font-weight:800; margin:8px 0 14px; line-height:1.25; }
@@ -550,7 +550,7 @@
 .lab2-stepnav { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
 .lab2-stepnav .btn { flex:1; justify-content:center; }
 .lab2-stepnav .btn { padding:5px 12px; font-size:.82em; }
-.lab2-lessonnav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+.lab2-lessonnav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:auto; padding-top:16px; border-top:1px solid var(--border); }
 .lab2-lessonnav .btn { text-decoration:none; }
 .lab2-step-title { font-weight:700; margin-bottom:12px; }
 .lab2-desc { font-size:.92em; line-height:1.6; margin-bottom:14px; }
@@ -560,7 +560,7 @@
 
 /* The right pane is a centered, bounded column so the terminal reads as a
    window instead of an edge-to-edge black void on wide monitors. */
-.lab2-main { display:flex; flex-direction:column; align-items:center; gap:12px; background:var(--bg); min-width:0; padding:14px 16px; }
+.lab2-main { display:flex; flex-direction:column; align-items:center; gap:12px; background:var(--bg); min-width:0; min-height:0; overflow:hidden; padding:14px 16px; }
 .lab2-git { width:100%; max-width:1100px; flex:none; max-height:230px; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
 .lab2-git-head { display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:.8em; font-weight:700; color:var(--muted); }
 .lab2-git-graph { margin:0; padding:10px 14px; overflow:auto; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.55; white-space:pre; color:var(--text); background:var(--bg); }
@@ -577,8 +577,9 @@
 .lab2-iconbtn:hover { color:var(--accent); border-color:var(--accent); }
 .lab2-stop { background:var(--red-bg); border:1px solid var(--red); color:var(--red); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:.82em; font-weight:700; }
 .lab2-stop:hover { background:var(--red); color:#fff; }
-.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px; min-height:0; background:var(--term-bg); border:1px solid var(--line); border-radius:12px; }
+.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px; min-height:0; overflow:hidden; background:var(--term-bg); border:1px solid var(--border-strong); border-radius:12px; }
 .lab2-term .xterm { height:100%; }
+.lab2-term .xterm-viewport { overflow-y:auto !important; }
 .lab2-preview { width:100%; max-width:1100px; flex:1; min-height:0; flex-direction:column; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
 .lab2-preview-bar { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--bg-card); border-bottom:1px solid var(--border); font-size:.82em; }
 .lab2-preview-bar .spacer { flex:1; }
