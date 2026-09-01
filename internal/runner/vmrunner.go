@@ -588,11 +588,12 @@ func (v *VMRunner) OpenPTY(handle string, cols, rows int) (*PTYSession, error) {
 		_ = client.Close()
 		return nil, err
 	}
-	// Nested: FC host -> VM, with a PTY, running an interactive login shell.
+	// Nested: FC host -> VM, with a PTY, running an interactive login shell (zsh,
+	// styled in the rootfs's /root/.zshrc).
 	inner := fmt.Sprintf(
 		"ssh -tt -i %s/%s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "+
 			"-o ConnectTimeout=5 -o LogLevel=ERROR root@%s "+
-			"'cd /root; exec env TERM=xterm-256color HOME=/root bash -l'",
+			"'cd /root; exec env TERM=xterm-256color HOME=/root zsh -l'",
 		v.dir, v.vmkey, handle)
 	if err := session.Start(inner); err != nil {
 		_ = session.Close()
