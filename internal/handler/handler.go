@@ -21,7 +21,7 @@ type Handler struct {
 	userRepo       *repository.UserRepo
 	specRepo       *repository.SpecRepo
 	runner         *runner.Runner
-	shell          *runner.Dispatcher
+	shell          *runner.VMRunner
 	log            *slog.Logger
 }
 
@@ -34,7 +34,7 @@ func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.Pr
 		userRepo:       ur,
 		specRepo:       spr,
 		runner:         runner.New(),
-		shell:          runner.NewDispatcher(runner.NewShellRunner(), runner.NewVMRunner()),
+		shell:          runner.NewVMRunner(),
 		log:            log,
 	}
 }
