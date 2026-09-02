@@ -23,7 +23,7 @@
             <h3 class="spec-name">{{$s.Name}}</h3>
             <p class="spec-desc">{{$s.Desc}}</p>
             <div class="spec-foot">
-                <span class="spec-count">{{$s.Count}} курс.</span>
+                <span class="spec-count">{{$s.Count}} {{plural $s.Count "курс" "курса" "курсов"}}</span>
                 {{if gt $s.Done 0}}<span class="spec-done">{{$s.Done}} пройдено</span>{{end}}
                 <span class="spec-go">Открыть →</span>
             </div>

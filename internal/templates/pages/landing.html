@@ -161,7 +161,7 @@
                     <span>
                         <h3>{{.Name}}</h3>
                         <p>{{.Desc}}</p>
-                        <span class="lp-track-count">{{.Courses}} курс.</span>
+                        <span class="lp-track-count">{{.Courses}} {{plural .Courses "курс" "курса" "курсов"}}</span>
                     </span>
                 </a>
                 {{end}}

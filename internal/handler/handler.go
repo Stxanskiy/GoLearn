@@ -128,6 +128,18 @@ func templateFuncs() template.FuncMap {
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"mul": func(a, b int) int { return a * b },
+		// plural picks the Russian plural form: one/few/many (1 курс, 2 курса, 5 курсов).
+		"plural": func(n int, one, few, many string) string {
+			m10, m100 := n%10, n%100
+			switch {
+			case m10 == 1 && m100 != 11:
+				return one
+			case m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14):
+				return few
+			default:
+				return many
+			}
+		},
 		"mod": func(a, b int) int {
 			if b == 0 {
 				return 0
