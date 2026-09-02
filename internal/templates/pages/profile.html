@@ -1,0 +1,63 @@
+{{define "profile"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<div class="page">
+    <div class="page-head">
+        <h1>Профиль</h1>
+        <p class="muted">Твой аккаунт и прогресс обучения.</p>
+    </div>
+
+    <div class="profile-card">
+        <div class="profile-avatar">{{.Initial}}</div>
+        <div class="profile-id">
+            <div class="profile-name">{{if .User.Name}}{{.User.Name}}{{else}}Аккаунт{{end}}</div>
+            <div class="profile-email">{{.User.Email}}</div>
+            <div class="profile-meta">
+                <span class="chip {{if .User.IsAdmin}}chip-accent{{end}}">{{.RoleLabel}}</span>
+                <span class="muted">· с {{.Joined}}</span>
+            </div>
+        </div>
+        <a class="btn btn-outline profile-logout" href="/logout"><i class="ph ph-sign-out"></i> Выйти</a>
+    </div>
+
+    <div class="section-title">Прогресс</div>
+    <div class="profile-stats">
+        <div class="stat-card">
+            <div class="stat-num">{{.Completed}}</div>
+            <div class="stat-label">уроков пройдено</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num">{{.Started}}</div>
+            <div class="stat-label">уроков начато</div>
+        </div>
+    </div>
+
+    <div class="section-title">Подписка</div>
+    <div class="profile-sub">
+        <div>
+            <div class="profile-sub-title">Бесплатный доступ</div>
+            <div class="muted">Оформление подписки скоро появится.</div>
+        </div>
+        <a class="btn btn-primary" href="/courses">К курсам</a>
+    </div>
+</div>
+
+<style>
+.profile-card { display:flex; align-items:center; gap:18px; padding:20px 22px; background:var(--surface); border:1px solid var(--line); border-radius:16px; margin-bottom:26px; }
+.profile-avatar { width:64px; height:64px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; text-transform:uppercase; color:var(--bg); background:var(--accent); }
+.profile-id { flex:1; min-width:0; }
+.profile-name { font-size:1.3em; font-weight:800; }
+.profile-email { color:var(--muted); font-size:.92em; margin:2px 0 8px; }
+.profile-meta { display:flex; align-items:center; gap:8px; font-size:.85em; }
+.profile-logout { flex:none; text-decoration:none; }
+.profile-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:26px; }
+.stat-card { padding:18px 20px; background:var(--surface); border:1px solid var(--line); border-radius:14px; }
+.stat-num { font-size:2em; font-weight:800; color:var(--accent); line-height:1; }
+.stat-label { color:var(--muted); font-size:.88em; margin-top:6px; }
+.profile-sub { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 22px; background:var(--surface); border:1px solid var(--line); border-radius:14px; }
+.profile-sub-title { font-weight:700; font-size:1.05em; }
+@media (max-width:560px){ .profile-card { flex-direction:column; text-align:center; } .profile-meta { justify-content:center; } .profile-logout { width:100%; justify-content:center; } }
+</style>
+{{end}}

@@ -52,6 +52,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	// Protected routes (require auth)
 	r.Group(func(r chi.Router) {
 		r.Use(h.AuthMiddleware)
+		r.Get("/profile", h.ProfilePage)
 		r.Get("/courses", h.CoursesPage)
 		r.Get("/courses/{track}", h.SectionPage)
 		r.Get("/api/courses/{slug}/cover", h.CourseCover)
