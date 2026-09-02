@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -79,6 +80,12 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 		if user.IsAdmin() {
 			http.SetCookie(w, &http.Cookie{Name: "gl_role", Value: "admin", Path: "/", MaxAge: 30 * 24 * 3600})
 		}
+		// Non-sensitive display name so the sidebar shows who is signed in.
+		disp := user.Name
+		if disp == "" {
+			disp = user.Email
+		}
+		http.SetCookie(w, &http.Cookie{Name: "gl_user", Value: url.QueryEscape(disp), Path: "/", MaxAge: 30 * 24 * 3600})
 
 		ctx := context.WithValue(r.Context(), userContextKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))

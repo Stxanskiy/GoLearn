@@ -86,6 +86,15 @@
             });
             var m = document.cookie.match(/(?:^|;\s*)gl_role=admin/);
             if (m) { var g = document.getElementById('nav-admin-group'); if (g) g.style.display = ''; }
+            // personalize the sidebar identity from the gl_user hint cookie
+            var um = document.cookie.match(/(?:^|;\s*)gl_user=([^;]+)/);
+            if (um) {
+                var uname = decodeURIComponent(um[1]);
+                var nb = document.getElementById('side-user-name');
+                if (nb) nb.textContent = uname;
+                var av = document.getElementById('side-avatar');
+                if (av && uname) av.textContent = uname.trim().charAt(0).toUpperCase();
+            }
             // sync theme button icon
             var dark = document.documentElement.getAttribute('data-theme') === 'dark';
             var ic = document.querySelector('#theme-btn i');
