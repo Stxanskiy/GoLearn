@@ -100,7 +100,7 @@
                 <div class="lab2-launch-card">
                     <div class="lab2-launch-ico">▶_</div>
                     <div class="lab2-launch-title">Песочница готова к запуску</div>
-                    <div class="lab2-launch-text">Настоящий Linux-терминал в изолированном контейнере. Файлы задания уже внутри,
+                    <div class="lab2-launch-text">Настоящий Linux-терминал в изолированной микро-VM. Файлы задания уже внутри,
                         утилиты установлены, сеть отключена — сломать что-то снаружи невозможно.</div>
                     <button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button>
                     <div class="lab2-launch-hint">Сломал окружение? «⟳ Сбросить окружение» вернёт его в исходное состояние.</div>
@@ -378,7 +378,15 @@
         fetch('/api/lab/' + LESSON + '/fs/list?path=/root').then(function (r) { return r.json(); }).then(function (d) {
             tree.innerHTML = '';
             if (d.error) { tree.innerHTML = '<div class="muted" style="padding:8px;">' + d.error + '</div>'; return; }
-            renderTreeInto(tree, '/root', d.entries || []);
+            var entries = d.entries || [];
+            if (!entries.length) {
+                tree.innerHTML = '<div class="muted" style="padding:14px 12px;line-height:1.55;font-size:13px;">' +
+                    '<i class="ph ph-folder-open" style="font-size:18px;display:block;margin-bottom:8px;color:var(--faint);"></i>' +
+                    'В этой лабораторной нет файлов проекта.<br>Работай в терминале — редактор нужен в лабах, где надо править файлы (Dockerfile, YAML, код).</div>';
+                document.getElementById('lab2-vscode-path').textContent = 'нет файлов';
+                return;
+            }
+            renderTreeInto(tree, '/root', entries);
         }).catch(function () { tree.innerHTML = '<div class="muted" style="padding:8px;">Запусти лабораторную, чтобы открыть файлы.</div>'; });
     };
     function renderTreeInto(container, basePath, entries) {
