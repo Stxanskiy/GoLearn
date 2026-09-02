@@ -104,7 +104,7 @@
 {{define "module_card"}}
 <a class="course-card" href="/module/{{.Slug}}">
     <div class="course-card-top">
-        {{if .Category}}<span class="chip chip-accent">{{.Category}}</span>{{end}}
+        {{if .Category}}<span class="chip {{chipCat .Category}}">{{.Category}}</span>{{end}}
         <span class="spacer"></span>
         {{if gt .Total 0}}<span style="font-size:12px;color:var(--faint);">{{pct .Completed .Total}}%</span>{{end}}
     </div>

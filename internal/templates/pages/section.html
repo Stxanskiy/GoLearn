@@ -40,7 +40,7 @@
        href="/module/{{$c.Slug}}" style="animation-delay:{{$i}}0ms;">
         <div class="course-card-top">
             <span class="mono" style="font-size:11px;color:var(--faint);letter-spacing:.06em;">{{printf "%02d" $c.Num}}</span>
-            <span class="chip chip-accent">{{$c.Category}}</span>
+            <span class="chip {{chipCat $c.Category}}">{{$c.Category}}</span>
             <span class="spacer"></span>
             <span class="course-state course-state-{{$c.Status}}">{{if eq $c.Status "completed"}}Пройден{{else if eq $c.Status "in_progress"}}В процессе{{else}}Не начат{{end}}</span>
         </div>

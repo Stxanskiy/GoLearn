@@ -10,7 +10,7 @@
   --line:#dcd5c7; --line-2:#ece7dd;
   --accent:#2f7d6e; --accent-strong:#256356; --accent-tint:#dfece7; --accent-soft:#eef5f1;
   --teal:#2f7d6e; --teal-tint:#dfece7; --amber:#8f6a12; --amber-tint:#f6eed6;
-  --clay:#a8553a; --clay-tint:#f6e6de;
+  --clay:#a8553a; --clay-tint:#f6e6de; --sky:#2f6d9c; --sky-tint:#dde8f2;
   --ok:#2f7d4f; --ok-tint:#e3efe4; --danger:#a8433c; --danger-tint:#f6e3e1;
   --card-shadow:0 1px 2px rgba(38,36,31,.04),0 8px 22px rgba(38,36,31,.05);
   --term-bg:#22201b;
@@ -38,7 +38,7 @@
   --line:#38352e; --line-2:#2b2924;
   --accent:#7cc3b1; --accent-strong:#96d2c2; --accent-tint:rgba(124,195,177,.16); --accent-soft:rgba(124,195,177,.08);
   --teal:#7cc3b1; --teal-tint:rgba(124,195,177,.16); --amber:#d5b26a; --amber-tint:rgba(213,178,106,.15);
-  --clay:#d5947a; --clay-tint:rgba(213,148,122,.15);
+  --clay:#d5947a; --clay-tint:rgba(213,148,122,.15); --sky:#84b6df; --sky-tint:rgba(132,182,223,.16);
   --ok:#84c193; --ok-tint:rgba(132,193,147,.15); --danger:#dd8b83; --danger-tint:rgba(221,139,131,.15);
   --card-shadow:0 0 0 1px var(--line);
   --term-bg:#171613;
@@ -209,6 +209,7 @@ code, pre, .mono { font-family:ui-monospace,'JetBrains Mono',Menlo,'SF Mono',mon
 .chip-teal { background:var(--teal-tint); color:var(--teal); }
 .chip-amber { background:var(--amber-tint); color:var(--amber); }
 .chip-clay { background:var(--clay-tint); color:var(--clay); }
+.chip-sky { background:var(--sky-tint); color:var(--sky); }
 .chip-ok { background:var(--ok-tint); color:var(--ok); }
 .chip-uc { text-transform:uppercase; letter-spacing:.1em; }
 .badge { display:inline-flex; align-items:center; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:500; }

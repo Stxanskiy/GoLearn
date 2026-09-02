@@ -128,6 +128,23 @@ func templateFuncs() template.FuncMap {
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"mul": func(a, b int) int { return a * b },
+		// chipCat colours a course-category chip so the grid reads by category.
+		"chipCat": func(cat string) string {
+			switch cat {
+			case "Kubernetes", "Helm":
+				return "chip-sky"
+			case "Docker":
+				return "chip-teal"
+			case "Linux", "Ansible":
+				return "chip-clay"
+			case "Git", "CI/CD":
+				return "chip-amber"
+			case "Database":
+				return "chip-ok"
+			default: // DevOps and anything else
+				return "chip-accent"
+			}
+		},
 		// plural picks the Russian plural form: one/few/many (1 курс, 2 курса, 5 курсов).
 		"plural": func(n int, one, few, many string) string {
 			m10, m100 := n%10, n%100
