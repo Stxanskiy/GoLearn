@@ -195,4 +195,97 @@ kubectl delete deployment hpa-app --ignore-not-found >/dev/null 2>&1`,
 				"kubectl delete hpa hpa-app; kubectl delete deployment hpa-app"),
 		},
 	},
+
+	// ── Lab 11: Стратегии деплоя (canary / blue-green) ── the Setup drops the
+	// ready manifests the tasks apply; checks validate the applied resources and
+	// the Service selector (offline nginx:alpine pods can't return distinct bodies,
+	// so we verify the selector switch rather than the HTTP response).
+	"ch-ckad-lab16-deployment-strategies": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + `
+kubectl delete deploy shop-v1 shop-v2 checkout-blue checkout-green --ignore-not-found >/dev/null 2>&1
+kubectl delete svc shop-svc checkout-svc --ignore-not-found >/dev/null 2>&1
+kubectl delete pod strategy-debug --ignore-not-found >/dev/null 2>&1
+mkdir -p /root/deploy-strategies
+cat > /root/deploy-strategies/canary-v1.yaml <<'YAML'
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: shop-v1}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: shop, version: v1}}
+  template:
+    metadata: {labels: {app: shop, track: active, version: v1}}
+    spec: {containers: [{name: nginx, image: nginx:alpine}]}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: shop-svc}
+spec:
+  selector: {app: shop, track: active}
+  ports: [{port: 80, targetPort: 80}]
+YAML
+cat > /root/deploy-strategies/canary-v2.yaml <<'YAML'
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: shop-v2}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: shop, version: v2}}
+  template:
+    metadata: {labels: {app: shop, track: active, version: v2}}
+    spec: {containers: [{name: nginx, image: nginx:alpine}]}
+YAML
+cat > /root/deploy-strategies/blue-green.yaml <<'YAML'
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: checkout-blue}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: checkout, color: blue}}
+  template:
+    metadata: {labels: {app: checkout, color: blue}}
+    spec: {containers: [{name: nginx, image: nginx:alpine}]}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: checkout-green}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: checkout, color: green}}
+  template:
+    metadata: {labels: {app: checkout, color: green}}
+    spec: {containers: [{name: nginx, image: nginx:alpine}]}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: checkout-svc}
+spec:
+  selector: {app: checkout, color: blue}
+  ports: [{port: 80, targetPort: 80}]
+YAML
+kubectl run strategy-debug --image=busybox:1.36 --restart=Never --command -- sleep 3600 >/dev/null 2>&1 || true`,
+		Checks: map[int]string{
+			1: kcheck(jp("get deploy shop-v1", "{.spec.replicas}", "3")+` && kubectl get svc shop-svc >/dev/null 2>&1`,
+				"stable-версия shop-v1 (3 реплики) и Service shop-svc запущены",
+				"kubectl apply -f /root/deploy-strategies/canary-v1.yaml"),
+			2: kcheck(jp("get deploy shop-v2", "{.spec.replicas}", "1")+` && `+
+				jp("get deploy shop-v2", "{.spec.template.metadata.labels.track}", "active"),
+				"canary shop-v2 добавлен (Service видит обе версии)",
+				"kubectl apply -f /root/deploy-strategies/canary-v2.yaml"),
+			3: kcheck(`kubectl get deploy checkout-blue >/dev/null 2>&1 && kubectl get deploy checkout-green >/dev/null 2>&1 && `+
+				jp("get svc checkout-svc", "{.spec.selector.color}", "blue"),
+				"blue-green развёрнут, Service указывает на blue",
+				"kubectl apply -f /root/deploy-strategies/blue-green.yaml"),
+			4: kcheck(jp("get svc checkout-svc", "{.spec.selector.color}", "green"),
+				"traffic переключён на green",
+				`kubectl patch svc checkout-svc -p '{"spec":{"selector":{"app":"checkout","color":"green"}}}'`),
+			5: kcheck(jp("get svc checkout-svc", "{.spec.selector.color}", "blue"),
+				"traffic откатан обратно на blue",
+				`kubectl patch svc checkout-svc -p '{"spec":{"selector":{"app":"checkout","color":"blue"}}}'`),
+			6: kcheck(`! kubectl get deploy shop-v1 >/dev/null 2>&1 && ! kubectl get deploy checkout-blue >/dev/null 2>&1 && ! kubectl get svc shop-svc >/dev/null 2>&1 && ! kubectl get svc checkout-svc >/dev/null 2>&1 && ! kubectl get pod strategy-debug >/dev/null 2>&1`,
+				"все ресурсы лабораторной удалены",
+				"kubectl delete deploy shop-v1 shop-v2 checkout-blue checkout-green; kubectl delete svc shop-svc checkout-svc; kubectl delete pod strategy-debug"),
+		},
+	},
 }
