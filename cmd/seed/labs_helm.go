@@ -7,11 +7,13 @@ package main
 // baked one (nginx:alpine / nginx:1.25-alpine). The chart the tasks reference,
 // /root/charts/nginx-chart, is created by the Setup (helmNginxChart).
 //
+// The Go-template lab (ch-helm-lab-templates) and the hooks lab (ch-helm-lab5) ship
+// their own fixture charts (webChart / hooksChart) that the Setup drops into /root;
+// their checks render the chart / read `helm get hooks` after install/upgrade/uninstall.
+//
 // NOT covered yet (kept as the manual "Готово"):
 //   - ch-helm-lab-repos    — Bitnami charts from a remote repo (no network offline);
-//   - ch-helm-lab-helmfile — needs the `helmfile` binary + remote charts;
-//   - ch-helm-lab-templates & ch-helm-lab5 (hooks) — the student edits chart templates;
-//     verifying rendered output reliably needs richer fixtures. TODO.
+//   - ch-helm-lab-helmfile — needs the `helmfile` binary + remote charts.
 
 // helmNginxChart writes a minimal chart at /root/charts/nginx-chart. Its Deployment
 // is named <release>-nginx and honours replicaCount + image.repository/tag, which is
@@ -53,6 +55,100 @@ spec:
       - name: nginx
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 EOF`
+
+// webChart writes the "before" chart at /root/template-lab/webchart that the Go-template
+// lab edits: _helpers.tpl is pre-authored (fullname + labels), deployment.yaml starts
+// with static name/labels/ports so the student converts them to include/range/toYaml/
+// default/required and adds a conditional serviceaccount.yaml. It renders as-is.
+const webChart = `
+mkdir -p /root/template-lab/webchart/templates
+cat > /root/template-lab/webchart/Chart.yaml <<'EOF'
+apiVersion: v2
+name: webchart
+description: TOT Go-template lab chart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+EOF
+cat > /root/template-lab/webchart/values.yaml <<'EOF'
+replicaCount: 1
+image:
+  repository: nginx
+  tag: alpine
+EOF
+cat > /root/template-lab/webchart/templates/_helpers.tpl <<'EOF'
+{{- define "webchart.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name -}}
+{{- end -}}
+{{- define "webchart.labels" -}}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+EOF
+cat > /root/template-lab/webchart/templates/deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webchart
+  labels:
+    app: webchart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webchart
+  template:
+    metadata:
+      labels:
+        app: webchart
+    spec:
+      containers:
+      - name: web
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - name: http
+          containerPort: 80
+EOF
+cat > /root/template-lab/webchart/templates/service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: webchart
+spec:
+  selector:
+    app: webchart
+  ports:
+  - port: 80
+    targetPort: 80
+EOF`
+
+// hooksChart writes a minimal chart at /root/hooks-chart with one normal resource
+// (a ConfigMap) so the release installs something; the student adds the hook Jobs
+// (pre-install / post-upgrade / pre-upgrade weights / pre-delete) the lab is about.
+const hooksChart = `
+mkdir -p /root/hooks-chart/templates
+cat > /root/hooks-chart/Chart.yaml <<'EOF'
+apiVersion: v2
+name: hooks-chart
+description: TOT Helm hooks lab chart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+EOF
+cat > /root/hooks-chart/values.yaml <<'EOF'
+{}
+EOF
+cat > /root/hooks-chart/templates/configmap.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  greeting: hello
+EOF`
+
+// htpl renders the Go-template lab chart; helper keeps the checks readable.
+const htpl = `helm template demo /root/template-lab/webchart`
 
 // hdeployed passes when a helm release is present and in status "deployed".
 func hdeployed(rel string) string {
@@ -185,6 +281,63 @@ helm uninstall webapp new-webapp >/dev/null 2>&1` + helmNginxChart,
 			10: kcheck(`! helm status webapp >/dev/null 2>&1 && ! helm status new-webapp >/dev/null 2>&1`,
 				"оба релиза удалены",
 				"helm uninstall webapp new-webapp"),
+		},
+	},
+
+	// ── Lab 4: Go template в Helm ── Setup drops the "before" webchart; the student
+	// converts static YAML into helpers/range/toYaml/default/required + a conditional
+	// ServiceAccount. Checks render the chart and assert the expected output (the
+	// investigate/lint/quiz tasks stay manual). Each check fails on the "before" chart
+	// and passes once the corresponding edit is made.
+	"ch-helm-lab-templates": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + webChart,
+		Checks: map[int]string{
+			3: kcheck(htpl+` 2>/dev/null | grep -qE '^[[:space:]]*name: demo-webchart$'`,
+				"metadata.name Deployment рендерится через include \"webchart.fullname\"",
+				`в deployment.yaml: metadata.name: {{ include "webchart.fullname" . }}, labels: {{ include "webchart.labels" . | nindent 4 }}`),
+			4: kcheck(htpl+` 2>/dev/null | grep -q 'containerPort: 9090'`,
+				"порты контейнера рендерятся через range (http:80 + metrics:9090)",
+				"добавь containerPorts в values.yaml и замени статичный ports на {{- range .Values.containerPorts }}"),
+			5: kcheck(htpl+` 2>/dev/null | grep -q '128Mi'`,
+				"resources вставлены через toYaml (limits/requests 200m/128Mi)",
+				"добавь resources в values.yaml и вставь через {{ toYaml .Values.resources | nindent 12 }}"),
+			6: kcheck(htpl+` --set replicaCount=3 2>/dev/null | grep -qE '^[[:space:]]*replicas: 3$'`,
+				"replicas берутся из .Values.replicaCount | default 1 (override работает)",
+				"замени replicas на {{ .Values.replicaCount | default 1 }}"),
+			7: kcheck(htpl+` 2>/dev/null | grep -q 'kind: ServiceAccount' && ! `+htpl+` --set serviceAccount.enabled=false 2>/dev/null | grep -q 'kind: ServiceAccount'`,
+				"ServiceAccount условный: есть при enabled=true, исчезает при false",
+				"добавь serviceAccount.enabled: true и templates/serviceaccount.yaml в {{- if .Values.serviceAccount.enabled }}"),
+			8: kcheck(htpl+` --set image.repository= 2>&1 | grep -qi 'image.repository is required'`,
+				"image.repository обязателен через required",
+				`image: "{{ required \"image.repository is required\" .Values.image.repository }}:..."`),
+		},
+	},
+
+	// ── Lab 7: Helm Hooks ── Setup drops a minimal chart (one ConfigMap); the student
+	// adds hook Jobs. Checks read `helm get hooks` / the surviving hook Jobs after
+	// install/upgrade/uninstall. The create-manifest and observe tasks stay manual.
+	"ch-helm-lab5": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + `
+helm uninstall hooked-app >/dev/null 2>&1
+kubectl delete job -l app.kubernetes.io/managed-by=Helm >/dev/null 2>&1` + hooksChart,
+		Checks: map[int]string{
+			3: kcheck(hdeployed("hooked-app")+` && helm get hooks hooked-app 2>/dev/null | grep -qi pre-install`,
+				"release установлен, pre-install hook отработал",
+				"helm install hooked-app /root/hooks-chart (после создания pre-install-job.yaml)"),
+			6: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi post-upgrade`,
+				"post-upgrade hook описан в релизе",
+				"добавь post-upgrade-job.yaml и helm upgrade hooked-app /root/hooks-chart"),
+			7: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-early && helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-late`,
+				"оба pre-upgrade hook (early/late) с weight добавлены",
+				"создай pre-upgrade-early-job.yaml (weight -10) и pre-upgrade-late-job.yaml (weight 10), затем helm upgrade"),
+			9: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-delete`,
+				"pre-delete hook записан в ревизию релиза",
+				"добавь pre-delete-job.yaml и helm upgrade hooked-app /root/hooks-chart"),
+			10: kcheck(`kubectl get jobs -o name 2>/dev/null | grep -qi pre-delete && ! helm status hooked-app >/dev/null 2>&1`,
+				"release удалён, pre-delete hook выполнился",
+				"helm uninstall hooked-app (pre-delete Job остаётся, т.к. без hook-succeeded)"),
 		},
 	},
 }
