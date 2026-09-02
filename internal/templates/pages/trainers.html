@@ -13,7 +13,7 @@
 <div class="courses-grid">
     <a class="course-card" href="/git-trainer">
         <div class="course-card-top">
-            <span class="chip chip-accent">Git</span>
+            <span class="chip chip-amber">Git</span>
             <span class="spacer"></span>
             <i class="ph ph-git-branch" style="font-size:18px;color:var(--faint);"></i>
         </div>
@@ -39,7 +39,7 @@
     {{range .Gyms}}
     <a class="course-card" href="/module/{{.Slug}}">
         <div class="course-card-top">
-            <span class="chip chip-accent">{{.Category}}</span>
+            <span class="chip {{chipCat .Category}}">{{.Category}}</span>
             <span class="spacer"></span>
             {{if gt .Pct 0}}<span style="font-size:12px;color:var(--faint);">{{.Pct}}%</span>{{end}}
         </div>
