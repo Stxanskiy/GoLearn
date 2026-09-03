@@ -103,7 +103,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	specs, _ := h.specRepo.List(ctx)
+	specs, _ := h.specRepo.ListPublished(ctx)
 	data := RoadmapPageData{PageTitle: "Дорожная карта — TOT"}
 	for _, s := range specs {
 		mods := byspec[s.Slug]

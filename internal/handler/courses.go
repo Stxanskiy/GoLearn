@@ -228,7 +228,7 @@ func (h *Handler) CoursesPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	dbSpecs, _ := h.specRepo.List(ctx)
+	dbSpecs, _ := h.specRepo.ListPublished(ctx)
 	var specs []Specialization
 	for _, s := range dbSpecs {
 		specs = append(specs, Specialization{

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/backendraz/golearn/internal/repository"
+	"github.com/go-chi/chi/v5"
 )
 
 type AdminUsersData struct {
@@ -65,4 +66,76 @@ func (h *Handler) AdminUserCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/admin/users?created="+url.QueryEscape(email), http.StatusSeeOther)
+}
+
+// selfID returns the current admin's id (0 if unknown) — used to block self-harm.
+func (h *Handler) selfID(r *http.Request) int {
+	if u := GetUser(r.Context()); u != nil {
+		return u.ID
+	}
+	return 0
+}
+
+func usersBack(w http.ResponseWriter, r *http.Request, msg string) {
+	u := "/admin/users"
+	if msg != "" {
+		u += "?err=" + url.QueryEscape(msg)
+	}
+	http.Redirect(w, r, u, http.StatusSeeOther)
+}
+
+// AdminUserSetRole changes a user's role. An admin cannot change their own role
+// (avoids locking themselves out of the admin panel).
+func (h *Handler) AdminUserSetRole(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	if id == h.selfID(r) {
+		usersBack(w, r, "Нельзя менять собственную роль")
+		return
+	}
+	role := strings.TrimSpace(r.FormValue("role"))
+	if role != "admin" {
+		role = "student"
+	}
+	_ = h.userRepo.SetRole(r.Context(), id, role)
+	usersBack(w, r, "")
+}
+
+// AdminUserBlock blocks/unblocks a user (blocked=1 blocks). Self-block is refused.
+func (h *Handler) AdminUserBlock(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	if id == h.selfID(r) {
+		usersBack(w, r, "Нельзя заблокировать себя")
+		return
+	}
+	_ = h.userRepo.SetBlocked(r.Context(), id, r.FormValue("blocked") == "1")
+	usersBack(w, r, "")
+}
+
+// AdminUserDelete removes a user. Self-delete is refused.
+func (h *Handler) AdminUserDelete(w http.ResponseWriter, r *http.Request) {
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	if id == h.selfID(r) {
+		usersBack(w, r, "Нельзя удалить себя")
+		return
+	}
+	_ = h.userRepo.Delete(r.Context(), id)
+	usersBack(w, r, "")
+}
+
+// AdminUserResetPassword sets a new password for a user (admin reset).
+func (h *Handler) AdminUserResetPassword(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	pw := r.FormValue("password")
+	if len(pw) < 6 {
+		usersBack(w, r, "Пароль от 6 символов")
+		return
+	}
+	if err := h.userRepo.SetPassword(r.Context(), id, pw); err != nil {
+		usersBack(w, r, "Ошибка сброса пароля")
+		return
+	}
+	usersBack(w, r, "")
 }

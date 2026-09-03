@@ -16,6 +16,7 @@ type User struct {
 	PasswordHash string
 	Name         string
 	Role         string
+	Blocked      bool
 	CreatedAt    time.Time
 }
 
@@ -62,7 +63,7 @@ func (r *UserRepo) CreateWithRole(ctx context.Context, email, password, name, ro
 // List returns all users (newest first) for the admin panel; password hashes omitted.
 func (r *UserRepo) List(ctx context.Context) ([]User, error) {
 	rows, err := r.pool.Query(ctx,
-		`SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC, id DESC`)
+		`SELECT id, email, name, role, blocked, created_at FROM users ORDER BY created_at DESC, id DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,7 @@ func (r *UserRepo) List(ctx context.Context) ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.Role, &u.Blocked, &u.CreatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
@@ -78,12 +79,39 @@ func (r *UserRepo) List(ctx context.Context) ([]User, error) {
 	return users, rows.Err()
 }
 
+// SetBlocked blocks or unblocks a user (blocked users can't log in and their
+// sessions stop resolving).
+func (r *UserRepo) SetBlocked(ctx context.Context, userID int, blocked bool) error {
+	_, err := r.pool.Exec(ctx, `UPDATE users SET blocked = $1 WHERE id = $2`, blocked, userID)
+	if blocked {
+		// drop any active sessions so the block takes effect immediately
+		_, _ = r.pool.Exec(ctx, `DELETE FROM sessions WHERE user_id = $1`, userID)
+	}
+	return err
+}
+
+// Delete removes a user (sessions/progress/submissions cascade).
+func (r *UserRepo) Delete(ctx context.Context, userID int) error {
+	_, err := r.pool.Exec(ctx, `DELETE FROM users WHERE id = $1`, userID)
+	return err
+}
+
+// SetPassword updates a user's password (admin reset).
+func (r *UserRepo) SetPassword(ctx context.Context, userID int, password string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	_, err = r.pool.Exec(ctx, `UPDATE users SET password_hash = $1 WHERE id = $2`, string(hash), userID)
+	return err
+}
+
 func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, email, password_hash, name, role, created_at FROM users WHERE email = $1`,
+		`SELECT id, email, password_hash, name, role, blocked, created_at FROM users WHERE email = $1`,
 		email,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.Blocked, &user.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +160,7 @@ func (r *UserRepo) GetUserBySession(ctx context.Context, token string) (*User, e
 	err := r.pool.QueryRow(ctx,
 		`SELECT u.id, u.email, u.password_hash, u.name, u.role, u.created_at
 		 FROM users u JOIN sessions s ON s.user_id = u.id
-		 WHERE s.token = $1 AND s.expires_at > NOW()`,
+		 WHERE s.token = $1 AND s.expires_at > NOW() AND u.blocked = FALSE`,
 		token,
 	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Role, &user.CreatedAt)
 	if err != nil {

@@ -41,7 +41,7 @@ func (r *CourseRepo) Export(ctx context.Context, moduleID int) (model.CourseTree
 	if err != nil {
 		return model.CourseTree{}, err
 	}
-	lessons, err := r.lessons.GetByModule(ctx, moduleID)
+	lessons, err := r.lessons.GetByModuleAll(ctx, moduleID)
 	if err != nil {
 		return model.CourseTree{}, err
 	}
@@ -66,7 +66,7 @@ func (r *CourseRepo) Diff(ctx context.Context, tree model.CourseTree) (CourseDif
 		return d, nil
 	}
 	d.Exists = true
-	cur, err := r.lessons.GetByModule(ctx, existing.ID)
+	cur, err := r.lessons.GetByModuleAll(ctx, existing.ID)
 	if err != nil {
 		return d, err
 	}

@@ -60,7 +60,7 @@ func (h *Handler) LandingPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	specs, _ := h.specRepo.List(ctx)
+	specs, _ := h.specRepo.ListPublished(ctx)
 	for _, s := range specs {
 		if perSpec[s.Slug] == 0 {
 			continue

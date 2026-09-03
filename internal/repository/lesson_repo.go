@@ -19,23 +19,42 @@ func NewLessonRepo(pool *pgxpool.Pool) *LessonRepo {
 	return &LessonRepo{pool: pool}
 }
 
-const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, created_at`
+const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published, created_at`
 
 func scanLesson(row pgx.Row) (model.Lesson, error) {
 	var l model.Lesson
 	err := row.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.Difficulty,
-		&l.Track, &l.Kind, &l.Format, &l.VMImage, &l.VMInit, &l.Source, &l.CreatedAt)
+		&l.Track, &l.Kind, &l.Format, &l.VMImage, &l.VMInit, &l.Source, &l.Published, &l.CreatedAt)
 	return l, err
 }
 
+// SetPublished toggles a lesson's draft/published state.
+func (r *LessonRepo) SetPublished(ctx context.Context, id int, published bool) error {
+	_, err := r.pool.Exec(ctx, `UPDATE lessons SET published = $1 WHERE id = $2`, published, id)
+	return err
+}
+
+// GetByModule returns published lessons — the default, student-safe listing.
+// Admin screens use GetByModuleAll to also see drafts.
 func (r *LessonRepo) GetByModule(ctx context.Context, moduleID int) ([]model.Lesson, error) {
-	rows, err := r.pool.Query(ctx,
-		`SELECT `+lessonCols+` FROM lessons WHERE module_id = $1 ORDER BY order_num`, moduleID)
+	return r.lessonsByModule(ctx, moduleID, true)
+}
+
+// GetByModuleAll returns every lesson of a module including drafts (admin).
+func (r *LessonRepo) GetByModuleAll(ctx context.Context, moduleID int) ([]model.Lesson, error) {
+	return r.lessonsByModule(ctx, moduleID, false)
+}
+
+func (r *LessonRepo) lessonsByModule(ctx context.Context, moduleID int, publishedOnly bool) ([]model.Lesson, error) {
+	sql := `SELECT ` + lessonCols + ` FROM lessons WHERE module_id = $1 ORDER BY order_num`
+	if publishedOnly {
+		sql = `SELECT ` + lessonCols + ` FROM lessons WHERE module_id = $1 AND published ORDER BY order_num`
+	}
+	rows, err := r.pool.Query(ctx, sql, moduleID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
 	var lessons []model.Lesson
 	for rows.Next() {
 		l, err := scanLesson(rows)
@@ -60,16 +79,16 @@ func (r *LessonRepo) GetBySlug(ctx context.Context, moduleID int, slug string) (
 func (r *LessonRepo) Create(ctx context.Context, l model.Lesson) (int, error) {
 	var id int
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin') RETURNING id`,
-		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&id)
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin',$12) RETURNING id`,
+		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published).Scan(&id)
 	return id, err
 }
 
 func (r *LessonRepo) Update(ctx context.Context, l model.Lesson) error {
 	_, err := r.pool.Exec(ctx,
-		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9 WHERE id=$10`,
-		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit, l.ID)
+		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9, published=$10 WHERE id=$11`,
+		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published, l.ID)
 	return err
 }
 
@@ -141,8 +160,8 @@ func (r *LessonRepo) DuplicateLesson(ctx context.Context, id int) (int, error) {
 
 	var newID int
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin') RETURNING id`,
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin',FALSE) RETURNING id`,
 		l.ModuleID, slug, l.Title+" (копия)", l.Content, maxOrd+1, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&newID); err != nil {
 		return 0, err
 	}

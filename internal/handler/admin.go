@@ -89,8 +89,12 @@ type AdminDashData struct {
 
 func (h *Handler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	adminID := 0
+	if u := GetUser(ctx); u != nil {
+		adminID = u.ID
+	}
 	specs, _ := h.specRepo.List(ctx)
-	mods, _ := h.moduleRepo.GetAll(ctx)
+	mods, _ := h.moduleRepo.GetForAdmin(ctx, adminID)
 	var rows []AdminModuleRow
 	for _, m := range mods {
 		lessons, _ := h.lessonRepo.GetByModule(ctx, m.ID)
@@ -136,7 +140,7 @@ func (h *Handler) AdminModuleEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	specs, _ := h.specRepo.List(ctx)
-	lessons, _ := h.lessonRepo.GetByModule(ctx, id)
+	lessons, _ := h.lessonRepo.GetByModuleAll(ctx, id)
 	rows := make([]AdminLessonRow, 0, len(lessons))
 	for _, l := range lessons {
 		q, t := h.lessonRepo.CountsForLesson(ctx, l.ID)
@@ -204,7 +208,22 @@ func (h *Handler) AdminModuleSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Published: use the form control when present (hidden marker distinguishes
+	// "unchecked" from "field absent"); otherwise preserve/ default to published.
+	if r.FormValue("has_published") != "" {
+		m.Published = r.FormValue("published") != ""
+	} else if id != 0 {
+		if cur, err := h.moduleRepo.GetByID(ctx, id); err == nil {
+			m.Published = cur.Published
+		}
+	} else {
+		m.Published = true
+	}
+
 	if id == 0 {
+		if u := GetUser(ctx); u != nil {
+			m.OwnerID = &u.ID // creator owns the course; their drafts stay private
+		}
 		if _, err := h.moduleRepo.Create(ctx, m); err != nil {
 			h.log.Error("admin create module", "error", err)
 			http.Error(w, "Ошибка создания: "+err.Error(), 500)
@@ -232,6 +251,42 @@ func (h *Handler) AdminModuleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+// AdminModuleMove reorders a course up/down in its track (catalogue + roadmap).
+func (h *Handler) AdminModuleMove(w http.ResponseWriter, r *http.Request) {
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	dir := r.URL.Query().Get("dir")
+	if dir == "" {
+		dir = r.FormValue("dir")
+	}
+	if err := h.moduleRepo.Move(r.Context(), id, dir); err != nil {
+		h.log.Error("admin move module", "id", id, "error", err)
+	}
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+// AdminModulePublish toggles a course draft/published (pub=1 publishes).
+func (h *Handler) AdminModulePublish(w http.ResponseWriter, r *http.Request) {
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	_ = h.moduleRepo.SetPublished(r.Context(), id, r.FormValue("pub") == "1")
+	back := r.FormValue("back")
+	if back == "" {
+		back = "/admin"
+	}
+	http.Redirect(w, r, back, http.StatusSeeOther)
+}
+
+// AdminLessonPublish toggles a lesson draft/published.
+func (h *Handler) AdminLessonPublish(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	_ = h.lessonRepo.SetPublished(ctx, id, r.FormValue("pub") == "1")
+	mid := 0
+	if l, _ := h.lessonRepo.GetByID(ctx, id); l != nil {
+		mid = l.ModuleID
+	}
+	http.Redirect(w, r, "/admin/module/"+strconv.Itoa(mid), http.StatusSeeOther)
 }
 
 // ── Lesson form ──
@@ -300,6 +355,16 @@ func (h *Handler) AdminLessonSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.FormValue("has_published") != "" {
+		l.Published = r.FormValue("published") != ""
+	} else if id != 0 {
+		if cur, err := h.lessonRepo.GetByID(ctx, id); err == nil {
+			l.Published = cur.Published
+		}
+	} else {
+		l.Published = true
+	}
+
 	var redirectID int
 	if id == 0 {
 		if _, err := h.lessonRepo.Create(ctx, l); err != nil {
@@ -343,6 +408,7 @@ func (h *Handler) AdminSpecs(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AdminSpecSave(w http.ResponseWriter, r *http.Request) {
 	_ = r.ParseMultipartForm(8 << 20)
+	ctx := r.Context()
 	s := model.Specialization{
 		Slug:        strings.TrimSpace(r.FormValue("slug")),
 		Name:        strings.TrimSpace(r.FormValue("name")),
@@ -350,10 +416,22 @@ func (h *Handler) AdminSpecSave(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 		OrderNum:    atoiDefault(r.FormValue("order_num"), 0),
 		CoverImage:  h.coverFromForm(r),
+		Published:   true,
 	}
 	if s.Slug == "" || s.Name == "" {
 		http.Error(w, "slug и name обязательны", 400)
 		return
+	}
+	if r.FormValue("has_published") != "" {
+		s.Published = r.FormValue("published") != ""
+	} else if cur, err := h.specRepo.Get(ctx, s.Slug); err == nil {
+		s.Published = cur.Published
+		s.OwnerID = cur.OwnerID
+	}
+	if s.OwnerID == nil {
+		if u := GetUser(ctx); u != nil {
+			s.OwnerID = &u.ID
+		}
 	}
 	if !isValidSlug(s.Slug) {
 		http.Error(w, "slug может содержать только латиницу, цифры и дефис", 400)
@@ -372,6 +450,22 @@ func (h *Handler) AdminSpecDelete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка удаления", 500)
 		return
 	}
+	http.Redirect(w, r, "/admin/specs", http.StatusSeeOther)
+}
+
+// AdminSpecPublish toggles a section draft/published.
+func (h *Handler) AdminSpecPublish(w http.ResponseWriter, r *http.Request) {
+	_ = h.specRepo.SetPublished(r.Context(), chi.URLParam(r, "slug"), r.FormValue("pub") == "1")
+	http.Redirect(w, r, "/admin/specs", http.StatusSeeOther)
+}
+
+// AdminSpecMove reorders a section up/down.
+func (h *Handler) AdminSpecMove(w http.ResponseWriter, r *http.Request) {
+	dir := r.URL.Query().Get("dir")
+	if dir == "" {
+		dir = r.FormValue("dir")
+	}
+	_ = h.specRepo.Move(r.Context(), chi.URLParam(r, "slug"), dir)
 	http.Redirect(w, r, "/admin/specs", http.StatusSeeOther)
 }
 

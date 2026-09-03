@@ -17,7 +17,11 @@ type AdminImportData struct {
 }
 
 func (h *Handler) AdminImportPage(w http.ResponseWriter, r *http.Request) {
-	mods, _ := h.moduleRepo.GetAll(r.Context())
+	adminID := 0
+	if u := GetUser(r.Context()); u != nil {
+		adminID = u.ID
+	}
+	mods, _ := h.moduleRepo.GetForAdmin(r.Context(), adminID)
 	h.render(w, "admin_import", &AdminImportData{PageTitle: "Импорт / Экспорт курса", Modules: mods})
 }
 

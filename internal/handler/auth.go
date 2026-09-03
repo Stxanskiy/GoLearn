@@ -126,6 +126,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		h.render(w, "login", map[string]any{"Error": "Неверный email или пароль", "RegistrationOpen": registrationOpen()})
 		return
 	}
+	if user.Blocked {
+		h.render(w, "login", map[string]any{"Error": "Аккаунт заблокирован — обратитесь к администратору", "RegistrationOpen": registrationOpen()})
+		return
+	}
 
 	token, err := h.userRepo.CreateSession(r.Context(), user.ID)
 	if err != nil {
