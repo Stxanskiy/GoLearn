@@ -21,6 +21,10 @@
   .cover-prev img { width:100%; aspect-ratio:600/220; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--line); margin-top:6px; }
   .lrow { display:flex; align-items:center; gap:11px; padding:11px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); margin-bottom:9px; }
   .lrow:hover { box-shadow:var(--card-shadow); }
+  .lrow.draft { opacity:.6; }
+  .pub-toggle { display:flex; align-items:flex-start; gap:9px; font-size:12.5px; color:var(--muted); background:var(--sunk); border:1px solid var(--line); border-radius:var(--radius-sm); padding:10px 12px; cursor:pointer; }
+  .pub-toggle input[type=checkbox] { margin-top:2px; width:16px; height:16px; flex:none; accent-color:var(--accent); }
+  .pub-toggle b { color:var(--text); }
   .lrow .ord { width:26px; height:26px; flex:none; display:grid; place-items:center; background:var(--sunk); border-radius:7px; font-size:12px; font-weight:700; color:var(--muted); }
   .lrow .lt { flex:1; min-width:0; }
   .lrow .lt b { font-size:14px; display:block; }
@@ -88,6 +92,11 @@
           <label>Обложка — файл<input name="cover_file" type="file" accept="image/*"></label>
           <label>…или URL<input name="cover_url" placeholder="https://… (пусто — не менять)"></label>
           {{if not .IsNew}}<div class="cover-prev"><img src="/api/courses/{{.Module.Slug}}/cover" alt="cover"></div>{{end}}
+          <label class="pub-toggle">
+            <input type="hidden" name="has_published" value="1">
+            <input type="checkbox" name="published" {{if or .IsNew .Module.Published}}checked{{end}}>
+            <span><b>Опубликован</b> — виден ученикам. Сними галочку, чтобы держать в черновике (виден только тебе).</span>
+          </label>
           <button class="btn btn-success btn-block" type="submit"><i class="ph ph-check"></i> Сохранить курс</button>
           {{if not .IsNew}}<a class="btn btn-outline btn-block" href="/admin/module/{{.Module.ID}}/export"><i class="ph ph-download-simple"></i> Экспорт в JSON</a>{{end}}
         </form>
@@ -106,17 +115,22 @@
         {{else}}
           {{$last := sub (len .Lessons) 1}}
           {{range $i, $l := .Lessons}}
-          <div class="lrow">
+          <div class="lrow{{if not $l.Published}} draft{{end}}">
             <span class="ord">{{add $i 1}}</span>
             <div class="lt">
               <a href="/admin/lesson/{{$l.ID}}"><b>{{$l.Title}}</b></a>
-              <small><span class="kind-chip k-{{$l.Kind}}">{{$l.Kind}}</span>{{if $l.VMImage}} · {{$l.VMImage}}{{end}}</small>
+              <small><span class="kind-chip k-{{$l.Kind}}">{{$l.Kind}}</span>{{if not $l.Published}} · <span style="color:var(--amber);font-weight:700">черновик</span>{{else if $l.VMImage}} · {{$l.VMImage}}{{end}}</small>
             </div>
             <div class="counts">
               <span title="вопросы квиза"><i class="ph ph-question"></i> {{$l.Questions}}</span>
               <span title="задания"><i class="ph ph-check-square"></i> {{$l.Tasks}}</span>
             </div>
             <div class="rowacts">
+              {{if $l.Published}}
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+              {{else}}
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+              {{end}}
               <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=up" style="display:inline;"><button class="iconbtn" title="Выше" {{if eq $i 0}}disabled{{end}}><i class="ph ph-arrow-up"></i></button></form>
               <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=down" style="display:inline;"><button class="iconbtn" title="Ниже" {{if eq $i $last}}disabled{{end}}><i class="ph ph-arrow-down"></i></button></form>
               <form method="POST" action="/admin/lesson/{{$l.ID}}/duplicate" style="display:inline;"><button class="iconbtn" title="Дублировать"><i class="ph ph-copy"></i></button></form>

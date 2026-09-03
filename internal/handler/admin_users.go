@@ -12,6 +12,7 @@ import (
 type AdminUsersData struct {
 	PageTitle string
 	Users     []repository.User
+	SelfID    int
 	Error     string
 	Created   string
 }
@@ -27,6 +28,7 @@ func (h *Handler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "admin_users", &AdminUsersData{
 		PageTitle: "Пользователи",
 		Users:     users,
+		SelfID:    h.selfID(r),
 		Error:     q.Get("err"),
 		Created:   q.Get("created"),
 	})

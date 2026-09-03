@@ -3,138 +3,157 @@
 {{end}}
 
 {{define "content"}}
+<style>
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow);margin-bottom:18px}
+  .panel-h{padding:13px 16px;border-bottom:1px solid var(--line-2);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+  .panel-b{padding:16px}
+  .metagrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:820px){.metagrid{grid-template-columns:1fr 1fr}}
+  .metagrid label{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .metagrid label.wide{grid-column:1/-1}
+  .metagrid input,.metagrid select{background:var(--sunk);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font:inherit;font-size:14px;outline:none;width:100%;box-sizing:border-box}
+  .metagrid input:focus,.metagrid select:focus{border-color:var(--accent)}
+  .split{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+  @media(max-width:900px){.split{grid-template-columns:1fr}}
+  .split .ed{display:flex;flex-direction:column;border-right:1px solid var(--line-2)}
+  .edbar{display:flex;gap:4px;padding:8px;background:var(--sunk);border-bottom:1px solid var(--line-2);flex-wrap:wrap;align-items:center}
+  .edbar button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:6px;height:28px;min-width:30px;padding:0 7px;cursor:pointer;font-size:12.5px}
+  .edbar button:hover{color:var(--text)}
+  .edbar .h{margin-left:auto;font-size:11.5px;color:var(--faint)}
+  #md-src{width:100%;flex:1;min-height:380px;border:0;background:var(--code-bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:14px;resize:vertical;outline:none;box-sizing:border-box}
+  .pv{padding:16px 18px;background:var(--surface);overflow:auto;min-height:380px;max-height:640px;line-height:1.7}
+  .pv img{max-width:100%;height:auto}
+  .pub-toggle{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer}
+  .pub-toggle input{width:16px;height:16px;accent-color:var(--accent)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+  .irow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);margin-bottom:8px;background:var(--surface)}
+  .irow .ord{width:24px;height:24px;flex:none;display:grid;place-items:center;background:var(--sunk);border-radius:7px;font-size:12px;font-weight:700;color:var(--muted)}
+  .irow .it{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .irow .it a{color:var(--text);text-decoration:none}.irow .it a:hover{color:var(--accent)}
+  .iconbtn{width:29px;height:29px;border:1px solid var(--line);background:var(--surface);border-radius:7px;color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:13px;text-decoration:none}
+  .iconbtn:hover{color:var(--text);border-color:var(--faint)}.iconbtn.danger:hover{color:var(--danger);border-color:var(--danger)}
+  .kind-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+</style>
+
 <div class="page">
-<div class="breadcrumb"><a href="/admin">Админка</a> / <a href="/admin/module/{{.ModuleID}}">Курс</a> / <span>{{if .IsNew}}Новая глава{{else}}{{.Lesson.Title}}{{end}}</span></div>
-
-<h1 style="margin-bottom:18px;">{{if .IsNew}}Новая глава{{else}}Глава: {{.Lesson.Title}}{{end}}</h1>
-
-<form class="adm-form" method="POST" action="{{if .IsNew}}/admin/lesson{{else}}/admin/lesson/{{.Lesson.ID}}{{end}}">
+  <form id="lessform" method="POST" action="{{if .IsNew}}/admin/lesson{{else}}/admin/lesson/{{.Lesson.ID}}{{end}}">
     <input type="hidden" name="module_id" value="{{.ModuleID}}">
-    <div class="adm-grid">
-        <label>Название<input name="title" value="{{.Lesson.Title}}" required></label>
-        <label>Slug (URL)<input name="slug" value="{{.Lesson.Slug}}" required></label>
-        <label>Тип
+    <input type="hidden" name="has_published" value="1">
+
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 16px">
+      <a class="btn btn-ghost btn-sm" href="/admin/module/{{.ModuleID}}"><i class="ph ph-arrow-left"></i> К курсу</a>
+      <div><h1 style="margin:0;font-size:21px">{{if .IsNew}}Новая глава{{else}}{{.Lesson.Title}}{{end}}</h1></div>
+      <span style="flex:1"></span>
+      <label class="pub-toggle"><input type="checkbox" name="published" {{if or .IsNew .Lesson.Published}}checked{{end}}> Опубликована</label>
+      <button class="btn btn-success" type="submit"><i class="ph ph-check"></i> Сохранить главу</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-note-pencil"></i> Глава</div>
+      <div class="panel-b">
+        <div class="metagrid">
+          <label class="wide">Название<input name="title" value="{{.Lesson.Title}}" required></label>
+          <label>Slug (URL)<input name="slug" value="{{.Lesson.Slug}}" required></label>
+          <label>Тип
             <select name="kind">
-                {{$k := .Lesson.Kind}}
-                <option value="theory"{{if eq $k "theory"}} selected{{end}}>Урок (теория)</option>
-                <option value="quiz"{{if eq $k "quiz"}} selected{{end}}>Тест (квиз)</option>
-                <option value="lab"{{if eq $k "lab"}} selected{{end}}>Лаб. работа</option>
-                <option value="sim"{{if eq $k "sim"}} selected{{end}}>Симулятор</option>
+              {{$k := .Lesson.Kind}}
+              <option value="theory"{{if eq $k "theory"}} selected{{end}}>Урок (теория)</option>
+              <option value="quiz"{{if eq $k "quiz"}} selected{{end}}>Тест (квиз)</option>
+              <option value="lab"{{if eq $k "lab"}} selected{{end}}>Лаба (терминал)</option>
+              <option value="sim"{{if eq $k "sim"}} selected{{end}}>Симулятор</option>
             </select>
-        </label>
-        <label>Сложность
+          </label>
+          <label>Сложность
             <select name="difficulty">
-                {{$d := .Lesson.Difficulty}}
-                <option value="beginner"{{if eq $d "beginner"}} selected{{end}}>beginner</option>
-                <option value="intermediate"{{if eq $d "intermediate"}} selected{{end}}>intermediate</option>
-                <option value="advanced"{{if eq $d "advanced"}} selected{{end}}>advanced</option>
-                <option value="expert"{{if eq $d "expert"}} selected{{end}}>expert</option>
+              {{$d := .Lesson.Difficulty}}
+              <option value="beginner"{{if eq $d "beginner"}} selected{{end}}>beginner</option>
+              <option value="intermediate"{{if eq $d "intermediate"}} selected{{end}}>intermediate</option>
+              <option value="advanced"{{if eq $d "advanced"}} selected{{end}}>advanced</option>
+              <option value="expert"{{if eq $d "expert"}} selected{{end}}>expert</option>
             </select>
-        </label>
-        <label>Порядок<input name="order_num" type="number" value="{{.Lesson.OrderNum}}"></label>
-        <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="golearn/sandbox:latest"></label>
-        <label>Формат контента
-            <select name="format" id="fmt-sel">
-                {{$f := .Lesson.Format}}
-                <option value="md"{{if eq $f "md"}} selected{{end}}>Markdown (текст, **жирный**, код, цвет через HTML)</option>
-                <option value="html"{{if eq $f "html"}} selected{{end}}>HTML</option>
+          </label>
+          <label>Порядок<input name="order_num" type="number" value="{{.Lesson.OrderNum}}"></label>
+          <label>Формат
+            <select name="format" id="fmt-sel" onchange="rp()">
+              {{$f := .Lesson.Format}}
+              <option value="md"{{if eq $f "md"}} selected{{end}}>Markdown</option>
+              <option value="html"{{if eq $f "html"}} selected{{end}}>HTML</option>
             </select>
-        </label>
-        <div class="full md-editor">
-            <div class="md-tabs">
-                <button type="button" class="md-tab active" data-tab="edit" onclick="mdTab('edit')">Редактор</button>
-                <button type="button" class="md-tab" data-tab="prev" onclick="mdTab('prev')">Предпросмотр</button>
-                <span class="md-hint muted">Markdown: <code>**жирный**</code>, <code>`код`</code>, <code>```bash</code>, <code>&lt;span style="color:#3fb950"&gt;цвет&lt;/span&gt;</code></span>
-            </div>
-            <textarea id="md-src" name="content" rows="18" style="font-family:'SF Mono',monospace;font-size:.85em;">{{.Lesson.Content}}</textarea>
-            <div id="md-preview" class="content-area md-preview" style="display:none;"></div>
+          </label>
+          <label>VM image (для лаб)<input name="vm_image" value="{{.Lesson.VMImage}}" placeholder="golearn/sandbox:latest"></label>
         </div>
+      </div>
     </div>
-    <div class="row" style="margin-top:16px;">
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-        <a href="/admin/module/{{.ModuleID}}" class="btn btn-ghost">Отмена</a>
+
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-text-aa"></i> Контент <span style="flex:1"></span><span style="font-size:12.5px;color:var(--faint)">редактор и предпросмотр — бок о бок</span></div>
+      <div class="panel-b">
+        <div class="split">
+          <div class="ed">
+            <div class="edbar">
+              <button type="button" title="Заголовок" onclick="ins('## ')">H</button>
+              <button type="button" title="Жирный" onclick="wrap('**','**')"><b>B</b></button>
+              <button type="button" title="Код" onclick="wrap('`','`')">&lt;/&gt;</button>
+              <button type="button" title="Блок кода" onclick="ins('```bash\n\n```')">{ }</button>
+              <button type="button" title="Список" onclick="ins('- ')">•</button>
+              <button type="button" title="Таблица" onclick="ins('| A | B |\n|---|---|\n| 1 | 2 |')"><i class="ph ph-table"></i></button>
+              <button type="button" title="Callout" onclick="ins('> 💡 ')"><i class="ph ph-lightbulb"></i></button>
+              <span class="h">Markdown / HTML</span>
+            </div>
+            <textarea id="md-src" name="content" oninput="scheduleRp()">{{.Lesson.Content}}</textarea>
+          </div>
+          <div class="pv" id="md-preview"><span class="muted">Предпросмотр…</span></div>
+        </div>
+      </div>
     </div>
-</form>
+  </form>
 
-{{if not .IsNew}}
-<div class="section-title" style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;">
-    <span>Вопросы теста ({{len .Questions}})</span>
-    <a href="/admin/lesson/{{.Lesson.ID}}/question/new" class="btn btn-outline btn-xs">+ Вопрос</a>
-</div>
-<div class="admin-table">
-    {{range $i, $q := .Questions}}
-    <div class="admin-row" style="grid-template-columns:40px 1fr 90px;">
-        <span class="muted">{{add $i 1}}</span>
-        <a href="/admin/question/{{$q.ID}}" class="admin-name">{{safeHTML $q.Question}}</a>
-        <span class="admin-actions">
-            <a href="/admin/question/{{$q.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
-            <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить вопрос?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
-        </span>
+  {{if not .IsNew}}
+  <div class="two-col">
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-h"><i class="ph ph-question"></i> Квиз <span style="flex:1"></span><span class="chip">{{len .Questions}}</span><a href="/admin/lesson/{{.Lesson.ID}}/question/new" class="btn btn-outline btn-sm"><i class="ph ph-plus"></i> Вопрос</a></div>
+      <div class="panel-b">
+        {{range $i, $q := .Questions}}
+        <div class="irow">
+          <span class="ord">{{add $i 1}}</span>
+          <div class="it"><a href="/admin/question/{{$q.ID}}">{{safeHTML $q.Question}}</a></div>
+          <a class="iconbtn" href="/admin/question/{{$q.ID}}" title="Изменить"><i class="ph ph-pencil-simple"></i></a>
+          <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить вопрос?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+        </div>
+        {{else}}<p class="muted">Вопросов пока нет.</p>{{end}}
+      </div>
     </div>
-    {{else}}<div class="admin-row muted">Вопросов пока нет.</div>{{end}}
-</div>
-
-<div class="section-title" style="margin-top:26px;display:flex;justify-content:space-between;align-items:center;">
-    <span>Задания / лаба ({{len .Tasks}})</span>
-    <a href="/admin/lesson/{{.Lesson.ID}}/task/new" class="btn btn-outline btn-xs">+ Задание</a>
-</div>
-<div class="admin-table">
-    {{range $i, $t := .Tasks}}
-    <div class="admin-row" style="grid-template-columns:40px 1fr 90px 90px;">
-        <span class="muted">{{add $i 1}}</span>
-        <a href="/admin/task/{{$t.ID}}" class="admin-name">{{$t.Title}}</a>
-        <span><span class="kind-badge">{{$t.Kind}}</span></span>
-        <span class="admin-actions">
-            <a href="/admin/task/{{$t.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
-            <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline;" onsubmit="return confirm('Удалить задание?');"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
-        </span>
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-h"><i class="ph ph-check-square"></i> Задания / Лаба <span style="flex:1"></span><span class="chip">{{len .Tasks}}</span><a href="/admin/lesson/{{.Lesson.ID}}/task/new" class="btn btn-outline btn-sm"><i class="ph ph-plus"></i> Задание</a></div>
+      <div class="panel-b">
+        {{range $i, $t := .Tasks}}
+        <div class="irow">
+          <span class="ord">{{add $i 1}}</span>
+          <div class="it"><a href="/admin/task/{{$t.ID}}">{{$t.Title}}</a></div>
+          <span class="kind-chip">{{$t.Kind}}</span>
+          <a class="iconbtn" href="/admin/task/{{$t.ID}}" title="Изменить"><i class="ph ph-pencil-simple"></i></a>
+          <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить задание?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+        </div>
+        {{else}}<p class="muted">Заданий пока нет.</p>{{end}}
+      </div>
     </div>
-    {{else}}<div class="admin-row muted">Заданий пока нет.</div>{{end}}
+  </div>
+  {{end}}
 </div>
 
-</div><!-- /.page -->
-<style>
-.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-top:6px; }
-.admin-row { display:grid; gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
-.admin-row:last-child { border-bottom:none; }
-.admin-name { font-weight:600; color:var(--text); text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .admin-name:hover { color:var(--accent); }
-.admin-actions { display:flex; gap:6px; justify-content:flex-end; }
-.btn-xs { padding:3px 9px; font-size:.8em; }
-.kind-badge { font-size:.72em; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--bg-elevated); color:var(--text-muted); }
-</style>
-{{end}}
-
-<style>
-.adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
-.adm-form label.full { grid-column:1 / -1; }
-.adm-form input, .adm-form select, .adm-form textarea { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
-.adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { border-color:var(--accent); }
-@media (max-width:680px){ .adm-form .adm-grid { grid-template-columns:1fr; } }
-.md-editor { border:1px solid var(--border); border-radius:9px; overflow:hidden; }
-.md-tabs { display:flex; align-items:center; gap:6px; background:var(--bg-elevated); border-bottom:1px solid var(--border); padding:6px 8px; flex-wrap:wrap; }
-.md-tab { background:none; border:1px solid transparent; color:var(--text-muted); padding:4px 12px; border-radius:7px; cursor:pointer; font-size:.85em; font-weight:600; }
-.md-tab.active { background:var(--bg-card); color:var(--text); border-color:var(--border); }
-.md-hint { font-size:.74em; margin-left:auto; }
-.md-editor textarea { border:none; border-radius:0; width:100%; display:block; }
-.md-preview { padding:20px 24px; min-height:200px; max-height:640px; overflow:auto; background:var(--bg-card); border:none; border-radius:0; line-height:1.7; }
-.md-preview h1 { margin-top:8px; }
-.md-preview img { max-width:100%; height:auto; }
-</style>
 <script>
-function mdTab(which) {
-    var src = document.getElementById('md-src'), prev = document.getElementById('md-preview');
-    document.querySelectorAll('.md-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === which); });
-    if (which === 'prev') {
-        prev.innerHTML = '<span class="muted">Рендерю…</span>';
-        src.style.display = 'none'; prev.style.display = 'block';
-        var body = 'format=' + encodeURIComponent(document.getElementById('fmt-sel').value) + '&content=' + encodeURIComponent(src.value);
-        fetch('/admin/preview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
-            .then(function (r) { return r.text(); }).then(function (h) { prev.innerHTML = h; })
-            .catch(function (e) { prev.innerHTML = '<span style="color:var(--red)">Ошибка предпросмотра</span>'; });
-    } else {
-        prev.style.display = 'none'; src.style.display = 'block';
-    }
-}
+  var rpTimer;
+  function scheduleRp(){clearTimeout(rpTimer);rpTimer=setTimeout(rp,400)}
+  function rp(){
+    var src=document.getElementById('md-src'),prev=document.getElementById('md-preview');
+    var body='format='+encodeURIComponent(document.getElementById('fmt-sel').value)+'&content='+encodeURIComponent(src.value);
+    fetch('/admin/preview',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
+      .then(function(r){return r.text()}).then(function(h){prev.innerHTML=h})
+      .catch(function(){prev.innerHTML='<span style="color:var(--danger)">Ошибка предпросмотра</span>'});
+  }
+  function ins(t){var a=document.getElementById('md-src');var p=a.selectionStart||a.value.length;a.value=a.value.slice(0,p)+t+a.value.slice(p);rp();a.focus()}
+  function wrap(a,b){var t=document.getElementById('md-src');var s=t.selectionStart,e=t.selectionEnd;var sel=t.value.slice(s,e)||'текст';t.value=t.value.slice(0,s)+a+sel+b+t.value.slice(e);rp();t.focus()}
+  rp();
 </script>
 {{end}}

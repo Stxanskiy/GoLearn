@@ -4,21 +4,29 @@
 
 {{define "content"}}
 <div class="page">
-<div class="breadcrumb"><a href="/admin">Админка</a> / <span>Разделы</span></div>
-<h1 style="margin-bottom:18px;">Разделы (специализации)</h1>
+<div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+  <div><h1 style="margin:0;font-size:23px">Разделы</h1><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Верхний уровень каталога. Порядок ↑/↓ · тумблер — черновик (скрыт от учеников).</p></div>
+  <a class="btn btn-ghost btn-sm" href="/admin"><i class="ph ph-arrow-left"></i> В студию</a>
+</div>
 
-<div class="admin-table" style="margin-bottom:28px;">
-    <div class="admin-row admin-head"><span>Иконка</span><span>Название</span><span>Slug</span><span>Порядок</span><span></span></div>
+<div style="display:flex;flex-direction:column;gap:10px;max-width:860px;margin-bottom:28px">
     {{range .Specs}}
-    <div class="admin-row">
-        <span><img src="/api/spec/{{.Slug}}/cover" alt="" style="width:48px;height:28px;object-fit:cover;border-radius:5px;border:1px solid var(--border);"></span>
-        <span class="admin-name">{{.Name}}<div class="muted" style="font-size:.82em;font-weight:400;">{{.Description}}</div></span>
-        <span class="muted">{{.Slug}}</span>
-        <span>{{.OrderNum}}</span>
-        <span class="admin-actions">
-            <button class="btn btn-outline btn-xs" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}})"><i class="ph ph-pencil-simple"></i></button>
-            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
-        </span>
+    <div class="srow{{if not .Published}} draft{{end}}">
+        <img src="/api/spec/{{.Slug}}/cover" alt="" class="sicon">
+        <div class="st"><b>{{.Name}}{{if not .Published}} <span class="draft-badge">черновик</span>{{end}}</b><small>{{.Description}} · <code>{{.Slug}}</code></small></div>
+        <div class="rowacts">
+            {{if .Published}}
+            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+            {{else}}
+            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+            {{end}}
+            <div class="reorder">
+              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше"><i class="ph ph-caret-up"></i></button></form>
+              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже"><i class="ph ph-caret-down"></i></button></form>
+            </div>
+            <button class="iconbtn" title="Изменить" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}},{{if .Published}}true{{else}}false{{end}})"><i class="ph ph-pencil-simple"></i></button>
+            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+        </div>
     </div>
     {{end}}
 </div>
@@ -34,6 +42,10 @@
             <label class="full">Описание<input id="sp-desc" name="description"></label>
             <label>Обложка — файл<input name="cover_file" type="file" accept="image/*"></label>
             <label>…или URL<input id="sp-coverurl" name="cover_url" placeholder="https://… (пусто = не менять)"></label>
+            <label class="full" style="flex-direction:row;align-items:center;gap:9px;">
+              <input type="hidden" name="has_published" value="1">
+              <input type="checkbox" id="sp-pub" name="published" checked style="width:16px;height:16px;accent-color:var(--accent)"> <span>Опубликован (виден ученикам)</span>
+            </label>
         </div>
         <div class="row" style="margin-top:14px;">
             <button class="btn btn-primary" type="submit">Сохранить</button>
@@ -44,12 +56,17 @@
 
 </div><!-- /.page -->
 <style>
-.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-.admin-row { display:grid; grid-template-columns:60px 1fr 120px 80px 90px; gap:10px; align-items:center; padding:11px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
-.admin-row:last-child { border-bottom:none; }
-.admin-head { background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.8em; text-transform:uppercase; }
-.admin-name { font-weight:600; color:var(--text); }
-.admin-actions { display:flex; gap:6px; justify-content:flex-end; }
+.srow { display:flex; align-items:center; gap:12px; padding:11px 13px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); box-shadow:var(--card-shadow); }
+.srow.draft { opacity:.6; }
+.sicon { width:46px; height:30px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:none; }
+.srow .st { flex:1; min-width:0; }
+.srow .st b { font-size:14px; display:block; } .srow .st small { color:var(--faint); font-size:12px; } .srow .st code { font-family:'JetBrains Mono',monospace; font-size:11px; }
+.draft-badge { background:var(--amber-tint); color:var(--amber); font-size:11px; font-weight:800; padding:1px 7px; border-radius:20px; }
+.rowacts { display:flex; gap:4px; align-items:center; flex:none; }
+.reorder { display:flex; flex-direction:column; gap:1px; }
+.iconbtn { width:30px; height:30px; border:1px solid var(--line); background:var(--surface); border-radius:8px; color:var(--muted); cursor:pointer; display:grid; place-items:center; font-size:14px; }
+.iconbtn:hover { color:var(--text); border-color:var(--faint); } .iconbtn.danger:hover { color:var(--danger); border-color:var(--danger); }
+.iconbtn.rz { width:26px; height:15px; border-radius:5px; font-size:10px; }
 .btn-xs { padding:3px 9px; font-size:.8em; }
 .adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
@@ -58,10 +75,11 @@
 .adm-form input:focus { border-color:var(--accent); }
 </style>
 <script>
-function editSpec(slug,name,icon,desc,order){
+function editSpec(slug,name,icon,desc,order,pub){
     document.getElementById('sp-slug').value=slug; document.getElementById('sp-slug').readOnly=true;
     document.getElementById('sp-name').value=name; document.getElementById('sp-icon').value=icon;
     document.getElementById('sp-desc').value=desc; document.getElementById('sp-order').value=order;
+    document.getElementById('sp-pub').checked=(pub!==false);
     document.getElementById('spec-form-title').textContent='Редактировать раздел';
     window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
 }

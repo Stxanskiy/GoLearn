@@ -25,6 +25,13 @@
   .iconbtn.danger:hover { color:var(--danger); border-color:var(--danger); }
   .src-pill { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; }
   .src-admin { color:var(--ok); background:var(--ok-tint); } .src-seed { color:var(--muted); background:var(--sunk); }
+  .statustabs { display:inline-flex; gap:2px; background:var(--sunk); border:1px solid var(--line); border-radius:var(--radius-sm); padding:2px; }
+  .statustabs button { border:0; background:transparent; color:var(--muted); font:inherit; font-weight:600; font-size:12.5px; padding:6px 12px; border-radius:7px; cursor:pointer; }
+  .statustabs button.on { background:var(--surface); color:var(--text); }
+  .draft-badge { background:var(--amber-tint); color:var(--amber); font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px; }
+  .cs-card.draft { opacity:.72; } .cs-card.draft .cs-cover { filter:grayscale(.5); }
+  .reorder { display:flex; flex-direction:column; gap:1px; }
+  .iconbtn.rz { width:26px; height:15px; border-radius:5px; font-size:10px; }
 </style>
 
 <div class="page">
@@ -46,17 +53,23 @@
     <a href="/admin/module/new" class="btn btn-outline"><i class="ph ph-plus"></i> Новый курс</a>
     <a href="/admin/specs" class="btn btn-ghost">Разделы</a>
     <a href="/admin/users" class="btn btn-ghost">Пользователи</a>
-    <span style="flex:1"></span>
-    <input class="input" id="csSearch" style="max-width:220px" placeholder="Поиск курса…" onkeyup="filterCourses()">
+    <input class="input" id="csSearch" style="max-width:200px" placeholder="Поиск курса…" onkeyup="filterCourses()">
+    <div class="statustabs">
+      <button class="on" data-st="all" onclick="setStatus(this)">Все</button>
+      <button data-st="pub" onclick="setStatus(this)">Опубл.</button>
+      <button data-st="draft" onclick="setStatus(this)">Черновики</button>
+    </div>
   </div>
+  <p class="muted" style="font-size:12.5px;margin:-6px 0 12px"><i class="ph ph-hand-grabbing"></i> ↑/↓ на карточке — порядок в каталоге и роадмапе. <i class="ph ph-lock-simple"></i> Черновик виден только владельцу.</p>
 
   <div class="cs-grid" id="csGrid">
     {{range .Modules}}
-    <div class="cs-card" data-name="{{.Title}} {{.Slug}} {{.Category}}">
+    <div class="cs-card{{if not .Published}} draft{{end}}" data-name="{{.Title}} {{.Slug}} {{.Category}}" data-draft="{{if .Published}}0{{else}}1{{end}}">
       <div class="cs-cover {{chipCat .Category}}" {{if .CoverImage}}style="background-image:url('{{.CoverImage}}')"{{end}}></div>
       <div class="cs-body">
         <h3>{{.Title}}</h3>
         <div class="cs-meta">
+          {{if not .Published}}<span class="draft-badge">черновик</span>{{end}}
           {{if .Category}}<span class="chip {{chipCat .Category}}">{{.Category}}</span>{{end}}
           <span class="chip">{{.Lessons}} {{plural .Lessons "глава" "главы" "глав"}}</span>
           {{if .Labs}}<span class="chip chip-ok">лабы ✓</span>{{end}}
@@ -64,8 +77,17 @@
         </div>
         <div class="cs-actions">
           <a href="/admin/module/{{.ID}}" class="btn btn-sm btn-primary">Открыть</a>
-          <a href="/admin/module/{{.ID}}/export" class="btn btn-sm btn-outline"><i class="ph ph-download-simple"></i> Экспорт</a>
+          {{if .Published}}
+          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+          {{else}}
+          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+          {{end}}
+          <a href="/admin/module/{{.ID}}/export" class="iconbtn" title="Экспорт"><i class="ph ph-download-simple"></i></a>
           <span style="flex:1"></span>
+          <div class="reorder">
+            <form method="POST" action="/admin/module/{{.ID}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше"><i class="ph ph-caret-up"></i></button></form>
+            <form method="POST" action="/admin/module/{{.ID}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже"><i class="ph ph-caret-down"></i></button></form>
+          </div>
           <form method="POST" action="/admin/module/{{.ID}}/delete" onsubmit="return confirm('Удалить курс «{{.Title}}»?');" style="display:inline;">
             <button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button>
           </form>
@@ -79,6 +101,14 @@
 </div>
 
 <script>
+  function setStatus(btn){
+    document.querySelectorAll('.statustabs button').forEach(function(b){b.classList.remove('on')});
+    btn.classList.add('on'); var s=btn.dataset.st;
+    document.querySelectorAll('#csGrid .cs-card').forEach(function(c){
+      var d=c.dataset.draft==='1';
+      c.style.display=(s==='all'||(s==='draft'&&d)||(s==='pub'&&!d))?'':'none';
+    });
+  }
   function filterCourses(){
     var q=document.getElementById('csSearch').value.toLowerCase();
     document.querySelectorAll('#csGrid .cs-card').forEach(function(c){
