@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"html/template"
 	"net/http"
 
+	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -123,34 +125,65 @@ func sreScenario() Scenario {
 	}
 }
 
-func findScenario(slug string) *Scenario {
-	for _, s := range scenarios() {
-		if s.Slug == slug {
-			return &s
+// EnsureSimulators seeds the built-in scenarios into the DB the first time (so they
+// become admin-editable). It never overwrites once the table has rows.
+func (h *Handler) EnsureSimulators(ctx context.Context) error {
+	if h.simRepo == nil {
+		return nil
+	}
+	n, err := h.simRepo.Count(ctx)
+	if err != nil || n > 0 {
+		return err
+	}
+	for i, s := range scenarios() {
+		data, _ := json.Marshal(s)
+		if err := h.simRepo.Upsert(ctx, model.Simulator{
+			Slug: s.Slug, Title: s.Title, Icon: s.Icon, Role: s.Role,
+			OrderNum: i + 1, Published: true, Data: string(data),
+		}); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// dbScenarios loads and decodes every published simulator's scenario.
+func (h *Handler) dbScenarios(ctx context.Context) []Scenario {
+	sims, _ := h.simRepo.ListPublished(ctx)
+	out := make([]Scenario, 0, len(sims))
+	for _, s := range sims {
+		var sc Scenario
+		if json.Unmarshal([]byte(s.Data), &sc) == nil && sc.Slug != "" {
+			out = append(out, sc)
+		}
+	}
+	return out
 }
 
 func (h *Handler) SimulatorsPage(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "simulators", &struct {
 		PageTitle string
 		Scenarios []Scenario
-	}{PageTitle: "Симуляторы — TOT", Scenarios: scenarios()})
+	}{PageTitle: "Симуляторы — TOT", Scenarios: h.dbScenarios(r.Context())})
 }
 
 func (h *Handler) SimulatorPage(w http.ResponseWriter, r *http.Request) {
-	s := findScenario(chi.URLParam(r, "slug"))
-	if s == nil {
+	sim, err := h.simRepo.Get(r.Context(), chi.URLParam(r, "slug"))
+	if err != nil || !sim.Published {
 		http.NotFound(w, r)
 		return
 	}
-	data, _ := json.Marshal(s)
+	var s Scenario
+	if json.Unmarshal([]byte(sim.Data), &s) != nil || s.Slug == "" {
+		http.NotFound(w, r)
+		return
+	}
+	data, _ := json.Marshal(&s)
 	h.render(w, "simulator", &struct {
 		PageTitle    string
 		Scenario     *Scenario
 		ScenarioJSON template.JS
-	}{PageTitle: s.Title + " — TOT", Scenario: s, ScenarioJSON: template.JS(data)})
+	}{PageTitle: s.Title + " — TOT", Scenario: &s, ScenarioJSON: template.JS(data)})
 }
 
 // juniorDevopsScenario is authored from the devops404 intro (gameplay is not in

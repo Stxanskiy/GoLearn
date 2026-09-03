@@ -1,0 +1,96 @@
+{{define "admin_sims"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<style>
+  .simgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.simgrid{grid-template-columns:1fr}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--card-shadow)}
+  .panel-h{padding:13px 16px;border-bottom:1px solid var(--line-2);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+  .panel-b{padding:16px}
+  .srow{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);margin-bottom:9px}
+  .srow.draft{opacity:.6}
+  .srow .em{font-size:22px;flex:none;width:30px;text-align:center}
+  .srow .st{flex:1;min-width:0}.srow .st b{font-size:14px;display:block}.srow .st small{color:var(--faint);font-size:12px}
+  .rowacts{display:flex;gap:4px;align-items:center;flex:none}
+  .reorder{display:flex;flex-direction:column;gap:1px}
+  .iconbtn{width:30px;height:30px;border:1px solid var(--line);background:var(--surface);border-radius:8px;color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:14px;text-decoration:none}
+  .iconbtn:hover{color:var(--text);border-color:var(--faint)}.iconbtn.danger:hover{color:var(--danger);border-color:var(--danger)}
+  .iconbtn.rz{width:26px;height:15px;border-radius:5px;font-size:10px}
+  .draft-badge{background:var(--amber-tint);color:var(--amber);font-size:11px;font-weight:800;padding:1px 7px;border-radius:20px}
+  .codearea{width:100%;min-height:420px;font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);color:var(--text);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px;resize:vertical;outline:none;box-sizing:border-box}
+  .pub-toggle{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;margin-top:12px}
+  .pub-toggle input{width:16px;height:16px;accent-color:var(--accent)}
+  .flash{padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:14px;background:var(--danger-tint);color:var(--danger)}
+  .hint{font-size:12.5px;color:var(--faint)}
+</style>
+
+<div class="page">
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+    <div><h1 style="margin:0;font-size:23px">Симуляторы</h1><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Пошаговые сценарии-игры. Порядок ↑/↓ · тумблер — черновик (скрыт от учеников).</p></div>
+    <a class="btn btn-ghost btn-sm" href="/admin"><i class="ph ph-arrow-left"></i> В студию</a>
+  </div>
+
+  {{if .Error}}<div class="flash"><i class="ph ph-warning"></i> {{.Error}}</div>{{end}}
+
+  <div class="simgrid">
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-monitor-play"></i> Сценарии <span style="flex:1"></span><a class="btn btn-outline btn-sm" href="/admin/sims"><i class="ph ph-plus"></i> Новый</a></div>
+      <div class="panel-b">
+        {{range .Sims}}
+        <div class="srow{{if not .Published}} draft{{end}}">
+          <span class="em">{{if .Icon}}{{.Icon}}{{else}}🎮{{end}}</span>
+          <div class="st"><b>{{.Title}}{{if not .Published}} <span class="draft-badge">черновик</span>{{end}}</b><small>{{.Role}} · <code>{{.Slug}}</code></small></div>
+          <div class="rowacts">
+            {{if .Published}}
+            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+            {{else}}
+            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+            {{end}}
+            <div class="reorder">
+              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz"><i class="ph ph-caret-up"></i></button></form>
+              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz"><i class="ph ph-caret-down"></i></button></form>
+            </div>
+            <a class="iconbtn" href="/admin/sims?edit={{.Slug}}" title="Редактировать"><i class="ph ph-pencil-simple"></i></a>
+            <form method="POST" action="/admin/sim/{{.Slug}}/delete" style="display:inline" onsubmit="return confirm('Удалить симулятор «{{.Title}}»?')"><button class="iconbtn danger"><i class="ph ph-trash"></i></button></form>
+          </div>
+        </div>
+        {{else}}<p class="muted">Пока нет симуляторов.</p>{{end}}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-code"></i> {{if .Editing}}Редактор: {{.Editing}}{{else}}Новый сценарий{{end}} <span style="flex:1"></span><button type="button" class="btn btn-ghost btn-sm" onclick="fillEx()"><i class="ph ph-lightbulb"></i> Пример</button></div>
+      <div class="panel-b">
+        <form method="POST" action="/admin/sim">
+          <input type="hidden" name="has_published" value="1">
+          <textarea class="codearea" id="simdata" name="data" placeholder='{ "slug": "...", "title": "...", "metrics": [...], "turns": [...] }'>{{.EditJSON}}</textarea>
+          <div class="hint" style="margin-top:8px">Формат: <code>slug</code>, <code>title</code>, <code>role</code>, <code>icon</code>, <code>intro</code>, <code>metrics[]</code> (key/label/unit/start/higher), <code>turns[]</code> (title/situation/choices[] с effects по ключам метрик).</div>
+          <label class="pub-toggle"><input type="checkbox" name="published" {{if .EditPub}}checked{{end}}> Опубликован (виден ученикам)</label>
+          <div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-success" type="submit"><i class="ph ph-check"></i> Сохранить</button>{{if .Editing}}<a class="btn btn-outline" href="/admin/sims">Отмена</a>{{end}}</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fillEx(){
+    document.getElementById('simdata').value = JSON.stringify({
+      slug:"demo-sim", title:"Демо-симулятор", role:"DevOps-инженер", icon:"🎮",
+      intro:"Короткое интро к сценарию.",
+      metrics:[
+        {key:"budget",label:"Бюджет",unit:"k₽",start:2000,higher:true},
+        {key:"techdebt",label:"Техдолг",unit:"%",start:70,higher:false}
+      ],
+      turns:[
+        {title:"Первый выбор",situation:"Описание ситуации.",choices:[
+          {text:"Вариант А",effects:{budget:-150,techdebt:-15},result:"Итог варианта А."},
+          {text:"Вариант Б",effects:{techdebt:5},result:"Итог варианта Б."}
+        ]}
+      ]
+    }, null, 2);
+  }
+</script>
+{{end}}

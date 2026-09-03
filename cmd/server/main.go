@@ -58,6 +58,7 @@ func main() {
 	userRepo := repository.NewUserRepo(pool)
 	specRepo := repository.NewSpecRepo(pool)
 	courseRepo := repository.NewCourseRepo(pool, moduleRepo, lessonRepo)
+	simRepo := repository.NewSimRepo(pool)
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -70,7 +71,14 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, log)
+
+	// Seed the built-in simulator scenarios into the DB once so they are editable.
+	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := h.EnsureSimulators(simCtx); err != nil {
+		log.Error("ensure simulators", "error", err)
+	}
+	simCancel()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

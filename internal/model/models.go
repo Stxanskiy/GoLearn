@@ -55,6 +55,19 @@ type Specialization struct {
 	OwnerID     *int   `json:"owner_id" db:"owner_id"`   // admin who owns it; nil -> system/shared
 }
 
+// Simulator is an admin-managed turn-based scenario. Data holds the full scenario
+// JSON (metrics/turns/choices); the other fields mirror it for cheap listing.
+type Simulator struct {
+	Slug      string `json:"slug"`
+	Title     string `json:"title"`
+	Icon      string `json:"icon"`
+	Role      string `json:"role"`
+	OrderNum  int    `json:"order_num"`
+	Published bool   `json:"published"`
+	OwnerID   *int   `json:"owner_id"`
+	Data      string `json:"data"` // full Scenario JSON
+}
+
 // Quiz represents a quiz attached to a lesson.
 type Quiz struct {
 	ID       int    `json:"id" db:"id"`

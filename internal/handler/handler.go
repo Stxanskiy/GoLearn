@@ -21,12 +21,13 @@ type Handler struct {
 	userRepo       *repository.UserRepo
 	specRepo       *repository.SpecRepo
 	courseRepo     *repository.CourseRepo
+	simRepo        *repository.SimRepo
 	runner         *runner.Runner
 	shell          *runner.VMRunner
 	log            *slog.Logger
 }
 
-func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, cr *repository.CourseRepo, log *slog.Logger) *Handler {
+func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, cr *repository.CourseRepo, simr *repository.SimRepo, log *slog.Logger) *Handler {
 	return &Handler{
 		moduleRepo:     mr,
 		lessonRepo:     lr,
@@ -35,6 +36,7 @@ func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.Pr
 		userRepo:       ur,
 		specRepo:       spr,
 		courseRepo:     cr,
+		simRepo:        simr,
 		runner:         runner.New(),
 		shell:          runner.NewVMRunner(),
 		log:            log,
@@ -108,6 +110,12 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Post("/admin/spec/{slug}/delete", h.AdminSpecDelete)
 			r.Post("/admin/spec/{slug}/publish", h.AdminSpecPublish)
 			r.Post("/admin/spec/{slug}/move", h.AdminSpecMove)
+			// Simulators (JSON scenario editor)
+			r.Get("/admin/sims", h.AdminSims)
+			r.Post("/admin/sim", h.AdminSimSave)
+			r.Post("/admin/sim/{slug}/delete", h.AdminSimDelete)
+			r.Post("/admin/sim/{slug}/publish", h.AdminSimPublish)
+			r.Post("/admin/sim/{slug}/move", h.AdminSimMove)
 			r.Get("/admin/module/new", h.AdminModuleNew)
 			r.Post("/admin/module", h.AdminModuleSave)
 			r.Get("/admin/module/{id}", h.AdminModuleEdit)
