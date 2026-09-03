@@ -84,6 +84,19 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
+	r.Use(securityHeaders)
+
+	// Liveness/readiness for k8s probes. /readyz pings the DB.
+	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })
+	r.Get("/readyz", func(w http.ResponseWriter, req *http.Request) {
+		ctx, cancel := context.WithTimeout(req.Context(), 3*time.Second)
+		defer cancel()
+		if err := pool.Ping(ctx); err != nil {
+			http.Error(w, "db unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		w.Write([]byte("ready"))
+	})
 
 	// Serve static files. Assets are linked with a ?v=<version> query that
 	// changes when they change, so the browser refetches after a redesign;
@@ -127,4 +140,29 @@ func main() {
 		log.Error("shutdown error", "error", err)
 	}
 	log.Info("server stopped")
+}
+
+// securityHeaders sets baseline hardening headers on every response. The app relies
+// on inline scripts/styles + a couple of CDNs (Google Fonts, unpkg icons) and the
+// WebSocket terminal, so the CSP allows those explicitly rather than being maximally
+// strict. HSTS is only advertised when the request arrived over HTTPS.
+func securityHeaders(next http.Handler) http.Handler {
+	const csp = "default-src 'self'; " +
+		"img-src 'self' data: blob:; " +
+		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; " +
+		"script-src 'self' 'unsafe-inline'; " +
+		"font-src 'self' data: https://fonts.gstatic.com https://unpkg.com; " +
+		"connect-src 'self' ws: wss:; " +
+		"frame-src 'self'; frame-ancestors 'self'; base-uri 'self'"
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("X-Content-Type-Options", "nosniff")
+		h.Set("X-Frame-Options", "SAMEORIGIN")
+		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		h.Set("Content-Security-Policy", csp)
+		if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+			h.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		}
+		next.ServeHTTP(w, r)
+	})
 }

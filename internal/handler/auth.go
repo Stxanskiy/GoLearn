@@ -121,6 +121,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
 
+	if !loginRL.allow(clientIP(r)) {
+		h.render(w, "login", map[string]any{"Error": "Слишком много попыток входа. Подождите несколько минут.", "RegistrationOpen": registrationOpen()})
+		return
+	}
+
 	user, err := h.userRepo.GetByEmail(r.Context(), email)
 	if err != nil || !h.userRepo.CheckPassword(user, password) {
 		h.render(w, "login", map[string]any{"Error": "Неверный email или пароль", "RegistrationOpen": registrationOpen()})
