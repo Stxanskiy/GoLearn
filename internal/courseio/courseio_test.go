@@ -68,6 +68,39 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
+// TestValidate: duplicate/empty slugs are errors; odd kind/correct are warnings.
+func TestValidate(t *testing.T) {
+	c := Course{Slug: "s", Title: "t", Lessons: []Lesson{
+		{Slug: "a", Title: "A", Kind: "theory"},
+		{Slug: "a", Title: "dup"},                                                     // duplicate slug -> error
+		{Slug: "", Title: "no slug"},                                                  // empty slug -> error
+		{Slug: "b", Title: "B", Kind: "weird"},                                        // odd kind -> warn
+		{Slug: "c", Title: "C", Quiz: []Question{{Question: "q", Options: []string{"x", "y"}, Correct: 9}}}, // correct out of range -> warn
+	}}
+	iss := Validate(c)
+	if !HasErrors(iss) {
+		t.Fatalf("want errors, got %+v", iss)
+	}
+	var errs, warns int
+	for _, i := range iss {
+		if i.Level == "error" {
+			errs++
+		} else {
+			warns++
+		}
+	}
+	if errs != 2 { // dup slug + empty slug
+		t.Errorf("want 2 errors, got %d (%+v)", errs, iss)
+	}
+	if warns < 2 { // weird kind + correct range
+		t.Errorf("want >=2 warns, got %d (%+v)", warns, iss)
+	}
+	// a clean course has no errors
+	if HasErrors(Validate(Course{Slug: "s", Title: "t", Lessons: []Lesson{{Slug: "ok", Title: "ok", Kind: "lab"}}})) {
+		t.Errorf("clean course should have no errors")
+	}
+}
+
 // TestCorrectClamp: a missing/zero correct must not underflow to -1.
 func TestCorrectClamp(t *testing.T) {
 	c := Course{Slug: "s", Title: "t", Lessons: []Lesson{

@@ -6,6 +6,7 @@ package courseio
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/backendraz/golearn/internal/model"
 )
@@ -137,6 +138,76 @@ func (c Course) ToTree() model.CourseTree {
 		t.Lessons = append(t.Lessons, lb)
 	}
 	return t
+}
+
+// Issue is a validation finding. Level is "error" (blocks import) or "warn".
+type Issue struct {
+	Level string `json:"level"`
+	Msg   string `json:"msg"`
+}
+
+func kindOK(k string) bool {
+	switch k {
+	case "", "theory", "quiz", "lab", "sim":
+		return true
+	}
+	return false
+}
+
+// Validate checks a course for structural problems. "error" issues should block
+// the import; "warn" issues are advisory. Empty slug/title of the course itself
+// are handled by the caller and not repeated here.
+func Validate(c Course) []Issue {
+	var out []Issue
+	seen := map[string]int{}
+	if len(c.Lessons) == 0 {
+		out = append(out, Issue{"warn", "в курсе нет ни одной главы"})
+	}
+	for i, l := range c.Lessons {
+		n := i + 1
+		if l.Slug == "" {
+			out = append(out, Issue{"error", "глава " + strconv.Itoa(n) + ": пустой slug"})
+		} else {
+			seen[l.Slug]++
+			if seen[l.Slug] == 2 {
+				out = append(out, Issue{"error", "дублирующийся slug главы: " + l.Slug})
+			}
+		}
+		if l.Title == "" {
+			out = append(out, Issue{"warn", "глава " + strconv.Itoa(n) + ": пустой заголовок"})
+		}
+		if !kindOK(l.Kind) {
+			out = append(out, Issue{"warn", "глава «" + l.Title + "»: необычный kind «" + l.Kind + "» (ожидается theory/quiz/lab/sim)"})
+		}
+		if l.Format != "" && l.Format != "html" && l.Format != "md" {
+			out = append(out, Issue{"warn", "глава «" + l.Title + "»: format «" + l.Format + "» (ожидается html/md)"})
+		}
+		for qi, q := range l.Quiz {
+			if len(q.Options) < 2 {
+				out = append(out, Issue{"warn", "глава «" + l.Title + "», вопрос " + strconv.Itoa(qi+1) + ": меньше 2 вариантов"})
+			}
+			if q.Correct < 1 || q.Correct > len(q.Options) {
+				out = append(out, Issue{"warn", "глава «" + l.Title + "», вопрос " + strconv.Itoa(qi+1) + ": correct вне диапазона 1.." + strconv.Itoa(len(q.Options))})
+			}
+		}
+		for _, tk := range l.Tasks {
+			if tk.CheckScript != "" && tk.SandboxImage == "" && l.VMImage == "" {
+				out = append(out, Issue{"warn", "задание «" + tk.Title + "»: есть check, но не указан sandbox_image (и у главы нет vm_image)"})
+			}
+		}
+	}
+	return out
+}
+
+
+// HasErrors reports whether any issue is an "error".
+func HasErrors(issues []Issue) bool {
+	for _, is := range issues {
+		if is.Level == "error" {
+			return true
+		}
+	}
+	return false
 }
 
 // Marshal renders a Course as pretty JSON for download.

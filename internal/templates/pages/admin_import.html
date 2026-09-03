@@ -25,6 +25,14 @@
   .tag.new{ background:var(--ok-tint); color:var(--ok) } .tag.upd{ background:var(--amber-tint); color:var(--amber) } .tag.del{ background:var(--danger-tint); color:var(--danger) }
   .hint { font-size:12.5px; color:var(--faint); margin-top:8px; }
   .err { background:var(--danger-tint); color:var(--danger); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:10px 12px; font-size:13px; margin-top:12px; }
+  .issues { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .issue { display:flex; gap:9px; align-items:flex-start; font-size:12.5px; padding:8px 11px; border-radius:var(--radius-sm); }
+  .issue.error { background:var(--danger-tint); color:var(--danger); }
+  .issue.warn { background:var(--amber-tint); color:var(--amber); }
+  .issue i { margin-top:1px; }
+  .fmt-ref { margin-top:12px; font-size:12.5px; }
+  .fmt-ref summary { cursor:pointer; color:var(--muted); font-weight:600; }
+  .fmt-ref pre { background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius-sm); padding:11px; overflow:auto; font-family:'JetBrains Mono',monospace; font-size:11.5px; margin-top:8px; }
 </style>
 
 <div class="page">
@@ -56,7 +64,31 @@
           <textarea class="codearea" id="json" name="json" style="margin-top:12px" placeholder='{ "slug": "my-course", "title": "…", "lessons": [ … ] }'></textarea>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
             <button type="button" class="btn btn-primary" onclick="doPreview()"><i class="ph ph-magnifying-glass"></i> Разобрать и сверить</button>
+            <button type="button" class="btn btn-ghost" onclick="fillExample()"><i class="ph ph-code"></i> Пример JSON</button>
           </div>
+          <details class="fmt-ref">
+            <summary>Формат course.json</summary>
+            <pre>{
+  "slug": "my-course",            // латиница/цифры/дефис, уникален
+  "title": "Мой курс",
+  "category": "Kubernetes",       // цвет обложки, необязательно
+  "difficulty": "advanced",
+  "lessons": [
+    {
+      "slug": "intro", "title": "Введение",
+      "kind": "theory",           // theory | quiz | lab | sim
+      "format": "html",           // html | md
+      "content": "&lt;p&gt;…&lt;/p&gt;",
+      "quiz": [ { "question": "2+2?", "options": ["3","4"], "correct": 2 } ],  // correct — 1-based
+      "tasks": [ {
+        "title": "Задание", "kind": "shell",
+        "sandbox_image": "golearn/sandbox-k8s",
+        "setup_script": "…", "check_script": "kubectl get …"   // exit 0 = решено
+      } ]
+    }
+  ]
+}</pre>
+          </details>
           <div id="err" class="err" style="display:none"></div>
           <div id="preview" style="display:none;margin-top:16px">
             <div id="pv-head" style="font-weight:700;font-size:13px;margin-bottom:4px"></div>
@@ -66,8 +98,9 @@
               <div><div class="n" style="color:var(--danger)" id="k-del">0</div><div class="l">удалятся</div></div>
             </div>
             <div class="diff" id="pv-diff"></div>
+            <div class="issues" id="pv-issues"></div>
             <div style="display:flex;gap:8px;margin-top:14px">
-              <button type="submit" class="btn btn-success"><i class="ph ph-check-fat"></i> Импортировать курс</button>
+              <button type="submit" id="impBtn" class="btn btn-success"><i class="ph ph-check-fat"></i> Импортировать курс</button>
               <button type="button" class="btn btn-outline" onclick="document.getElementById('preview').style.display='none'">Отмена</button>
             </div>
             <div class="hint">Импорт — одна транзакция: при ошибке не запишется ничего. Удаления показаны заранее, чтобы не снести контент случайно.</div>
@@ -126,7 +159,29 @@
     (data.updated||[]).forEach(function(t){ rows+='<div class="drow"><span class="tag upd">UPD</span><b style="font-size:13px">'+esc(t)+'</b></div>'; });
     (data.removed||[]).forEach(function(t){ rows+='<div class="drow"><span class="tag del">DEL</span><b style="font-size:13px">'+esc(t)+'</b></div>'; });
     document.getElementById('pv-diff').innerHTML=rows||'<p class="muted">Изменений по главам нет.</p>';
+    // validation issues
+    var iss='';
+    (data.issues||[]).forEach(function(x){
+      var ic = x.level==='error' ? 'ph-x-circle' : 'ph-warning';
+      iss+='<div class="issue '+x.level+'"><i class="ph '+ic+'"></i><span>'+esc(x.msg)+'</span></div>';
+    });
+    document.getElementById('pv-issues').innerHTML=iss;
+    var btn=document.getElementById('impBtn');
+    if(data.blocked){ btn.disabled=true; btn.style.opacity=.4; btn.style.pointerEvents='none'; btn.title='Сначала исправь ошибки'; }
+    else { btn.disabled=false; btn.style.opacity=1; btn.style.pointerEvents=''; btn.title=''; }
     pv.style.display='block';
+  }
+  function fillExample(){
+    document.getElementById('json').value = JSON.stringify({
+      slug:"demo-course", title:"Демо-курс", category:"Kubernetes", difficulty:"beginner",
+      lessons:[
+        { slug:"intro", title:"Введение", kind:"theory", format:"md", content:"# Привет\nЭто демо." },
+        { slug:"lab1", title:"Первая лаба", kind:"lab", vm_image:"golearn/sandbox-k8s",
+          quiz:[ { question:"Сколько будет 2+2?", options:["3","4","5"], correct:2 } ],
+          tasks:[ { title:"Создай pod nginx", kind:"shell", sandbox_image:"golearn/sandbox-k8s",
+                    check_script:"kubectl get pod nginx" } ] }
+      ]
+    }, null, 2);
   }
 </script>
 {{end}}

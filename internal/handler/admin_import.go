@@ -56,18 +56,20 @@ func (h *Handler) importPayload(r *http.Request) string {
 }
 
 type importPreviewResp struct {
-	OK       bool     `json:"ok"`
-	Error    string   `json:"error,omitempty"`
-	Slug     string   `json:"slug,omitempty"`
-	Title    string   `json:"title,omitempty"`
-	Exists   bool     `json:"exists"`
-	Lessons  int      `json:"lessons"`
-	New      []string `json:"new,omitempty"`
-	Updated  []string `json:"updated,omitempty"`
-	Removed  []string `json:"removed,omitempty"`
-	NewCount int      `json:"new_count"`
-	UpdCount int      `json:"upd_count"`
-	DelCount int      `json:"del_count"`
+	OK       bool             `json:"ok"`
+	Error    string           `json:"error,omitempty"`
+	Slug     string           `json:"slug,omitempty"`
+	Title    string           `json:"title,omitempty"`
+	Exists   bool             `json:"exists"`
+	Lessons  int              `json:"lessons"`
+	New      []string         `json:"new,omitempty"`
+	Updated  []string         `json:"updated,omitempty"`
+	Removed  []string         `json:"removed,omitempty"`
+	NewCount int              `json:"new_count"`
+	UpdCount int              `json:"upd_count"`
+	DelCount int              `json:"del_count"`
+	Issues   []courseio.Issue `json:"issues,omitempty"`
+	Blocked  bool             `json:"blocked"` // has error-level issues -> apply disabled
 }
 
 // AdminImportPreview parses the pasted/uploaded JSON and returns the diff (no write).
@@ -90,10 +92,12 @@ func (h *Handler) AdminImportPreview(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, importPreviewResp{Error: "Ошибка сверки: " + err.Error()})
 		return
 	}
+	issues := courseio.Validate(c)
 	writeJSON(w, importPreviewResp{
 		OK: true, Slug: d.Slug, Title: d.Title, Exists: d.Exists, Lessons: len(c.Lessons),
 		New: d.New, Updated: d.Updated, Removed: d.Removed,
 		NewCount: d.NewCount, UpdCount: d.UpdCount, DelCount: d.DelCount,
+		Issues: issues, Blocked: courseio.HasErrors(issues),
 	})
 }
 
@@ -111,6 +115,16 @@ func (h *Handler) AdminImportApply(w http.ResponseWriter, r *http.Request) {
 	}
 	if !isValidSlug(c.Slug) {
 		http.Error(w, "slug курса: только латиница, цифры, дефис", 400)
+		return
+	}
+	if issues := courseio.Validate(c); courseio.HasErrors(issues) {
+		msg := "Импорт заблокирован — исправь ошибки:"
+		for _, is := range issues {
+			if is.Level == "error" {
+				msg += "\n• " + is.Msg
+			}
+		}
+		http.Error(w, msg, 400)
 		return
 	}
 	if _, err := h.courseRepo.Upsert(ctx, c.ToTree()); err != nil {
