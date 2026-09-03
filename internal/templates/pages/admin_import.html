@@ -1,0 +1,120 @@
+{{define "admin_import"}}
+{{template "base" .}}
+{{end}}
+
+{{define "content"}}
+<style>
+  .io-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  @media(max-width:860px){ .io-grid{ grid-template-columns:1fr } }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--card-shadow); }
+  .panel-h { padding:13px 16px; border-bottom:1px solid var(--line-2); font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .panel-b { padding:16px; }
+  .drop { border:2px dashed var(--line); border-radius:var(--radius); background:var(--sunk); padding:22px; text-align:center; color:var(--muted); cursor:pointer; }
+  .drop i { font-size:30px; color:var(--faint); }
+  .codearea { width:100%; min-height:150px; font-family:'JetBrains Mono',monospace; font-size:12.5px; background:var(--code-bg); color:var(--text); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px; resize:vertical; box-sizing:border-box; }
+  .kpi { display:flex; gap:10px; margin:14px 0; flex-wrap:wrap; }
+  .kpi > div { flex:1; min-width:110px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; }
+  .kpi .n { font-size:22px; font-weight:800; } .kpi .l { font-size:12px; color:var(--muted); }
+  .diff { display:flex; flex-direction:column; gap:7px; }
+  .drow { display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:var(--radius-sm); border:1px solid var(--line-2); }
+  .tag { font-size:11px; font-weight:800; padding:3px 8px; border-radius:20px; letter-spacing:.02em; flex:none; }
+  .tag.new{ background:var(--ok-tint); color:var(--ok) } .tag.upd{ background:var(--amber-tint); color:var(--amber) } .tag.del{ background:var(--danger-tint); color:var(--danger) }
+  .hint { font-size:12.5px; color:var(--faint); margin-top:8px; }
+  .err { background:var(--danger-tint); color:var(--danger); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:10px 12px; font-size:13px; margin-top:12px; }
+</style>
+
+<div class="page">
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
+    <div><h1>Импорт / Экспорт курса</h1><p class="muted">Курс целиком в родном формате GoLearn — со всеми полями, включая setup/check лаб.</p></div>
+    <a class="btn btn-ghost btn-sm" href="/admin"><i class="ph ph-arrow-left"></i> В админку</a>
+  </div>
+
+  <div class="io-grid">
+    <!-- ── Import ── -->
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-upload-simple"></i> Импорт курса</div>
+      <div class="panel-b">
+        <form id="impForm" method="POST" action="/admin/import" enctype="multipart/form-data">
+          <div class="drop" id="drop" onclick="document.getElementById('file').click()">
+            <i class="ph ph-file-arrow-up"></i>
+            <div style="margin-top:8px;font-weight:600;color:var(--text)">Выбери <code>course.json</code> или вставь ниже</div>
+            <div class="hint" id="fileName">поддерживается родной GoLearn-формат</div>
+          </div>
+          <input type="file" id="file" name="file" accept="application/json,.json" style="display:none" onchange="onFile()">
+          <textarea class="codearea" id="json" name="json" style="margin-top:12px" placeholder='{ "slug": "my-course", "title": "…", "lessons": [ … ] }'></textarea>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" onclick="doPreview()"><i class="ph ph-magnifying-glass"></i> Разобрать и сверить</button>
+          </div>
+          <div id="err" class="err" style="display:none"></div>
+          <div id="preview" style="display:none;margin-top:16px">
+            <div id="pv-head" style="font-weight:700;font-size:13px;margin-bottom:4px"></div>
+            <div class="kpi">
+              <div><div class="n" style="color:var(--ok)" id="k-new">0</div><div class="l">новые главы</div></div>
+              <div><div class="n" style="color:var(--amber)" id="k-upd">0</div><div class="l">обновятся</div></div>
+              <div><div class="n" style="color:var(--danger)" id="k-del">0</div><div class="l">удалятся</div></div>
+            </div>
+            <div class="diff" id="pv-diff"></div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button type="submit" class="btn btn-success"><i class="ph ph-check-fat"></i> Импортировать курс</button>
+              <button type="button" class="btn btn-outline" onclick="document.getElementById('preview').style.display='none'">Отмена</button>
+            </div>
+            <div class="hint">Импорт — одна транзакция: при ошибке не запишется ничего. Удаления показаны заранее, чтобы не снести контент случайно.</div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Export ── -->
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-download-simple"></i> Экспорт курса</div>
+      <div class="panel-b">
+        {{if .Modules}}
+        <label class="field">Курс
+          <select class="input" id="expSel">
+            {{range .Modules}}<option value="{{.ID}}">{{.Title}} — {{.Slug}}</option>{{end}}
+          </select>
+        </label>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary" onclick="doExport()"><i class="ph ph-download-simple"></i> Скачать course.json</button>
+        </div>
+        <div class="hint" style="margin-top:10px">Round-trip: экспортнул → поправил в JSON или в билдере → импортнул обратно без потерь (включая лабы).</div>
+        {{else}}
+        <p class="muted">Пока нет курсов для экспорта.</p>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function onFile(){
+    var f=document.getElementById('file').files[0]; if(!f) return;
+    document.getElementById('fileName').textContent=f.name;
+    var rd=new FileReader(); rd.onload=function(){ document.getElementById('json').value=rd.result; }; rd.readAsText(f);
+  }
+  function doExport(){ var id=document.getElementById('expSel').value; if(id) window.location='/admin/module/'+id+'/export'; }
+  function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  async function doPreview(){
+    var err=document.getElementById('err'), pv=document.getElementById('preview');
+    err.style.display='none'; pv.style.display='none';
+    var fd=new FormData(); fd.append('json', document.getElementById('json').value);
+    var f=document.getElementById('file').files[0]; if(f) fd.append('file', f);
+    var res, data;
+    try { res=await fetch('/admin/import/preview',{method:'POST',body:fd}); data=await res.json(); }
+    catch(e){ err.textContent='Сеть/сервер: '+e; err.style.display='block'; return; }
+    if(!data.ok){ err.textContent=data.error||'Не удалось разобрать'; err.style.display='block'; return; }
+    document.getElementById('pv-head').innerHTML='Курс <b>'+esc(data.title)+'</b> <span class="chip">slug: '+esc(data.slug)+'</span> '+
+      (data.exists?'<span class="chip chip-amber">обновление существующего</span>':'<span class="chip chip-ok">новый курс</span>')+
+      ' <span class="chip">'+data.lessons+' глав в файле</span>';
+    document.getElementById('k-new').textContent='+'+data.new_count;
+    document.getElementById('k-upd').textContent='~'+data.upd_count;
+    document.getElementById('k-del').textContent='−'+data.del_count;
+    var rows='';
+    (data.new||[]).forEach(function(t){ rows+='<div class="drow"><span class="tag new">NEW</span><b style="font-size:13px">'+esc(t)+'</b></div>'; });
+    (data.updated||[]).forEach(function(t){ rows+='<div class="drow"><span class="tag upd">UPD</span><b style="font-size:13px">'+esc(t)+'</b></div>'; });
+    (data.removed||[]).forEach(function(t){ rows+='<div class="drow"><span class="tag del">DEL</span><b style="font-size:13px">'+esc(t)+'</b></div>'; });
+    document.getElementById('pv-diff').innerHTML=rows||'<p class="muted">Изменений по главам нет.</p>';
+    pv.style.display='block';
+  }
+</script>
+{{end}}

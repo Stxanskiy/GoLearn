@@ -57,6 +57,7 @@ func main() {
 	submissionRepo := repository.NewSubmissionRepo(pool)
 	userRepo := repository.NewUserRepo(pool)
 	specRepo := repository.NewSpecRepo(pool)
+	courseRepo := repository.NewCourseRepo(pool, moduleRepo, lessonRepo)
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -69,7 +70,7 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, log)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

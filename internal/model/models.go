@@ -101,6 +101,21 @@ type Task struct {
 	CheckScript  string `json:"check_script" db:"check_script"`
 }
 
+// LessonBundle is a lesson together with its quiz questions and tasks — the unit
+// the course import/export moves around.
+type LessonBundle struct {
+	Lesson    Lesson
+	Questions []QuizQuestion
+	Tasks     []Task
+}
+
+// CourseTree is a whole course (module + its lessons with quiz/tasks). It is the
+// aggregate the admin import/export round-trips through.
+type CourseTree struct {
+	Module  Module
+	Lessons []LessonBundle
+}
+
 // Submission tracks a user's code attempt.
 type Submission struct {
 	ID        int       `json:"id" db:"id"`

@@ -20,12 +20,13 @@ type Handler struct {
 	submissionRepo *repository.SubmissionRepo
 	userRepo       *repository.UserRepo
 	specRepo       *repository.SpecRepo
+	courseRepo     *repository.CourseRepo
 	runner         *runner.Runner
 	shell          *runner.VMRunner
 	log            *slog.Logger
 }
 
-func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, log *slog.Logger) *Handler {
+func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, cr *repository.CourseRepo, log *slog.Logger) *Handler {
 	return &Handler{
 		moduleRepo:     mr,
 		lessonRepo:     lr,
@@ -33,6 +34,7 @@ func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.Pr
 		submissionRepo: sr,
 		userRepo:       ur,
 		specRepo:       spr,
+		courseRepo:     cr,
 		runner:         runner.New(),
 		shell:          runner.NewVMRunner(),
 		log:            log,
@@ -92,6 +94,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/admin/users", h.AdminUsers)
 			r.Post("/admin/users", h.AdminUserCreate)
 			r.Post("/admin/preview", h.AdminPreview)
+			// Course import / export (native GoLearn course.json)
+			r.Get("/admin/import", h.AdminImportPage)
+			r.Post("/admin/import/preview", h.AdminImportPreview)
+			r.Post("/admin/import", h.AdminImportApply)
+			r.Get("/admin/module/{id}/export", h.AdminModuleExport)
 			r.Get("/admin/specs", h.AdminSpecs)
 			r.Post("/admin/spec", h.AdminSpecSave)
 			r.Post("/admin/spec/{slug}/delete", h.AdminSpecDelete)

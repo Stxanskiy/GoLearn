@@ -8,6 +8,7 @@
     <div><h1>Администрирование</h1><p class="muted">Управление курсами, главами и разделами.</p></div>
     <div class="row">
         <a href="/admin/module/new" class="btn btn-primary">Новый курс</a>
+        <a href="/admin/import" class="btn btn-outline"><i class="ph ph-arrows-down-up"></i> Импорт / Экспорт</a>
         <a href="/admin/specs" class="btn btn-outline">Разделы</a>
         <a href="/admin/users" class="btn btn-outline">Пользователи</a>
         <a href="/" class="btn btn-ghost">На сайт</a>
@@ -26,7 +27,8 @@
         <span>{{.Lessons}}</span>
         <span><span class="src src-{{.Module.Source}}">{{if eq .Module.Source "admin"}}админ{{else}}seed{{end}}</span></span>
         <span class="admin-actions">
-            <a href="/admin/module/{{.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
+            <a href="/admin/module/{{.ID}}" class="btn btn-outline btn-xs" title="Редактировать"><i class="ph ph-pencil-simple"></i></a>
+            <a href="/admin/module/{{.ID}}/export" class="btn btn-ghost btn-xs" title="Экспорт course.json"><i class="ph ph-download-simple"></i></a>
             <form method="POST" action="/admin/module/{{.ID}}/delete" onsubmit="return confirm('Удалить курс «{{.Title}}»?');" style="display:inline;">
                 <button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button>
             </form>
