@@ -12,11 +12,10 @@ package main
 // their checks render the chart / read `helm get hooks` after install/upgrade/uninstall.
 //
 // The helmfile lab (ch-helm-lab-helmfile) uses the `helmfile` binary baked into the
-// k8s golden + a local ./charts/webapp fixture (no remote charts) — checks cover sync
-// and destroy.
-//
-// NOT covered yet (kept as the manual "Готово"):
-//   - ch-helm-lab-repos — Bitnami charts via a repo; needs a vendored local mirror.
+// k8s golden + a local ./charts/webapp fixture. The repos lab (ch-helm-lab-repos) uses
+// an offline Bitnami mirror baked into the golden (systemd python http.server on
+// 127.0.0.1:8879 serving a vendored nginx chart) registered as the `bitnami` repo.
+// All Helm labs are now covered.
 
 // helmNginxChart writes a minimal chart at /root/charts/nginx-chart. Its Deployment
 // is named <release>-nginx and honours replicaCount + image.repository/tag, which is
@@ -420,6 +419,33 @@ EOF`,
 			10: kcheck(`! helm status web-dev >/dev/null 2>&1 && ! helm status web-staging >/dev/null 2>&1`,
 				"оба окружения удалены через helmfile destroy",
 				"helmfile -f helmfile.yaml.gotmpl -e dev destroy; helmfile ... -e staging destroy"),
+		},
+	},
+
+	// ── Lab 2: Bitnami charts через (локальный) mirror ── the golden runs an offline
+	// Bitnami helm mirror on 127.0.0.1:8879 (baked systemd unit serving a vendored
+	// nginx chart); the Setup registers it as the `bitnami` repo. The student updates
+	// the index, searches, shows, pulls/unpacks the chart and builds a dependency.
+	// Checks verify the downloaded/unpacked artefacts (install/show tasks stay manual).
+	"ch-helm-lab-repos": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + `
+export PATH=$PATH:/usr/local/bin
+rm -rf /root/bitnami-charts /root/bitnami-unpacked /root/bitnami-parent
+for i in $(seq 1 20); do helm repo add bitnami http://localhost:8879 >/dev/null 2>&1 && break; sleep 1; done`,
+		Checks: map[int]string{
+			2: kcheck(`[ -f /root/.cache/helm/repository/bitnami-index.yaml ]`,
+				"индекс bitnami repo обновлён (bitnami-index.yaml в кэше)",
+				"helm repo update bitnami"),
+			6: kcheck(`ls /root/bitnami-charts/nginx-*.tgz >/dev/null 2>&1`,
+				"chart bitnami/nginx скачан архивом в /root/bitnami-charts/",
+				"helm pull bitnami/nginx --destination /root/bitnami-charts"),
+			7: kcheck(`[ -f /root/bitnami-unpacked/nginx/Chart.yaml ]`,
+				"chart скачан и распакован в /root/bitnami-unpacked/nginx/",
+				"helm pull bitnami/nginx --untar --untardir /root/bitnami-unpacked"),
+			9: kcheck(`ls /root/bitnami-parent/charts/nginx-*.tgz >/dev/null 2>&1`,
+				"dependency bitnami/nginx собран в charts/ parent-чарта",
+				"в /root/bitnami-parent Chart.yaml с dependencies -> helm dependency build /root/bitnami-parent"),
 		},
 	},
 }
