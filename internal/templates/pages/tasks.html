@@ -505,15 +505,30 @@
     var IS_GIT = {{if .IsGitLab}}true{{else}}false{{end}};
     var gitGraphEl = document.getElementById('lab2-git-graph');
     var gitPoll = null;
-    var GIT_CMD = 'git -C /root/project log --oneline --graph --all --decorate --color=never 2>/dev/null | head -60' +
+    var GIT_CMD = "git -C /root/project log --graph --all --decorate --color=always " +
+                  "--pretty=format:'%C(auto)%h%C(reset)%C(auto)%d%C(reset) %s %C(dim white)· %an%C(reset)' 2>/dev/null | head -80" +
                   ' || echo "(репозиторий ещё не создан — сделай git init)"';
+    function ansiToHtml(str) {
+        var colors = {30:'#5c6370',31:'#e06c75',32:'#98c379',33:'#e5c07b',34:'#61afef',35:'#c678dd',36:'#56b6c2',37:'#d6e2ee',90:'#7f848e',91:'#e06c75',92:'#98c379',93:'#e5c07b',94:'#61afef',95:'#c678dd',96:'#56b6c2',97:'#ffffff'};
+        function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        var out = '', open = false, re = /\x1b\[([0-9;]*)m/g, last = 0, m;
+        while ((m = re.exec(str))) {
+            out += esc(str.slice(last, m.index)); last = re.lastIndex;
+            if (open) { out += '</span>'; open = false; }
+            var style = '';
+            (m[1] || '0').split(';').forEach(function (c) { c = +c; if (c === 1) style += 'font-weight:700;'; else if (c === 2) style += 'opacity:.6;'; else if (colors[c]) style += 'color:' + colors[c] + ';'; });
+            if (style) { out += '<span style="' + style + '">'; open = true; }
+        }
+        out += esc(str.slice(last)); if (open) out += '</span>';
+        return out;
+    }
     window.gitGraphRefresh = function () {
         if (!IS_GIT || !gitGraphEl || !TASK_IDS.length) return;
         fetch('/api/shell/' + TASK_IDS[0] + '/exec', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ command: GIT_CMD })
         }).then(function (r) { return r.json(); })
-          .then(function (d) { var o = (d.output || '').replace(/\s+$/, ''); gitGraphEl.textContent = o || '(пока нет коммитов)'; })
+          .then(function (d) { var o = (d.output || '').replace(/\s+$/, ''); gitGraphEl.innerHTML = o ? ansiToHtml(o) : '(пока нет коммитов)'; })
           .catch(function () {});
     };
     function gitGraphStart() { if (!IS_GIT) return; gitGraphRefresh(); clearInterval(gitPoll); gitPoll = setInterval(gitGraphRefresh, 3000); }
@@ -524,7 +539,7 @@
 </script>
 
 <style>
-.lab2 { display:grid; grid-template-columns:404px minmax(0,1fr); gap:0; overflow:hidden; height:calc(100vh - 58px); }
+.lab2 { display:grid; grid-template-columns:404px minmax(0,1fr); gap:0; overflow:hidden; height:calc(100dvh - 58px); }
 .lab2-material { margin-bottom:14px; border:1px solid var(--border); border-radius:10px; padding:8px 12px; background:var(--bg-elevated); }
 .lab2-material summary { cursor:pointer; font-size:.86em; font-weight:600; color:var(--accent); }
 .lab2-content { max-height:300px; overflow-y:auto; margin-top:10px; font-size:.88em; }
@@ -585,7 +600,7 @@
 .lab2-git { width:100%; max-width:1100px; flex:none; max-height:230px; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
 .lab2-git-head { display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:.8em; font-weight:700; color:var(--muted); }
 .lab2-git-graph { margin:0; padding:10px 14px; overflow:auto; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.55; white-space:pre; color:var(--text); background:var(--bg); }
-.lab2-bar { width:100%; max-width:1100px; display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; }
+.lab2-bar { width:100%; max-width:1100px; display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; position:sticky; top:0; z-index:5; flex:none; }
 .lab2-navbtn { font-size:.82em; color:var(--text-muted); text-decoration:none; padding:5px 10px; border:1px solid var(--border); border-radius:8px; }
 .lab2-navbtn:hover { color:var(--text); border-color:var(--border-strong); }
 .lab2-spacer { flex:1; }
@@ -598,7 +613,7 @@
 .lab2-iconbtn:hover { color:var(--accent); border-color:var(--accent); }
 .lab2-stop { background:var(--red-bg); border:1px solid var(--red); color:var(--red); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:.82em; font-weight:700; }
 .lab2-stop:hover { background:var(--red); color:#fff; }
-.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px; min-height:0; overflow:hidden; background:var(--term-bg); border:1px solid var(--border-strong); border-radius:12px; }
+.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px 12px 16px; min-height:0; overflow:hidden; background:var(--term-bg); border:1px solid var(--border-strong); border-radius:12px; }
 .lab2-term .xterm { height:100%; }
 .lab2-term .xterm-viewport { overflow-y:auto !important; }
 .lab2-preview { width:100%; max-width:1100px; flex:1; min-height:0; flex-direction:column; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }

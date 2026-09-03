@@ -76,7 +76,7 @@ func main() {
 			   category, label, tags, cover_image, accent, est_minutes, source)
 			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'seed')
 			 ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description,
-			   order_num=EXCLUDED.order_num, track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
+			   track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
 			   prerequisites=EXCLUDED.prerequisites, category=EXCLUDED.category, label=EXCLUDED.label,
 			   tags=EXCLUDED.tags, accent=EXCLUDED.accent, est_minutes=EXCLUDED.est_minutes,
 			   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), modules.cover_image)
@@ -109,7 +109,7 @@ func main() {
 				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, source)
 				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'seed')
 				 ON CONFLICT (module_id, slug) DO UPDATE SET title=EXCLUDED.title, content=EXCLUDED.content,
-				   order_num=EXCLUDED.order_num, difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
+				   difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
 				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init
 				 RETURNING id`,
 				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack,
