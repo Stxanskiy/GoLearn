@@ -42,13 +42,84 @@ func q(sql, want string) string {
 	return `[ "$(psql -tAd training_shop -c ` + "\"" + sql + "\"" + ` 2>/dev/null | tr -d ' ')" = ` + want + ` ]`
 }
 
+// shopSetup builds and populates the `shop` database the SELECT/report labs query
+// (customers with cities incl. NULLs + VIPs, products across 4 categories with "sql"
+// in some names, orders with mixed statuses/dates, order_items, support_tickets).
+// pg-start boots a local PostgreSQL (postgres:15-alpine, baked offline) as superuser
+// `student`, so `psql -U student -d shop` works exactly as the lesson text says.
+const shopSetup = `pg-start
+psql -qc "DROP DATABASE IF EXISTS shop" </dev/null 2>/dev/null || true
+psql -qc "CREATE DATABASE shop" </dev/null
+psql -qd shop <<'SQL'
+CREATE TABLE customers (id SERIAL PRIMARY KEY, full_name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, city TEXT, registered_at TIMESTAMPTZ NOT NULL DEFAULT now(), is_vip BOOLEAN NOT NULL DEFAULT false);
+CREATE TABLE products (id SERIAL PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price NUMERIC(10,2) NOT NULL, in_stock INT NOT NULL);
+CREATE TABLE orders (id SERIAL PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), status TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE order_items (id SERIAL PRIMARY KEY, order_id INT NOT NULL REFERENCES orders(id), product_id INT NOT NULL REFERENCES products(id), quantity INT NOT NULL, unit_price NUMERIC(10,2) NOT NULL);
+CREATE TABLE support_tickets (id SERIAL PRIMARY KEY, customer_id INT REFERENCES customers(id), subject TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+INSERT INTO customers (full_name,email,city,is_vip) VALUES
+ ('Анна Иванова','anna@example.test','Москва',true),
+ ('Борис Петров','boris@example.test','Санкт-Петербург',false),
+ ('Вера Сидорова','vera@example.test','Москва',false),
+ ('Глеб Кузнецов','gleb@example.test',NULL,false),
+ ('Дарья Орлова','darya@example.test','Казань',true),
+ ('Егор Смирнов','egor@example.test',NULL,false),
+ ('Жанна Волкова','zhanna@example.test','Санкт-Петербург',false);
+INSERT INTO products (name,category,price,in_stock) VALUES
+ ('Механическая клавиатура','железо',5500,12),
+ ('SSD 1TB','железо',7900,30),
+ ('Книга: SQL с нуля','книги',1200,50),
+ ('Книга: Чистый код','книги',1800,20),
+ ('Курс: PostgreSQL для практиков','курсы',9900,999),
+ ('Курс: Advanced SQL','курсы',12900,999),
+ ('Футболка TOT','мерч',1500,100),
+ ('Кружка TOT','мерч',700,80);
+INSERT INTO orders (customer_id,status,created_at) VALUES
+ (1,'paid','2026-05-12'),(2,'shipped','2026-05-15'),(3,'paid','2026-04-30'),
+ (1,'pending','2026-05-20'),(5,'shipped','2026-05-11'),(2,'cancelled','2026-05-01'),(4,'paid','2026-05-18');
+INSERT INTO order_items (order_id,product_id,quantity,unit_price) VALUES
+ (1,1,1,5500),(1,3,2,1200),(2,5,1,9900),(3,7,3,1500),(4,2,1,7900),(5,6,1,12900),(5,4,1,1800),(7,8,4,700);
+INSERT INTO support_tickets (customer_id,subject,status) VALUES
+ (1,'Не пришёл заказ','open'),(2,'Вопрос по оплате','closed'),(NULL,'Общий вопрос','open');
+SQL`
+
+// joinLabSetup builds the `join_lab` database for the JOIN/UNION lab: employees
+// (some without tasks), tasks (some without an assignee), 2 colours × 3 sizes for
+// CROSS JOIN, and two signup lists that overlap for UNION vs UNION ALL.
+const joinLabSetup = `pg-start
+psql -qc "DROP DATABASE IF EXISTS join_lab" </dev/null 2>/dev/null || true
+psql -qc "CREATE DATABASE join_lab" </dev/null
+psql -qd join_lab <<'SQL'
+CREATE TABLE employees (employee_id SERIAL PRIMARY KEY, full_name TEXT NOT NULL, email TEXT NOT NULL);
+CREATE TABLE tasks (task_id SERIAL PRIMARY KEY, title TEXT NOT NULL, assignee_id INT REFERENCES employees(employee_id));
+CREATE TABLE shirt_colors (color TEXT PRIMARY KEY);
+CREATE TABLE shirt_sizes (size_label TEXT PRIMARY KEY);
+CREATE TABLE web_signups (email TEXT);
+CREATE TABLE event_signups (email TEXT);
+INSERT INTO employees (full_name,email) VALUES
+ ('Иван Иванов','ivan@example.test'),('Пётр Петров','petr@example.test'),
+ ('Мария Кузнецова','maria@example.test'),('Ольга Новак','olga@example.test');
+INSERT INTO tasks (title,assignee_id) VALUES
+ ('Настроить CI',1),('Написать доку',2),('Ревью PR',1),
+ ('Задача без исполнителя',NULL),('Ещё без назначения',NULL);
+INSERT INTO shirt_colors (color) VALUES ('чёрный'),('белый');
+INSERT INTO shirt_sizes (size_label) VALUES ('S'),('M'),('L');
+INSERT INTO web_signups (email) VALUES ('anna@example.test'),('pavel@example.test'),('oleg@example.test');
+INSERT INTO event_signups (email) VALUES ('pavel@example.test'),('nina@example.test'),('oleg@example.test');
+SQL`
+
 var sqlExpressLabs = map[string]labSpec{
+	// Read-practice labs ("выполни запрос → посмотри → Готово"): the Setup builds the
+	// database the queries need; tasks stay manual (nothing persistent to auto-check).
+	"ch-pgsql-lab1":           {Image: sandboxImagePG, Setup: shopSetup},
+	"ch-pgsql-lab2":           {Image: sandboxImagePG, Setup: shopSetup},
+	"ch-pgsql-lab-join-types": {Image: sandboxImagePG, Setup: joinLabSetup},
+
 	// ── Lab 1: база, схема, таблицы ──
 	"ch-pgsql-lab-schema": {
 		Image: sandboxImagePG,
 		Setup: `set -e
 pg-start
-psql -qc "DROP DATABASE IF EXISTS training_shop" >/dev/null 2>&1 || true`,
+psql -qc "DROP DATABASE IF EXISTS training_shop" </dev/null >/dev/null 2>&1 || true`,
 		Checks: map[int]string{
 			1: check(`psql -tAc "SELECT 1 FROM pg_database WHERE datname='training_shop'" 2>/dev/null | grep -q 1`,
 				"база training_shop создана",
@@ -78,8 +149,8 @@ psql -qc "DROP DATABASE IF EXISTS training_shop" >/dev/null 2>&1 || true`,
 		Image: sandboxImagePG,
 		Setup: `set -e
 pg-start
-psql -qc "DROP DATABASE IF EXISTS training_shop" >/dev/null 2>&1 || true
-psql -qc "CREATE DATABASE training_shop" >/dev/null
+psql -qc "DROP DATABASE IF EXISTS training_shop" </dev/null >/dev/null 2>&1 || true
+psql -qc "CREATE DATABASE training_shop" </dev/null >/dev/null
 ` + sqlSchemaDDL,
 		Checks: map[int]string{
 			1: check(q(`SELECT count(*) FROM store.customers WHERE email IN ('alex@example.test','max@example.test')`, "2"),
@@ -102,8 +173,8 @@ psql -qc "CREATE DATABASE training_shop" >/dev/null
 		Image: sandboxImagePG,
 		Setup: `set -e
 pg-start
-psql -qc "DROP DATABASE IF EXISTS training_shop" >/dev/null 2>&1 || true
-psql -qc "CREATE DATABASE training_shop" >/dev/null
+psql -qc "DROP DATABASE IF EXISTS training_shop" </dev/null >/dev/null 2>&1 || true
+psql -qc "CREATE DATABASE training_shop" </dev/null >/dev/null
 ` + sqlSchemaDDL + `
 psql -qd training_shop -c "DROP TABLE IF EXISTS query_notes" >/dev/null
 psql -qd training_shop -c "CREATE TABLE IF NOT EXISTS orders AS SELECT * FROM store.orders" >/dev/null
