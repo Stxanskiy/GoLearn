@@ -96,7 +96,18 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pty, err := h.shell.OpenPTY(container, 100, 28)
+	// Open the PTY at the size the browser measured (passed in the query) so the
+	// shell draws its very first prompt at the right column count — no initial
+	// mismatch window where input looks "eaten".
+	cols := atoiDefault(q.Get("cols"), 100)
+	rows := atoiDefault(q.Get("rows"), 28)
+	if cols < 20 || cols > 500 {
+		cols = 100
+	}
+	if rows < 5 || rows > 200 {
+		rows = 28
+	}
+	pty, err := h.shell.OpenPTY(container, cols, rows)
 	if err != nil {
 		h.log.Error("term open pty", "error", err)
 		_ = conn.WriteMessage(websocket.TextMessage, []byte("\r\n\x1b[31mНе удалось запустить терминал: "+err.Error()+"\x1b[0m\r\n"))

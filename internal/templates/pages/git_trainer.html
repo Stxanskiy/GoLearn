@@ -115,7 +115,7 @@
         try { if (termRO) termRO.disconnect(); termRO = new ResizeObserver(function () { refit(); }); termRO.observe(gitHost); } catch (e) {}
         setStatus('Подключаюсь…', true);
         var proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        ws = new WebSocket(proto + '://' + location.host + '/api/term?kind=git');
+        ws = new WebSocket(proto + '://' + location.host + '/api/term?kind=git&cols=' + (term.cols || 100) + '&rows=' + (term.rows || 28));
         ws.binaryType = 'arraybuffer';
         ws.onopen = function () { setStatus('Запущен', true); refit(); setTimeout(refit, 120); setTimeout(refit, 400); term.focus(); setTimeout(gitRefresh, 800); poll = setInterval(gitRefresh, 2500); };
         ws.onmessage = function (e) { term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };

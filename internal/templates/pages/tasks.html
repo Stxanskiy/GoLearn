@@ -282,7 +282,7 @@
         } catch (e) {}
         setStatus('Подключаюсь…', true);
         var proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        ws = new WebSocket(proto + '://' + location.host + '/api/term?lesson=' + LESSON);
+        ws = new WebSocket(proto + '://' + location.host + '/api/term?lesson=' + LESSON + '&cols=' + (term.cols || 100) + '&rows=' + (term.rows || 28));
         ws.binaryType = 'arraybuffer';
         manualStop = false;
         ws.onopen = function () {
