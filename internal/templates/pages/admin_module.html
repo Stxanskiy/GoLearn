@@ -3,95 +3,132 @@
 {{end}}
 
 {{define "content"}}
+<style>
+  .studio-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+  .seg { display:inline-flex; gap:3px; background:var(--sunk); border:1px solid var(--line); padding:3px; border-radius:var(--radius-sm); }
+  .seg a { text-decoration:none; color:var(--muted); font-weight:600; font-size:13px; padding:7px 14px; border-radius:7px; display:flex; align-items:center; gap:6px; }
+  .seg a.on { background:var(--surface); color:var(--text); box-shadow:var(--card-shadow); }
+  .builder { display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start; }
+  @media(max-width:900px){ .builder{ grid-template-columns:1fr } }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--card-shadow); }
+  .panel-h { padding:13px 16px; border-bottom:1px solid var(--line-2); font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .panel-b { padding:16px; }
+  .fgrid { display:flex; flex-direction:column; gap:12px; }
+  .fgrid label { display:flex; flex-direction:column; gap:5px; font-size:12.5px; font-weight:600; color:var(--muted); }
+  .fgrid input, .fgrid select, .fgrid textarea { background:var(--sunk); border:1px solid var(--line); color:var(--text); padding:9px 11px; border-radius:var(--radius-sm); font:inherit; font-size:14px; outline:none; box-sizing:border-box; width:100%; }
+  .fgrid input:focus, .fgrid select:focus, .fgrid textarea:focus { border-color:var(--accent); }
+  .frow { display:flex; gap:10px; } .frow > label { flex:1; }
+  .cover-prev img { width:100%; aspect-ratio:600/220; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--line); margin-top:6px; }
+  .lrow { display:flex; align-items:center; gap:11px; padding:11px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); margin-bottom:9px; }
+  .lrow:hover { box-shadow:var(--card-shadow); }
+  .lrow .ord { width:26px; height:26px; flex:none; display:grid; place-items:center; background:var(--sunk); border-radius:7px; font-size:12px; font-weight:700; color:var(--muted); }
+  .lrow .lt { flex:1; min-width:0; }
+  .lrow .lt b { font-size:14px; display:block; }
+  .lrow .lt a { text-decoration:none; color:var(--text); }
+  .lrow .lt a:hover { color:var(--accent); }
+  .lrow .lt small { color:var(--faint); font-size:12px; }
+  .lrow .counts { display:flex; gap:9px; color:var(--muted); font-size:12.5px; font-weight:600; flex:none; }
+  .lrow .rowacts { display:flex; gap:3px; flex:none; }
+  .iconbtn { width:30px; height:30px; border:1px solid var(--line); background:var(--surface); border-radius:8px; color:var(--muted); cursor:pointer; display:grid; place-items:center; font-size:14px; text-decoration:none; }
+  .iconbtn:hover { color:var(--text); border-color:var(--faint); }
+  .iconbtn.danger:hover { color:var(--danger); border-color:var(--danger); }
+  .iconbtn[disabled]{ opacity:.35; pointer-events:none; }
+  .kind-chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--sunk); }
+  .k-theory{color:var(--accent);} .k-quiz{color:var(--amber);} .k-lab{color:var(--clay);} .k-sim{color:var(--sky);}
+</style>
+
 <div class="page">
-<div class="breadcrumb"><a href="/admin">Админка</a> / <span>{{if .IsNew}}Новый курс{{else}}{{.Module.Title}}{{end}}</span></div>
+  <div class="studio-head">
+    <div>
+      <h1 style="margin:0;font-size:22px;">{{if .IsNew}}Новый курс{{else}}{{.Module.Title}}{{end}}</h1>
+      <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">{{if .IsNew}}Создай курс — затем добавляй главы, квизы и лабы.{{else}}Билдер курса — мета слева, главы справа.{{end}}</p>
+    </div>
+    <span style="flex:1"></span>
+    <div class="seg">
+      <a href="/admin"><i class="ph ph-squares-four"></i>Курсы</a>
+      <a class="on" href="{{if .IsNew}}/admin/module/new{{else}}/admin/module/{{.Module.ID}}{{end}}"><i class="ph ph-tree-structure"></i>Билдер</a>
+      <a href="/admin/import"><i class="ph ph-arrows-down-up"></i>Импорт / Экспорт</a>
+    </div>
+  </div>
 
-<h1 style="margin-bottom:18px;">{{if .IsNew}}Новый курс{{else}}Курс: {{.Module.Title}}{{end}}</h1>
-
-<form class="adm-form" method="POST" enctype="multipart/form-data"
-      action="{{if .IsNew}}/admin/module{{else}}/admin/module/{{.Module.ID}}{{end}}">
-    <div class="adm-grid">
-        <label>Название<input name="title" value="{{.Module.Title}}" required></label>
-        <label>Slug (URL)<input name="slug" value="{{.Module.Slug}}" required placeholder="my-course"></label>
-        <label class="full">Описание<textarea name="description" rows="2">{{.Module.Description}}</textarea></label>
-        <label>Раздел
-            <select name="track">
+  <div class="builder">
+    <!-- left: course meta -->
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-note-pencil"></i> Курс</div>
+      <div class="panel-b">
+        <form class="fgrid" method="POST" enctype="multipart/form-data"
+              action="{{if .IsNew}}/admin/module{{else}}/admin/module/{{.Module.ID}}{{end}}">
+          <label>Название<input name="title" value="{{.Module.Title}}" required></label>
+          <label>Slug (URL)<input name="slug" value="{{.Module.Slug}}" required placeholder="my-course"></label>
+          <label>Описание<textarea name="description" rows="2">{{.Module.Description}}</textarea></label>
+          <div class="frow">
+            <label>Раздел
+              <select name="track">
                 {{$cur := .Module.Track}}
                 {{range .Specs}}<option value="{{.Slug}}"{{if eq .Slug $cur}} selected{{end}}>{{.Name}}</option>{{end}}
-            </select>
-        </label>
-        <label>Категория (тег)<input name="category" value="{{.Module.Category}}" placeholder="Linux / Docker / …"></label>
-        <label>Сложность
-            <select name="difficulty">
+              </select>
+            </label>
+            <label>Сложность
+              <select name="difficulty">
                 {{$d := .Module.Difficulty}}
                 <option value="beginner"{{if eq $d "beginner"}} selected{{end}}>beginner</option>
                 <option value="intermediate"{{if eq $d "intermediate"}} selected{{end}}>intermediate</option>
                 <option value="advanced"{{if eq $d "advanced"}} selected{{end}}>advanced</option>
                 <option value="expert"{{if eq $d "expert"}} selected{{end}}>expert</option>
-            </select>
-        </label>
-        <label>Ярлык (Старт/Практика/Вызов)<input name="label" value="{{.Module.Label}}" placeholder="авто, если пусто"></label>
-        <label>Порядок<input name="order_num" type="number" value="{{.Module.OrderNum}}"></label>
-        <label>Время, мин<input name="est_minutes" type="number" value="{{.Module.EstMinutes}}" placeholder="авто"></label>
-        <label class="full">Теги (через запятую)<input name="tags" value="{{range $i,$t := .Module.Tags}}{{if $i}}, {{end}}{{$t}}{{end}}"></label>
+              </select>
+            </label>
+          </div>
+          <label>Категория<input name="category" value="{{.Module.Category}}" placeholder="Kubernetes / Docker / Linux …"></label>
+          <div class="frow">
+            <label>Порядок<input name="order_num" type="number" value="{{.Module.OrderNum}}"></label>
+            <label>Время, мин<input name="est_minutes" type="number" value="{{.Module.EstMinutes}}" placeholder="авто"></label>
+          </div>
+          <label>Ярлык<input name="label" value="{{.Module.Label}}" placeholder="Старт / Практика / Вызов (авто)"></label>
+          <label>Теги (через запятую)<input name="tags" value="{{range $i,$t := .Module.Tags}}{{if $i}}, {{end}}{{$t}}{{end}}"></label>
+          <label>Обложка — файл<input name="cover_file" type="file" accept="image/*"></label>
+          <label>…или URL<input name="cover_url" placeholder="https://… (пусто — не менять)"></label>
+          {{if not .IsNew}}<div class="cover-prev"><img src="/api/courses/{{.Module.Slug}}/cover" alt="cover"></div>{{end}}
+          <button class="btn btn-success btn-block" type="submit"><i class="ph ph-check"></i> Сохранить курс</button>
+          {{if not .IsNew}}<a class="btn btn-outline btn-block" href="/admin/module/{{.Module.ID}}/export"><i class="ph ph-download-simple"></i> Экспорт в JSON</a>{{end}}
+        </form>
+      </div>
+    </div>
 
-        <div class="full cover-row">
-            <div>
-                <label style="margin:0;">Обложка — загрузить файл<input name="cover_file" type="file" accept="image/*"></label>
-                <label style="margin-top:8px;">…или URL<input name="cover_url" placeholder="https://… (оставь пусто, чтобы не менять)"></label>
+    <!-- right: lessons -->
+    <div class="panel">
+      <div class="panel-h"><i class="ph ph-list-numbers"></i> Главы
+        <span style="flex:1"></span>
+        {{if not .IsNew}}<span class="chip">{{len .Lessons}} {{plural (len .Lessons) "глава" "главы" "глав"}}</span>{{end}}
+      </div>
+      <div class="panel-b">
+        {{if .IsNew}}
+          <p class="muted">Сохрани курс, чтобы добавлять главы.</p>
+        {{else}}
+          {{$last := sub (len .Lessons) 1}}
+          {{range $i, $l := .Lessons}}
+          <div class="lrow">
+            <span class="ord">{{add $i 1}}</span>
+            <div class="lt">
+              <a href="/admin/lesson/{{$l.ID}}"><b>{{$l.Title}}</b></a>
+              <small><span class="kind-chip k-{{$l.Kind}}">{{$l.Kind}}</span>{{if $l.VMImage}} · {{$l.VMImage}}{{end}}</small>
             </div>
-            {{if not .IsNew}}<div class="cover-prev"><img src="/api/courses/{{.Module.Slug}}/cover" alt="cover"></div>{{end}}
-        </div>
+            <div class="counts">
+              <span title="вопросы квиза"><i class="ph ph-question"></i> {{$l.Questions}}</span>
+              <span title="задания"><i class="ph ph-check-square"></i> {{$l.Tasks}}</span>
+            </div>
+            <div class="rowacts">
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=up" style="display:inline;"><button class="iconbtn" title="Выше" {{if eq $i 0}}disabled{{end}}><i class="ph ph-arrow-up"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=down" style="display:inline;"><button class="iconbtn" title="Ниже" {{if eq $i $last}}disabled{{end}}><i class="ph ph-arrow-down"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/duplicate" style="display:inline;"><button class="iconbtn" title="Дублировать"><i class="ph ph-copy"></i></button></form>
+              <a class="iconbtn" href="/admin/lesson/{{$l.ID}}" title="Редактировать"><i class="ph ph-pencil-simple"></i></a>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/delete" onsubmit="return confirm('Удалить главу «{{$l.Title}}»?');" style="display:inline;"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+            </div>
+          </div>
+          {{end}}
+          <a href="/admin/module/{{.Module.ID}}/lesson/new" class="btn btn-outline btn-block" style="margin-top:4px;"><i class="ph ph-plus"></i> Добавить главу</a>
+        {{end}}
+      </div>
     </div>
-    <div class="row" style="margin-top:16px;">
-        <button class="btn btn-primary" type="submit">Сохранить</button>
-        <a href="/admin" class="btn btn-ghost">Отмена</a>
-    </div>
-</form>
-
-{{if not .IsNew}}
-<div class="section-title" style="margin-top:32px;display:flex;justify-content:space-between;align-items:center;">
-    <span>Главы курса</span>
-    <a href="/admin/module/{{.Module.ID}}/lesson/new" class="btn btn-outline btn-xs">+ Глава</a>
+  </div>
 </div>
-<div class="admin-table">
-    <div class="admin-row admin-head" style="grid-template-columns:50px 1fr 110px 70px 90px;"><span>#</span><span>Глава</span><span>Тип</span><span>Источник</span><span></span></div>
-    {{range .Lessons}}
-    <div class="admin-row" style="grid-template-columns:50px 1fr 110px 70px 90px;">
-        <span class="muted">{{.OrderNum}}</span>
-        <a href="/admin/lesson/{{.ID}}" class="admin-name">{{.Title}}</a>
-        <span><span class="kind-badge k-{{.Kind}}">{{.Kind}}</span></span>
-        <span><span class="src src-{{.Source}}">{{if eq .Source "admin"}}админ{{else}}seed{{end}}</span></span>
-        <span class="admin-actions">
-            <a href="/admin/lesson/{{.ID}}" class="btn btn-outline btn-xs"><i class="ph ph-pencil-simple"></i></a>
-            <form method="POST" action="/admin/lesson/{{.ID}}/delete" onsubmit="return confirm('Удалить главу?');" style="display:inline;"><button class="btn btn-ghost btn-xs" style="color:var(--red);"><i class="ph ph-trash"></i></button></form>
-        </span>
-    </div>
-    {{end}}
-</div>
-{{end}}
-
-</div><!-- /.page -->
-<style>
-.adm-form .adm-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.adm-form label { display:flex; flex-direction:column; gap:5px; font-size:.84em; font-weight:600; color:var(--text-muted); }
-.adm-form label.full { grid-column:1 / -1; }
-.adm-form input, .adm-form select, .adm-form textarea { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:9px; font-size:1em; font-family:inherit; outline:none; }
-.adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { border-color:var(--accent); }
-.cover-row { display:flex; gap:18px; align-items:flex-start; }
-.cover-row > div:first-child { flex:1; }
-.cover-prev img { width:220px; aspect-ratio:600/340; object-fit:cover; border-radius:10px; border:1px solid var(--border); }
-.admin-table { border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-top:8px; }
-.admin-row { display:grid; gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:.9em; }
-.admin-row:last-child { border-bottom:none; }
-.admin-head { background:var(--bg-elevated); color:var(--text-muted); font-weight:700; font-size:.8em; text-transform:uppercase; }
-.admin-name { font-weight:600; color:var(--text); text-decoration:none; } .admin-name:hover { color:var(--accent); }
-.admin-actions { display:flex; gap:6px; justify-content:flex-end; }
-.btn-xs { padding:3px 9px; font-size:.8em; }
-.kind-badge { font-size:.72em; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--bg-elevated); }
-.k-theory{color:#a371f7;} .k-quiz{color:#e3b341;} .k-lab{color:#f778ba;} .k-sim{color:#39c5cf;}
-.src { font-size:.72em; font-weight:700; padding:2px 8px; border-radius:999px; }
-.src-admin { color:var(--green); background:var(--green-bg); } .src-seed { color:var(--text-muted); background:var(--bg-elevated); }
-@media (max-width:680px){ .adm-form .adm-grid { grid-template-columns:1fr; } .cover-row { flex-direction:column; } }
-</style>
 {{end}}

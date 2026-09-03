@@ -112,6 +112,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 			r.Get("/admin/lesson/{id}", h.AdminLessonEdit)
 			r.Post("/admin/lesson/{id}", h.AdminLessonSave)
 			r.Post("/admin/lesson/{id}/delete", h.AdminLessonDelete)
+			r.Post("/admin/lesson/{id}/move", h.AdminLessonMove)
+			r.Post("/admin/lesson/{id}/duplicate", h.AdminLessonDuplicate)
 			// Quiz questions
 			r.Get("/admin/lesson/{id}/question/new", h.AdminQuestionNew)
 			r.Post("/admin/question", h.AdminQuestionSave)

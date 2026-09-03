@@ -4,6 +4,10 @@
 
 {{define "content"}}
 <style>
+  .studio-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+  .seg { display:inline-flex; gap:3px; background:var(--sunk); border:1px solid var(--line); padding:3px; border-radius:var(--radius-sm); }
+  .seg a { text-decoration:none; color:var(--muted); font-weight:600; font-size:13px; padding:7px 14px; border-radius:7px; display:flex; align-items:center; gap:6px; }
+  .seg a.on { background:var(--surface); color:var(--text); box-shadow:var(--card-shadow); }
   .io-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
   @media(max-width:860px){ .io-grid{ grid-template-columns:1fr } }
   .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--card-shadow); }
@@ -24,9 +28,17 @@
 </style>
 
 <div class="page">
-  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;">
-    <div><h1>Импорт / Экспорт курса</h1><p class="muted">Курс целиком в родном формате GoLearn — со всеми полями, включая setup/check лаб.</p></div>
-    <a class="btn btn-ghost btn-sm" href="/admin"><i class="ph ph-arrow-left"></i> В админку</a>
+  <div class="studio-head">
+    <div>
+      <h1 style="margin:0;font-size:24px;">Студия курсов</h1>
+      <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">Курс целиком в родном формате GoLearn — со всеми полями, включая setup/check лаб.</p>
+    </div>
+    <span style="flex:1"></span>
+    <div class="seg">
+      <a href="/admin"><i class="ph ph-squares-four"></i>Курсы</a>
+      <a href="{{if .Modules}}/admin/module/{{(index .Modules 0).ID}}{{else}}/admin/module/new{{end}}"><i class="ph ph-tree-structure"></i>Билдер</a>
+      <a class="on" href="/admin/import"><i class="ph ph-arrows-down-up"></i>Импорт / Экспорт</a>
+    </div>
   </div>
 
   <div class="io-grid">

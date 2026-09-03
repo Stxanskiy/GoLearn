@@ -77,6 +77,7 @@ func (h *Handler) coverFromForm(r *http.Request) string {
 type AdminModuleRow struct {
 	model.Module
 	Lessons int
+	Labs    int
 	Source  string
 }
 
@@ -93,18 +94,31 @@ func (h *Handler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 	var rows []AdminModuleRow
 	for _, m := range mods {
 		lessons, _ := h.lessonRepo.GetByModule(ctx, m.ID)
-		rows = append(rows, AdminModuleRow{Module: m, Lessons: len(lessons)})
+		labs := 0
+		for _, l := range lessons {
+			if l.Kind == "lab" {
+				labs++
+			}
+		}
+		rows = append(rows, AdminModuleRow{Module: m, Lessons: len(lessons), Labs: labs})
 	}
 	h.render(w, "admin_dashboard", &AdminDashData{PageTitle: "Админка — TOT", Specs: specs, Modules: rows})
 }
 
 // ── Module form ──
 
+// AdminLessonRow is a lesson plus its quiz/task counts for the course builder.
+type AdminLessonRow struct {
+	model.Lesson
+	Questions int
+	Tasks     int
+}
+
 type AdminModuleData struct {
 	PageTitle string
 	Module    *model.Module
 	Specs     []model.Specialization
-	Lessons   []model.Lesson
+	Lessons   []AdminLessonRow
 	IsNew     bool
 }
 
@@ -123,7 +137,46 @@ func (h *Handler) AdminModuleEdit(w http.ResponseWriter, r *http.Request) {
 	}
 	specs, _ := h.specRepo.List(ctx)
 	lessons, _ := h.lessonRepo.GetByModule(ctx, id)
-	h.render(w, "admin_module", &AdminModuleData{PageTitle: "Курс: " + mod.Title, Module: mod, Specs: specs, Lessons: lessons})
+	rows := make([]AdminLessonRow, 0, len(lessons))
+	for _, l := range lessons {
+		q, t := h.lessonRepo.CountsForLesson(ctx, l.ID)
+		rows = append(rows, AdminLessonRow{Lesson: l, Questions: q, Tasks: t})
+	}
+	h.render(w, "admin_module", &AdminModuleData{PageTitle: "Курс: " + mod.Title, Module: mod, Specs: specs, Lessons: rows})
+}
+
+// AdminLessonMove reorders a lesson up/down within its module.
+func (h *Handler) AdminLessonMove(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	dir := r.URL.Query().Get("dir")
+	if dir == "" {
+		dir = r.FormValue("dir")
+	}
+	l, _ := h.lessonRepo.GetByID(ctx, id)
+	if err := h.lessonRepo.MoveLesson(ctx, id, dir); err != nil {
+		h.log.Error("admin move lesson", "id", id, "error", err)
+	}
+	mid := 0
+	if l != nil {
+		mid = l.ModuleID
+	}
+	http.Redirect(w, r, "/admin/module/"+strconv.Itoa(mid), http.StatusSeeOther)
+}
+
+// AdminLessonDuplicate clones a lesson (with quiz + tasks) within its module.
+func (h *Handler) AdminLessonDuplicate(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := atoiDefault(chi.URLParam(r, "id"), 0)
+	l, _ := h.lessonRepo.GetByID(ctx, id)
+	if _, err := h.lessonRepo.DuplicateLesson(ctx, id); err != nil {
+		h.log.Error("admin duplicate lesson", "id", id, "error", err)
+	}
+	mid := 0
+	if l != nil {
+		mid = l.ModuleID
+	}
+	http.Redirect(w, r, "/admin/module/"+strconv.Itoa(mid), http.StatusSeeOther)
 }
 
 func (h *Handler) AdminModuleSave(w http.ResponseWriter, r *http.Request) {

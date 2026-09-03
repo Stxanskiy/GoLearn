@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
@@ -75,6 +76,108 @@ func (r *LessonRepo) Update(ctx context.Context, l model.Lesson) error {
 func (r *LessonRepo) Delete(ctx context.Context, id int) error {
 	_, err := r.pool.Exec(ctx, `DELETE FROM lessons WHERE id = $1`, id)
 	return err
+}
+
+// MoveLesson swaps a lesson's order_num with its neighbour (dir "up"/"down")
+// inside the same module. At a boundary it is a no-op.
+func (r *LessonRepo) MoveLesson(ctx context.Context, id int, dir string) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var moduleID, ord int
+	if err := tx.QueryRow(ctx, `SELECT module_id, order_num FROM lessons WHERE id=$1`, id).Scan(&moduleID, &ord); err != nil {
+		return err
+	}
+	q := `SELECT id, order_num FROM lessons WHERE module_id=$1 AND order_num > $2 ORDER BY order_num ASC LIMIT 1`
+	if dir == "up" {
+		q = `SELECT id, order_num FROM lessons WHERE module_id=$1 AND order_num < $2 ORDER BY order_num DESC LIMIT 1`
+	}
+	var nid, nord int
+	if err := tx.QueryRow(ctx, q, moduleID, ord).Scan(&nid, &nord); err != nil {
+		if err == pgx.ErrNoRows {
+			return tx.Commit(ctx) // already at the edge
+		}
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE lessons SET order_num=$1 WHERE id=$2`, nord, id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE lessons SET order_num=$1 WHERE id=$2`, ord, nid); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+// DuplicateLesson clones a lesson (with its quiz, questions and tasks) to the end
+// of the module, under a unique "<slug>-copy" slug. Returns the new lesson id.
+func (r *LessonRepo) DuplicateLesson(ctx context.Context, id int) (int, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback(ctx)
+
+	l, err := scanLesson(tx.QueryRow(ctx, `SELECT `+lessonCols+` FROM lessons WHERE id=$1`, id))
+	if err != nil {
+		return 0, err
+	}
+	base := l.Slug + "-copy"
+	slug := base
+	for i := 2; ; i++ {
+		var n int
+		if err := tx.QueryRow(ctx, `SELECT count(*) FROM lessons WHERE module_id=$1 AND slug=$2`, l.ModuleID, slug).Scan(&n); err != nil {
+			return 0, err
+		}
+		if n == 0 {
+			break
+		}
+		slug = base + "-" + strconv.Itoa(i)
+	}
+	var maxOrd int
+	_ = tx.QueryRow(ctx, `SELECT COALESCE(MAX(order_num),0) FROM lessons WHERE module_id=$1`, l.ModuleID).Scan(&maxOrd)
+
+	var newID int
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin') RETURNING id`,
+		l.ModuleID, slug, l.Title+" (копия)", l.Content, maxOrd+1, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&newID); err != nil {
+		return 0, err
+	}
+
+	// copy quiz + its questions, if any
+	var quizID int
+	if err := tx.QueryRow(ctx, `SELECT id FROM quizzes WHERE lesson_id=$1`, id).Scan(&quizID); err == nil {
+		var newQuiz int
+		if err := tx.QueryRow(ctx,
+			`INSERT INTO quizzes (lesson_id, title) SELECT $1, title FROM quizzes WHERE id=$2 RETURNING id`, newID, quizID).Scan(&newQuiz); err != nil {
+			return 0, err
+		}
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num)
+			 SELECT $1, question, options, option_explanations, correct_index, explanation, order_num FROM quiz_questions WHERE quiz_id=$2`,
+			newQuiz, quizID); err != nil {
+			return 0, err
+		}
+	}
+
+	// copy tasks
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, format, kind, sandbox_image, setup_script, check_script)
+		 SELECT $1, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, format, kind, sandbox_image, setup_script, check_script FROM tasks WHERE lesson_id=$2`,
+		newID, id); err != nil {
+		return 0, err
+	}
+	return newID, tx.Commit(ctx)
+}
+
+// CountsForLesson returns the number of quiz questions and tasks for a lesson.
+func (r *LessonRepo) CountsForLesson(ctx context.Context, lessonID int) (questions, tasks int) {
+	_ = r.pool.QueryRow(ctx, `SELECT COALESCE((SELECT count(*) FROM quiz_questions qq JOIN quizzes z ON qq.quiz_id=z.id WHERE z.lesson_id=$1),0),
+		COALESCE((SELECT count(*) FROM tasks WHERE lesson_id=$1),0)`, lessonID).Scan(&questions, &tasks)
+	return
 }
 
 func (r *LessonRepo) GetByID(ctx context.Context, id int) (*model.Lesson, error) {
