@@ -142,7 +142,7 @@
     var PASSED = {{.PassedJSON}};
     var QUIZ = []; var qd = document.getElementById('quiz-data'); if (qd) { try { QUIZ = JSON.parse(qd.textContent); } catch (e) {} }
     var NQ = QUIZ.length, TOTAL = NQ + NT;
-    var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0, manualStop = false, gotOutput = false;
+    var step = 0, term = null, ws = null, fit = null, timer = null, secs = 0, manualStop = false, gotOutput = false, termRO = null;
     var answers = new Array(NQ).fill(null), quizSaved = false;
     var pillsEl = document.getElementById('lab2-pills');
     var quizPanel = document.getElementById('lab2-quizpanel');
@@ -267,16 +267,29 @@
         var host = document.getElementById('lab2-host');
         host.innerHTML = ''; // drop the launch overlay or a previous finished session
         gotOutput = false;
-        term = new Terminal({ fontSize: 15.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
+        term = new Terminal({ fontSize: 15, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
         fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(host);
-        try { fit.fit(); } catch (e) {}
+        // Fit only once the monospace webfont is really loaded — fitting against the
+        // fallback font measures the wrong cell width, so the PTY ends up on a
+        // different column count than xterm renders and input "gets eaten".
+        var refit = function () { try { fit.fit(); sendResize(); } catch (e) {} };
+        refit();
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(refit); }
+        try {
+            if (termRO) termRO.disconnect();
+            termRO = new ResizeObserver(function () { refit(); });
+            termRO.observe(host);
+        } catch (e) {}
         setStatus('Подключаюсь…', true);
         var proto = location.protocol === 'https:' ? 'wss' : 'ws';
         ws = new WebSocket(proto + '://' + location.host + '/api/term?lesson=' + LESSON);
         ws.binaryType = 'arraybuffer';
         manualStop = false;
         ws.onopen = function () {
-            setStatus('Запущена', true); startTimer(); sendResize(); term.focus();
+            setStatus('Запущена', true); startTimer(); refit(); term.focus();
+            // stagger a couple more fits: the panel may still be animating open and
+            // the webfont may land a beat later — both change the cell size.
+            setTimeout(refit, 120); setTimeout(refit, 400);
             document.getElementById('lab2-stop').style.display = '';
             gitGraphStart();
         };
@@ -285,6 +298,7 @@
             setStatus('Остановлена', false); stopTimer(); gitGraphStop();
             document.getElementById('lab2-stop').style.display = 'none';
             var hadOutput = gotOutput, closed = term;
+            if (termRO) { try { termRO.disconnect(); } catch (e) {} termRO = null; }
             term = null; ws = null;
             if (manualStop) return;
             // The server writes the reason (Docker down, image missing, …) into
@@ -305,7 +319,6 @@
         };
         term.onData(function (d) { if (ws && ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
         term.onResize(sendResize);
-        setTimeout(function () { try { fit.fit(); sendResize(); } catch (e) {} }, 150);
     };
     function sendResize() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ resize: [term.cols, term.rows] })); }
     window.addEventListener('resize', function () { try { fit && fit.fit(); sendResize(); } catch (e) {} });

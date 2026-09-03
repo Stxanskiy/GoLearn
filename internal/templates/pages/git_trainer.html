@@ -88,7 +88,7 @@
 
 <script>
 (function () {
-    var term = null, ws = null, fit = null, poll = null;
+    var term = null, ws = null, fit = null, poll = null, termRO = null;
     var graphEl = document.getElementById('git-graph');
 
     function setStatus(t, on) { var s = document.getElementById('git-status'); s.classList.toggle('on', !!on); s.lastChild.textContent = t; }
@@ -106,19 +106,22 @@
         if (term) return;
         if (typeof Terminal === 'undefined') { document.getElementById('git-host').innerHTML = '<div class="git2-launch" style="color:var(--red);">Терминал не загрузился. Обнови страницу.</div>'; return; }
         document.getElementById('git-launch').style.display = 'none';
-        term = new Terminal({ fontSize: 15.5, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
-        fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(document.getElementById('git-host'));
-        try { fit.fit(); } catch (e) {}
+        term = new Terminal({ fontSize: 15, fontFamily: "'JetBrains Mono', ui-monospace, monospace", cursorBlink: true, theme: { background: '#05070a', foreground: '#d6e2ee', cursor: '#3fb950' } });
+        var gitHost = document.getElementById('git-host');
+        fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(gitHost);
+        var refit = function () { try { fit.fit(); sendResize(); } catch (e) {} };
+        refit();
+        if (document.fonts && document.fonts.ready) { document.fonts.ready.then(refit); }
+        try { if (termRO) termRO.disconnect(); termRO = new ResizeObserver(function () { refit(); }); termRO.observe(gitHost); } catch (e) {}
         setStatus('Подключаюсь…', true);
         var proto = location.protocol === 'https:' ? 'wss' : 'ws';
         ws = new WebSocket(proto + '://' + location.host + '/api/term?kind=git');
         ws.binaryType = 'arraybuffer';
-        ws.onopen = function () { setStatus('Запущен', true); sendResize(); term.focus(); setTimeout(gitRefresh, 800); poll = setInterval(gitRefresh, 2500); };
+        ws.onopen = function () { setStatus('Запущен', true); refit(); setTimeout(refit, 120); setTimeout(refit, 400); term.focus(); setTimeout(gitRefresh, 800); poll = setInterval(gitRefresh, 2500); };
         ws.onmessage = function (e) { term.write(typeof e.data === 'string' ? e.data : new Uint8Array(e.data)); };
-        ws.onclose = function () { setStatus('Остановлен', false); clearInterval(poll); };
+        ws.onclose = function () { setStatus('Остановлен', false); clearInterval(poll); if (termRO) { try { termRO.disconnect(); } catch (e) {} termRO = null; } };
         term.onData(function (d) { if (ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
         term.onResize(sendResize);
-        setTimeout(function () { try { fit.fit(); sendResize(); } catch (e) {} }, 150);
     };
     function sendResize() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ resize: [term.cols, term.rows] })); }
     window.addEventListener('resize', function () { try { fit && fit.fit(); sendResize(); } catch (e) {} });
