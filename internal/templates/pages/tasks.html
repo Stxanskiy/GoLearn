@@ -535,6 +535,13 @@
     function gitGraphStop() { clearInterval(gitPoll); gitPoll = null; }
 
     showStep(0);
+
+    // Auto-reconnect: if the sandbox VM for this lesson is still alive (page reload,
+    // dropped tab), re-attach to it instead of showing the launch button — the files
+    // and running state are preserved in the same VM.
+    fetch('/api/lab/' + LESSON + '/status').then(function (r) { return r.json(); })
+        .then(function (d) { if (d && d.running && !term) { labStart(); } })
+        .catch(function () {});
 })();
 </script>
 

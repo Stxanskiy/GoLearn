@@ -79,6 +79,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 		r.Post("/api/shell/{taskID}/exec", h.ShellExec)
 		r.Post("/api/shell/{taskID}/check", h.ShellCheck)
 		r.Post("/api/shell/{taskID}/done", h.ShellStepDone)
+		r.Get("/api/lab/{lessonID}/status", h.LabStatus)
 		r.Post("/api/lab/{lessonID}/reset", h.LabReset)
 		r.Post("/api/lab/{lessonID}/retry", h.LabRetry)
 		r.Get("/api/lab/{lessonID}/preview/{port}/*", h.LabPreview)

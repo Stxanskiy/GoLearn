@@ -185,6 +185,18 @@ func (v *VMRunner) touch(sid string) {
 	v.mu.Unlock()
 }
 
+// HasSession reports whether a VM for this user+lesson is currently alive, so the
+// frontend can auto-reconnect after a page reload instead of losing the environment.
+func (v *VMRunner) HasSession(userID int, key string) bool {
+	if !v.enabled {
+		return false
+	}
+	sid := vmSID(userID, key)
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return v.sessions[sid] != nil
+}
+
 // allocSlot reserves a free VM slot; -1 if the host is at capacity.
 func (v *VMRunner) allocSlot() int {
 	for i := range v.freeSlot {

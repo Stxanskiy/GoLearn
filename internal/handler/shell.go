@@ -159,6 +159,22 @@ func (h *Handler) LabReset(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{"ok": true})
 }
 
+// LabStatus reports whether the user's sandbox for this lesson is still alive, so
+// the terminal can auto-reconnect after a page reload without losing the environment.
+func (h *Handler) LabStatus(w http.ResponseWriter, r *http.Request) {
+	user := GetUser(r.Context())
+	if user == nil {
+		http.Error(w, "unauthorized", 401)
+		return
+	}
+	lessonID, err := strconv.Atoi(chi.URLParam(r, "lessonID"))
+	if err != nil {
+		http.Error(w, "bad lesson id", 400)
+		return
+	}
+	writeJSON(w, map[string]any{"running": h.shell.HasSession(user.ID, labKey(lessonID))})
+}
+
 // LabRetry handles POST /api/lab/{lessonID}/retry — "Пройти заново": clears the
 // user's solved steps and quiz score for the lesson AND recycles the sandbox,
 // so the lab can be taken again from scratch.
