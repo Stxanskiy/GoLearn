@@ -11,9 +11,12 @@ package main
 // their own fixture charts (webChart / hooksChart) that the Setup drops into /root;
 // their checks render the chart / read `helm get hooks` after install/upgrade/uninstall.
 //
+// The helmfile lab (ch-helm-lab-helmfile) uses the `helmfile` binary baked into the
+// k8s golden + a local ./charts/webapp fixture (no remote charts) — checks cover sync
+// and destroy.
+//
 // NOT covered yet (kept as the manual "Готово"):
-//   - ch-helm-lab-repos    — Bitnami charts from a remote repo (no network offline);
-//   - ch-helm-lab-helmfile — needs the `helmfile` binary + remote charts.
+//   - ch-helm-lab-repos — Bitnami charts via a repo; needs a vendored local mirror.
 
 // helmNginxChart writes a minimal chart at /root/charts/nginx-chart. Its Deployment
 // is named <release>-nginx and honours replicaCount + image.repository/tag, which is
@@ -338,6 +341,85 @@ kubectl delete job -l app.kubernetes.io/managed-by=Helm >/dev/null 2>&1` + hooks
 			10: kcheck(`kubectl get jobs -o name 2>/dev/null | grep -qi pre-delete && ! helm status hooked-app >/dev/null 2>&1`,
 				"release удалён, pre-delete hook выполнился",
 				"helm uninstall hooked-app (pre-delete Job остаётся, т.к. без hook-succeeded)"),
+		},
+	},
+
+	// ── Lab 8: Helmfile ── the helmfile binary is baked into the k8s golden; the Setup
+	// drops the local chart ./charts/webapp the helmfile references. The student writes
+	// values/{dev,staging}.yaml + helmfile.yaml.gotmpl, then renders/syncs/destroys.
+	// Checks cover the sync (release deployed + replicas) and the destroy.
+	"ch-helm-lab-helmfile": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + `
+export PATH=$PATH:/usr/local/bin
+helmfile -f /root/helmfile-lab/helmfile.yaml.gotmpl -e dev destroy >/dev/null 2>&1
+helm uninstall web-dev web-staging >/dev/null 2>&1
+mkdir -p /root/helmfile-lab/charts/webapp/templates /root/helmfile-lab/values
+cat > /root/helmfile-lab/charts/webapp/Chart.yaml <<'EOF'
+apiVersion: v2
+name: webapp
+description: TOT helmfile lab chart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+EOF
+cat > /root/helmfile-lab/charts/webapp/values.yaml <<'EOF'
+replicaCount: 1
+environment: dev
+image:
+  repository: nginx
+  tag: alpine
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 80
+EOF
+cat > /root/helmfile-lab/charts/webapp/templates/deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-webapp
+  labels: {app: {{ .Release.Name }}-webapp}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {app: {{ .Release.Name }}-webapp}
+  template:
+    metadata:
+      labels: {app: {{ .Release.Name }}-webapp}
+    spec:
+      containers:
+      - name: web
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+        - {name: ENVIRONMENT, value: "{{ .Values.environment }}"}
+        ports:
+        - {containerPort: {{ .Values.service.targetPort }}}
+EOF
+cat > /root/helmfile-lab/charts/webapp/templates/service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-webapp
+spec:
+  type: {{ .Values.service.type }}
+  selector: {app: {{ .Release.Name }}-webapp}
+  ports:
+  - {port: {{ .Values.service.port }}, targetPort: {{ .Values.service.targetPort }}}
+EOF`,
+		Checks: map[int]string{
+			6: kcheck(hdeployed("web-dev")+` && kubectl get deploy web-dev-webapp >/dev/null 2>&1`,
+				"web-dev синхронизирован (helmfile sync -e dev), release deployed",
+				"cd /root/helmfile-lab && helmfile -f helmfile.yaml.gotmpl -e dev sync"),
+			7: kcheck(hdeployed("web-staging")+` && `+jp("get deploy web-staging-webapp", "{.spec.replicas}", "2"),
+				"web-staging синхронизирован с 2 репликами",
+				"в values/staging.yaml задай replicaCount: 2, затем helmfile -e staging sync"),
+			8: kcheck(jp("get deploy web-dev-webapp", "{.spec.replicas}", "2"),
+				"web-dev пересобран с replicaCount: 2",
+				"поменяй replicaCount на 2 в values/dev.yaml и helmfile -e dev sync"),
+			10: kcheck(`! helm status web-dev >/dev/null 2>&1 && ! helm status web-staging >/dev/null 2>&1`,
+				"оба окружения удалены через helmfile destroy",
+				"helmfile -f helmfile.yaml.gotmpl -e dev destroy; helmfile ... -e staging destroy"),
 		},
 	},
 }
