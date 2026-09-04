@@ -52,8 +52,11 @@ type VMRunner struct {
 	maxVMs int
 
 	mu       sync.Mutex
-	sessions map[string]*vmSession // sid -> session
-	freeSlot []bool                // slot in use?
+	sessions map[string]*vmSession   // sid -> session
+	freeSlot []bool                  // slot in use?
+	pool     map[string][]*vmSession // profile -> pre-booted warm VMs
+	warmWant map[string]int          // profile -> desired warm count (0 = disabled)
+	refill   chan struct{}           // nudge the pool manager to top up
 }
 
 type vmSession struct {
@@ -61,10 +64,21 @@ type vmSession struct {
 	userID  int
 	key     string
 	image   string
+	profile string // "docker" | "k8s" — which golden this VM booted from
 	slot    int
 	ip      string
+	work    string // host work dir (stored so a re-keyed warm VM tears down correctly)
+	tap     string
 	started time.Time
 	last    time.Time
+}
+
+// profileOf returns the pool profile for a sandbox image.
+func profileOf(image string) string {
+	if strings.Contains(image, "sandbox-k8s") {
+		return "k8s"
+	}
+	return "docker"
 }
 
 const (
@@ -109,9 +123,18 @@ func NewVMRunner() *VMRunner {
 	v.keyFile = f.Name()
 	v.freeSlot = make([]bool, v.maxVMs)
 	v.sessions = make(map[string]*vmSession)
+	v.pool = map[string][]*vmSession{}
+	v.warmWant = map[string]int{
+		"docker": atoiDefault(shellEnv("FC_WARM_DOCKER", "0"), 0),
+		"k8s":    atoiDefault(shellEnv("FC_WARM_K8S", "0"), 0),
+	}
+	v.refill = make(chan struct{}, 1)
 	v.enabled = true
 	go v.sweepOrphans()
 	go v.reaper()
+	if v.warmWant["docker"] > 0 || v.warmWant["k8s"] > 0 {
+		go v.poolManager()
+	}
 	return v
 }
 
@@ -230,12 +253,27 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 		v.mu.Unlock()
 	}
 
-	// One-at-a-time: drop any other VM this user holds.
+	profile := profileOf(image)
+	// One-at-a-time: drop any other VM this user holds, then try the warm pool.
 	v.mu.Lock()
 	for other, s := range v.sessions {
 		if s.userID == userID && other != sid {
 			v.teardownLocked(other)
 		}
+	}
+	// A pre-booted warm VM of the right profile → hand it out instantly, then just
+	// apply the lesson setup (no cp, no boot, no k3s wait).
+	if warm := v.takeWarmLocked(profile); warm != nil {
+		warm.sid, warm.userID, warm.key, warm.image = sid, userID, key, image
+		warm.started, warm.last = time.Now(), time.Now()
+		v.sessions[sid] = warm
+		v.mu.Unlock()
+		v.signalRefill()
+		if err := v.applySetup(ctx, warm, setup); err != nil {
+			v.teardown(sid)
+			return "", err
+		}
+		return warm.ip, nil
 	}
 	slot := v.allocSlot()
 	if slot < 0 {
@@ -252,6 +290,7 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 		v.mu.Unlock()
 		return "", err
 	}
+	v.signalRefill()
 	return sess.ip, nil
 }
 
@@ -271,6 +310,7 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	vmip := s.ip
 	mac := vmMAC(s.slot)
 	work := fmt.Sprintf("%s/sessions/%s", v.dir, s.sid)
+	s.work, s.tap, s.profile = work, tap, profileOf(s.image)
 
 	// Kubernetes lessons get the k3s golden and a bigger VM; everything else uses
 	// the default docker+tools golden.
@@ -543,8 +583,24 @@ func (v *VMRunner) teardownLocked(sid string) {
 	if s == nil {
 		return
 	}
-	tap := vmTap(s.slot)
-	work := fmt.Sprintf("%s/sessions/%s", v.dir, sid)
+	v.killVM(s)
+	if s.slot >= 0 && s.slot < len(v.freeSlot) {
+		v.freeSlot[s.slot] = false
+	}
+	delete(v.sessions, sid)
+}
+
+// killVM kills the Firecracker process, removes the tap and workdir (best effort,
+// in the background). It does no bookkeeping — the caller frees the slot / map.
+func (v *VMRunner) killVM(s *vmSession) {
+	tap := s.tap
+	if tap == "" {
+		tap = vmTap(s.slot)
+	}
+	work := s.work
+	if work == "" {
+		work = fmt.Sprintf("%s/sessions/%s", v.dir, s.sid)
+	}
 	script := fmt.Sprintf(`
 [ -f %[1]s/fc.pid ] && kill "$(cat %[1]s/fc.pid)" 2>/dev/null || true
 sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
@@ -555,10 +611,121 @@ rm -rf %[1]s
 		defer cancel()
 		_, _, _ = v.runHost(ctx, script)
 	}()
-	if s.slot >= 0 && s.slot < len(v.freeSlot) {
-		v.freeSlot[s.slot] = false
+}
+
+// ── Warm pool ──────────────────────────────────────────────────────────────
+// Pre-booted VMs (one per profile) so a student attaches to a ready sandbox
+// instantly instead of waiting ~30-60s for a cold cp+boot. Gated by FC_WARM_*.
+
+func (v *VMRunner) signalRefill() {
+	if v.refill == nil {
+		return
 	}
-	delete(v.sessions, sid)
+	select {
+	case v.refill <- struct{}{}:
+	default:
+	}
+}
+
+// takeWarmLocked pops a ready warm VM for the profile (caller holds v.mu).
+func (v *VMRunner) takeWarmLocked(profile string) *vmSession {
+	list := v.pool[profile]
+	if len(list) == 0 {
+		return nil
+	}
+	s := list[len(list)-1]
+	v.pool[profile] = list[:len(list)-1]
+	return s
+}
+
+// applySetup runs the lesson setup on an already-booted VM (used when a warm VM
+// is handed out — the cold path applies the setup inside bootVM instead).
+func (v *VMRunner) applySetup(ctx context.Context, s *vmSession, setup string) error {
+	if setup == "" {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
+	defer cancel()
+	b64 := base64.StdEncoding.EncodeToString([]byte(setup))
+	script := fmt.Sprintf(
+		`ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[3]s 'echo %[4]s | base64 -d | bash' >/dev/null 2>&1 || true; echo GLVMOK`,
+		v.dir, v.vmkey, s.ip, b64)
+	out, _, err := v.runHost(ctx, script)
+	if err != nil {
+		return fmt.Errorf("setup error: %w", err)
+	}
+	if !strings.Contains(out, "GLVMOK") {
+		return fmt.Errorf("setup failed")
+	}
+	return nil
+}
+
+// bootWarm boots one warm VM of the profile and adds it to the pool (synchronous).
+func (v *VMRunner) bootWarm(profile string) {
+	v.mu.Lock()
+	slot := v.allocSlot()
+	v.mu.Unlock()
+	if slot < 0 {
+		return
+	}
+	img := "golearn/sandbox:latest"
+	if profile == "k8s" {
+		img = "golearn/sandbox-k8s:latest"
+	}
+	sess := &vmSession{sid: fmt.Sprintf("warm-%s-%d", profile, slot), image: img, profile: profile,
+		slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	if err := v.bootVM(ctx, sess, ""); err != nil {
+		v.killVM(sess)
+		v.mu.Lock()
+		v.freeSlot[slot] = false
+		v.mu.Unlock()
+		return
+	}
+	v.mu.Lock()
+	v.pool[profile] = append(v.pool[profile], sess)
+	v.mu.Unlock()
+}
+
+// poolManager keeps each profile's warm pool topped up (one boot at a time so we
+// never fire several 5 GB copies at once).
+func (v *VMRunner) poolManager() {
+	t := time.NewTicker(30 * time.Second)
+	defer t.Stop()
+	for {
+		v.topUp()
+		select {
+		case <-t.C:
+		case <-v.refill:
+		}
+	}
+}
+
+func (v *VMRunner) topUp() {
+	for _, profile := range []string{"docker", "k8s"} {
+		for {
+			v.mu.Lock()
+			have := len(v.pool[profile])
+			total := len(v.sessions)
+			for _, p := range v.pool {
+				total += len(p)
+			}
+			freeSlots := 0
+			for _, used := range v.freeSlot {
+				if !used {
+					freeSlots++
+				}
+			}
+			// keep 1 slot in reserve for a real user even while warming
+			need := have < v.warmWant[profile] && total < v.maxVMs && freeSlots > 1
+			v.mu.Unlock()
+			if !need {
+				break
+			}
+			v.bootWarm(profile)
+		}
+	}
 }
 
 func (v *VMRunner) reaper() {
