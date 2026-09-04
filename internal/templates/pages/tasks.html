@@ -92,7 +92,7 @@
                 <span class="spacer"></span>
                 <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
             </div>
-            <pre id="lab2-git-graph" class="lab2-git-graph">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</pre>
+            <div id="lab2-git-graph" class="lab2-git-graph"><span class="muted" style="font-size:13px">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</span></div>
         </div>
         {{end}}
         <div class="lab2-term" id="lab2-host">
@@ -505,22 +505,68 @@
     var IS_GIT = {{if .IsGitLab}}true{{else}}false{{end}};
     var gitGraphEl = document.getElementById('lab2-git-graph');
     var gitPoll = null;
-    var GIT_CMD = "git -C /root/project log --graph --all --decorate --color=always " +
-                  "--pretty=format:'%C(auto)%h%C(reset)%C(auto)%d%C(reset) %s %C(dim white)· %an%C(reset)' 2>/dev/null | head -80" +
-                  ' || echo "(репозиторий ещё не создан — сделай git init)"';
-    function ansiToHtml(str) {
-        var colors = {30:'#5c6370',31:'#e06c75',32:'#98c379',33:'#e5c07b',34:'#61afef',35:'#c678dd',36:'#56b6c2',37:'#d6e2ee',90:'#7f848e',91:'#e06c75',92:'#98c379',93:'#e5c07b',94:'#61afef',95:'#c678dd',96:'#56b6c2',97:'#ffffff'};
-        function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-        var out = '', open = false, re = /\x1b\[([0-9;]*)m/g, last = 0, m;
-        while ((m = re.exec(str))) {
-            out += esc(str.slice(last, m.index)); last = re.lastIndex;
-            if (open) { out += '</span>'; open = false; }
-            var style = '';
-            (m[1] || '0').split(';').forEach(function (c) { c = +c; if (c === 1) style += 'font-weight:700;'; else if (c === 2) style += 'opacity:.6;'; else if (colors[c]) style += 'color:' + colors[c] + ';'; });
-            if (style) { out += '<span style="' + style + '">'; open = true; }
+    // \x1f (unit separator) splits fields so commit subjects with spaces/| are safe.
+    var GIT_CMD = "git -C /root/project log --all --date-order --pretty=format:'%h%x1f%p%x1f%D%x1f%s' 2>/dev/null | head -60";
+    var LANE_COLORS = ['#98c379','#61afef','#e5c07b','#c678dd','#56b6c2','#e06c75','#d19a66'];
+    function esc(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function renderGitGraph(raw) {
+        var lines = (raw || '').split('\n').filter(function (l) { return l.indexOf('\x1f') >= 0; });
+        if (!lines.length) { gitGraphEl.innerHTML = '<span class="muted" style="font-size:13px">Пока нет коммитов — сделай <code>git init</code> и первый commit.</span>'; return; }
+        var commits = lines.map(function (l) { var p = l.split('\x1f'); return { h: p[0], parents: (p[1] || '').trim().split(/\s+/).filter(Boolean), refs: (p[2] || '').trim(), subj: p[3] || '' }; });
+        var idx = {}; commits.forEach(function (c, i) { idx[c.h] = i; });
+        // Lane assignment (newest -> oldest), git-graph style.
+        var lanes = [];
+        commits.forEach(function (c) {
+            var lane = lanes.indexOf(c.h);
+            if (lane < 0) { lane = lanes.indexOf(null); if (lane < 0) lane = lanes.length; }
+            c.lane = lane;
+            for (var i = 0; i < lanes.length; i++) { if (lanes[i] === c.h) lanes[i] = null; }
+            lanes[lane] = c.parents[0] || null;
+            for (var k = 1; k < c.parents.length; k++) { var nl = lanes.indexOf(null); if (nl < 0) nl = lanes.length; lanes[nl] = c.parents[k]; }
+        });
+        var n = commits.length, COLW = 116, LANEH = 58, PAD = 30, R = 14;
+        var maxLane = 0; commits.forEach(function (c) { if (c.lane > maxLane) maxLane = c.lane; });
+        function X(c) { return PAD + (n - 1 - idx[c.h]) * COLW; }         // oldest left, newest right
+        function Y(c) { return PAD + c.lane * LANEH; }
+        var W = PAD * 2 + (n - 1) * COLW, H = PAD * 2 + maxLane * LANEH + 26;
+        var svg = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,Menlo,monospace">';
+        // edges first (behind nodes)
+        commits.forEach(function (c) {
+            c.parents.forEach(function (ph) {
+                if (idx[ph] === undefined) return; var p = commits[idx[ph]];
+                var x1 = X(c), y1 = Y(c), x2 = X(p), y2 = Y(p), col = LANE_COLORS[c.lane % LANE_COLORS.length];
+                var d = (y1 === y2) ? ('M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2)
+                    : ('M' + x1 + ' ' + y1 + ' C' + ((x1 + x2) / 2) + ' ' + y1 + ',' + ((x1 + x2) / 2) + ' ' + y2 + ',' + x2 + ' ' + y2);
+                svg += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2" opacity="0.85"/>';
+            });
+        });
+        // nodes + labels
+        commits.forEach(function (c) {
+            var x = X(c), y = Y(c), col = LANE_COLORS[c.lane % LANE_COLORS.length];
+            svg += '<circle cx="' + x + '" cy="' + y + '" r="' + R + '" fill="' + col + '" stroke="#0b0e14" stroke-width="2"><title>' + esc(c.subj) + '</title></circle>';
+            svg += '<text x="' + x + '" y="' + (y + 4) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#0b0e14">' + esc(c.h.slice(0, 4)) + '</text>';
+            // ref pills above the node
+            if (c.refs) {
+                var ry = y - R - 8;
+                c.refs.split(',').map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (ref) {
+                    var label = ref, fill = '#98c379';
+                    if (/HEAD ->/.test(ref)) { svg += pill(x, ry, 'HEAD', '#c678dd'); ry -= 20; label = ref.replace(/HEAD ->\s*/, ''); }
+                    else if (ref === 'HEAD') { fill = '#c678dd'; }
+                    else if (/^tag:/.test(ref)) { fill = '#e5c07b'; label = ref.replace(/^tag:\s*/, ''); }
+                    else if (/\//.test(ref)) { fill = '#56b6c2'; }
+                    if (label) { svg += pill(x, ry, label, fill); ry -= 20; }
+                });
+            }
+        });
+        svg += '</svg>';
+        function pill(cx, cy, text, fill) {
+            var w = text.length * 6.6 + 12;
+            return '<g transform="translate(' + (cx - w / 2) + ',' + (cy - 9) + ')">' +
+                '<rect width="' + w + '" height="16" rx="8" fill="' + fill + '"/>' +
+                '<text x="' + (w / 2) + '" y="12" text-anchor="middle" font-size="10" font-weight="700" fill="#0b0e14">' + esc(text) + '</text></g>';
         }
-        out += esc(str.slice(last)); if (open) out += '</span>';
-        return out;
+        gitGraphEl.innerHTML = svg;
+        gitGraphEl.scrollLeft = gitGraphEl.scrollWidth; // keep newest (right) in view
     }
     window.gitGraphRefresh = function () {
         if (!IS_GIT || !gitGraphEl || !TASK_IDS.length) return;
@@ -528,7 +574,7 @@
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ command: GIT_CMD })
         }).then(function (r) { return r.json(); })
-          .then(function (d) { var o = (d.output || '').replace(/\s+$/, ''); gitGraphEl.innerHTML = o ? ansiToHtml(o) : '(пока нет коммитов)'; })
+          .then(function (d) { renderGitGraph(d.output || ''); })
           .catch(function () {});
     };
     function gitGraphStart() { if (!IS_GIT) return; gitGraphRefresh(); clearInterval(gitPoll); gitPoll = setInterval(gitGraphRefresh, 3000); }
@@ -606,7 +652,8 @@
 .lab2-main { display:flex; flex-direction:column; align-items:center; gap:12px; background:var(--bg); min-width:0; min-height:0; overflow:hidden; padding:14px 16px; }
 .lab2-git { width:100%; max-width:1100px; flex:none; max-height:230px; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
 .lab2-git-head { display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:.8em; font-weight:700; color:var(--muted); }
-.lab2-git-graph { margin:0; padding:10px 14px; overflow:auto; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.55; white-space:pre; color:var(--text); background:var(--bg); }
+.lab2-git-graph { margin:0; padding:14px; overflow-x:auto; overflow-y:hidden; color:var(--text); background:var(--bg); min-height:60px; }
+.lab2-git-graph svg { display:block; }
 .lab2-bar { width:100%; max-width:1100px; display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; position:sticky; top:0; z-index:5; flex:none; }
 .lab2-navbtn { font-size:.82em; color:var(--text-muted); text-decoration:none; padding:5px 10px; border:1px solid var(--border); border-radius:8px; }
 .lab2-navbtn:hover { color:var(--text); border-color:var(--border-strong); }
@@ -620,7 +667,7 @@
 .lab2-iconbtn:hover { color:var(--accent); border-color:var(--accent); }
 .lab2-stop { background:var(--red-bg); border:1px solid var(--red); color:var(--red); padding:6px 12px; border-radius:8px; cursor:pointer; font-size:.82em; font-weight:700; }
 .lab2-stop:hover { background:var(--red); color:#fff; }
-.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px 12px 16px; min-height:0; overflow:hidden; background:var(--term-bg); border:1px solid var(--border-strong); border-radius:12px; }
+.lab2-term { width:100%; max-width:1100px; flex:1; position:relative; padding:12px 12px 22px; min-height:0; overflow:hidden; background:var(--term-bg); border:1px solid var(--border-strong); border-radius:12px; }
 .lab2-term .xterm { height:100%; }
 .lab2-term .xterm-viewport { overflow-y:auto !important; }
 .lab2-preview { width:100%; max-width:1100px; flex:1; min-height:0; flex-direction:column; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
