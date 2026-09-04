@@ -85,16 +85,6 @@
             <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
             <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;">⨯ Остановить</button>
         </div>
-        {{if .IsGitLab}}
-        <div class="lab2-git" id="lab2-git">
-            <div class="lab2-git-head">
-                <span><i class="ph ph-git-branch"></i> Граф репозитория</span>
-                <span class="spacer"></span>
-                <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
-            </div>
-            <div id="lab2-git-graph" class="lab2-git-graph"><span class="muted" style="font-size:13px">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</span></div>
-        </div>
-        {{end}}
         <div class="lab2-term" id="lab2-host">
             <div class="lab2-launch" id="lab2-launch">
                 <div class="lab2-launch-card">
@@ -107,6 +97,16 @@
                 </div>
             </div>
         </div>
+        {{if .IsGitLab}}
+        <div class="lab2-git" id="lab2-git">
+            <div class="lab2-git-head">
+                <span><i class="ph ph-git-branch"></i> Граф репозитория</span>
+                <span class="spacer"></span>
+                <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
+            </div>
+            <div id="lab2-git-graph" class="lab2-git-graph"><span class="muted" style="font-size:13px">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</span></div>
+        </div>
+        {{end}}
         <div class="lab2-preview" id="lab2-preview" style="display:none;">
             <div class="lab2-preview-bar">
                 <span class="lab2-preview-addr"><i class="ph ph-globe"></i>&nbsp;127.0.0.1:<input id="lab2-preview-port" value="80" inputmode="numeric" onchange="labPreviewReload()"></span>
