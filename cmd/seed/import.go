@@ -44,8 +44,12 @@ var contentFS embed.FS
 // ── parser JSON schema ──
 
 type pkCourse struct {
-	ID   string `json:"id"`
-	Meta struct {
+	ID string `json:"id"`
+	// Some exports put the course title at the top level and leave "meta" empty
+	// (crs_gitlab_ci does); others fill "meta". Read both, prefer meta.
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Meta        struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
 		Image       string `json:"image"` // data URI (base64 webp)
@@ -129,6 +133,15 @@ func importedModules() []M {
 	return mods
 }
 
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 func buildModule(s importSpec) (M, error) {
 	base := path.Join("content", s.Dir)
 
@@ -175,8 +188,8 @@ func buildModule(s importSpec) (M, error) {
 
 	m := M{
 		Slug:        s.Slug,
-		Title:       course.Meta.Title,
-		Description: course.Meta.Description,
+		Title:       firstNonEmpty(course.Meta.Title, course.Title),
+		Description: firstNonEmpty(course.Meta.Description, course.Description),
 		Track:       s.Track,
 		Difficulty:  s.Difficulty,
 		Category:    s.Category,
