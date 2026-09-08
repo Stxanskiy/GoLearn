@@ -17,7 +17,7 @@
             <div class="progress-bar" style="flex:1;height:10px;"><div class="progress-fill" style="width:{{.Pct}}%;"></div></div>
             <span class="course-hero-pct">{{.DoneCount}}/{{.TotalCount}} · {{.Pct}}%</span>
         </div>
-        {{if .ContinueURL}}<a href="{{.ContinueURL}}" class="btn btn-primary course-hero-cta">▶ {{if gt .DoneCount 0}}Продолжить{{else}}Начать курс{{end}}</a>{{end}}
+        {{if .ContinueURL}}<a href="{{.ContinueURL}}" class="btn btn-primary course-hero-cta"><i class="ph ph-play"></i>{{if gt .DoneCount 0}}Продолжить{{else}}Начать курс{{end}}</a>{{end}}
     </div>
 </div>
 
@@ -87,9 +87,11 @@
 .toc-row-icon { flex:0 0 auto; font-size:1.1em; }
 .toc-row-title { flex:1; min-width:0; font-size:.94em; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .toc-row-badge { flex:0 0 auto; font-size:.7em; font-weight:700; padding:3px 10px; border-radius:999px; }
-.badge-lesson { color:#a371f7; background:rgba(163,113,247,.16); }
-.badge-quiz   { color:#e3b341; background:rgba(227,179,65,.16); }
-.badge-lab    { color:#f778ba; background:rgba(247,120,186,.16); }
+/* Палитра Nocturne: чипы шли из GitHub Dark и в светлой теме давали
+   контраст 1.9–3.3 при норме 4.5. Теперь — системные токены обеих тем. */
+.badge-lesson { color:var(--sky);   background:var(--sky-tint); }
+.badge-quiz   { color:var(--amber); background:var(--amber-tint); }
+.badge-lab    { color:var(--clay);  background:var(--clay-tint); }
 .badge-sim    { color:#39c5cf; background:rgba(57,197,207,.16); }
 .badge-sql    { color:#36c5f0; background:rgba(54,197,240,.16); }
 .toc-row-end { flex:0 0 auto; display:flex; align-items:center; gap:8px; }

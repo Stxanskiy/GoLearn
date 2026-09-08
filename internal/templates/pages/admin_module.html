@@ -127,15 +127,15 @@
             </div>
             <div class="rowacts">
               {{if $l.Published}}
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик" aria-label="В черновик"><i class="ph ph-eye-slash"></i></button></form>
               {{else}}
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/publish" style="display:inline;"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" aria-label="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
               {{end}}
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=up" style="display:inline;"><button class="iconbtn" title="Выше" {{if eq $i 0}}disabled{{end}}><i class="ph ph-arrow-up"></i></button></form>
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=down" style="display:inline;"><button class="iconbtn" title="Ниже" {{if eq $i $last}}disabled{{end}}><i class="ph ph-arrow-down"></i></button></form>
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/duplicate" style="display:inline;"><button class="iconbtn" title="Дублировать"><i class="ph ph-copy"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=up" style="display:inline;"><button class="iconbtn" title="Выше" aria-label="Выше" {{if eq $i 0}}disabled{{end}}><i class="ph ph-arrow-up"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/move?dir=down" style="display:inline;"><button class="iconbtn" title="Ниже" aria-label="Ниже" {{if eq $i $last}}disabled{{end}}><i class="ph ph-arrow-down"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/duplicate" style="display:inline;"><button class="iconbtn" title="Дублировать" aria-label="Дублировать"><i class="ph ph-copy"></i></button></form>
               <a class="iconbtn" href="/admin/lesson/{{$l.ID}}" title="Редактировать"><i class="ph ph-pencil-simple"></i></a>
-              <form method="POST" action="/admin/lesson/{{$l.ID}}/delete" onsubmit="return confirm('Удалить главу «{{$l.Title}}»?');" style="display:inline;"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+              <form method="POST" action="/admin/lesson/{{$l.ID}}/delete" onsubmit="return confirm('Удалить главу «{{$l.Title}}»?');" style="display:inline;"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
             </div>
           </div>
           {{end}}

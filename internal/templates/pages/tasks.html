@@ -60,7 +60,7 @@
                 {{else}}
                 <button class="btn btn-success" onclick="labTaskDone({{$t.ID}}, {{$i}})">✓ Готово</button>
                 {{end}}
-                <button class="btn btn-ghost" title="Фокус в терминал" onclick="labFocus()"><i class="ph ph-keyboard"></i></button>
+                <button class="btn btn-ghost" title="Фокус в терминал" aria-label="Фокус в терминал" onclick="labFocus()"><i class="ph ph-keyboard"></i></button>
             </div>
             <div class="check-result" id="check-{{$t.ID}}"></div>
         </div>
@@ -81,9 +81,9 @@
             <span class="lab2-timer" id="lab2-timer" title="Осталось времени сессии (лимит 1 час)">60:00</span>
             <button class="lab2-iconbtn" id="lab2-preview-btn" onclick="labTogglePreview()" title="Web Preview: показать веб-страницу, которую отдаёт сервер внутри песочницы (для Docker и web-заданий)"><i class="ph ph-globe"></i> Web Preview</button>
             <button class="lab2-iconbtn" id="lab2-vscode-btn" onclick="labToggleVscode()" title="Редактор файлов (VS Code) — та же файловая система, что в терминале"><i class="ph ph-code"></i> VSCode</button>
-            <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Вернуть чистое окружение: файлы задания на месте, твои изменения пропадут">⟳ Сбросить окружение</button>
-            <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение">↺ Пройти заново</button>
-            <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;">⨯ Остановить</button>
+            <button class="lab2-iconbtn" id="lab2-restart" onclick="labRestart()" title="Вернуть чистое окружение: файлы задания на месте, твои изменения пропадут"><i class="ph ph-arrows-clockwise"></i> Сбросить окружение</button>
+            <button class="lab2-iconbtn" id="lab2-retry" onclick="labRetry()" title="Пройти лабораторную заново: снять отметки шагов и очистить окружение"><i class="ph ph-arrow-counter-clockwise"></i> Пройти заново</button>
+            <button class="lab2-stop" id="lab2-stop" onclick="labStop()" title="Остановить сессию" style="display:none;"><i class="ph ph-stop-circle"></i> Остановить</button>
         </div>
         <div class="lab2-term" id="lab2-host">
             <div class="lab2-launch" id="lab2-launch">
@@ -92,8 +92,8 @@
                     <div class="lab2-launch-title">Песочница готова к запуску</div>
                     <div class="lab2-launch-text">Настоящий Linux-терминал в изолированной микро-VM. Файлы задания уже внутри,
                         утилиты установлены, сеть отключена — сломать что-то снаружи невозможно.</div>
-                    <button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button>
-                    <div class="lab2-launch-hint">Сломал окружение? «⟳ Сбросить окружение» вернёт его в исходное состояние.</div>
+                    <button class="btn btn-primary" onclick="labStart()"><i class="ph ph-play"></i>Запустить лабораторную</button>
+                    <div class="lab2-launch-hint">Сломал окружение? «Сбросить окружение» вернёт его в исходное состояние.</div>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
             <div class="lab2-git-head">
                 <span><i class="ph ph-git-branch"></i> Граф репозитория</span>
                 <span class="spacer"></span>
-                <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
+                <button class="btn btn-ghost btn-sm" onclick="gitGraphRefresh()" title="Обновить" aria-label="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
             </div>
             <div id="lab2-git-graph" class="lab2-git-graph"><span class="muted" style="font-size:13px">Запусти терминал — граф появится здесь и будет обновляться после каждой команды.</span></div>
         </div>
@@ -111,9 +111,9 @@
             <div class="lab2-preview-bar">
                 <span class="lab2-preview-addr"><i class="ph ph-globe"></i>&nbsp;127.0.0.1:<input id="lab2-preview-port" value="80" inputmode="numeric" onchange="labPreviewReload()"></span>
                 <span class="spacer"></span>
-                <button onclick="labPreviewReload()" title="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
+                <button onclick="labPreviewReload()" title="Обновить" aria-label="Обновить"><i class="ph ph-arrows-clockwise"></i></button>
                 <a id="lab2-preview-open" href="#" target="_blank" rel="noopener" title="Открыть в новой вкладке"><i class="ph ph-arrow-square-out"></i></a>
-                <button onclick="labTogglePreview()" title="Назад к терминалу"><i class="ph ph-x"></i></button>
+                <button onclick="labTogglePreview()" title="Назад к терминалу" aria-label="Назад к терминалу"><i class="ph ph-x"></i></button>
             </div>
             <iframe id="lab2-preview-frame" class="lab2-preview-frame" sandbox="allow-scripts allow-forms" title="Web Preview"></iframe>
         </div>
@@ -122,9 +122,9 @@
                 <i class="ph ph-file-code"></i>&nbsp;<span class="lab2-vscode-path" id="lab2-vscode-path">выбери файл слева</span>
                 <span class="spacer"></span>
                 <span class="lab2-vscode-status" id="lab2-vscode-status"></span>
-                <button onclick="labVscodeSave()" title="Сохранить (Ctrl+S)"><i class="ph ph-floppy-disk"></i></button>
-                <button onclick="labVscodeRefreshTree()" title="Обновить дерево файлов"><i class="ph ph-arrows-clockwise"></i></button>
-                <button onclick="labToggleVscode()" title="Назад к терминалу"><i class="ph ph-x"></i></button>
+                <button onclick="labVscodeSave()" title="Сохранить (Ctrl+S)" aria-label="Сохранить (Ctrl+S)"><i class="ph ph-floppy-disk"></i></button>
+                <button onclick="labVscodeRefreshTree()" title="Обновить дерево файлов" aria-label="Обновить дерево файлов"><i class="ph ph-arrows-clockwise"></i></button>
+                <button onclick="labToggleVscode()" title="Назад к терминалу" aria-label="Назад к терминалу"><i class="ph ph-x"></i></button>
             </div>
             <div class="lab2-vscode-body">
                 <div class="lab2-vscode-tree" id="lab2-vscode-tree"></div>
@@ -254,7 +254,7 @@
             '<div class="lab2-launch"><div style="font-size:30px;">⏱</div>' +
             '<div style="margin:8px 0;font-weight:600;">Час сессии истёк</div>' +
             '<div class="muted" style="font-size:.82em;margin-bottom:10px;">Сессии ограничены часом, чтобы песочница не висела вечно. Твой прогресс сохранён.</div>' +
-            '<button class="btn btn-primary" onclick="secs=0;manualStop=false;labStart()">▶ Запустить заново</button></div>';
+            '<button class="btn btn-primary" onclick="secs=0;manualStop=false;labStart()"><i class="ph ph-play"></i>Запустить заново</button></div>';
     }
 
     window.labStart = function () {
@@ -307,15 +307,15 @@
                 try { closed.write('\r\n\x1b[90m[сессия завершена]\x1b[0m\r\n'); } catch (e) {}
                 var bar = document.createElement('div');
                 bar.className = 'lab2-relaunch';
-                bar.innerHTML = '<button class="btn btn-primary" onclick="labStart()">▶ Запустить заново</button>';
+                bar.innerHTML = '<button class="btn btn-primary" onclick="labStart()"><i class="ph ph-play"></i>Запустить заново</button>';
                 document.getElementById('lab2-host').appendChild(bar);
                 return;
             }
             document.getElementById('lab2-host').innerHTML =
                 '<div class="lab2-launch"><div style="font-size:30px;">⏹</div>' +
                 '<div style="margin:8px 0;font-weight:600;">Сессия завершена</div>' +
-                '<button class="btn btn-primary" onclick="labStart()">▶ Запустить заново</button>' +
-                '<div class="muted" style="margin-top:8px;font-size:.82em;">Сломал окружение? «⟳ Сбросить» вернёт чистую песочницу.</div></div>';
+                '<button class="btn btn-primary" onclick="labStart()"><i class="ph ph-play"></i>Запустить заново</button>' +
+                '<div class="muted" style="margin-top:8px;font-size:.82em;">Сломал окружение? «Сбросить» вернёт чистую песочницу.</div></div>';
         };
         term.onData(function (d) { if (ws && ws.readyState === 1) ws.send(new TextEncoder().encode(d)); });
         term.onResize(sendResize);
@@ -458,7 +458,7 @@
         document.getElementById('lab2-stop').style.display = 'none';
         document.getElementById('lab2-timer').textContent = '60:00';
         document.getElementById('lab2-timer').classList.remove('lab2-timer-warn');
-        document.getElementById('lab2-host').innerHTML = '<div class="lab2-launch"><button class="btn btn-primary" onclick="labStart()">▶ Запустить лабораторную</button></div>';
+        document.getElementById('lab2-host').innerHTML = '<div class="lab2-launch"><button class="btn btn-primary" onclick="labStart()"><i class="ph ph-play"></i>Запустить лабораторную</button></div>';
         setStatus('Не запущена', false);
     };
     // Reset = throw away the container and start a clean one (recovers from rm -rf etc.)
@@ -696,7 +696,7 @@
 .lab2-launch { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
 .lab2-launch-card { max-width:440px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px 26px; box-shadow:0 18px 44px rgba(0,0,0,.5); }
 .lab2-launch-ico { width:46px; height:46px; margin:0 auto 14px; border-radius:12px; display:flex; align-items:center; justify-content:center;
-    background:var(--bg-elevated); border:1px solid var(--border); font-family:'JetBrains Mono',ui-monospace,monospace; color:var(--green); font-size:1.05em; }
+    background:var(--ok-tint); border:1px solid var(--border); font-family:'JetBrains Mono',ui-monospace,monospace; color:var(--ok); font-size:1.05em; }
 .lab2-launch-title { font-size:1.05em; font-weight:800; margin-bottom:8px; }
 .lab2-launch-text { font-size:.86em; color:var(--text-muted); line-height:1.55; margin-bottom:18px; }
 .lab2-launch-hint { font-size:.78em; color:var(--text-dim); margin-top:12px; }
@@ -737,7 +737,7 @@
         {{if $t.StarterCode}}
         <div style="margin-top:14px;">
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;">
-                <button class="btn btn-primary" onclick="runCode({{$t.ID}})" style="padding:6px 16px;font-size:.85em;">▶ Запустить</button>
+                <button class="btn btn-primary" onclick="runCode({{$t.ID}})" style="padding:6px 16px;font-size:.85em;"><i class="ph ph-play"></i>Запустить</button>
                 {{if $t.TestCases}}<button class="btn btn-success" onclick="runTests({{$t.ID}})" style="padding:6px 16px;font-size:.85em;">✓ Проверить</button>{{end}}
             </div>
             <textarea id="code-{{$t.ID}}" class="code-textarea" spellcheck="false" data-task-id="{{$t.ID}}" data-starter="{{$t.StarterCode}}"

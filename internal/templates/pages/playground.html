@@ -60,7 +60,7 @@ async function runCode() {
         output.textContent = 'Error: ' + e.message;
     }
     btn.disabled = false;
-    btn.textContent = '▶ Run';
+    btn.innerHTML = '<i class="ph ph-play"></i>Run';
 }
 
 function resetCode() {

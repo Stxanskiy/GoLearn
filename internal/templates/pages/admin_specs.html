@@ -16,16 +16,16 @@
         <div class="st"><b>{{.Name}}{{if not .Published}} <span class="draft-badge">черновик</span>{{end}}</b><small>{{.Description}} · <code>{{.Slug}}</code></small></div>
         <div class="rowacts">
             {{if .Published}}
-            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик" aria-label="В черновик"><i class="ph ph-eye-slash"></i></button></form>
             {{else}}
-            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+            <form method="POST" action="/admin/spec/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" aria-label="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
             {{end}}
             <div class="reorder">
-              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше"><i class="ph ph-caret-up"></i></button></form>
-              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже"><i class="ph ph-caret-down"></i></button></form>
+              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше" aria-label="Выше"><i class="ph ph-caret-up"></i></button></form>
+              <form method="POST" action="/admin/spec/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже" aria-label="Ниже"><i class="ph ph-caret-down"></i></button></form>
             </div>
-            <button class="iconbtn" title="Изменить" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}},{{if .Published}}true{{else}}false{{end}})"><i class="ph ph-pencil-simple"></i></button>
-            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+            <button class="iconbtn" title="Изменить" aria-label="Изменить" onclick="editSpec({{.Slug}},{{.Name}},{{.Icon}},{{.Description}},{{.OrderNum}},{{if .Published}}true{{else}}false{{end}})"><i class="ph ph-pencil-simple"></i></button>
+            <form method="POST" action="/admin/spec/{{.Slug}}/delete" onsubmit="return confirm('Удалить раздел «{{.Name}}»? Курсы останутся, но без раздела.');" style="display:inline;"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
         </div>
     </div>
     {{end}}

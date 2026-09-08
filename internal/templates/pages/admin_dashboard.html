@@ -79,18 +79,18 @@
         <div class="cs-actions">
           <a href="/admin/module/{{.ID}}" class="btn btn-sm btn-primary">Открыть</a>
           {{if .Published}}
-          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик" aria-label="В черновик"><i class="ph ph-eye-slash"></i></button></form>
           {{else}}
-          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+          <form method="POST" action="/admin/module/{{.ID}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" aria-label="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
           {{end}}
           <a href="/admin/module/{{.ID}}/export" class="iconbtn" title="Экспорт"><i class="ph ph-download-simple"></i></a>
           <span style="flex:1"></span>
           <div class="reorder">
-            <form method="POST" action="/admin/module/{{.ID}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше"><i class="ph ph-caret-up"></i></button></form>
-            <form method="POST" action="/admin/module/{{.ID}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже"><i class="ph ph-caret-down"></i></button></form>
+            <form method="POST" action="/admin/module/{{.ID}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Выше" aria-label="Выше"><i class="ph ph-caret-up"></i></button></form>
+            <form method="POST" action="/admin/module/{{.ID}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Ниже" aria-label="Ниже"><i class="ph ph-caret-down"></i></button></form>
           </div>
           <form method="POST" action="/admin/module/{{.ID}}/delete" onsubmit="return confirm('Удалить курс «{{.Title}}»?');" style="display:inline;">
-            <button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button>
+            <button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button>
           </form>
         </div>
       </div>

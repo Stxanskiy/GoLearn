@@ -53,7 +53,7 @@
         </div>
         <div class="git2-term" id="git-host">
             <div class="git2-launch" id="git-launch">
-                <button class="btn btn-primary" onclick="gitStart()">▶ Запустить терминал</button>
+                <button class="btn btn-primary" onclick="gitStart()"><i class="ph ph-play"></i>Запустить терминал</button>
                 <div class="muted" style="margin-top:10px;font-size:.84em;">Настоящий bash + git. Граф слева обновляется автоматически.</div>
             </div>
         </div>
@@ -129,7 +129,7 @@
     window.gitRestart = function () {
         if (ws) { try { ws.close(); } catch (e) {} } if (term) { try { term.dispose(); } catch (e) {} }
         term = null; ws = null; clearInterval(poll);
-        document.getElementById('git-host').innerHTML = '<div class="git2-launch" id="git-launch"><button class="btn btn-primary" onclick="gitStart()">▶ Запустить терминал</button></div>';
+        document.getElementById('git-host').innerHTML = '<div class="git2-launch" id="git-launch"><button class="btn btn-primary" onclick="gitStart()"><i class="ph ph-play"></i>Запустить терминал</button></div>';
         setStatus('Не запущен', false);
     };
     window.gitResetRepo = function () {

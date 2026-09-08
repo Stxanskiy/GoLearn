@@ -28,7 +28,7 @@
                 <a href="/" class="brand-mark" title="TOT">›_</a>
                 <span class="brand-text">TOT</span>
                 <span class="spacer"></span>
-                <button class="side-rail-btn" onclick="glToggleRail()" title="Свернуть меню"><i class="ph ph-sidebar-simple"></i></button>
+                <button class="side-rail-btn" onclick="glToggleRail()" title="Свернуть меню" aria-label="Свернуть меню"><i class="ph ph-sidebar-simple"></i></button>
             </div>
             <nav class="side-nav">
                 <div class="nav-group">
@@ -61,14 +61,14 @@
 
         <div class="shell">
             <header class="topbar">
-                <button class="topbar-menu" onclick="glToggleSide()" title="Меню"><i class="ph ph-list"></i></button>
+                <button class="topbar-menu" onclick="glToggleSide()" title="Меню" aria-label="Меню"><i class="ph ph-list"></i></button>
                 <div class="crumbs">
                     <a href="/">TOT</a>
                     <i class="ph ph-caret-right"></i>
                     <span class="cur">{{.PageTitle}}</span>
                 </div>
                 <span class="topbar-spacer"></span>
-                <button class="icon-btn" onclick="glToggleTheme()" title="Сменить тему" id="theme-btn"><i class="ph ph-moon"></i></button>
+                <button class="icon-btn" onclick="glToggleTheme()" title="Сменить тему" aria-label="Сменить тему" id="theme-btn"><i class="ph ph-moon"></i></button>
                 <a class="icon-btn danger" href="/logout" title="Выйти"><i class="ph ph-sign-out"></i></a>
             </header>
             <main class="main">

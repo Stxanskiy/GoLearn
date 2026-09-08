@@ -40,7 +40,7 @@
     </div>
     <textarea id="sql-input" class="sql-input" spellcheck="false" placeholder="SELECT ...">SELECT </textarea>
     <div class="row" style="margin-top:8px;">
-        <button class="btn btn-primary" onclick="sqlRun()">▶ Выполнить</button>
+        <button class="btn btn-primary" onclick="sqlRun()"><i class="ph ph-play"></i>Выполнить</button>
         <span id="sql-verdict" class="sql-verdict"></span>
     </div>
     <div id="sql-output" class="sql-output"></div>
@@ -208,7 +208,7 @@
         >{{if .Progress}}{{.Progress.Notes}}{{end}}</textarea>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
             <span id="notes-status" style="font-size: 0.75em; color: var(--text-muted);"></span>
-            <button onclick="saveNotes()" style="background: var(--accent); color: #fff; border: none;
+            <button onclick="saveNotes()" style="background: var(--accent); color: var(--on-accent); border: none;
                 padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em;">Сохранить</button>
         </div>
     </div>
@@ -501,7 +501,7 @@ function gtUpdateGraph(uid) {
 }
 .gt-input:focus { border-color: var(--accent); outline: none; }
 .gt-run-btn {
-    background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 4px;
+    background: var(--accent); color: var(--on-accent); border: none; padding: 8px 16px; border-radius: 4px;
     cursor: pointer; font-weight: 600; font-size: 0.85em; transition: background 0.2s;
 }
 .gt-run-btn:hover { background: var(--accent-hover); }

@@ -44,16 +44,16 @@
           <div class="st"><b>{{.Title}}{{if not .Published}} <span class="draft-badge">черновик</span>{{end}}</b><small>{{.Role}} · <code>{{.Slug}}</code></small></div>
           <div class="rowacts">
             {{if .Published}}
-            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик"><i class="ph ph-eye-slash"></i></button></form>
+            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="0"><button class="iconbtn" title="В черновик" aria-label="В черновик"><i class="ph ph-eye-slash"></i></button></form>
             {{else}}
-            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
+            <form method="POST" action="/admin/sim/{{.Slug}}/publish" style="display:inline"><input type="hidden" name="pub" value="1"><button class="iconbtn" title="Опубликовать" aria-label="Опубликовать" style="color:var(--ok)"><i class="ph ph-eye"></i></button></form>
             {{end}}
             <div class="reorder">
-              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz"><i class="ph ph-caret-up"></i></button></form>
-              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz"><i class="ph ph-caret-down"></i></button></form>
+              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=up" style="display:block"><button class="iconbtn rz" title="Переместить выше" aria-label="Переместить выше"><i class="ph ph-caret-up"></i></button></form>
+              <form method="POST" action="/admin/sim/{{.Slug}}/move?dir=down" style="display:block"><button class="iconbtn rz" title="Переместить ниже" aria-label="Переместить ниже"><i class="ph ph-caret-down"></i></button></form>
             </div>
             <a class="iconbtn" href="/admin/sims?edit={{.Slug}}" title="Редактировать"><i class="ph ph-pencil-simple"></i></a>
-            <form method="POST" action="/admin/sim/{{.Slug}}/delete" style="display:inline" onsubmit="return confirm('Удалить симулятор «{{.Title}}»?')"><button class="iconbtn danger"><i class="ph ph-trash"></i></button></form>
+            <form method="POST" action="/admin/sim/{{.Slug}}/delete" style="display:inline" onsubmit="return confirm('Удалить симулятор «{{.Title}}»?')"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
           </div>
         </div>
         {{else}}<p class="muted">Пока нет симуляторов.</p>{{end}}

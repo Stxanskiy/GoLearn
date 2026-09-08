@@ -97,7 +97,7 @@
               <button type="button" title="Код" onclick="wrap('`','`')">&lt;/&gt;</button>
               <button type="button" title="Блок кода" onclick="ins('```bash\n\n```')">{ }</button>
               <button type="button" title="Список" onclick="ins('- ')">•</button>
-              <button type="button" title="Таблица" onclick="ins('| A | B |\n|---|---|\n| 1 | 2 |')"><i class="ph ph-table"></i></button>
+              <button type="button" title="Таблица" aria-label="Таблица" onclick="ins('| A | B |\n|---|---|\n| 1 | 2 |')"><i class="ph ph-table"></i></button>
               <button type="button" title="Callout" onclick="ins('> 💡 ')"><i class="ph ph-lightbulb"></i></button>
               <span class="h">Markdown / HTML</span>
             </div>
@@ -119,7 +119,7 @@
           <span class="ord">{{add $i 1}}</span>
           <div class="it"><a href="/admin/question/{{$q.ID}}">{{safeHTML $q.Question}}</a></div>
           <a class="iconbtn" href="/admin/question/{{$q.ID}}" title="Изменить"><i class="ph ph-pencil-simple"></i></a>
-          <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить вопрос?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+          <form method="POST" action="/admin/question/{{$q.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить вопрос?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
         </div>
         {{else}}<p class="muted">Вопросов пока нет.</p>{{end}}
       </div>
@@ -133,7 +133,7 @@
           <div class="it"><a href="/admin/task/{{$t.ID}}">{{$t.Title}}</a></div>
           <span class="kind-chip">{{$t.Kind}}</span>
           <a class="iconbtn" href="/admin/task/{{$t.ID}}" title="Изменить"><i class="ph ph-pencil-simple"></i></a>
-          <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить задание?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+          <form method="POST" action="/admin/task/{{$t.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить задание?')"><input type="hidden" name="lesson_id" value="{{$.Lesson.ID}}"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
         </div>
         {{else}}<p class="muted">Заданий пока нет.</p>{{end}}
       </div>

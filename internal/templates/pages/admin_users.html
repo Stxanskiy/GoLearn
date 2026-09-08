@@ -67,12 +67,12 @@
           {{else}}
           <div class="rowacts">
             {{if .Blocked}}
-            <form method="POST" action="/admin/users/{{.ID}}/block" style="display:inline"><input type="hidden" name="blocked" value="0"><button class="iconbtn" title="Разблокировать"><i class="ph ph-check-circle"></i></button></form>
+            <form method="POST" action="/admin/users/{{.ID}}/block" style="display:inline"><input type="hidden" name="blocked" value="0"><button class="iconbtn" title="Разблокировать" aria-label="Разблокировать"><i class="ph ph-check-circle"></i></button></form>
             {{else}}
-            <form method="POST" action="/admin/users/{{.ID}}/block" style="display:inline"><input type="hidden" name="blocked" value="1"><button class="iconbtn" title="Заблокировать"><i class="ph ph-prohibit"></i></button></form>
+            <form method="POST" action="/admin/users/{{.ID}}/block" style="display:inline"><input type="hidden" name="blocked" value="1"><button class="iconbtn" title="Заблокировать" aria-label="Заблокировать"><i class="ph ph-prohibit"></i></button></form>
             {{end}}
-            <form method="POST" action="/admin/users/{{.ID}}/password" style="display:inline" onsubmit="return setPw(this)"><input type="hidden" name="password"><button class="iconbtn" title="Сбросить пароль"><i class="ph ph-key"></i></button></form>
-            <form method="POST" action="/admin/users/{{.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить пользователя {{.Email}}? Прогресс будет потерян.')"><button class="iconbtn danger" title="Удалить"><i class="ph ph-trash"></i></button></form>
+            <form method="POST" action="/admin/users/{{.ID}}/password" style="display:inline" onsubmit="return setPw(this)"><input type="hidden" name="password"><button class="iconbtn" title="Сбросить пароль" aria-label="Сбросить пароль"><i class="ph ph-key"></i></button></form>
+            <form method="POST" action="/admin/users/{{.ID}}/delete" style="display:inline" onsubmit="return confirm('Удалить пользователя {{.Email}}? Прогресс будет потерян.')"><button class="iconbtn danger" title="Удалить" aria-label="Удалить"><i class="ph ph-trash"></i></button></form>
           </div>{{end}}
         </td>
       </tr>
