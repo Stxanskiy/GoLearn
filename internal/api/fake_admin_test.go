@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
@@ -593,4 +594,106 @@ func (f *fakeUsers) DeleteGuarded(ctx context.Context, userID int) error {
 		return repository.ErrLastAdmin
 	}
 	return f.DeleteSessions(ctx, userID)
+}
+
+type fakeReviews struct{ *fakeContent }
+
+func (f fakeReviews) Create(_ context.Context, moduleID int, lessonID *int, userID int, note string) (int, error) {
+	for _, v := range f.reviews {
+		if v.ModuleID == moduleID && v.Status == repository.ReviewPending && ptrEq(v.LessonID, lessonID) {
+			return 0, errUnique
+		}
+	}
+	id := f.id()
+	f.reviews = append(f.reviews, repository.Review{ID: id, ModuleID: moduleID, LessonID: lessonID, RequestedBy: &userID,
+		RequesterName: "user", RequesterEmail: "u@example.com", Status: repository.ReviewPending, Note: note, CreatedAt: time.Now()})
+	return id, nil
+}
+
+func ptrEq(a, b *int) bool { return (a == nil && b == nil) || (a != nil && b != nil && *a == *b) }
+
+func (f fakeReviews) review(id int) *repository.Review {
+	for i := range f.reviews {
+		if f.reviews[i].ID == id {
+			return &f.reviews[i]
+		}
+	}
+	return nil
+}
+
+func (f fakeReviews) joined(v repository.Review) repository.Review {
+	if m := (fakeModules{f.fakeContent}).module(v.ModuleID); m != nil {
+		v.CourseSlug, v.CourseTitle = m.Slug, m.Title
+	}
+	if v.LessonID != nil {
+		if l := (fakeLessons{f.fakeContent}).lesson(*v.LessonID); l != nil {
+			v.LessonSlug, v.LessonTitle = l.Slug, l.Title
+		}
+	}
+	return v
+}
+
+func (f fakeReviews) Get(_ context.Context, id int) (*repository.Review, error) {
+	if v := f.review(id); v != nil {
+		out := f.joined(*v)
+		return &out, nil
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeReviews) List(ctx context.Context, rf repository.ReviewFilter) ([]repository.Review, error) {
+	var out []repository.Review
+	for i := len(f.reviews) - 1; i >= 0; i-- {
+		v := f.reviews[i]
+		m := (fakeModules{f.fakeContent}).module(v.ModuleID)
+		editor := m != nil && ((m.OwnerID != nil && *m.OwnerID == rf.EditorID) || slices.Contains(f.coauthors[v.ModuleID], rf.EditorID))
+		if (rf.Status == "" || v.Status == rf.Status) && (rf.ModuleID == 0 || v.ModuleID == rf.ModuleID) && (rf.EditorID == 0 || editor) {
+			out = append(out, f.joined(v))
+		}
+	}
+	return out, nil
+}
+
+func (f fakeReviews) Latest(_ context.Context, moduleIDs []int) (map[int]map[int]repository.Review, error) {
+	out := map[int]map[int]repository.Review{}
+	for _, v := range f.reviews {
+		if !slices.Contains(moduleIDs, v.ModuleID) {
+			continue
+		}
+		key := 0
+		if v.LessonID != nil {
+			key = *v.LessonID
+		}
+		if out[v.ModuleID] == nil {
+			out[v.ModuleID] = map[int]repository.Review{}
+		}
+		out[v.ModuleID][key] = f.joined(v)
+	}
+	return out, nil
+}
+
+func (f fakeReviews) Decide(_ context.Context, id int, approve bool, adminID int, note string) error {
+	v := f.review(id)
+	if v == nil || v.Status != repository.ReviewPending {
+		return repository.ErrReviewClosed
+	}
+	v.Status, v.DecidedBy, v.DeciderEmail, v.DecisionNote = repository.ReviewRejected, &adminID, "a@example.com", note
+	if approve {
+		v.Status = repository.ReviewApproved
+		if v.LessonID != nil {
+			(fakeLessons{f.fakeContent}).lesson(*v.LessonID).Published = true
+		} else {
+			(fakeModules{f.fakeContent}).module(v.ModuleID).Published = true
+		}
+	}
+	return nil
+}
+
+func (f fakeReviews) Cancel(_ context.Context, id int) error {
+	v := f.review(id)
+	if v == nil || v.Status != repository.ReviewPending {
+		return repository.ErrReviewClosed
+	}
+	v.Status = repository.ReviewCancelled
+	return nil
 }

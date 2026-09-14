@@ -82,6 +82,16 @@ type courseIOStore interface {
 	Upsert(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error)
 }
 
+// reviewStore keeps moderation requests.
+type reviewStore interface {
+	Create(ctx context.Context, moduleID int, lessonID *int, userID int, note string) (int, error)
+	Get(ctx context.Context, id int) (*repository.Review, error)
+	List(ctx context.Context, f repository.ReviewFilter) ([]repository.Review, error)
+	Latest(ctx context.Context, moduleIDs []int) (map[int]map[int]repository.Review, error)
+	Decide(ctx context.Context, id int, approve bool, adminID int, note string) error
+	Cancel(ctx context.Context, id int) error
+}
+
 // authorStore keeps course co-authors.
 type authorStore interface {
 	IsCoauthor(ctx context.Context, moduleID, userID int) (bool, error)
@@ -179,6 +189,7 @@ type Stores struct {
 	QuizAttempts quizAttemptStore
 	Authors      authorStore
 	CourseIO     courseIOStore
+	Reviews      reviewStore
 	Sandbox      sandbox
 	Code         codeRunner
 }
@@ -278,6 +289,12 @@ func (a *API) Routes() chi.Router {
 			r.Post("/admin/import/preview", a.adminPreviewImport)
 			r.Post("/admin/import", a.adminApplyImport)
 			r.Get("/admin/specializations", a.adminListSpecializations)
+			r.Post("/admin/courses/{courseId}/review", a.adminRequestCourseReview)
+			r.Post("/admin/lessons/{lessonId}/review", a.adminRequestLessonReview)
+			r.Get("/admin/reviews", a.adminListReviews)
+			r.Delete("/admin/reviews/{reviewId}", a.adminCancelReview)
+			r.With(requireAdmin).Post("/admin/reviews/{reviewId}/approve", a.adminApproveReview)
+			r.With(requireAdmin).Post("/admin/reviews/{reviewId}/reject", a.adminRejectReview)
 
 			r.Group(func(r chi.Router) {
 				r.Use(requireAdmin)

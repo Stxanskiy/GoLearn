@@ -40,6 +40,15 @@ func (a *API) adminListCourses(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: list courses", err)
 		return
 	}
+	ids := make([]int, len(rows))
+	for i, row := range rows {
+		ids[i] = row.ID
+	}
+	reviews, err := a.latestReviews(r, ids...)
+	if err != nil {
+		a.internalError(w, "admin: course reviews", err)
+		return
+	}
 	owners := map[int]*apigen.AuthorRef{}
 	out := make([]adminCourseRow, 0, len(rows))
 	for _, row := range rows {
@@ -55,7 +64,8 @@ func (a *API) adminListCourses(w http.ResponseWriter, r *http.Request) {
 			a.internalError(w, "admin: course owner", err)
 			return
 		}
-		out = append(out, adminCourseRow{AdminCourse: toAdminCourse(row.Module, owner, level), LessonsCount: row.Lessons, LabsCount: row.Labs})
+		course := toAdminCourse(row.Module, owner, level, openReview(reviews[row.ID], 0))
+		out = append(out, adminCourseRow{AdminCourse: course, LessonsCount: row.Lessons, LabsCount: row.Labs})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -71,13 +81,22 @@ func (a *API) adminGetCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: course lessons", err)
 		return
 	}
+	reviews, err := a.latestReviews(r, course.module.ID)
+	if err != nil {
+		a.internalError(w, "admin: course reviews", err)
+		return
+	}
 	rows := make([]apigen.AdminLessonRow, 0, len(lessons))
 	for _, l := range lessons {
 		questions, tasks := a.Lessons.CountsForLesson(ctx, l.ID)
-		rows = append(rows, apigen.AdminLessonRow{
+		row := apigen.AdminLessonRow{
 			ID: l.ID, Slug: l.Slug, Title: l.Title, Kind: lessonKind(l.Kind), Published: l.Published,
 			VMImage: l.VMImage, QuestionsCount: questions, TasksCount: tasks,
-		})
+		}
+		if review := openReview(reviews[course.module.ID], l.ID); review != nil {
+			row.ReviewStatus = &review.Status
+		}
+		rows = append(rows, row)
 	}
 	a.writeAdminCourse(w, r, http.StatusOK, course, func(c apigen.AdminCourse) any {
 		return apigen.AdminCourseDetail{Course: c, Lessons: rows}
@@ -107,7 +126,10 @@ func (a *API) adminCreateCourse(w http.ResponseWriter, r *http.Request) {
 	if body.CoverURL != nil {
 		m.CoverImage = *body.CoverURL
 	}
-	m.Published = body.Published != nil && *body.Published
+	if deref(body.Published) {
+		writeError(w, http.StatusForbidden, codeReviewRequired, "publishing requires an approved review")
+		return
+	}
 	m.OwnerID = &user.ID
 	id, err := a.Modules.Create(ctx, m)
 	if isUniqueViolation(err) {
@@ -151,8 +173,7 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 		m.CoverImage = *body.CoverURL
 	}
 	if body.Published != nil && *body.Published != cur.Published {
-		if course.level < needPublish {
-			writeError(w, http.StatusForbidden, codeForbidden, "only the owner can publish the course")
+		if !checkPublishedChange(w, course.level, *body.Published, false, cur.Published) {
 			return
 		}
 		m.Published = *body.Published
@@ -171,7 +192,7 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
-	course, ok := a.managedCourseParam(w, r, needPublish)
+	course, ok := a.managedCourseParam(w, r, needOwner)
 	if !ok {
 		return
 	}
@@ -183,12 +204,12 @@ func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminSetCoursePublished(w http.ResponseWriter, r *http.Request) {
-	course, ok := a.managedCourseParam(w, r, needPublish)
+	course, ok := a.managedCourseParam(w, r, needEdit)
 	if !ok {
 		return
 	}
 	var body apigen.Published
-	if !decodeJSON(w, r, &body) {
+	if !decodeJSON(w, r, &body) || !checkPublishedChange(w, course.level, body.Published, false, course.module.Published) {
 		return
 	}
 	if err := a.Modules.SetPublished(r.Context(), course.module.ID, body.Published); err != nil {
@@ -251,7 +272,7 @@ func (a *API) adminListCourseAuthors(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminAddCourseAuthor(w http.ResponseWriter, r *http.Request) {
-	course, ok := a.managedCourseParam(w, r, needPublish)
+	course, ok := a.managedCourseParam(w, r, needOwner)
 	if !ok {
 		return
 	}
@@ -305,7 +326,7 @@ func (a *API) adminRemoveCourseAuthor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	if course.level < needPublish && uid != userFrom(ctx).ID {
+	if course.level < needOwner && uid != userFrom(ctx).ID {
 		writeError(w, http.StatusForbidden, codeForbidden, "only the owner can remove co-authors")
 		return
 	}
@@ -370,7 +391,12 @@ func (a *API) writeAdminCourse(w http.ResponseWriter, r *http.Request, status in
 		a.internalError(w, "admin: course owner", err)
 		return
 	}
-	var out any = toAdminCourse(*course.module, owner, course.level)
+	reviews, err := a.latestReviews(r, course.module.ID)
+	if err != nil {
+		a.internalError(w, "admin: course reviews", err)
+		return
+	}
+	var out any = toAdminCourse(*course.module, owner, course.level, openReview(reviews[course.module.ID], 0))
 	if wrap != nil {
 		out = wrap(out.(apigen.AdminCourse))
 	}
@@ -427,12 +453,12 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 	return apigen.AuthorRef{ID: u.ID, Name: u.Name, Email: openapi_types.Email(u.Email)}
 }
 
-func toAdminCourse(m model.Module, owner *apigen.AuthorRef, level courseLevel) apigen.AdminCourse {
+func toAdminCourse(m model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
 		ID: m.ID, Slug: m.Slug, Title: m.Title, Description: m.Description, Track: m.Track,
 		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published,
-		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level),
+		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",
 		CoverPreviewURL: "/api/v1/courses/" + m.Slug + "/cover",
 		CreatedAt:       m.CreatedAt,

@@ -23,9 +23,9 @@ const (
 
 // Permissions expressed as the minimum course level.
 const (
-	needEdit    = levelCoauthor
-	needPublish = levelOwner
-	needAdmin   = levelAdmin
+	needEdit  = levelCoauthor
+	needOwner = levelOwner
+	needAdmin = levelAdmin
 )
 
 // courseLevel resolves what the user may do with a course.
@@ -62,11 +62,26 @@ func courseAccess(level courseLevel) apigen.CourseAccess {
 	return apigen.CourseAccess{
 		Level:            name,
 		CanEdit:          level >= needEdit,
-		CanPublish:       level >= needPublish,
-		CanDelete:        level >= needPublish,
-		CanManageAuthors: level >= needPublish,
+		CanUnpublish:     level >= needOwner,
+		CanRequestReview: level >= needOwner,
+		CanApprove:       level >= needAdmin,
+		CanDelete:        level >= needOwner,
+		CanManageAuthors: level >= needOwner,
 		CanReorder:       level >= needAdmin,
 	}
+}
+
+// checkPublishedChange allows unpublishing to owners and publishing only lessons of an unpublished course; anything else visible to students needs an approved review.
+func checkPublishedChange(w http.ResponseWriter, level courseLevel, publish, lesson, coursePublished bool) bool {
+	switch {
+	case publish && !(lesson && !coursePublished):
+		writeError(w, http.StatusForbidden, codeReviewRequired, "publishing requires an approved review")
+		return false
+	case level < needOwner:
+		writeError(w, http.StatusForbidden, codeForbidden, "only the owner can change publication")
+		return false
+	}
+	return true
 }
 
 // courseRef is a course the current user manages.

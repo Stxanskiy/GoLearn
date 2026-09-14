@@ -31,6 +31,7 @@ type fakeContent struct {
 	sandbox   *fakeSandbox
 	code      *fakeCode
 	coauthors map[int][]int // module id → co-author user ids
+	reviews   []repository.Review
 	nextID    int
 }
 
@@ -67,6 +68,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		QuizAttempts: fakeQuizAttempts{f},
 		Authors:      fakeAuthors{f},
 		CourseIO:     fakeCourseIO{f},
+		Reviews:      fakeReviews{f},
 		Sandbox:      f.sandbox,
 		Code:         f.code,
 	}

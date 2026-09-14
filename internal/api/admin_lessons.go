@@ -24,8 +24,7 @@ func (a *API) adminCreateLesson(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, fields)
 		return
 	}
-	if deref(body.Published) && course.level < needPublish {
-		writeError(w, http.StatusForbidden, codeForbidden, "only the owner can publish lessons")
+	if deref(body.Published) && !checkPublishedChange(w, course.level, true, true, course.module.Published) {
 		return
 	}
 	ctx := r.Context()
@@ -53,6 +52,11 @@ func (a *API) adminGetLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
+	reviews, err := a.latestReviews(r, l.ModuleID)
+	if err != nil {
+		a.internalError(w, "admin: lesson reviews", err)
+		return
+	}
 	questions, err := a.quizQuestions(ctx, l.ID)
 	if err != nil {
 		a.internalError(w, "admin: lesson questions", err)
@@ -65,6 +69,7 @@ func (a *API) adminGetLesson(w http.ResponseWriter, r *http.Request) {
 	}
 	out := apigen.AdminLessonDetail{
 		Lesson:    toAdminLesson(*l),
+		Review:    openReview(reviews[l.ModuleID], l.ID),
 		Questions: make([]apigen.AdminQuestion, 0, len(questions)),
 		Tasks:     make([]apigen.AdminTask, 0, len(tasks)),
 	}
@@ -93,8 +98,7 @@ func (a *API) adminUpdateLesson(w http.ResponseWriter, r *http.Request) {
 	}
 	l.ID, l.ModuleID, l.Track, l.OrderNum, l.Published = cur.ID, cur.ModuleID, cur.Track, cur.OrderNum, cur.Published
 	if body.Published != nil && *body.Published != cur.Published {
-		if course.level < needPublish {
-			writeError(w, http.StatusForbidden, codeForbidden, "only the owner can publish lessons")
+		if !checkPublishedChange(w, course.level, *body.Published, true, course.module.Published) {
 			return
 		}
 		l.Published = *body.Published
@@ -116,7 +120,7 @@ func (a *API) adminDeleteLesson(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if l.Published && course.level < needPublish {
+	if l.Published && course.level < needOwner {
 		writeError(w, http.StatusForbidden, codeForbidden, "only the owner can delete published lessons")
 		return
 	}
@@ -128,12 +132,12 @@ func (a *API) adminDeleteLesson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminSetLessonPublished(w http.ResponseWriter, r *http.Request) {
-	l, _, ok := a.managedLesson(w, r, needPublish)
+	l, course, ok := a.managedLesson(w, r, needEdit)
 	if !ok {
 		return
 	}
 	var body apigen.Published
-	if !decodeJSON(w, r, &body) {
+	if !decodeJSON(w, r, &body) || !checkPublishedChange(w, course.level, body.Published, true, course.module.Published) {
 		return
 	}
 	if err := a.Lessons.SetPublished(r.Context(), l.ID, body.Published); err != nil {

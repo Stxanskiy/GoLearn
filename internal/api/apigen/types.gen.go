@@ -276,6 +276,30 @@ func (e ProgressStatus) Valid() bool {
 	}
 }
 
+// Defines values for ReviewStatus.
+const (
+	Approved  ReviewStatus = "approved"
+	Cancelled ReviewStatus = "cancelled"
+	Pending   ReviewStatus = "pending"
+	Rejected  ReviewStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the ReviewStatus enum.
+func (e ReviewStatus) Valid() bool {
+	switch e {
+	case Approved:
+		return true
+	case Cancelled:
+		return true
+	case Pending:
+		return true
+	case Rejected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for Role.
 const (
 	RoleAdmin   Role = "admin"
@@ -449,15 +473,18 @@ type AdminCourse struct {
 	ID             int  `json:"id"`
 
 	// Label Null when derived.
-	Label     *CourseLabel      `json:"label"`
-	OrderNum  int               `json:"order_num"`
-	Owner     *AuthorRef        `json:"owner"`
-	Published bool              `json:"published"`
-	Slug      string            `json:"slug"`
-	Source    AdminCourseSource `json:"source"`
-	Tags      []string          `json:"tags"`
-	Title     string            `json:"title"`
-	Track     string            `json:"track"`
+	Label     *CourseLabel `json:"label"`
+	OrderNum  int          `json:"order_num"`
+	Owner     *AuthorRef   `json:"owner"`
+	Published bool         `json:"published"`
+
+	// Review Latest course review while it is pending or rejected.
+	Review *ReviewRequest    `json:"review"`
+	Slug   string            `json:"slug"`
+	Source AdminCourseSource `json:"source"`
+	Tags   []string          `json:"tags"`
+	Title  string            `json:"title"`
+	Track  string            `json:"track"`
 }
 
 // AdminCourseSource defines model for AdminCourse.Source.
@@ -488,7 +515,7 @@ type AdminCourseInput struct {
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label *CourseLabel `json:"label,omitempty"`
 
-	// Published Omitted → unchanged (draft on create). Changing it needs `can_publish`.
+	// Published Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.
 	Published *bool     `json:"published,omitempty"`
 	Slug      Slug      `json:"slug"`
 	Tags      *[]string `json:"tags,omitempty"`
@@ -521,17 +548,20 @@ type AdminCourseRow struct {
 	ID             int  `json:"id"`
 
 	// Label Null when derived.
-	Label        *CourseLabel         `json:"label"`
-	LabsCount    int                  `json:"labs_count"`
-	LessonsCount int                  `json:"lessons_count"`
-	OrderNum     int                  `json:"order_num"`
-	Owner        *AuthorRef           `json:"owner"`
-	Published    bool                 `json:"published"`
-	Slug         string               `json:"slug"`
-	Source       AdminCourseRowSource `json:"source"`
-	Tags         []string             `json:"tags"`
-	Title        string               `json:"title"`
-	Track        string               `json:"track"`
+	Label        *CourseLabel `json:"label"`
+	LabsCount    int          `json:"labs_count"`
+	LessonsCount int          `json:"lessons_count"`
+	OrderNum     int          `json:"order_num"`
+	Owner        *AuthorRef   `json:"owner"`
+	Published    bool         `json:"published"`
+
+	// Review Latest course review while it is pending or rejected.
+	Review *ReviewRequest       `json:"review"`
+	Slug   string               `json:"slug"`
+	Source AdminCourseRowSource `json:"source"`
+	Tags   []string             `json:"tags"`
+	Title  string               `json:"title"`
+	Track  string               `json:"track"`
 }
 
 // AdminCourseRowSource defines model for AdminCourseRow.Source.
@@ -562,7 +592,10 @@ type AdminLessonSource string
 type AdminLessonDetail struct {
 	Lesson    AdminLesson     `json:"lesson"`
 	Questions []AdminQuestion `json:"questions"`
-	Tasks     []AdminTask     `json:"tasks"`
+
+	// Review Latest lesson review while it is pending or rejected.
+	Review *ReviewRequest `json:"review"`
+	Tasks  []AdminTask    `json:"tasks"`
 }
 
 // AdminLessonInput defines model for AdminLessonInput.
@@ -572,7 +605,7 @@ type AdminLessonInput struct {
 	Format     ContentFormat `json:"format"`
 	Kind       LessonKind    `json:"kind"`
 
-	// Published Omitted → unchanged (draft on create). Changing it needs `can_publish`.
+	// Published Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.
 	Published *bool   `json:"published,omitempty"`
 	Slug      Slug    `json:"slug"`
 	Title     string  `json:"title"`
@@ -586,10 +619,13 @@ type AdminLessonRow struct {
 	Kind           LessonKind `json:"kind"`
 	Published      bool       `json:"published"`
 	QuestionsCount int        `json:"questions_count"`
-	Slug           string     `json:"slug"`
-	TasksCount     int        `json:"tasks_count"`
-	Title          string     `json:"title"`
-	VMImage        string     `json:"vm_image"`
+
+	// ReviewStatus Latest lesson review status while pending or rejected.
+	ReviewStatus *ReviewStatus `json:"review_status"`
+	Slug         string        `json:"slug"`
+	TasksCount   int           `json:"tasks_count"`
+	Title        string        `json:"title"`
+	VMImage      string        `json:"vm_image"`
 }
 
 // AdminQuestion defines model for AdminQuestion.
@@ -765,6 +801,13 @@ type Category = string
 // ContentFormat defines model for ContentFormat.
 type ContentFormat string
 
+// ContentRef defines model for ContentRef.
+type ContentRef struct {
+	ID    int    `json:"id"`
+	Slug  string `json:"slug"`
+	Title string `json:"title"`
+}
+
 // ContinueLesson defines model for ContinueLesson.
 type ContinueLesson struct {
 	Course   LinkRef    `json:"course"`
@@ -775,6 +818,9 @@ type ContinueLesson struct {
 
 // CourseAccess What the current user may do with the course.
 type CourseAccess struct {
+	// CanApprove Approve or reject review requests. Admin only.
+	CanApprove bool `json:"can_approve"`
+
 	// CanDelete Owner and admin.
 	CanDelete bool `json:"can_delete"`
 
@@ -784,12 +830,15 @@ type CourseAccess struct {
 	// CanManageAuthors Add and remove co-authors. Owner and admin.
 	CanManageAuthors bool `json:"can_manage_authors"`
 
-	// CanPublish Publish/unpublish the course and its lessons, delete published lessons. Owner and admin.
-	CanPublish bool `json:"can_publish"`
-
 	// CanReorder Move the course in the catalog; transfer ownership. Admin only.
-	CanReorder bool              `json:"can_reorder"`
-	Level      CourseAccessLevel `json:"level"`
+	CanReorder bool `json:"can_reorder"`
+
+	// CanRequestReview Request a review of the course or a lesson; publish lessons directly while the course is unpublished. Owner and admin.
+	CanRequestReview bool `json:"can_request_review"`
+
+	// CanUnpublish Unpublish the course or lessons, delete published lessons. Owner and admin.
+	CanUnpublish bool              `json:"can_unpublish"`
+	Level        CourseAccessLevel `json:"level"`
 }
 
 // CourseAccessLevel defines model for CourseAccess.Level.
@@ -949,7 +998,7 @@ type Error struct {
 
 // ErrorBody defines model for ErrorBody.
 type ErrorBody struct {
-	// Code Examples: unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, sandbox_disabled
+	// Code Examples: unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, review_required, review_pending, sandbox_disabled
 	Code    string        `json:"code"`
 	Details *ErrorDetails `json:"details,omitempty"`
 
@@ -1240,6 +1289,34 @@ type QuizResult struct {
 	Total   int                  `json:"total"`
 }
 
+// ReviewNote defines model for ReviewNote.
+type ReviewNote struct {
+	Note *string `json:"note,omitempty"`
+}
+
+// ReviewRequest defines model for ReviewRequest.
+type ReviewRequest struct {
+	Course    ContentRef `json:"course"`
+	CreatedAt time.Time  `json:"created_at"`
+	DecidedAt *time.Time `json:"decided_at"`
+	DecidedBy *AuthorRef `json:"decided_by"`
+
+	// DecisionNote Message from the moderator.
+	DecisionNote string `json:"decision_note"`
+	ID           int    `json:"id"`
+
+	// Lesson Null for a course review.
+	Lesson *ContentRef `json:"lesson"`
+
+	// Note Message from the author.
+	Note        string       `json:"note"`
+	RequestedBy *AuthorRef   `json:"requested_by"`
+	Status      ReviewStatus `json:"status"`
+}
+
+// ReviewStatus defines model for ReviewStatus.
+type ReviewStatus string
+
 // Role `author` manages courses they own or co-author; `admin` manages everything.
 type Role string
 
@@ -1413,6 +1490,9 @@ type LessonSlug = Slug
 // Limit defines model for Limit.
 type Limit = int
 
+// ReviewID defines model for ReviewId.
+type ReviewID = int
+
 // SandboxPath defines model for SandboxPath.
 type SandboxPath = string
 
@@ -1451,6 +1531,9 @@ type PayloadTooLarge = Error
 
 // RateLimited defines model for RateLimited.
 type RateLimited = Error
+
+// ReviewConflict defines model for ReviewConflict.
+type ReviewConflict = Error
 
 // SandboxDisabled defines model for SandboxDisabled.
 type SandboxDisabled = Error
@@ -1532,6 +1615,17 @@ type AdminMoveLessonJSONBodyDirection string
 // AdminSetLessonPublishedJSONBody defines parameters for AdminSetLessonPublished.
 type AdminSetLessonPublishedJSONBody struct {
 	Published bool `json:"published"`
+}
+
+// AdminListReviewsParams defines parameters for AdminListReviews.
+type AdminListReviewsParams struct {
+	Status   *ReviewStatus `form:"status,omitempty" json:"status,omitempty"`
+	CourseID *int          `form:"course_id,omitempty" json:"course_id,omitempty"`
+}
+
+// AdminRejectReviewJSONBody defines parameters for AdminRejectReview.
+type AdminRejectReviewJSONBody struct {
+	Note string `json:"note"`
 }
 
 // AdminMoveSimulatorJSONBody defines parameters for AdminMoveSimulator.
@@ -1690,6 +1784,9 @@ type AdminSetCourseOwnerJSONRequestBody AdminSetCourseOwnerJSONBody
 // AdminSetCoursePublishedJSONRequestBody defines body for AdminSetCoursePublished for application/json ContentType.
 type AdminSetCoursePublishedJSONRequestBody AdminSetCoursePublishedJSONBody
 
+// AdminRequestCourseReviewJSONRequestBody defines body for AdminRequestCourseReview for application/json ContentType.
+type AdminRequestCourseReviewJSONRequestBody = ReviewNote
+
 // AdminApplyImportJSONRequestBody defines body for AdminApplyImport for application/json ContentType.
 type AdminApplyImportJSONRequestBody = CourseDocument
 
@@ -1708,11 +1805,20 @@ type AdminSetLessonPublishedJSONRequestBody AdminSetLessonPublishedJSONBody
 // AdminCreateQuestionJSONRequestBody defines body for AdminCreateQuestion for application/json ContentType.
 type AdminCreateQuestionJSONRequestBody = AdminQuestionInput
 
+// AdminRequestLessonReviewJSONRequestBody defines body for AdminRequestLessonReview for application/json ContentType.
+type AdminRequestLessonReviewJSONRequestBody = ReviewNote
+
 // AdminCreateTaskJSONRequestBody defines body for AdminCreateTask for application/json ContentType.
 type AdminCreateTaskJSONRequestBody = AdminTaskInput
 
 // AdminUpdateQuestionJSONRequestBody defines body for AdminUpdateQuestion for application/json ContentType.
 type AdminUpdateQuestionJSONRequestBody = AdminQuestionInput
+
+// AdminApproveReviewJSONRequestBody defines body for AdminApproveReview for application/json ContentType.
+type AdminApproveReviewJSONRequestBody = ReviewNote
+
+// AdminRejectReviewJSONRequestBody defines body for AdminRejectReview for application/json ContentType.
+type AdminRejectReviewJSONRequestBody AdminRejectReviewJSONBody
 
 // AdminCreateSimulatorJSONRequestBody defines body for AdminCreateSimulator for application/json ContentType.
 type AdminCreateSimulatorJSONRequestBody = AdminSimulatorInput

@@ -23,6 +23,9 @@ info:
     - Admin endpoints need role `author` or `admin`; admin-only ones say so. A course
       the author cannot access answers `404`; a missing permission on an accessible
       course answers `403 forbidden` (see `CourseAccess`).
+    - Publishing is always moderated: a course, or a lesson of a published course, is
+      published by approving a review request (`403 review_required` otherwise). Owners
+      and admins request reviews; admins approve them, including their own.
 servers:
   - url: /api/v1
 
@@ -49,6 +52,8 @@ tags:
     description: Course management and course authors.
   - name: admin-lessons
     description: Lessons, quiz questions and tasks.
+  - name: admin-reviews
+    description: Moderation of courses and lessons published by authors.
   - name: admin-content
     description: Content rendering preview.
   - name: admin-import
@@ -857,7 +862,7 @@ paths:
       tags: [admin-courses]
       summary: Create course
       operationId: adminCreateCourse
-      description: The creator becomes the owner. Draft unless `published` is true.
+      description: The creator becomes the owner. Always a draft; `published` true answers `403 review_required`.
       requestBody:
         required: true
         content:
@@ -929,7 +934,7 @@ paths:
       tags: [admin-courses]
       summary: Set course published
       operationId: adminSetCoursePublished
-      description: Needs `can_publish`.
+      description: Only unpublishing (`can_unpublish`); publishing goes through a review (`403 review_required`).
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -1155,7 +1160,7 @@ paths:
       tags: [admin-lessons]
       summary: Delete lesson
       operationId: adminDeleteLesson
-      description: Cascades to quiz, tasks, submissions and progress. Published lessons need `can_publish`, drafts `can_edit`.
+      description: Cascades to quiz, tasks, submissions and progress. Published lessons need `can_unpublish`, drafts `can_edit`.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1169,7 +1174,7 @@ paths:
       tags: [admin-lessons]
       summary: Set lesson published
       operationId: adminSetLessonPublished
-      description: Needs `can_publish`.
+      description: 'Unpublishing needs `can_unpublish`. Publishing needs `can_request_review` while the course is unpublished; in a published course it goes through a review (`403 review_required`).'
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -1325,6 +1330,152 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /admin/courses/{courseId}/review:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      tags: [admin-reviews]
+      summary: Request course review
+      operationId: adminRequestCourseReview
+      description: |
+        Needs `can_request_review`. `409 review_not_needed` when the course is published;
+        `409 review_pending` while a request is open.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewNote' }
+      responses:
+        '201':
+          description: Request created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/lessons/{lessonId}/review:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-reviews]
+      summary: Request lesson review
+      operationId: adminRequestLessonReview
+      description: |
+        For a draft lesson of a published course. Needs `can_request_review`.
+        `409 review_not_needed` when the lesson is published or the course is not
+        (publish the lesson directly).
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewNote' }
+      responses:
+        '201':
+          description: Request created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/reviews:
+    get:
+      tags: [admin-reviews]
+      summary: List review requests
+      operationId: adminListReviews
+      description: Admins see every request; authors see requests for courses they own or co-author. Newest first, at most 200.
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/ReviewStatus' }
+        - name: course_id
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReviewRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/reviews/{reviewId}:
+    parameters:
+      - $ref: '#/components/parameters/ReviewId'
+    delete:
+      tags: [admin-reviews]
+      summary: Cancel review request
+      operationId: adminCancelReview
+      description: Owner or admin; only pending requests (`409 review_closed`).
+      responses:
+        '204': { description: Cancelled. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+
+  /admin/reviews/{reviewId}/approve:
+    parameters:
+      - $ref: '#/components/parameters/ReviewId'
+    post:
+      tags: [admin-reviews]
+      summary: Approve review request
+      operationId: adminApproveReview
+      description: Admin only, including requests of the admin's own courses. Publishes the course or lesson.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewNote' }
+      responses:
+        '200':
+          description: Approved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/reviews/{reviewId}/reject:
+    parameters:
+      - $ref: '#/components/parameters/ReviewId'
+    post:
+      tags: [admin-reviews]
+      summary: Reject review request
+      operationId: adminRejectReview
+      description: Admin only. `note` is required and shown to the author.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ReviewNote'
+                - type: object
+                  required: [note]
+      responses:
+        '200':
+          description: Rejected.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
   /admin/content/preview:
     post:
       tags: [admin-content]
@@ -1386,8 +1537,8 @@ paths:
         missing from it are deleted, questions and tasks are matched by text and title
         and updated in place, unmatched ones are deleted.
         A new course is a draft owned by the importer. In an existing course, publish
-        state, owner and catalog order are kept; new lessons are drafts unless the user
-        has `can_publish`, and removing published lessons needs `can_publish` (`403`).
+        state, owner and catalog order are kept; new lessons are published only while the
+        course is unpublished, and removing published lessons needs `can_unpublish` (`403`).
       requestBody: { $ref: '#/components/requestBodies/CourseDocument' }
       responses:
         '200':
@@ -1830,6 +1981,11 @@ components:
       in: path
       required: true
       schema: { type: integer }
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema: { type: integer }
     UserId:
       name: userId
       in: path
@@ -1927,6 +2083,11 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     SlugTaken:
       description: '`slug_taken`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ReviewConflict:
+      description: '`review_pending`, `review_not_needed` or `review_closed`.'
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -2028,7 +2189,7 @@ components:
       properties:
         code:
           type: string
-          examples: [unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, sandbox_disabled]
+          examples: [unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, review_required, review_pending, sandbox_disabled]
         message:
           type: string
           description: Developer-facing, not localized.
@@ -2587,14 +2748,52 @@ components:
     CourseAccess:
       type: object
       description: What the current user may do with the course.
-      required: [level, can_edit, can_publish, can_delete, can_manage_authors, can_reorder]
+      required: [level, can_edit, can_unpublish, can_request_review, can_approve, can_delete, can_manage_authors, can_reorder]
       properties:
         level: { type: string, enum: [admin, owner, coauthor] }
         can_edit: { type: boolean, description: 'Course fields, cover, lessons, questions, tasks, draft lesson deletion.' }
-        can_publish: { type: boolean, description: 'Publish/unpublish the course and its lessons, delete published lessons. Owner and admin.' }
+        can_unpublish: { type: boolean, description: 'Unpublish the course or lessons, delete published lessons. Owner and admin.' }
+        can_request_review: { type: boolean, description: 'Request a review of the course or a lesson; publish lessons directly while the course is unpublished. Owner and admin.' }
+        can_approve: { type: boolean, description: Approve or reject review requests. Admin only. }
         can_delete: { type: boolean, description: Owner and admin. }
         can_manage_authors: { type: boolean, description: Add and remove co-authors. Owner and admin. }
         can_reorder: { type: boolean, description: Move the course in the catalog; transfer ownership. Admin only. }
+
+    ContentRef:
+      type: object
+      required: [id, slug, title]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+
+    ReviewStatus:
+      type: string
+      enum: [pending, approved, rejected, cancelled]
+
+    ReviewRequest:
+      type: object
+      required: [id, status, course, lesson, note, requested_by, decision_note, decided_by, created_at, decided_at]
+      properties:
+        id: { type: integer }
+        status: { $ref: '#/components/schemas/ReviewStatus' }
+        course: { $ref: '#/components/schemas/ContentRef' }
+        lesson:
+          oneOf: [{ $ref: '#/components/schemas/ContentRef' }, { type: 'null' }]
+          description: Null for a course review.
+        note: { type: string, description: Message from the author. }
+        requested_by:
+          oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]
+        decision_note: { type: string, description: Message from the moderator. }
+        decided_by:
+          oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]
+        created_at: { type: string, format: date-time }
+        decided_at: { type: [string, 'null'], format: date-time }
+
+    ReviewNote:
+      type: object
+      properties:
+        note: { type: string, maxLength: 2000 }
 
     CourseAuthors:
       type: object
@@ -2625,11 +2824,11 @@ components:
           items: { type: string, maxLength: 40 }
         est_minutes: { type: integer, minimum: 0, maximum: 100000, description: 0 → lessons × 10. }
         cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
-        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Changing it needs `can_publish`.' }
+        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.' }
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, cover_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, review, cover_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2650,6 +2849,9 @@ components:
         owner:
           oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]
         access: { $ref: '#/components/schemas/CourseAccess' }
+        review:
+          oneOf: [{ $ref: '#/components/schemas/ReviewRequest' }, { type: 'null' }]
+          description: Latest course review while it is pending or rejected.
         cover_url: { type: [string, 'null'], description: External cover URL. }
         has_custom_cover: { type: boolean, description: Uploaded or external cover is set. }
         cover_preview_url: { type: string }
@@ -2675,9 +2877,12 @@ components:
 
     AdminLessonDetail:
       type: object
-      required: [lesson, questions, tasks]
+      required: [lesson, review, questions, tasks]
       properties:
         lesson: { $ref: '#/components/schemas/AdminLesson' }
+        review:
+          oneOf: [{ $ref: '#/components/schemas/ReviewRequest' }, { type: 'null' }]
+          description: Latest lesson review while it is pending or rejected.
         questions:
           type: array
           items: { $ref: '#/components/schemas/AdminQuestion' }
@@ -2697,7 +2902,7 @@ components:
         content: { type: string, maxLength: 500000 }
         vm_image: { type: string, maxLength: 40 }
         vm_init: { type: string }
-        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Changing it needs `can_publish`.' }
+        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.' }
 
     AdminLesson:
       type: object
@@ -2720,7 +2925,7 @@ components:
 
     AdminLessonRow:
       type: object
-      required: [id, slug, title, kind, published, vm_image, questions_count, tasks_count]
+      required: [id, slug, title, kind, published, vm_image, questions_count, tasks_count, review_status]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2730,6 +2935,9 @@ components:
         vm_image: { type: string }
         questions_count: { type: integer }
         tasks_count: { type: integer }
+        review_status:
+          oneOf: [{ $ref: '#/components/schemas/ReviewStatus' }, { type: 'null' }]
+          description: Latest lesson review status while pending or rejected.
 
     AdminQuestionInput:
       type: object

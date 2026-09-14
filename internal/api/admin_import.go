@@ -67,7 +67,7 @@ func (a *API) adminApplyImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	if plan.course != nil && plan.course.level < needPublish && len(plan.diff.Removed) > 0 {
+	if plan.course != nil && plan.course.level < needOwner && len(plan.diff.Removed) > 0 {
 		lessons, err := a.Lessons.GetByModuleAll(ctx, plan.course.module.ID)
 		if err != nil {
 			a.internalError(w, "import: lessons", err)
@@ -163,7 +163,7 @@ func (a *API) planImport(w http.ResponseWriter, r *http.Request) (importPlan, bo
 		mod.OrderNum = cur.OrderNum
 	}
 	plan.tree.Module = mod
-	publishLessons := plan.course == nil || plan.course.level >= needPublish
+	publishLessons := plan.course == nil || (!plan.course.module.Published && plan.course.level >= needOwner)
 	for i := range plan.tree.Lessons {
 		plan.tree.Lessons[i].Lesson.Published = publishLessons
 	}

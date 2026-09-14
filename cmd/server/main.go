@@ -125,6 +125,7 @@ func main() {
 		QuizAttempts: quizAttemptRepo,
 		Authors:      repository.NewCourseAuthorRepo(pool),
 		CourseIO:     courseRepo,
+		Reviews:      repository.NewReviewRepo(pool),
 		Sandbox:      vmRunner,
 		Code:         codeRunner,
 	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)

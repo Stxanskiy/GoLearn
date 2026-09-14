@@ -58,7 +58,8 @@ func TestAdminRoles(t *testing.T) {
 		var slugs []string
 		for _, r := range rows {
 			slugs = append(slugs, r.Slug)
-			if r.Access.Level != tt.level || r.Access.CanPublish != tt.publish || r.Access.CanReorder != (tt.level == apigen.CourseAccessLevelAdmin) {
+			admin := tt.level == apigen.CourseAccessLevelAdmin
+			if r.Access.Level != tt.level || r.Access.CanUnpublish != tt.publish || r.Access.CanRequestReview != tt.publish || r.Access.CanApprove != admin || r.Access.CanReorder != admin {
 				t.Errorf("%s: %s access = %+v", tt.token, r.Slug, r.Access)
 			}
 		}
@@ -90,7 +91,9 @@ func TestAdminCourseAccess(t *testing.T) {
 		{"owner cannot reorder", ownerToken, http.MethodPost, "/admin/courses/12/move", `{"direction":"up"}`, http.StatusForbidden},
 		{"admin reorders", adminToken, http.MethodPost, "/admin/courses/12/move", `{"direction":"up"}`, http.StatusNoContent},
 		{"bad direction", adminToken, http.MethodPost, "/admin/courses/12/move", `{"direction":"left"}`, http.StatusUnprocessableEntity},
-		{"owner publishes", ownerToken, http.MethodPut, "/admin/courses/12/published", `{"published":true}`, http.StatusNoContent},
+		{"owner publishes without review", ownerToken, http.MethodPut, "/admin/courses/12/published", `{"published":true}`, http.StatusForbidden},
+		{"admin publishes without review", adminToken, http.MethodPut, "/admin/courses/12/published", `{"published":true}`, http.StatusForbidden},
+		{"owner unpublishes", ownerToken, http.MethodPut, "/admin/courses/12/published", `{"published":false}`, http.StatusNoContent},
 		{"non-numeric id", adminToken, http.MethodGet, "/admin/courses/abc", "", http.StatusNotFound},
 		{"owner deletes", ownerToken, http.MethodDelete, "/admin/courses/12", "", http.StatusNoContent},
 	}
@@ -132,7 +135,10 @@ func TestAdminCreateCourse(t *testing.T) {
 	if w := post(otherToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner","published":true}`); w.Code != http.StatusUnprocessableEntity {
 		t.Errorf("author gym track: %d %s", w.Code, w.Body)
 	}
-	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner","published":true}`); w.Code != http.StatusCreated || !decode[apigen.AdminCourse](t, w).Published {
+	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner","published":true}`); w.Code != http.StatusForbidden || errorCode(t, w) != codeReviewRequired {
+		t.Errorf("admin creates published course: %d %s", w.Code, w.Body)
+	}
+	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner"}`); w.Code != http.StatusCreated || decode[apigen.AdminCourse](t, w).Published {
 		t.Errorf("admin gym track: %d %s", w.Code, w.Body)
 	}
 
