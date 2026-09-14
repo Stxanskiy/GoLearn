@@ -2,6 +2,8 @@ package handler
 
 import (
 	"net/http"
+
+	"github.com/backendraz/golearn/internal/catalog"
 )
 
 // RoadmapModule is one course on the learning path.
@@ -57,7 +59,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 	// Group by specialization; modules already arrive in curriculum order.
 	byspec := make(map[string][]RoadmapModule)
 	for _, mod := range modules {
-		spec := specForTrack(mod.Track)
+		spec := catalog.SpecForTrack(mod.Track)
 		if spec == "gym" {
 			continue // trainers are drills, not a course path
 		}
@@ -81,7 +83,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 		}
 		cat := mod.Category
 		if cat == "" {
-			cat = categorize(mod.Track, mod.Title, mod.Slug)
+			cat = catalog.Categorize(mod.Track, mod.Title, mod.Slug)
 		}
 		est := mod.EstMinutes
 		if est == 0 {
@@ -93,7 +95,7 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 			Slug:        mod.Slug,
 			Description: mod.Description,
 			Category:    cat,
-			Icon:        categoryIcon(cat),
+			Icon:        catalog.CategoryIcon(cat),
 			LessonCount: len(lessons),
 			Completed:   completed,
 			Pct:         pct,

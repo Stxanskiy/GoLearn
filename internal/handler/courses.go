@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
 )
@@ -29,31 +29,6 @@ type CourseCard struct {
 	Status     string // completed | in_progress | not_started
 }
 
-func categoryIcon(cat string) string {
-	switch cat {
-	case "Linux":
-		return "🐧"
-	case "Docker":
-		return "🐳"
-	case "Kubernetes":
-		return "☸️"
-	case "Git":
-		return "🌿"
-	case "DevOps":
-		return "♾️"
-	case "Backend":
-		return "⚙️"
-	case "Golang":
-		return "🐹"
-	case "Database":
-		return "🗄️"
-	case "Security":
-		return "🛡️"
-	default:
-		return "🚀"
-	}
-}
-
 type CoursesData struct {
 	PageTitle string
 	Specs     []Specialization
@@ -70,72 +45,6 @@ type Specialization struct {
 	Count int
 	Done  int
 	Cards []CourseCard
-}
-
-func specForTrack(track string) string {
-	switch track {
-	case "devops":
-		return "devops"
-	case "database":
-		return "database"
-	case "gym":
-		return "gym" // trainers — not a catalog specialization
-	case "security", "security-offense", "security-defense":
-		return "security"
-	default:
-		return "devops"
-	}
-}
-
-// specTracks lists the module tracks that belong to one specialization — used
-// to walk the curriculum inside a single learning path.
-func specTracks(spec string) []string {
-	switch spec {
-	case "devops":
-		return []string{"devops"}
-	case "database":
-		return []string{"database"}
-	case "gym":
-		return []string{"gym"}
-	case "security":
-		return []string{"security", "security-offense", "security-defense"}
-	default:
-		return []string{"devops"}
-	}
-}
-
-// categorize derives a topic tag from the module's track and title.
-func categorize(track, title, slug string) string {
-	if track == "golang" {
-		return "Golang"
-	}
-	t := strings.ToLower(title + " " + slug)
-	switch {
-	case strings.Contains(t, "kubernetes") || strings.Contains(t, "helm") || strings.Contains(t, "k8s"):
-		return "Kubernetes"
-	case strings.Contains(t, "docker"):
-		return "Docker"
-	case strings.Contains(t, "postgres") || strings.Contains(t, "database") || strings.Contains(t, "sql") || strings.Contains(t, "база данных"):
-		return "Database"
-	case strings.Contains(t, "linux"):
-		return "Linux"
-	case strings.Contains(t, "git"):
-		return "Git"
-	case strings.Contains(t, "nginx") || strings.Contains(t, "ansible") || strings.Contains(t, "grafana") ||
-		strings.Contains(t, "prometheus") || strings.Contains(t, "ci/cd") || strings.Contains(t, "cicd") ||
-		strings.Contains(t, "монитор") || strings.Contains(t, "devops") || strings.Contains(t, "websocket"):
-		return "DevOps"
-	}
-	switch track {
-	case "database":
-		return "Database"
-	case "security", "security-offense", "security-defense":
-		return "Security"
-	case "golang":
-		return "Golang"
-	default:
-		return "DevOps"
-	}
 }
 
 func humanDuration(minutes int) string {
@@ -169,10 +78,7 @@ func (h *Handler) buildCard(ctx context.Context, m model.Module, pmap map[int]st
 	if len(lessons) > 0 {
 		pct = done * 100 / len(lessons)
 	}
-	cat := m.Category
-	if cat == "" {
-		cat = categorize(m.Track, m.Title, m.Slug)
-	}
+	cat := catalog.Category(m)
 	label := m.Label
 	if label == "" {
 		label = deriveLabel(m.Difficulty)
@@ -189,7 +95,7 @@ func (h *Handler) buildCard(ctx context.Context, m model.Module, pmap map[int]st
 		status = "in_progress"
 	}
 	return CourseCard{
-		Title: m.Title, Slug: m.Slug, Category: cat, Icon: categoryIcon(cat),
+		Title: m.Title, Slug: m.Slug, Category: cat, Icon: catalog.CategoryIcon(cat),
 		Label: label, Cover: "/api/courses/" + m.Slug + "/cover", Tags: m.Tags, Difficulty: m.Difficulty,
 		Chapters: len(lessons), Completed: done, Pct: pct,
 		Duration: humanDuration(est), EstMinutes: est, Started: started, Status: status,
@@ -215,7 +121,7 @@ func (h *Handler) CoursesPage(w http.ResponseWriter, r *http.Request) {
 	done := make(map[string]int)
 	total, doneCourses := 0, 0
 	for _, m := range modules {
-		sp := specForTrack(m.Track)
+		sp := catalog.SpecForTrack(m.Track)
 		if sp == "gym" {
 			continue // trainers live on /trainers, not in the catalog
 		}
@@ -283,7 +189,7 @@ func (h *Handler) SectionPage(w http.ResponseWriter, r *http.Request) {
 	catCount := make(map[string]int)
 	var cards []CourseCard
 	for _, m := range modules {
-		if specForTrack(m.Track) != track {
+		if catalog.SpecForTrack(m.Track) != track {
 			continue
 		}
 		c := h.buildCard(ctx, m, pmap)

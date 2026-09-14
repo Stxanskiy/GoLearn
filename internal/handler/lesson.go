@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
 )
@@ -93,17 +94,14 @@ func (h *Handler) ModulePage(w http.ResponseWriter, r *http.Request) {
 	}
 	labStatus, _ := h.submissionRepo.LessonLabStatus(ctx, uid)
 
-	cat := mod.Category
-	if cat == "" {
-		cat = categorize(mod.Track, mod.Title, mod.Slug)
-	}
+	cat := catalog.Category(*mod)
 	cover := "/api/courses/" + mod.Slug + "/cover"
 
 	data := ModulePageData{
 		PageTitle: mod.Title,
 		Module:    mod,
 		Category:  cat,
-		Icon:      categoryIcon(cat),
+		Icon:      catalog.CategoryIcon(cat),
 		Cover:     cover,
 	}
 
@@ -161,7 +159,7 @@ func (h *Handler) ModulePage(w http.ResponseWriter, r *http.Request) {
 
 	// Courses are meant to be taken in order, so each one points at its
 	// neighbours in the same specialization.
-	if prev, next, err := h.moduleRepo.Neighbors(ctx, *mod, specTracks(specForTrack(mod.Track))); err == nil {
+	if prev, next, err := h.moduleRepo.Neighbors(ctx, *mod, catalog.SpecTracks(catalog.SpecForTrack(mod.Track))); err == nil {
 		data.PrevCourse, data.NextCourse = prev, next
 	} else {
 		h.log.Error("course neighbors", "module", mod.Slug, "error", err)

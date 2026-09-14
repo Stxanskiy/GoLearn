@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
 )
 
@@ -173,9 +174,9 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		mwp.Category = mod.Category
 		if mwp.Category == "" {
-			mwp.Category = categorize(mod.Track, mod.Title, mod.Slug)
+			mwp.Category = catalog.Categorize(mod.Track, mod.Title, mod.Slug)
 		}
-		mwp.Icon = categoryIcon(mwp.Category)
+		mwp.Icon = catalog.CategoryIcon(mwp.Category)
 		for _, l := range lessons {
 			status := "not_started"
 			if s, ok := progressMap[l.ID]; ok {

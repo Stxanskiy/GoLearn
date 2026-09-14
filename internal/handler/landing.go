@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/repository"
 )
 
@@ -53,7 +54,7 @@ func (h *Handler) LandingPage(w http.ResponseWriter, r *http.Request) {
 	}
 	perSpec := make(map[string]int)
 	for _, m := range modules {
-		spec := specForTrack(m.Track)
+		spec := catalog.SpecForTrack(m.Track)
 		perSpec[spec]++
 		if spec == "devops" && data.FirstCours == "" {
 			data.FirstCours = m.Slug // modules arrive in curriculum order
