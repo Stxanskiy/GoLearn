@@ -1,0 +1,2741 @@
+openapi: 3.1.0
+info:
+  title: TOT API
+  version: 1.0.0-draft
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+  description: |
+    JSON API for the Next.js frontend (`frontend-tot`). Draft contract — see
+    `docs/frontend/inventory.md` for the page inventory and open decisions.
+
+    Conventions:
+    - Base path `/api/v1`; frontend and API share one origin (reverse proxy), so the
+      session cookie stays `HttpOnly; SameSite=Lax` and no CORS is needed.
+    - JSON bodies and fields are `snake_case`; timestamps are RFC 3339.
+    - Errors always use the `Error` schema with a stable machine `code`; user-facing
+      text is localized on the frontend by `code`, `message` is for logs only.
+    - Unauthenticated requests get `401`, never a redirect; malformed JSON gets `400 malformed_json`.
+    - Mutating requests (POST/PUT/PATCH/DELETE) must come from an allowed origin
+      (`Origin` / `Sec-Fetch-Site`), otherwise `403 csrf_rejected`.
+    - Request bodies are `application/json` unless stated otherwise, otherwise `415 unsupported_media_type`.
+    - HTML fields (`*_html`) are rendered and sanitized server-side.
+servers:
+  - url: /api/v1
+
+tags:
+  - name: auth
+    description: Sign in, sign up, sign out.
+  - name: me
+    description: Current user, profile and dashboard.
+  - name: public
+    description: Anonymous marketing data.
+  - name: catalog
+    description: Specializations, courses and covers.
+  - name: lessons
+    description: Lesson content, progress and notes.
+  - name: quiz
+    description: Quiz answering and scoring.
+  - name: labs
+    description: Lab sandboxes, terminal, files, preview and task checks.
+  - name: trainers
+    description: Git trainer and Go playground.
+  - name: simulators
+    description: Turn-based career simulators.
+  - name: admin-courses
+    description: Course management.
+  - name: admin-lessons
+    description: Lessons, quiz questions and tasks.
+  - name: admin-content
+    description: Content rendering preview.
+  - name: admin-import
+    description: Course import and export.
+  - name: admin-specializations
+    description: Specialization management.
+  - name: admin-simulators
+    description: Simulator management.
+  - name: admin-users
+    description: User management.
+
+security:
+  - session: []
+
+paths:
+  # ───────────────────────────── auth ─────────────────────────────
+  /auth/config:
+    get:
+      tags: [auth]
+      summary: Get auth config
+      operationId: getAuthConfig
+      security: []
+      responses:
+        '200':
+          description: Public auth settings.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthConfig' }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Login
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Signed in; sets the `session` cookie.
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { $ref: '#/components/responses/InvalidCredentials' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '403':
+          description: '`account_blocked`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100 }
+                email: { type: string, maxLength: 254 }
+                password: { type: string, minLength: 6, maxLength: 72 }
+      responses:
+        '201':
+          description: Account created and signed in.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '403':
+          description: '`registration_closed`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: '`email_taken`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout
+      operationId: logout
+      security: []
+      description: Idempotent — succeeds without a session too.
+      responses:
+        '204': { description: 'Session deleted, cookie cleared.' }
+
+  # ───────────────────────────── me ─────────────────────────────
+  /me:
+    get:
+      tags: [me]
+      summary: Get me
+      operationId: getMe
+      responses:
+        '200':
+          description: Current user (replaces the `gl_role` / `gl_user` hint cookies).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/profile:
+    get:
+      tags: [me]
+      summary: Get profile
+      operationId: getProfile
+      responses:
+        '200':
+          description: Profile page data.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user, lessons_completed, lessons_started]
+                properties:
+                  user: { $ref: '#/components/schemas/Me' }
+                  lessons_completed: { type: integer }
+                  lessons_started: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/dashboard:
+    get:
+      tags: [me]
+      summary: Get dashboard
+      operationId: getDashboard
+      description: |
+        Progress dashboard. Course cards come from `GET /catalog`; the heatmap grid
+        and month labels are built on the frontend from `activity`.
+      responses:
+        '200':
+          description: Dashboard data.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ───────────────────────────── public ─────────────────────────────
+  /public/landing:
+    get:
+      tags: [public]
+      summary: Get landing
+      operationId: getLanding
+      security: []
+      description: Anonymous landing data; cacheable (ISR). Counts include published content only.
+      responses:
+        '200':
+          description: Landing data.
+          headers:
+            Cache-Control: { schema: { type: string, example: 'public, max-age=300' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Landing' }
+
+  # ───────────────────────────── catalog ─────────────────────────────
+  /catalog:
+    get:
+      tags: [catalog]
+      summary: Get catalog
+      operationId: getCatalog
+      description: |
+        Published specializations with their published courses and the user's progress.
+        Feeds the courses page, roadmap, dashboard course grid and trainers list.
+        Gym courses (`track=gym`) are returned separately in `trainers`.
+      responses:
+        '200':
+          description: Catalog.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Catalog' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /specializations/{specSlug}:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    get:
+      tags: [catalog]
+      summary: Get specialization
+      operationId: getSpecialization
+      responses:
+        '200':
+          description: Specialization with its courses.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SpecializationWithCourses' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /specializations/{specSlug}/cover:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    get:
+      tags: [catalog]
+      summary: Get specialization cover
+      operationId: getSpecializationCover
+      security: []
+      responses:
+        '200':
+          description: Uploaded image or generated SVG.
+          content:
+            image/*: { schema: { type: string, format: binary } }
+            image/svg+xml: { schema: { type: string } }
+        '302': { description: Redirect to an external cover URL. }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /courses/{courseSlug}:
+    parameters:
+      - $ref: '#/components/parameters/CourseSlug'
+    get:
+      tags: [catalog]
+      summary: Get course
+      operationId: getCourse
+      description: Course page. Drafts are `404` for students.
+      responses:
+        '200':
+          description: Course with its chapter list.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /courses/{courseSlug}/cover:
+    parameters:
+      - $ref: '#/components/parameters/CourseSlug'
+    get:
+      tags: [catalog]
+      summary: Get course cover
+      operationId: getCourseCover
+      security: []
+      responses:
+        '200':
+          description: Uploaded image or generated SVG.
+          content:
+            image/*: { schema: { type: string, format: binary } }
+            image/svg+xml: { schema: { type: string } }
+        '302': { description: Redirect to an external cover URL. }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── lessons ─────────────────────────────
+  /courses/{courseSlug}/lessons/{lessonSlug}:
+    parameters:
+      - $ref: '#/components/parameters/CourseSlug'
+      - $ref: '#/components/parameters/LessonSlug'
+    get:
+      tags: [lessons]
+      summary: Get lesson
+      operationId: getLesson
+      description: |
+        Theory / quiz / sql / sim lesson. Pure read — no progress side effects
+        (call `POST /lessons/{lessonId}/visit`). For `kind=lab` use `GET /lessons/{lessonId}/lab`.
+        Quiz questions come without correct answers.
+      responses:
+        '200':
+          description: Lesson.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LessonDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/visit:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [lessons]
+      summary: Visit lesson
+      operationId: visitLesson
+      description: Marks the lesson `in_progress` if the user has no progress yet. Idempotent.
+      responses:
+        '200':
+          description: Current progress.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LessonProgress' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/complete:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [lessons]
+      summary: Complete lesson
+      operationId: completeLesson
+      description: Manual completion; allowed only for `theory`, `sql` and `sim` lessons.
+      responses:
+        '200':
+          description: Updated progress.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LessonProgress' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`completion_derived` — quiz/lab lessons complete via their checks.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /lessons/{lessonId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    put:
+      tags: [lessons]
+      summary: Save lesson notes
+      operationId: saveLessonNotes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [notes]
+              properties:
+                notes: { type: string, maxLength: 20000 }
+      responses:
+        '204': { description: Saved. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  # ───────────────────────────── quiz ─────────────────────────────
+  /lessons/{lessonId}/quiz/answers:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [quiz]
+      summary: Answer quiz question
+      operationId: answerQuizQuestion
+      description: |
+        Answers one question. The first answer per question is stored and locked
+        until the attempt is reset; repeating returns the stored result with `locked=true`.
+        Reveals the correct option only after an answer is stored.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question_id, selected_index]
+              properties:
+                question_id: { type: integer }
+                selected_index: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Answer result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizAnswerResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [quiz]
+      summary: Reset quiz attempt
+      operationId: resetQuizAttempt
+      description: Clears stored answers of the current attempt ("Заново"). The saved score is kept.
+      responses:
+        '204': { description: Attempt reset. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/quiz/submit:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [quiz]
+      summary: Submit quiz
+      operationId: submitQuiz
+      description: |
+        Scores the attempt and saves `quiz_score`/`quiz_total`. Questions answered via
+        `POST .../answers` use the stored answer; `answers` fills the rest (full-page quiz).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    required: [question_id, selected_index]
+                    properties:
+                      question_id: { type: integer }
+                      selected_index: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Quiz result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuizResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── labs ─────────────────────────────
+  /lessons/{lessonId}/lab:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [labs]
+      summary: Get lab
+      operationId: getLab
+      description: Lab page (tasks, theory, quiz, sandbox state). Never exposes solutions or check scripts.
+      responses:
+        '200':
+          description: Lab.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Lab' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/lab/session:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [labs]
+      summary: Get lab session
+      operationId: getLabSession
+      description: Sandbox state; used to re-attach the terminal after reload.
+      responses:
+        '200':
+          description: Session state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SandboxSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [labs]
+      summary: Stop lab session
+      operationId: stopLabSession
+      description: Tears the sandbox down (reset environment). Progress is kept.
+      responses:
+        '204': { description: Teardown started. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/lab/retry:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [labs]
+      summary: Retry lab
+      operationId: retryLab
+      description: Deletes the user's submissions for the lab, resets progress (notes kept) and tears the sandbox down.
+      responses:
+        '204': { description: Lab reset. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /lessons/{lessonId}/lab/terminal:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+      - $ref: '#/components/parameters/TermCols'
+      - $ref: '#/components/parameters/TermRows'
+    get:
+      tags: [labs]
+      summary: Open lab terminal
+      operationId: openLabTerminal
+      description: |
+        WebSocket upgrade — see `x-websocket` for the frame protocol.
+        Opening a terminal tears down any other sandbox of the same user.
+      x-websocket: terminal  # see components.x-websocket-protocols
+      responses:
+        '101': { description: Switching protocols. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: '`origin_mismatch`.' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /lessons/{lessonId}/lab/git-graph:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [labs]
+      summary: Get lab git graph
+      operationId: getLabGitGraph
+      description: Parsed `git log --all` of `/root/project` (latest 60 commits, newest first). Empty list if no repo.
+      responses:
+        '200':
+          description: Commits.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GitGraph' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /lessons/{lessonId}/lab/fs/entries:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+      - $ref: '#/components/parameters/SandboxPath'
+    get:
+      tags: [labs]
+      summary: List lab files
+      operationId: listLabFiles
+      description: One directory level inside `/root`, directories first.
+      responses:
+        '200':
+          description: Directory listing.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [path, entries]
+                properties:
+                  path: { type: string }
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, is_dir]
+                      properties:
+                        name: { type: string }
+                        is_dir: { type: boolean }
+        '400': { $ref: '#/components/responses/PathOutsideJail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '502': { $ref: '#/components/responses/SandboxError' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /lessons/{lessonId}/lab/fs/content:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+      - $ref: '#/components/parameters/SandboxPath'
+    get:
+      tags: [labs]
+      summary: Read lab file
+      operationId: readLabFile
+      description: Raw file bytes, up to 512 KiB.
+      responses:
+        '200':
+          description: File content.
+          content:
+            application/octet-stream: { schema: { type: string, format: binary } }
+        '400': { $ref: '#/components/responses/PathOutsideJail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413':
+          description: '`file_too_large`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '502': { $ref: '#/components/responses/SandboxError' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+    put:
+      tags: [labs]
+      summary: Write lab file
+      operationId: writeLabFile
+      description: Writes raw bytes (max 2 MiB), creating parent directories.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        '204': { description: Written. }
+        '400': { $ref: '#/components/responses/PathOutsideJail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413':
+          description: '`file_too_large`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '502': { $ref: '#/components/responses/SandboxError' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /lessons/{lessonId}/lab/preview/{port}/{path}:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+      - name: port
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1, maximum: 65535 }
+      - name: path
+        in: path
+        required: true
+        description: Rest of the upstream path (may contain `/`).
+        schema: { type: string }
+    get:
+      tags: [labs]
+      summary: Preview lab http
+      operationId: previewLabHttp
+      description: |
+        Proxies GET to `http://127.0.0.1:{port}/{path}` inside the sandbox, for an
+        `<iframe sandbox="allow-scripts allow-forms">`. HTML gets a `<base href>` injected.
+        Upstream errors render a placeholder HTML page with status 200.
+      responses:
+        '200':
+          description: Upstream response (status and Content-Type mirrored).
+          content:
+            '*/*': { schema: { type: string, format: binary } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /tasks/{taskId}/check:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [labs]
+      summary: Check task
+      operationId: checkTask
+      description: Runs the task's check script in the sandbox; exit 0 = passed. Saves the submission.
+      responses:
+        '200':
+          description: Check result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaskCheckResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`task_not_auto_checked` — use `POST /tasks/{taskId}/done`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '502': { $ref: '#/components/responses/SandboxError' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /tasks/{taskId}/done:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [labs]
+      summary: Mark task done
+      operationId: markTaskDone
+      description: Manual completion for tasks without a check script or test cases.
+      responses:
+        '200':
+          description: Updated task state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaskCheckResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`task_auto_checked` — the task must pass its check.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /tasks/{taskId}/run:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [labs]
+      summary: Run task code
+      operationId: runTaskCode
+      deprecated: true
+      description: Go code task — runs the code against the task's test cases. Kept while Go tasks exist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunRequest' }
+      responses:
+        '200':
+          description: Run result with per-test verdicts.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RunResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  # ───────────────────────────── trainers ─────────────────────────────
+  /playground/run:
+    post:
+      tags: [trainers]
+      summary: Run playground
+      operationId: runPlayground
+      description: Go playground. Compile/validation errors are returned in `errors` with 200.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunRequest' }
+      responses:
+        '200':
+          description: Run result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RunResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /git-trainer/session:
+    get:
+      tags: [trainers]
+      summary: Get git trainer session
+      operationId: getGitTrainerSession
+      responses:
+        '200':
+          description: Session state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SandboxSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [trainers]
+      summary: Reset git trainer
+      operationId: resetGitTrainer
+      description: Tears the git trainer sandbox down; the next terminal gets a fresh repo.
+      responses:
+        '204': { description: Reset. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /git-trainer/terminal:
+    parameters:
+      - $ref: '#/components/parameters/TermCols'
+      - $ref: '#/components/parameters/TermRows'
+    get:
+      tags: [trainers]
+      summary: Open git trainer terminal
+      operationId: openGitTrainerTerminal
+      description: WebSocket upgrade, same protocol as the lab terminal.
+      x-websocket: terminal  # see components.x-websocket-protocols
+      responses:
+        '101': { description: Switching protocols. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  /git-trainer/git-graph:
+    get:
+      tags: [trainers]
+      summary: Get git trainer graph
+      operationId: getGitTrainerGraph
+      description: Parsed `git log --all` of `/root/repo`.
+      responses:
+        '200':
+          description: Commits.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GitGraph' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
+  # ───────────────────────────── simulators ─────────────────────────────
+  /simulators:
+    get:
+      tags: [simulators]
+      summary: List simulators
+      operationId: listSimulators
+      responses:
+        '200':
+          description: Published simulators.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SimulatorSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /simulators/{simSlug}:
+    parameters:
+      - $ref: '#/components/parameters/SimSlug'
+    get:
+      tags: [simulators]
+      summary: Get simulator
+      operationId: getSimulator
+      description: Full scenario; the game runs on the client.
+      responses:
+        '200':
+          description: Scenario.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scenario' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── admin: courses ─────────────────────────────
+  /admin/courses:
+    get:
+      tags: [admin-courses]
+      summary: List courses
+      operationId: adminListCourses
+      description: All published courses, own drafts and system drafts.
+      responses:
+        '200':
+          description: Courses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AdminCourseRow' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin-courses]
+      summary: Create course
+      operationId: adminCreateCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminCourseInput' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminCourse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/courses/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [admin-courses]
+      summary: Get course
+      operationId: adminGetCourse
+      responses:
+        '200':
+          description: Course with all lessons (drafts included).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [course, lessons]
+                properties:
+                  course: { $ref: '#/components/schemas/AdminCourse' }
+                  lessons:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminLessonRow' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [admin-courses]
+      summary: Update course
+      operationId: adminUpdateCourse
+      description: Full replace of editable fields. Cover is managed via `/cover`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminCourseInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminCourse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-courses]
+      summary: Delete course
+      operationId: adminDeleteCourse
+      description: Hard delete; cascades to lessons, quizzes, tasks, submissions and progress.
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/published:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      tags: [admin-courses]
+      summary: Set course published
+      operationId: adminSetCoursePublished
+      requestBody: { $ref: '#/components/requestBodies/Published' }
+      responses:
+        '204': { description: Updated. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/move:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      tags: [admin-courses]
+      summary: Move course
+      operationId: adminMoveCourse
+      description: Swaps order with the neighbour in the same track; no-op at the edge.
+      requestBody: { $ref: '#/components/requestBodies/Move' }
+      responses:
+        '204': { description: Moved. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/cover:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      tags: [admin-courses]
+      summary: Upload course cover
+      operationId: adminUploadCourseCover
+      requestBody: { $ref: '#/components/requestBodies/CoverUpload' }
+      responses:
+        '204': { description: Cover replaced. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+    delete:
+      tags: [admin-courses]
+      summary: Delete course cover
+      operationId: adminDeleteCourseCover
+      description: Falls back to the generated SVG.
+      responses:
+        '204': { description: Cover removed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/export:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [admin-import]
+      summary: Export course
+      operationId: adminExportCourse
+      responses:
+        '200':
+          description: 'Course document (`Content-Disposition: attachment; filename="<slug>.course.json"`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseDocument' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── admin: lessons ─────────────────────────────
+  /admin/courses/{courseId}/lessons:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      tags: [admin-lessons]
+      summary: Create lesson
+      operationId: adminCreateLesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminLessonInput' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminLesson' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/lessons/{lessonId}:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [admin-lessons]
+      summary: Get lesson
+      operationId: adminGetLesson
+      responses:
+        '200':
+          description: Lesson with its quiz questions and tasks (all fields).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [lesson, questions, tasks]
+                properties:
+                  lesson: { $ref: '#/components/schemas/AdminLesson' }
+                  questions:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminQuestion' }
+                  tasks:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminTask' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [admin-lessons]
+      summary: Update lesson
+      operationId: adminUpdateLesson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminLessonInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminLesson' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-lessons]
+      summary: Delete lesson
+      operationId: adminDeleteLesson
+      description: Cascades to quiz, tasks, submissions and progress.
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/lessons/{lessonId}/published:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    put:
+      tags: [admin-lessons]
+      summary: Set lesson published
+      operationId: adminSetLessonPublished
+      requestBody: { $ref: '#/components/requestBodies/Published' }
+      responses:
+        '204': { description: Updated. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/lessons/{lessonId}/move:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Move lesson
+      operationId: adminMoveLesson
+      requestBody: { $ref: '#/components/requestBodies/Move' }
+      responses:
+        '204': { description: Moved. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/lessons/{lessonId}/duplicate:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Duplicate lesson
+      operationId: adminDuplicateLesson
+      description: Copies lesson, quiz and tasks as a draft with slug `<slug>-copy[-N]`.
+      responses:
+        '201':
+          description: The copy.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminLesson' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/lessons/{lessonId}/questions:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Create question
+      operationId: adminCreateQuestion
+      description: Creates the lesson quiz on first question; appended to the end.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminQuestionInput' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminQuestion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/questions/{questionId}:
+    parameters:
+      - name: questionId
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [admin-lessons]
+      summary: Update question
+      operationId: adminUpdateQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminQuestionInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminQuestion' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-lessons]
+      summary: Delete question
+      operationId: adminDeleteQuestion
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/lessons/{lessonId}/tasks:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Create task
+      operationId: adminCreateTask
+      description: Appended to the end of the lesson's tasks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminTaskInput' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminTask' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    put:
+      tags: [admin-lessons]
+      summary: Update task
+      operationId: adminUpdateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminTaskInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminTask' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-lessons]
+      summary: Delete task
+      operationId: adminDeleteTask
+      description: Cascades to submissions.
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/content/preview:
+    post:
+      tags: [admin-content]
+      summary: Preview content
+      operationId: adminPreviewContent
+      description: Renders lesson/task content exactly as students will see it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format, content]
+              properties:
+                format: { $ref: '#/components/schemas/ContentFormat' }
+                content: { type: string }
+      responses:
+        '200':
+          description: Rendered HTML.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [html]
+                properties:
+                  html: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ───────────────────────────── admin: import ─────────────────────────────
+  /admin/import/preview:
+    post:
+      tags: [admin-import]
+      summary: Preview import
+      operationId: adminPreviewImport
+      description: Dry run — validates the document and diffs it against the existing course by slug.
+      requestBody: { $ref: '#/components/requestBodies/CourseDocument' }
+      responses:
+        '200':
+          description: Diff and issues.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImportPreview' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/import:
+    post:
+      tags: [admin-import]
+      summary: Apply import
+      operationId: adminApplyImport
+      description: |
+        Upserts the course in one transaction; the document is authoritative
+        (lessons missing from it are deleted, quiz and tasks are replaced).
+      requestBody: { $ref: '#/components/requestBodies/CourseDocument' }
+      responses:
+        '200':
+          description: Imported.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [course_id, created]
+                properties:
+                  course_id: { type: integer }
+                  created: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422':
+          description: '`validation_failed` or `import_blocked` (see `details.issues`).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────────── admin: specializations ─────────────────────────────
+  /admin/specializations:
+    get:
+      tags: [admin-specializations]
+      summary: List specializations
+      operationId: adminListSpecializations
+      responses:
+        '200':
+          description: All specializations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AdminSpecialization' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin-specializations]
+      summary: Create specialization
+      operationId: adminCreateSpecialization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AdminSpecializationInput'
+                - type: object
+                  required: [slug]
+                  properties:
+                    slug: { $ref: '#/components/schemas/Slug' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSpecialization' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/specializations/{specSlug}:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    put:
+      tags: [admin-specializations]
+      summary: Update specialization
+      operationId: adminUpdateSpecialization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminSpecializationInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSpecialization' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-specializations]
+      summary: Delete specialization
+      operationId: adminDeleteSpecialization
+      description: '`409 specialization_not_empty` while courses still use it as their track.'
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`specialization_not_empty`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /admin/specializations/{specSlug}/published:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    put:
+      tags: [admin-specializations]
+      summary: Set specialization published
+      operationId: adminSetSpecializationPublished
+      requestBody: { $ref: '#/components/requestBodies/Published' }
+      responses:
+        '204': { description: Updated. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/specializations/{specSlug}/move:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    post:
+      tags: [admin-specializations]
+      summary: Move specialization
+      operationId: adminMoveSpecialization
+      requestBody: { $ref: '#/components/requestBodies/Move' }
+      responses:
+        '204': { description: Moved. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/specializations/{specSlug}/cover:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    put:
+      tags: [admin-specializations]
+      summary: Upload specialization cover
+      operationId: adminUploadSpecializationCover
+      requestBody: { $ref: '#/components/requestBodies/CoverUpload' }
+      responses:
+        '204': { description: Cover replaced. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+    delete:
+      tags: [admin-specializations]
+      summary: Delete specialization cover
+      operationId: adminDeleteSpecializationCover
+      responses:
+        '204': { description: Cover removed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── admin: simulators ─────────────────────────────
+  /admin/simulators:
+    get:
+      tags: [admin-simulators]
+      summary: List simulators
+      operationId: adminListSimulators
+      responses:
+        '200':
+          description: All simulators.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AdminSimulatorRow' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin-simulators]
+      summary: Create simulator
+      operationId: adminCreateSimulator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminSimulatorInput' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSimulator' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/simulators/{simSlug}:
+    parameters:
+      - $ref: '#/components/parameters/SimSlug'
+    get:
+      tags: [admin-simulators]
+      summary: Get simulator
+      operationId: adminGetSimulator
+      responses:
+        '200':
+          description: Simulator with its scenario.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSimulator' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [admin-simulators]
+      summary: Update simulator
+      operationId: adminUpdateSimulator
+      description: '`scenario.slug` must equal the path slug (`422 slug_immutable`).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminSimulatorInput' }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminSimulator' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+    delete:
+      tags: [admin-simulators]
+      summary: Delete simulator
+      operationId: adminDeleteSimulator
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/simulators/{simSlug}/published:
+    parameters:
+      - $ref: '#/components/parameters/SimSlug'
+    put:
+      tags: [admin-simulators]
+      summary: Set simulator published
+      operationId: adminSetSimulatorPublished
+      requestBody: { $ref: '#/components/requestBodies/Published' }
+      responses:
+        '204': { description: Updated. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/simulators/{simSlug}/move:
+    parameters:
+      - $ref: '#/components/parameters/SimSlug'
+    post:
+      tags: [admin-simulators]
+      summary: Move simulator
+      operationId: adminMoveSimulator
+      requestBody: { $ref: '#/components/requestBodies/Move' }
+      responses:
+        '204': { description: Moved. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────── admin: users ─────────────────────────────
+  /admin/users:
+    get:
+      tags: [admin-users]
+      summary: List users
+      operationId: adminListUsers
+      parameters:
+        - name: q
+          in: query
+          description: Substring match on name or email.
+          schema: { type: string }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Users, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminUser' }
+                  next_cursor: { type: [string, 'null'] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin-users]
+      summary: Create user
+      operationId: adminCreateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 100 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+                role: { $ref: '#/components/schemas/Role' }
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: '`email_taken`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [admin-users]
+      summary: Update user
+      operationId: adminUpdateUser
+      description: |
+        Changes role and/or blocked flag. Blocking revokes all sessions.
+        Not allowed on yourself (`409 self_modification`) or on the last admin (`409 last_admin`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                role: { $ref: '#/components/schemas/Role' }
+                blocked: { type: boolean }
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`self_modification`, `last_admin` or `role_pinned_by_env` (email in ADMIN_EMAILS).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [admin-users]
+      summary: Delete user
+      operationId: adminDeleteUser
+      description: Hard delete; cascades to sessions, progress and submissions.
+      responses:
+        '204': { description: Deleted. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`self_modification` or `last_admin`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /admin/users/{userId}/password:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: integer }
+    put:
+      tags: [admin-users]
+      summary: Set user password
+      operationId: adminSetUserPassword
+      description: Sets a new password and revokes the user's sessions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, minLength: 6 }
+      responses:
+        '204': { description: Password changed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: session
+      description: HttpOnly session cookie set by `POST /auth/login`.
+
+  parameters:
+    CourseSlug:
+      name: courseSlug
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Slug' }
+    LessonSlug:
+      name: lessonSlug
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Slug' }
+    SpecSlug:
+      name: specSlug
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Slug' }
+    SimSlug:
+      name: simSlug
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Slug' }
+    CourseId:
+      name: courseId
+      in: path
+      required: true
+      schema: { type: integer }
+    LessonId:
+      name: lessonId
+      in: path
+      required: true
+      schema: { type: integer }
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { type: integer }
+    SandboxPath:
+      name: path
+      in: query
+      description: Absolute or `/root`-relative path; must stay inside `/root`.
+      schema: { type: string, default: /root }
+    TermCols:
+      name: cols
+      in: query
+      schema: { type: integer, minimum: 20, maximum: 500, default: 100 }
+    TermRows:
+      name: rows
+      in: query
+      schema: { type: integer, minimum: 5, maximum: 200, default: 28 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+
+  requestBodies:
+    Published:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [published]
+            properties:
+              published: { type: boolean }
+    Move:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [direction]
+            properties:
+              direction: { type: string, enum: [up, down] }
+    CoverUpload:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file:
+                type: string
+                format: binary
+                description: PNG, JPEG, WebP or SVG, max 4 MiB.
+    CourseDocument:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/CourseDocument' }
+
+  responses:
+    Unauthorized:
+      description: '`unauthorized` — no or expired session.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: '`forbidden` or `csrf_rejected`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: '`not_found`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InvalidCredentials:
+      description: '`invalid_credentials`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationFailed:
+      description: '`validation_failed` with per-field codes in `details.fields`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SlugTaken:
+      description: '`slug_taken`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: '`rate_limited`.'
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    PayloadTooLarge:
+      description: '`payload_too_large`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnsupportedMedia:
+      description: '`unsupported_media_type`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    PathOutsideJail:
+      description: '`path_outside_jail`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SandboxDisabled:
+      description: '`sandbox_disabled`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SandboxError:
+      description: '`sandbox_error` (boot failed, no free slots, command failed).'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  x-websocket-protocols:
+    terminal:
+      subprotocol: none
+      server_to_client:
+        - 'binary: PTY output chunks (≤4096 bytes)'
+        - 'text: status lines with ANSI colors (banner, "starting sandbox", errors, "[session ended]")'
+      client_to_server:
+        - 'binary: keystrokes (UTF-8)'
+        - 'text: {"resize":[cols,rows]} — any other text is written to stdin'
+      close: 'Server closes after an error or when the sandbox is reaped; the client offers restart and checks the session endpoint.'
+      keepalive: 'Server sends ping every 30 s; keystrokes extend the idle TTL.'
+
+  schemas:
+    # ── primitives ──
+    Slug:
+      type: string
+      pattern: '^[a-z0-9][a-z0-9_-]*$'
+      maxLength: 100
+    Role:
+      type: string
+      enum: [student, admin]
+    Difficulty:
+      type: string
+      enum: [beginner, intermediate, advanced, expert]
+    TaskDifficulty:
+      type: string
+      enum: [easy, medium, hard]
+    LessonKind:
+      type: string
+      enum: [theory, quiz, lab, sim, sql]
+    TaskKind:
+      type: string
+      enum: [shell, go]
+    ContentFormat:
+      type: string
+      enum: [md, html]
+    ProgressStatus:
+      type: string
+      enum: [not_started, in_progress, completed]
+    Category:
+      type: string
+      description: Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
+    CourseLabel:
+      type: string
+      enum: [start, practice, challenge]
+      description: Localized on the frontend (Старт / Практика / Вызов).
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: '#/components/schemas/ErrorBody' }
+
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          examples: [unauthorized, not_found, validation_failed, slug_taken, sandbox_disabled]
+        message:
+          type: string
+          description: Developer-facing, not localized.
+        details: { $ref: '#/components/schemas/ErrorDetails' }
+
+    ErrorDetails:
+      type: object
+      properties:
+        fields:
+          type: object
+          additionalProperties: { type: string }
+          description: Field name → error code (`required`, `too_short`, `too_long`, `invalid_format`).
+        issues:
+          type: array
+          items: { $ref: '#/components/schemas/ImportIssue' }
+
+    LinkRef:
+      type: object
+      required: [slug, title]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+
+    # ── me ──
+    AuthConfig:
+      type: object
+      required: [registration_open]
+      properties:
+        registration_open: { type: boolean }
+
+    Me:
+      type: object
+      required: [id, name, email, role, is_admin, created_at]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+        is_admin: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    Dashboard:
+      type: object
+      required: [overview, activity]
+      properties:
+        continue:
+          type: [object, 'null']
+          description: Latest in-progress lesson.
+          required: [course, lesson, lesson_id, kind]
+          properties:
+            course: { $ref: '#/components/schemas/LinkRef' }
+            lesson: { $ref: '#/components/schemas/LinkRef' }
+            lesson_id: { type: integer }
+            kind: { $ref: '#/components/schemas/LessonKind' }
+        overview:
+          type: object
+          required: [streak, active_days, tasks_solved, labs_done, labs_total, lessons_read, lessons_total, tests_passed, simulators_done, simulators_total, trainers_done, trainers_total]
+          properties:
+            streak: { type: integer }
+            active_days: { type: integer }
+            tasks_solved: { type: integer }
+            labs_done: { type: integer }
+            labs_total: { type: integer }
+            lessons_read: { type: integer }
+            lessons_total: { type: integer }
+            tests_passed: { type: integer }
+            simulators_done: { type: integer }
+            simulators_total: { type: integer }
+            trainers_done: { type: integer }
+            trainers_total: { type: integer }
+        activity:
+          type: object
+          description: '`YYYY-MM-DD` → activity count, last 365 days.'
+          additionalProperties: { type: integer }
+
+    # ── public ──
+    Landing:
+      type: object
+      required: [stats, tracks]
+      properties:
+        stats:
+          type: object
+          required: [courses, lessons, labs, auto_checked_tasks]
+          properties:
+            courses: { type: integer }
+            lessons: { type: integer }
+            labs: { type: integer }
+            auto_checked_tasks: { type: integer }
+        tracks:
+          type: array
+          items:
+            type: object
+            required: [slug, name, icon, description, courses_count]
+            properties:
+              slug: { type: string }
+              name: { type: string }
+              icon: { type: string }
+              description: { type: string }
+              courses_count: { type: integer }
+
+    # ── catalog ──
+    Specialization:
+      type: object
+      required: [slug, name, icon, description, cover_url]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        icon: { type: string }
+        description: { type: string }
+        cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`.' }
+
+    CourseCard:
+      type: object
+      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, lessons_count, lessons_completed, progress_pct, est_minutes, status]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        spec_slug: { type: string }
+        category: { $ref: '#/components/schemas/Category' }
+        label: { $ref: '#/components/schemas/CourseLabel' }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        tags:
+          type: array
+          items: { type: string }
+        cover_url: { type: string }
+        lessons_count: { type: integer }
+        lessons_completed: { type: integer }
+        progress_pct: { type: integer, minimum: 0, maximum: 100 }
+        est_minutes: { type: integer }
+        status: { $ref: '#/components/schemas/ProgressStatus' }
+
+    SpecializationWithCourses:
+      allOf:
+        - $ref: '#/components/schemas/Specialization'
+        - type: object
+          required: [courses, courses_done]
+          properties:
+            courses:
+              type: array
+              items: { $ref: '#/components/schemas/CourseCard' }
+            courses_done: { type: integer }
+
+    Catalog:
+      type: object
+      required: [specializations, trainers]
+      properties:
+        specializations:
+          type: array
+          items: { $ref: '#/components/schemas/SpecializationWithCourses' }
+        trainers:
+          type: array
+          items: { $ref: '#/components/schemas/CourseCard' }
+
+    CourseItem:
+      type: object
+      required: [lesson_id, slug, title, kind, status, is_next]
+      properties:
+        lesson_id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+        status: { $ref: '#/components/schemas/ProgressStatus' }
+        is_next: { type: boolean, description: First not completed item. }
+
+    CourseDetail:
+      type: object
+      required: [course, items, completed_count, progress_pct]
+      properties:
+        course: { $ref: '#/components/schemas/CourseCard' }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CourseItem' }
+        completed_count: { type: integer }
+        progress_pct: { type: integer }
+        prev_course: { oneOf: [{ $ref: '#/components/schemas/LinkRef' }, { type: 'null' }] }
+        next_course: { oneOf: [{ $ref: '#/components/schemas/LinkRef' }, { type: 'null' }] }
+
+    # ── lessons ──
+    LessonProgress:
+      type: object
+      required: [status, notes]
+      properties:
+        status: { $ref: '#/components/schemas/ProgressStatus' }
+        quiz_score: { type: [integer, 'null'] }
+        quiz_total: { type: [integer, 'null'] }
+        notes: { type: string }
+        completed_at: { type: [string, 'null'], format: date-time }
+
+    LessonNav:
+      type: object
+      required: [course, position, total, course_progress_pct]
+      properties:
+        course: { $ref: '#/components/schemas/LinkRef' }
+        position: { type: integer, description: 1-based among published lessons. }
+        total: { type: integer }
+        course_progress_pct: { type: integer }
+        prev: { oneOf: [{ $ref: '#/components/schemas/LessonLink' }, { type: 'null' }] }
+        next: { oneOf: [{ $ref: '#/components/schemas/LessonLink' }, { type: 'null' }] }
+
+    LessonLink:
+      type: object
+      required: [slug, title, kind]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+
+    SqlSchema:
+      type: object
+      description: SQL practice data (was the `.sql-erd[data-schema]` island in content HTML).
+      required: [title, tables, ddl, expected_columns]
+      properties:
+        title: { type: string }
+        tables:
+          type: array
+          items:
+            type: object
+            required: [id, columns]
+            properties:
+              id: { type: string }
+              columns:
+                type: array
+                items:
+                  type: object
+                  required: [name, type, is_key]
+                  properties:
+                    name: { type: string }
+                    type: { type: string }
+                    is_key: { type: boolean }
+                    description: { type: string }
+        ddl: { type: string, description: SQLite CREATE TABLE statements for sql.js. }
+        expected_columns:
+          type: array
+          items: { type: string }
+
+    QuizQuestionPublic:
+      type: object
+      required: [id, question_html, options_html]
+      properties:
+        id: { type: integer }
+        question_html: { type: string }
+        options_html:
+          type: array
+          items: { type: string }
+        answer:
+          description: Present if this question was already answered in the current attempt.
+          oneOf: [{ $ref: '#/components/schemas/QuizAnswerResult' }, { type: 'null' }]
+
+    LessonQuiz:
+      type: object
+      required: [questions]
+      properties:
+        questions:
+          type: array
+          items: { $ref: '#/components/schemas/QuizQuestionPublic' }
+
+    LessonDetail:
+      type: object
+      required: [id, slug, title, kind, content_html, nav, progress, has_lab]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+        content_html: { type: string }
+        sql_schema: { oneOf: [{ $ref: '#/components/schemas/SqlSchema' }, { type: 'null' }] }
+        nav: { $ref: '#/components/schemas/LessonNav' }
+        progress: { $ref: '#/components/schemas/LessonProgress' }
+        quiz: { oneOf: [{ $ref: '#/components/schemas/LessonQuiz' }, { type: 'null' }] }
+        has_lab: { type: boolean }
+
+    QuizAnswerResult:
+      type: object
+      required: [question_id, selected_index, correct_index, is_correct, locked]
+      properties:
+        question_id: { type: integer }
+        selected_index: { type: integer }
+        correct_index: { type: integer }
+        is_correct: { type: boolean }
+        explanation_html: { type: string }
+        option_explanations_html:
+          type: array
+          items: { type: string }
+        locked: { type: boolean, description: True when this is a previously stored answer. }
+
+    QuizResult:
+      type: object
+      required: [score, total, percent, results]
+      properties:
+        score: { type: integer }
+        total: { type: integer }
+        percent: { type: integer }
+        results:
+          type: array
+          items:
+            type: object
+            required: [question_id, question_html, options_html, selected_index, correct_index, is_correct]
+            properties:
+              question_id: { type: integer }
+              question_html: { type: string }
+              options_html:
+                type: array
+                items: { type: string }
+              selected_index: { type: [integer, 'null'] }
+              correct_index: { type: integer }
+              is_correct: { type: boolean }
+              explanation_html: { type: string }
+
+    # ── labs ──
+    SandboxSession:
+      type: object
+      required: [enabled, running]
+      properties:
+        enabled: { type: boolean, description: Sandbox configured on the server. }
+        running: { type: boolean }
+        started_at: { type: [string, 'null'], format: date-time }
+        expires_at: { type: [string, 'null'], format: date-time, description: Hard session limit (1 h). }
+
+    LabTask:
+      type: object
+      required: [id, title, kind, description_html, glossary, check_mode, passed]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/TaskKind' }
+        description_html: { type: string }
+        hints_html: { type: string }
+        glossary:
+          type: array
+          items: { $ref: '#/components/schemas/GlossaryItem' }
+        starter_code: { type: string, description: Go tasks only. }
+        check_mode:
+          type: string
+          enum: [auto, tests, manual]
+          description: '`auto` → POST /check, `tests` → POST /run, `manual` → POST /done.'
+        passed: { type: boolean }
+
+    Lab:
+      type: object
+      required: [lesson_id, slug, title, mode, is_git_lab, theory_html, tasks, nav, progress, sandbox]
+      properties:
+        lesson_id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        mode: { type: string, enum: [shell, code] }
+        is_git_lab: { type: boolean }
+        theory_html: { type: string }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/LabTask' }
+        quiz: { oneOf: [{ $ref: '#/components/schemas/LessonQuiz' }, { type: 'null' }] }
+        nav: { $ref: '#/components/schemas/LessonNav' }
+        progress: { $ref: '#/components/schemas/LessonProgress' }
+        sandbox: { $ref: '#/components/schemas/SandboxSession' }
+
+    TaskCheckResult:
+      type: object
+      required: [task_id, passed, lesson_status]
+      properties:
+        task_id: { type: integer }
+        passed: { type: boolean }
+        output: { type: string, description: 'Check script output (stdout+stderr, truncated).' }
+        lesson_status: { $ref: '#/components/schemas/ProgressStatus' }
+
+    GitGraph:
+      type: object
+      required: [commits]
+      properties:
+        commits:
+          type: array
+          items:
+            type: object
+            required: [hash, parents, refs, subject]
+            properties:
+              hash: { type: string }
+              parents:
+                type: array
+                items: { type: string }
+              refs:
+                type: array
+                items:
+                  type: object
+                  required: [name, type]
+                  properties:
+                    name: { type: string }
+                    type: { type: string, enum: [head, branch, remote, tag] }
+              subject: { type: string }
+
+    RunRequest:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, maxLength: 65536 }
+        stdin: { type: string }
+
+    RunResult:
+      type: object
+      required: [output, errors, exit_code, timed_out]
+      properties:
+        output: { type: string }
+        errors: { type: string }
+        exit_code: { type: integer }
+        timed_out: { type: boolean }
+        all_passed: { type: boolean }
+        lesson_status: { $ref: '#/components/schemas/ProgressStatus' }
+        test_results:
+          type: array
+          items:
+            type: object
+            required: [index, passed]
+            properties:
+              index: { type: integer }
+              passed: { type: boolean }
+              input: { type: string }
+              actual: { type: string }
+
+    GlossaryItem:
+      type: object
+      required: [term, definition]
+      properties:
+        term: { type: string }
+        definition: { type: string }
+
+    TestCase:
+      type: object
+      required: [input, expected_output]
+      properties:
+        input: { type: string }
+        expected_output: { type: string }
+
+    # ── simulators ──
+    SimulatorSummary:
+      type: object
+      required: [slug, title, icon, role, turns_count]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        icon: { type: string }
+        role: { type: string }
+        turns_count: { type: integer }
+
+    Scenario:
+      type: object
+      required: [slug, title, role, icon, intro, metrics, turns]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        role: { type: string, maxLength: 160 }
+        icon: { type: string, maxLength: 16 }
+        intro: { type: string }
+        metrics:
+          type: array
+          items:
+            type: object
+            required: [key, label, unit, start, higher]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              unit: { type: string }
+              start: { type: integer }
+              higher: { type: boolean, description: Higher value is better. }
+        turns:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [title, situation, choices]
+            properties:
+              title: { type: string }
+              situation: { type: string }
+              choices:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  required: [text, effects, result]
+                  properties:
+                    text: { type: string }
+                    effects:
+                      type: object
+                      description: Metric key → integer delta; keys must exist in `metrics`.
+                      additionalProperties: { type: integer }
+                    result: { type: string }
+
+    # ── admin ──
+    Ownership:
+      type: object
+      required: [published, source, owner_id]
+      properties:
+        published: { type: boolean }
+        source: { type: string, enum: [seed, admin] }
+        owner_id: { type: [integer, 'null'] }
+
+    AdminCourseInput:
+      type: object
+      required: [slug, title, track, difficulty]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string }
+        track: { type: string, description: Specialization slug (or `gym`). }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        category: { type: string, description: Empty → derived. }
+        label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null → derived from difficulty. }
+        accent: { type: string, description: Cover gradient key; empty → by category. }
+        tags:
+          type: array
+          items: { type: string }
+        est_minutes: { type: integer, minimum: 0, description: 0 → lessons × 10. }
+        cover_url: { type: [string, 'null'], format: uri, description: External cover; null keeps uploaded/generated. }
+        published: { type: boolean, default: true }
+
+    AdminCourse:
+      allOf:
+        - $ref: '#/components/schemas/AdminCourseInput'
+        - $ref: '#/components/schemas/Ownership'
+        - type: object
+          required: [id, order_num, has_custom_cover, cover_preview_url, created_at]
+          properties:
+            id: { type: integer }
+            order_num: { type: integer }
+            has_custom_cover: { type: boolean }
+            cover_preview_url: { type: string }
+            created_at: { type: string, format: date-time }
+
+    AdminCourseRow:
+      allOf:
+        - $ref: '#/components/schemas/AdminCourse'
+        - type: object
+          required: [lessons_count, labs_count]
+          properties:
+            lessons_count: { type: integer }
+            labs_count: { type: integer }
+
+    AdminLessonInput:
+      type: object
+      required: [slug, title, kind, format, difficulty]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+        format: { $ref: '#/components/schemas/ContentFormat' }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        content: { type: string }
+        vm_image: { type: string }
+        vm_init: { type: string }
+        published: { type: boolean, default: true }
+
+    AdminLesson:
+      allOf:
+        - $ref: '#/components/schemas/AdminLessonInput'
+        - type: object
+          required: [id, course_id, order_num, source, created_at]
+          properties:
+            id: { type: integer }
+            course_id: { type: integer }
+            order_num: { type: integer }
+            source: { type: string, enum: [seed, admin] }
+            created_at: { type: string, format: date-time }
+
+    AdminLessonRow:
+      type: object
+      required: [id, slug, title, kind, published, vm_image, questions_count, tasks_count]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+        published: { type: boolean }
+        vm_image: { type: string }
+        questions_count: { type: integer }
+        tasks_count: { type: integer }
+
+    AdminQuestionInput:
+      type: object
+      required: [question, options, correct_index]
+      properties:
+        question: { type: string, minLength: 1, description: HTML allowed; sanitized on render. }
+        options:
+          type: array
+          minItems: 2
+          items: { type: string }
+        option_explanations:
+          type: array
+          items: { type: string }
+          description: Same length as `options` when present.
+        correct_index: { type: integer, minimum: 0, description: 0-based; must be < options length. }
+        explanation: { type: string }
+
+    AdminQuestion:
+      allOf:
+        - $ref: '#/components/schemas/AdminQuestionInput'
+        - type: object
+          required: [id, lesson_id, order_num]
+          properties:
+            id: { type: integer }
+            lesson_id: { type: integer }
+            order_num: { type: integer }
+
+    AdminTaskInput:
+      type: object
+      required: [title, kind, format, difficulty]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        kind: { $ref: '#/components/schemas/TaskKind' }
+        format: { $ref: '#/components/schemas/ContentFormat' }
+        difficulty: { $ref: '#/components/schemas/TaskDifficulty' }
+        description: { type: string }
+        hints: { type: string }
+        solution: { type: string }
+        starter_code: { type: string }
+        sandbox_image: { type: string }
+        setup_script: { type: string }
+        check_script: { type: string }
+        glossary:
+          type: array
+          items: { $ref: '#/components/schemas/GlossaryItem' }
+        test_cases:
+          type: array
+          items: { $ref: '#/components/schemas/TestCase' }
+
+    AdminTask:
+      allOf:
+        - $ref: '#/components/schemas/AdminTaskInput'
+        - type: object
+          required: [id, lesson_id, order_num]
+          properties:
+            id: { type: integer }
+            lesson_id: { type: integer }
+            order_num: { type: integer }
+
+    AdminSpecializationInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        icon: { type: string, maxLength: 16 }
+        description: { type: string }
+        cover_url: { type: [string, 'null'], format: uri }
+        published: { type: boolean, default: true }
+
+    AdminSpecialization:
+      allOf:
+        - $ref: '#/components/schemas/AdminSpecializationInput'
+        - type: object
+          required: [slug, order_num, owner_id, courses_count, has_custom_cover, cover_preview_url]
+          properties:
+            slug: { type: string }
+            order_num: { type: integer }
+            owner_id: { type: [integer, 'null'] }
+            courses_count: { type: integer }
+            has_custom_cover: { type: boolean }
+            cover_preview_url: { type: string }
+
+    AdminSimulatorInput:
+      type: object
+      required: [scenario]
+      properties:
+        scenario: { $ref: '#/components/schemas/Scenario' }
+        published: { type: boolean, default: true }
+
+    AdminSimulatorRow:
+      type: object
+      required: [slug, title, icon, role, order_num, published, owner_id]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        icon: { type: string }
+        role: { type: string }
+        order_num: { type: integer }
+        published: { type: boolean }
+        owner_id: { type: [integer, 'null'] }
+
+    AdminSimulator:
+      allOf:
+        - $ref: '#/components/schemas/AdminSimulatorRow'
+        - type: object
+          required: [scenario]
+          properties:
+            scenario: { $ref: '#/components/schemas/Scenario' }
+
+    AdminUser:
+      type: object
+      required: [id, name, email, role, blocked, created_at, is_self, role_pinned_by_env]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+        blocked: { type: boolean }
+        created_at: { type: string, format: date-time }
+        is_self: { type: boolean }
+        role_pinned_by_env: { type: boolean, description: Email is in ADMIN_EMAILS. }
+
+    # ── import / export ──
+    CourseDocument:
+      type: object
+      description: Portable course format (`internal/courseio`). Order comes from array position.
+      required: [slug, title, lessons]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        title: { type: string }
+        description: { type: string }
+        track: { type: string }
+        difficulty: { type: string }
+        category: { type: string }
+        label: { type: string }
+        accent: { type: string }
+        cover_image: { type: string, description: URL or data URI. }
+        tags:
+          type: array
+          items: { type: string }
+        order_num: { type: integer }
+        est_minutes: { type: integer }
+        lessons:
+          type: array
+          items:
+            type: object
+            required: [slug, title]
+            properties:
+              slug: { type: string }
+              title: { type: string }
+              kind: { type: string }
+              format: { type: string }
+              difficulty: { type: string }
+              content: { type: string }
+              vm_image: { type: string }
+              vm_init: { type: string }
+              quiz:
+                type: array
+                items:
+                  type: object
+                  required: [question, options, correct]
+                  properties:
+                    question: { type: string }
+                    options:
+                      type: array
+                      items: { type: string }
+                    option_expl:
+                      type: array
+                      items: { type: string }
+                    correct: { type: integer, description: 1-based. }
+                    explanation: { type: string }
+              tasks:
+                type: array
+                items:
+                  type: object
+                  required: [title]
+                  properties:
+                    title: { type: string }
+                    description: { type: string }
+                    hints: { type: string }
+                    solution: { type: string }
+                    difficulty: { type: string }
+                    kind: { type: string }
+                    format: { type: string }
+                    starter_code: { type: string }
+                    sandbox_image: { type: string }
+                    setup_script: { type: string }
+                    check_script: { type: string }
+                    glossary:
+                      type: array
+                      items: { $ref: '#/components/schemas/GlossaryItem' }
+                    test_cases:
+                      type: array
+                      items: { $ref: '#/components/schemas/TestCase' }
+
+    ImportIssue:
+      type: object
+      required: [level, code]
+      properties:
+        level: { type: string, enum: [error, warn] }
+        code:
+          type: string
+          examples: [lesson_slug_empty, lesson_slug_duplicate, no_lessons, lesson_title_empty, unknown_kind, unknown_format, too_few_options, correct_out_of_range, check_without_image]
+        lesson_slug: { type: string }
+        path: { type: string, description: 'JSON pointer, e.g. `/lessons/2/quiz/0`.' }
+
+    ImportPreview:
+      type: object
+      required: [slug, title, exists, lessons_count, new_lessons, updated_lessons, removed_lessons, issues, blocked]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        exists: { type: boolean }
+        lessons_count: { type: integer }
+        new_lessons:
+          type: array
+          items: { $ref: '#/components/schemas/LinkRef' }
+        updated_lessons:
+          type: array
+          items: { $ref: '#/components/schemas/LinkRef' }
+        removed_lessons:
+          type: array
+          items: { $ref: '#/components/schemas/LinkRef' }
+        lost_submissions:
+          type: integer
+          description: Submissions that will be deleted because tasks are replaced.
+        issues:
+          type: array
+          items: { $ref: '#/components/schemas/ImportIssue' }
+        blocked: { type: boolean }

@@ -70,7 +70,10 @@ Verify them with the regression harness:
 ```
 cmd/server/     — HTTP server entry point
 cmd/seed/       — Database seeder with all course content
+api/            — OpenAPI contract for the JSON API (openapi.yaml)
 internal/
+  api/          — JSON API /api/v1 for the Next.js frontend; after editing the spec run `go generate ./internal/api/apigen`
+  auth/         — Session cookie, rate limits, ADMIN_EMAILS rules shared by handler/ and api/
   config/       — Environment config
   handler/      — HTTP handlers (dashboard, lesson, quiz, tasks, progress)
   model/        — Data models

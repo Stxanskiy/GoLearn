@@ -1,0 +1,6 @@
+package: apigen
+output: types.gen.go
+generate:
+  models: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms

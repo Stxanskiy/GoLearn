@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/backendraz/golearn/internal/api"
 	"github.com/backendraz/golearn/internal/config"
 	"github.com/backendraz/golearn/internal/handler"
 	"github.com/backendraz/golearn/internal/migrate"
@@ -108,6 +109,7 @@ func main() {
 		staticHandler.ServeHTTP(w, req)
 	}))
 
+	r.Mount("/api/v1", api.New(userRepo, api.Config{AllowedOrigins: cfg.AppOrigins}, log).Routes())
 	h.RegisterRoutes(r)
 
 	srv := &http.Server{
