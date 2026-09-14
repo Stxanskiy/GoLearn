@@ -22,12 +22,13 @@ type Handler struct {
 	specRepo       *repository.SpecRepo
 	courseRepo     *repository.CourseRepo
 	simRepo        *repository.SimRepo
+	attemptRepo    *repository.QuizAttemptRepo
 	runner         *runner.Runner
 	shell          *runner.VMRunner
 	log            *slog.Logger
 }
 
-func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, cr *repository.CourseRepo, simr *repository.SimRepo, log *slog.Logger) *Handler {
+func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.ProgressRepo, sr *repository.SubmissionRepo, ur *repository.UserRepo, spr *repository.SpecRepo, cr *repository.CourseRepo, simr *repository.SimRepo, qar *repository.QuizAttemptRepo, log *slog.Logger) *Handler {
 	return &Handler{
 		moduleRepo:     mr,
 		lessonRepo:     lr,
@@ -37,6 +38,7 @@ func New(mr *repository.ModuleRepo, lr *repository.LessonRepo, pr *repository.Pr
 		specRepo:       spr,
 		courseRepo:     cr,
 		simRepo:        simr,
+		attemptRepo:    qar,
 		runner:         runner.New(),
 		shell:          runner.NewVMRunner(),
 		log:            log,

@@ -1031,11 +1031,16 @@ type LessonNav struct {
 
 // LessonProgress defines model for LessonProgress.
 type LessonProgress struct {
-	CompletedAt *time.Time     `json:"completed_at,omitempty"`
-	Notes       string         `json:"notes"`
-	QuizScore   *int           `json:"quiz_score,omitempty"`
-	QuizTotal   *int           `json:"quiz_total,omitempty"`
-	Status      ProgressStatus `json:"status"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	Notes       string     `json:"notes"`
+
+	// QuizAttempts Number of submitted quiz attempts.
+	QuizAttempts int `json:"quiz_attempts"`
+
+	// QuizScore Score of the latest submitted attempt.
+	QuizScore *int           `json:"quiz_score,omitempty"`
+	QuizTotal *int           `json:"quiz_total,omitempty"`
+	Status    ProgressStatus `json:"status"`
 }
 
 // LessonQuiz defines model for LessonQuiz.
@@ -1122,6 +1127,8 @@ type QuizQuestionResult struct {
 
 // QuizResult defines model for QuizResult.
 type QuizResult struct {
+	// Attempt 1-based number of this attempt.
+	Attempt int                  `json:"attempt"`
 	Percent int                  `json:"percent"`
 	Results []QuizQuestionResult `json:"results"`
 	Score   int                  `json:"score"`

@@ -181,7 +181,7 @@ func TestQuizFlow(t *testing.T) {
 		t.Fatalf("submit: %d %s", w.Code, w.Body)
 	}
 	res := decode[apigen.QuizResult](t, w)
-	if res.Score != 1 || res.Total != 2 || res.Percent != 50 || *res.Results[0].SelectedIndex != 0 || !res.Results[1].IsCorrect {
+	if res.Attempt != 1 || res.Score != 1 || res.Total != 2 || res.Percent != 50 || *res.Results[0].SelectedIndex != 0 || !res.Results[1].IsCorrect {
 		t.Errorf("result = %+v", res)
 	}
 	if l := decode[apigen.LessonDetail](t, do(h, http.MethodGet, "/courses/linux/lessons/quiz", "", withCookie(studentToken))); l.Progress.Status != "completed" || *l.Progress.QuizScore != 1 {
@@ -192,8 +192,21 @@ func TestQuizFlow(t *testing.T) {
 		t.Fatalf("reset: %d", w.Code)
 	}
 	res = decode[apigen.QuizResult](t, post("/lessons/101/quiz/submit", ""))
-	if res.Score != 0 || res.Results[0].SelectedIndex != nil || res.Results[1].IsCorrect {
+	if res.Attempt != 2 || res.Score != 0 || res.Results[0].SelectedIndex != nil || res.Results[1].IsCorrect {
 		t.Errorf("empty submit after reset = %+v", res)
+	}
+	if l := decode[apigen.LessonDetail](t, do(h, http.MethodGet, "/courses/linux/lessons/quiz", "", withCookie(studentToken))); l.Progress.QuizAttempts != 2 || *l.Progress.QuizScore != 0 {
+		t.Errorf("progress after second attempt = %+v", l.Progress)
+	}
+	if len(c.attempts) != 2 {
+		t.Fatalf("attempts = %+v", c.attempts)
+	}
+	first, second := c.attempts[0], c.attempts[1]
+	if first.score != 1 || len(first.answers) != 2 || *first.answers[0].Selected != 0 || first.answers[0].Correct || !first.answers[1].Correct {
+		t.Errorf("first attempt history = %+v", first)
+	}
+	if second.answers[0].Selected != nil || second.answers[1].Correct {
+		t.Errorf("second attempt history = %+v", second)
 	}
 
 	if w := post("/lessons/100/quiz/submit", ""); w.Code != http.StatusNotFound {

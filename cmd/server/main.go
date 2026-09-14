@@ -60,6 +60,7 @@ func main() {
 	specRepo := repository.NewSpecRepo(pool)
 	courseRepo := repository.NewCourseRepo(pool, moduleRepo, lessonRepo)
 	simRepo := repository.NewSimRepo(pool)
+	quizAttemptRepo := repository.NewQuizAttemptRepo(pool)
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -72,7 +73,7 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, log)
 
 	// Seed the built-in simulator scenarios into the DB once so they are editable.
 	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -110,14 +111,15 @@ func main() {
 	}))
 
 	apiV1 := api.New(api.Stores{
-		Users:       userRepo,
-		Modules:     moduleRepo,
-		Lessons:     lessonRepo,
-		Progress:    progressRepo,
-		Submissions: submissionRepo,
-		Specs:       specRepo,
-		Sims:        simRepo,
-		QuizAnswers: repository.NewQuizAnswerRepo(pool),
+		Users:        userRepo,
+		Modules:      moduleRepo,
+		Lessons:      lessonRepo,
+		Progress:     progressRepo,
+		Submissions:  submissionRepo,
+		Specs:        specRepo,
+		Sims:         simRepo,
+		QuizAnswers:  repository.NewQuizAnswerRepo(pool),
+		QuizAttempts: quizAttemptRepo,
 	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
 	r.Mount("/api/v1", apiV1.Routes())
 	h.RegisterRoutes(r)

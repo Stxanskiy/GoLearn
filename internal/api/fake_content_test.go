@@ -24,6 +24,12 @@ type fakeContent struct {
 	questions map[int][]model.QuizQuestion // lesson id → quiz questions
 	tasks     map[int]int                  // lesson id → task count
 	answers   map[int]map[int]int          // user id → question id → selected
+	attempts  []fakeAttempt
+}
+
+type fakeAttempt struct {
+	userID, lessonID, score, total int
+	answers                        []repository.AttemptAnswer
 }
 
 func newFakeContent() *fakeContent {
@@ -35,14 +41,15 @@ func newFakeContent() *fakeContent {
 
 func (f *fakeContent) stores(users *fakeUsers) Stores {
 	return Stores{
-		Users:       users,
-		Modules:     fakeModules{f},
-		Lessons:     fakeLessons{f},
-		Progress:    fakeProgress{f},
-		Submissions: fakeSubmissions{f},
-		Specs:       fakeSpecs{f},
-		Sims:        fakeSims{f},
-		QuizAnswers: fakeQuizAnswers{f},
+		Users:        users,
+		Modules:      fakeModules{f},
+		Lessons:      fakeLessons{f},
+		Progress:     fakeProgress{f},
+		Submissions:  fakeSubmissions{f},
+		Specs:        fakeSpecs{f},
+		Sims:         fakeSims{f},
+		QuizAnswers:  fakeQuizAnswers{f},
+		QuizAttempts: fakeQuizAttempts{f},
 	}
 }
 
@@ -291,4 +298,21 @@ func (f fakeQuizAnswers) ResetLesson(_ context.Context, userID, lessonID int) er
 		delete(f.answers[userID], q.ID)
 	}
 	return nil
+}
+
+type fakeQuizAttempts struct{ *fakeContent }
+
+func (f fakeQuizAttempts) Save(ctx context.Context, userID, lessonID, score, total int, answers []repository.AttemptAnswer) (int, error) {
+	f.fakeContent.attempts = append(f.fakeContent.attempts, fakeAttempt{userID, lessonID, score, total, answers})
+	return f.Count(ctx, userID, lessonID)
+}
+
+func (f fakeQuizAttempts) Count(_ context.Context, userID, lessonID int) (int, error) {
+	n := 0
+	for _, a := range f.attempts {
+		if a.userID == userID && a.lessonID == lessonID {
+			n++
+		}
+	}
+	return n, nil
 }

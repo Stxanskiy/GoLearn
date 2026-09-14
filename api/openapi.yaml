@@ -428,7 +428,7 @@ paths:
       summary: Submit quiz
       operationId: submitQuiz
       description: |
-        Scores the attempt and saves `quiz_score`/`quiz_total`. Questions answered via
+        Scores the attempt, records it in the attempt history and saves `quiz_score`/`quiz_total`. Questions answered via
         `POST .../answers` keep the stored answer; `answers` fills (and stores) the rest.
         Unanswered questions count as wrong. `404` when the lesson has no quiz.
       requestBody:
@@ -2121,11 +2121,12 @@ components:
     # ── lessons ──
     LessonProgress:
       type: object
-      required: [status, notes]
+      required: [status, notes, quiz_attempts]
       properties:
         status: { $ref: '#/components/schemas/ProgressStatus' }
-        quiz_score: { type: [integer, 'null'] }
+        quiz_score: { type: [integer, 'null'], description: Score of the latest submitted attempt. }
         quiz_total: { type: [integer, 'null'] }
+        quiz_attempts: { type: integer, description: Number of submitted quiz attempts. }
         notes: { type: string }
         completed_at: { type: [string, 'null'], format: date-time }
 
@@ -2239,8 +2240,9 @@ components:
 
     QuizResult:
       type: object
-      required: [score, total, percent, results]
+      required: [attempt, score, total, percent, results]
       properties:
+        attempt: { type: integer, description: 1-based number of this attempt. }
         score: { type: integer }
         total: { type: integer }
         percent: { type: integer }

@@ -99,6 +99,11 @@ func (a *API) getLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, tasks := a.Lessons.CountsForLesson(ctx, l.ID)
+	attempts, err := a.QuizAttempts.Count(ctx, uid, l.ID)
+	if err != nil {
+		a.internalError(w, "lesson: attempts", err)
+		return
+	}
 
 	out := apigen.LessonDetail{
 		ID:          l.ID,
@@ -107,7 +112,7 @@ func (a *API) getLesson(w http.ResponseWriter, r *http.Request) {
 		Kind:        lessonKind(l.Kind),
 		ContentHTML: content.Render(l.Format, l.Content),
 		Nav:         lessonNav(*m, *l, siblings, up),
-		Progress:    lessonProgress(*l, up),
+		Progress:    lessonProgress(*l, up, attempts),
 		Quiz:        quiz,
 		HasLab:      tasks > 0,
 	}
@@ -171,22 +176,30 @@ func (a *API) saveLessonNotes(w http.ResponseWriter, r *http.Request) {
 
 // writeLessonProgress responds with the lesson's current derived progress.
 func (a *API) writeLessonProgress(w http.ResponseWriter, r *http.Request, l model.Lesson) {
-	up, err := a.userProgress(r.Context(), userFrom(r.Context()).ID)
+	ctx := r.Context()
+	uid := userFrom(ctx).ID
+	up, err := a.userProgress(ctx, uid)
 	if err != nil {
 		a.internalError(w, "lesson progress", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, lessonProgress(l, up))
+	attempts, err := a.QuizAttempts.Count(ctx, uid, l.ID)
+	if err != nil {
+		a.internalError(w, "lesson progress: attempts", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, lessonProgress(l, up, attempts))
 }
 
-func lessonProgress(l model.Lesson, up catalog.UserProgress) apigen.LessonProgress {
+func lessonProgress(l model.Lesson, up catalog.UserProgress, attempts int) apigen.LessonProgress {
 	p := up.Lessons[l.ID]
 	return apigen.LessonProgress{
-		Status:      apigen.ProgressStatus(up.LessonStatus(l)),
-		QuizScore:   p.QuizScore,
-		QuizTotal:   p.QuizTotal,
-		Notes:       p.Notes,
-		CompletedAt: p.CompletedAt,
+		Status:       apigen.ProgressStatus(up.LessonStatus(l)),
+		QuizAttempts: attempts,
+		QuizScore:    p.QuizScore,
+		QuizTotal:    p.QuizTotal,
+		Notes:        p.Notes,
+		CompletedAt:  p.CompletedAt,
 	}
 }
 

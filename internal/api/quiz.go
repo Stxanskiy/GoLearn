@@ -7,6 +7,7 @@ import (
 	"github.com/backendraz/golearn/internal/api/apigen"
 	"github.com/backendraz/golearn/internal/content"
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
 )
 
 // quizQuestions returns the lesson's quiz questions; a lesson without a quiz has none.
@@ -111,6 +112,7 @@ func (a *API) submitQuiz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out := apigen.QuizResult{Total: len(questions), Results: make([]apigen.QuizQuestionResult, 0, len(questions))}
+	history := make([]repository.AttemptAnswer, 0, len(questions))
 	for _, q := range questions {
 		res := apigen.QuizQuestionResult{
 			QuestionID:      q.ID,
@@ -127,8 +129,13 @@ func (a *API) submitQuiz(w http.ResponseWriter, r *http.Request) {
 			out.Score++
 		}
 		out.Results = append(out.Results, res)
+		history = append(history, repository.AttemptAnswer{QuestionID: q.ID, Selected: res.SelectedIndex, Correct: res.IsCorrect})
 	}
 	out.Percent = out.Score * 100 / out.Total
+	if out.Attempt, err = a.QuizAttempts.Save(ctx, uid, ref.lesson.ID, out.Score, out.Total, history); err != nil {
+		a.internalError(w, "submit: save attempt", err)
+		return
+	}
 	if err := a.Progress.SaveQuizResult(ctx, uid, ref.lesson.ID, out.Score, out.Total); err != nil {
 		a.internalError(w, "submit: save result", err)
 		return

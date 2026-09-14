@@ -49,6 +49,11 @@ type progressStore interface {
 	SaveQuizResult(ctx context.Context, userID, lessonID, score, total int) error
 }
 
+type quizAttemptStore interface {
+	Save(ctx context.Context, userID, lessonID, score, total int, answers []repository.AttemptAnswer) (int, error)
+	Count(ctx context.Context, userID, lessonID int) (int, error)
+}
+
 type quizAnswerStore interface {
 	Record(ctx context.Context, userID, questionID, selected int) (stored int, created bool, err error)
 	ForLesson(ctx context.Context, userID, lessonID int) (map[int]int, error)
@@ -71,14 +76,15 @@ type simStore interface {
 
 // Stores are the repositories the API reads and writes.
 type Stores struct {
-	Users       userStore
-	Modules     moduleStore
-	Lessons     lessonStore
-	Progress    progressStore
-	Submissions submissionStore
-	Specs       specStore
-	Sims        simStore
-	QuizAnswers quizAnswerStore
+	Users        userStore
+	Modules      moduleStore
+	Lessons      lessonStore
+	Progress     progressStore
+	Submissions  submissionStore
+	Specs        specStore
+	Sims         simStore
+	QuizAnswers  quizAnswerStore
+	QuizAttempts quizAttemptStore
 }
 
 // Config holds API settings.

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -137,6 +138,7 @@ func (h *Handler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 
 	score := 0
 	var results []QuestionResult
+	var history []repository.AttemptAnswer
 
 	for i, q := range questions {
 		key := "q" + strconv.Itoa(i)
@@ -148,6 +150,11 @@ func (h *Handler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 		if isCorrect {
 			score++
 		}
+		answer := repository.AttemptAnswer{QuestionID: q.ID, Correct: isCorrect}
+		if ok {
+			answer.Selected = &selected
+		}
+		history = append(history, answer)
 		results = append(results, QuestionResult{
 			Question:    q.Question,
 			Options:     q.Options,
@@ -159,6 +166,9 @@ func (h *Handler) SubmitQuiz(w http.ResponseWriter, r *http.Request) {
 	}
 
 	total := len(questions)
+	if _, err := h.attemptRepo.Save(ctx, currentUserID(ctx), lesson.ID, score, total, history); err != nil {
+		h.log.Error("save quiz attempt", "error", err)
+	}
 	_ = h.progressRepo.SaveQuizResult(ctx, currentUserID(ctx), lesson.ID, score, total)
 
 	percent := 0
