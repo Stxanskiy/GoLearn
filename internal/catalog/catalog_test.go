@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -32,11 +33,14 @@ func TestCategorize(t *testing.T) {
 func TestSpecForTrack(t *testing.T) {
 	cases := map[string]string{
 		"devops": "devops", "database": "database", "gym": "gym",
-		"security": "security", "security-offense": "security", "golang": "devops", "weird": "devops",
+		"security": "security", "security-offense": "security", "backend": "devops", "": "devops", "frontend": "frontend",
 	}
 	for in, want := range cases {
 		if got := SpecForTrack(in); got != want {
 			t.Errorf("SpecForTrack(%q)=%q want %q", in, got, want)
+		}
+		if !slices.Contains(SpecTracks(want), in) {
+			t.Errorf("SpecTracks(%q) does not contain %q", want, in)
 		}
 	}
 }

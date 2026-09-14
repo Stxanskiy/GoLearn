@@ -20,24 +20,24 @@ const (
 // SpecForTrack maps a module track to its specialization slug.
 func SpecForTrack(track string) string {
 	switch track {
-	case "devops", "database", GymSpec:
-		return track
-	case "security", "security-offense", "security-defense":
+	case "", "backend", "shared":
+		return "devops"
+	case "security-offense", "security-defense":
 		return "security"
 	default:
-		return "devops"
+		return track
 	}
 }
 
 // SpecTracks lists the module tracks that belong to one specialization.
 func SpecTracks(spec string) []string {
 	switch spec {
-	case "database", GymSpec:
-		return []string{spec}
+	case "devops":
+		return []string{"devops", "", "backend", "shared"}
 	case "security":
 		return []string{"security", "security-offense", "security-defense"}
 	default:
-		return []string{"devops"}
+		return []string{spec}
 	}
 }
 
