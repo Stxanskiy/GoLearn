@@ -32,6 +32,7 @@ type fakeContent struct {
 	code      *fakeCode
 	coauthors map[int][]int // module id → co-author user ids
 	reviews   []repository.Review
+	origins   map[int]int // draft row id → live row id
 	nextID    int
 }
 
@@ -51,7 +52,7 @@ func newFakeContent() *fakeContent {
 		progress: map[int][]model.Progress{}, labPassed: map[int]map[int]bool{},
 		questions: map[int][]model.QuizQuestion{}, tasks: map[int][]model.Task{}, answers: map[int]map[int]int{},
 		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(), code: &fakeCode{},
-		coauthors: map[int][]int{}, nextID: 5000,
+		coauthors: map[int][]int{}, nextID: 5000, origins: map[int]int{},
 	}
 }
 
@@ -69,6 +70,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Authors:      fakeAuthors{f},
 		CourseIO:     fakeCourseIO{f},
 		Reviews:      fakeReviews{f},
+		Drafts:       fakeDrafts{f},
 		Sandbox:      f.sandbox,
 		Code:         f.code,
 	}

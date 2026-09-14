@@ -22,27 +22,28 @@ func (a *API) adminRequestCourseReview(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if course.module.Published {
-		writeError(w, http.StatusConflict, codeReviewNotNeeded, "course is already published")
+	kind := repository.ReviewPublish
+	if course.live.Published {
+		kind = repository.ReviewChanges
+		if _, err := a.Modules.DraftFor(r.Context(), course.live.ID); isNotFound(err) {
+			writeError(w, http.StatusConflict, codeReviewNotNeeded, "published course has no draft to review")
+			return
+		} else if err != nil {
+			a.internalError(w, "admin: find draft", err)
+			return
+		}
+	}
+	ctx := r.Context()
+	id, err := a.Reviews.Create(ctx, course.live.ID, kind, userFrom(ctx).ID, note)
+	if isUniqueViolation(err) {
+		writeError(w, http.StatusConflict, codeReviewPending, "a review is already pending")
 		return
 	}
-	a.createReview(w, r, course.module.ID, nil, note)
-}
-
-func (a *API) adminRequestLessonReview(w http.ResponseWriter, r *http.Request) {
-	l, course, ok := a.managedLesson(w, r, needOwner)
-	if !ok {
+	if err != nil {
+		a.internalError(w, "admin: create review", err)
 		return
 	}
-	note, ok := decodeReviewNote(w, r, false)
-	if !ok {
-		return
-	}
-	if l.Published || !course.module.Published {
-		writeError(w, http.StatusConflict, codeReviewNotNeeded, "only draft lessons of a published course are reviewed")
-		return
-	}
-	a.createReview(w, r, course.module.ID, &l.ID, note)
+	a.writeReview(w, r, http.StatusCreated, id)
 }
 
 func (a *API) adminListReviews(w http.ResponseWriter, r *http.Request) {
@@ -110,25 +111,14 @@ func (a *API) decideReview(w http.ResponseWriter, r *http.Request, approve bool)
 		return
 	}
 	ctx := r.Context()
-	if err := a.Reviews.Decide(ctx, v.ID, approve, userFrom(ctx).ID, note); err != nil {
+	if err := a.Reviews.Decide(ctx, v.ID, approve, userFrom(ctx).ID, note); errors.Is(err, repository.ErrNoDraft) {
+		writeError(w, http.StatusConflict, codeReviewClosed, "the draft no longer exists")
+		return
+	} else if err != nil {
 		a.reviewError(w, "admin: decide review", err)
 		return
 	}
 	a.writeReview(w, r, http.StatusOK, v.ID)
-}
-
-func (a *API) createReview(w http.ResponseWriter, r *http.Request, moduleID int, lessonID *int, note string) {
-	ctx := r.Context()
-	id, err := a.Reviews.Create(ctx, moduleID, lessonID, userFrom(ctx).ID, note)
-	if isUniqueViolation(err) {
-		writeError(w, http.StatusConflict, codeReviewPending, "a review is already pending")
-		return
-	}
-	if err != nil {
-		a.internalError(w, "admin: create review", err)
-		return
-	}
-	a.writeReview(w, r, http.StatusCreated, id)
 }
 
 // reviewByID loads the reviewId request, writing 404/500 itself when it returns false.
@@ -166,14 +156,9 @@ func (a *API) reviewError(w http.ResponseWriter, op string, err error) {
 	a.internalError(w, op, err)
 }
 
-// latestReviews returns the newest reviews of the courses keyed by course id and lesson id (0 for the course).
-func (a *API) latestReviews(r *http.Request, moduleIDs ...int) (map[int]map[int]repository.Review, error) {
-	return a.Reviews.Latest(r.Context(), moduleIDs)
-}
-
-// openReview returns the review when it still needs the author's or moderator's attention.
-func openReview(reviews map[int]repository.Review, key int) *apigen.ReviewRequest {
-	v, ok := reviews[key]
+// openReview returns the latest review of a course while it needs the author's or moderator's attention.
+func openReview(reviews map[int]repository.Review, moduleID int) *apigen.ReviewRequest {
+	v, ok := reviews[moduleID]
 	if !ok || (v.Status != repository.ReviewPending && v.Status != repository.ReviewRejected) {
 		return nil
 	}
@@ -199,12 +184,9 @@ func decodeReviewNote(w http.ResponseWriter, r *http.Request, required bool) (st
 
 func toReviewRequest(v repository.Review) apigen.ReviewRequest {
 	out := apigen.ReviewRequest{
-		ID: v.ID, Status: apigen.ReviewStatus(v.Status),
+		ID: v.ID, Kind: apigen.ReviewRequestKind(v.Kind), Status: apigen.ReviewStatus(v.Status),
 		Course: apigen.ContentRef{ID: v.ModuleID, Slug: v.CourseSlug, Title: v.CourseTitle},
 		Note:   v.Note, DecisionNote: v.DecisionNote, CreatedAt: v.CreatedAt, DecidedAt: v.DecidedAt,
-	}
-	if v.LessonID != nil {
-		out.Lesson = &apigen.ContentRef{ID: *v.LessonID, Slug: v.LessonSlug, Title: v.LessonTitle}
 	}
 	if v.RequestedBy != nil {
 		out.RequestedBy = &apigen.AuthorRef{ID: *v.RequestedBy, Name: v.RequesterName, Email: openapi_types.Email(v.RequesterEmail)}

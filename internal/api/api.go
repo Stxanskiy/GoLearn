@@ -37,6 +37,8 @@ type moduleStore interface {
 	Stats(ctx context.Context) (repository.PlatformStats, error)
 	ListManaged(ctx context.Context, userID int, all bool) ([]repository.CourseRow, error)
 	TrackCounts(ctx context.Context) (map[string]int, error)
+	DraftFor(ctx context.Context, liveID int) (*model.Module, error)
+	Drafts(ctx context.Context) (map[int]int, error)
 	NextOrder(ctx context.Context) (int, error)
 	Create(ctx context.Context, m model.Module) (int, error)
 	Update(ctx context.Context, m model.Module) error
@@ -78,16 +80,24 @@ type lessonStore interface {
 // courseIOStore exports and imports whole courses.
 type courseIOStore interface {
 	Export(ctx context.Context, moduleID int) (model.CourseTree, error)
-	Diff(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error)
-	Upsert(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error)
+	Diff(ctx context.Context, tree model.CourseTree, moduleID int) (repository.CourseDiff, error)
+	Upsert(ctx context.Context, tree model.CourseTree, moduleID int) (repository.CourseDiff, error)
+}
+
+// draftStore manages drafts of published courses.
+type draftStore interface {
+	Create(ctx context.Context, liveID int) (int, error)
+	Discard(ctx context.Context, liveID int) error
+	Changes(ctx context.Context, liveID int) (repository.DraftChanges, error)
 }
 
 // reviewStore keeps moderation requests.
 type reviewStore interface {
-	Create(ctx context.Context, moduleID int, lessonID *int, userID int, note string) (int, error)
+	Create(ctx context.Context, moduleID int, kind string, userID int, note string) (int, error)
+	Pending(ctx context.Context, moduleID int) (bool, error)
 	Get(ctx context.Context, id int) (*repository.Review, error)
 	List(ctx context.Context, f repository.ReviewFilter) ([]repository.Review, error)
-	Latest(ctx context.Context, moduleIDs []int) (map[int]map[int]repository.Review, error)
+	Latest(ctx context.Context, moduleIDs []int) (map[int]repository.Review, error)
 	Decide(ctx context.Context, id int, approve bool, adminID int, note string) error
 	Cancel(ctx context.Context, id int) error
 }
@@ -190,6 +200,7 @@ type Stores struct {
 	Authors      authorStore
 	CourseIO     courseIOStore
 	Reviews      reviewStore
+	Drafts       draftStore
 	Sandbox      sandbox
 	Code         codeRunner
 }
@@ -290,7 +301,9 @@ func (a *API) Routes() chi.Router {
 			r.Post("/admin/import", a.adminApplyImport)
 			r.Get("/admin/specializations", a.adminListSpecializations)
 			r.Post("/admin/courses/{courseId}/review", a.adminRequestCourseReview)
-			r.Post("/admin/lessons/{lessonId}/review", a.adminRequestLessonReview)
+			r.Post("/admin/courses/{courseId}/draft", a.adminOpenCourseDraft)
+			r.Delete("/admin/courses/{courseId}/draft", a.adminDiscardCourseDraft)
+			r.Get("/admin/courses/{courseId}/draft/changes", a.adminGetDraftChanges)
 			r.Get("/admin/reviews", a.adminListReviews)
 			r.Delete("/admin/reviews/{reviewId}", a.adminCancelReview)
 			r.With(requireAdmin).Post("/admin/reviews/{reviewId}/approve", a.adminApproveReview)

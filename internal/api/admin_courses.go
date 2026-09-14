@@ -44,9 +44,14 @@ func (a *API) adminListCourses(w http.ResponseWriter, r *http.Request) {
 	for i, row := range rows {
 		ids[i] = row.ID
 	}
-	reviews, err := a.latestReviews(r, ids...)
+	reviews, err := a.Reviews.Latest(ctx, ids)
 	if err != nil {
 		a.internalError(w, "admin: course reviews", err)
+		return
+	}
+	drafts, err := a.Modules.Drafts(ctx)
+	if err != nil {
+		a.internalError(w, "admin: course drafts", err)
 		return
 	}
 	owners := map[int]*apigen.AuthorRef{}
@@ -64,7 +69,10 @@ func (a *API) adminListCourses(w http.ResponseWriter, r *http.Request) {
 			a.internalError(w, "admin: course owner", err)
 			return
 		}
-		course := toAdminCourse(row.Module, owner, level, openReview(reviews[row.ID], 0))
+		course := toAdminCourse(row.Module, row.Module, owner, level, openReview(reviews, row.ID))
+		if id, ok := drafts[row.ID]; ok {
+			course.DraftID = &id
+		}
 		out = append(out, adminCourseRow{AdminCourse: course, LessonsCount: row.Lessons, LabsCount: row.Labs})
 	}
 	writeJSON(w, http.StatusOK, out)
@@ -81,22 +89,13 @@ func (a *API) adminGetCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: course lessons", err)
 		return
 	}
-	reviews, err := a.latestReviews(r, course.module.ID)
-	if err != nil {
-		a.internalError(w, "admin: course reviews", err)
-		return
-	}
 	rows := make([]apigen.AdminLessonRow, 0, len(lessons))
 	for _, l := range lessons {
 		questions, tasks := a.Lessons.CountsForLesson(ctx, l.ID)
-		row := apigen.AdminLessonRow{
+		rows = append(rows, apigen.AdminLessonRow{
 			ID: l.ID, Slug: l.Slug, Title: l.Title, Kind: lessonKind(l.Kind), Published: l.Published,
 			VMImage: l.VMImage, QuestionsCount: questions, TasksCount: tasks,
-		}
-		if review := openReview(reviews[course.module.ID], l.ID); review != nil {
-			row.ReviewStatus = &review.Status
-		}
-		rows = append(rows, row)
+		})
 	}
 	a.writeAdminCourse(w, r, http.StatusOK, course, func(c apigen.AdminCourse) any {
 		return apigen.AdminCourseDetail{Course: c, Lessons: rows}
@@ -149,7 +148,7 @@ func (a *API) adminCreateCourse(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	var body apigen.AdminCourseInput
@@ -158,7 +157,17 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 	cur := course.module
+	if cur.DraftOf != nil {
+		if strings.TrimSpace(body.Slug) != course.live.Slug {
+			writeValidation(w, map[string]string{"slug": fieldInvalidValue})
+			return
+		}
+		body.Slug = cur.Slug
+	}
 	m, fields, err := a.courseFromInput(ctx, body, cur)
+	if cur.DraftOf != nil && fields["slug"] == fieldInvalidFormat {
+		delete(fields, "slug")
+	}
 	if err != nil {
 		a.internalError(w, "admin: validate course", err)
 		return
@@ -167,13 +176,14 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, fields)
 		return
 	}
+	m.DraftOf = cur.DraftOf
 	m.ID, m.OrderNum, m.OwnerID, m.Source, m.CreatedAt = cur.ID, cur.OrderNum, cur.OwnerID, cur.Source, cur.CreatedAt
 	m.CoverImage, m.Published = cur.CoverImage, cur.Published
 	if body.CoverURL != nil {
 		m.CoverImage = *body.CoverURL
 	}
 	if body.Published != nil && *body.Published != cur.Published {
-		if !checkPublishedChange(w, course.level, *body.Published, false, cur.Published) {
+		if !a.checkCoursePublished(w, r, course, *body.Published) {
 			return
 		}
 		m.Published = *body.Published
@@ -188,12 +198,19 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	course.module = &m
+	if m.DraftOf == nil {
+		course.live = &m
+	}
 	a.writeAdminCourse(w, r, http.StatusOK, course, nil)
 }
 
 func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needOwner)
 	if !ok {
+		return
+	}
+	if course.module.DraftOf != nil {
+		a.discardDraft(w, r, course)
 		return
 	}
 	if err := a.Modules.Delete(r.Context(), course.module.ID); err != nil {
@@ -209,7 +226,7 @@ func (a *API) adminSetCoursePublished(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body apigen.Published
-	if !decodeJSON(w, r, &body) || !checkPublishedChange(w, course.level, body.Published, false, course.module.Published) {
+	if !decodeJSON(w, r, &body) || !a.checkCoursePublished(w, r, course, body.Published) {
 		return
 	}
 	if err := a.Modules.SetPublished(r.Context(), course.module.ID, body.Published); err != nil {
@@ -222,6 +239,10 @@ func (a *API) adminSetCoursePublished(w http.ResponseWriter, r *http.Request) {
 func (a *API) adminMoveCourse(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needAdmin)
 	if !ok {
+		return
+	}
+	if course.module.DraftOf != nil {
+		writeError(w, http.StatusForbidden, codeForbidden, "drafts keep the catalog order of their course")
 		return
 	}
 	dir, ok := decodeMove(w, r)
@@ -237,7 +258,7 @@ func (a *API) adminMoveCourse(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminUploadCourseCover(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	cover, ok := readCoverUpload(w, r)
@@ -253,7 +274,7 @@ func (a *API) adminUploadCourseCover(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminDeleteCourseCover(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	if err := a.Modules.SetCover(r.Context(), course.module.ID, ""); err != nil {
@@ -268,7 +289,7 @@ func (a *API) adminListCourseAuthors(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	a.writeCourseAuthors(w, r, course.module.ID)
+	a.writeCourseAuthors(w, r, course.live.ID)
 }
 
 func (a *API) adminAddCourseAuthor(w http.ResponseWriter, r *http.Request) {
@@ -300,11 +321,11 @@ func (a *API) adminAddCourseAuthor(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, map[string]string{"email": fieldNotAuthor})
 		return
 	}
-	if owner := course.module.OwnerID; owner != nil && *owner == u.ID {
+	if owner := course.live.OwnerID; owner != nil && *owner == u.ID {
 		writeError(w, http.StatusConflict, codeAlreadyAuthor, "user owns the course")
 		return
 	}
-	created, err := a.Authors.Add(ctx, course.module.ID, u.ID, userFrom(ctx).ID)
+	created, err := a.Authors.Add(ctx, course.live.ID, u.ID, userFrom(ctx).ID)
 	if err != nil {
 		a.internalError(w, "admin: add author", err)
 		return
@@ -330,7 +351,7 @@ func (a *API) adminRemoveCourseAuthor(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, codeForbidden, "only the owner can remove co-authors")
 		return
 	}
-	removed, err := a.Authors.Remove(ctx, course.module.ID, uid)
+	removed, err := a.Authors.Remove(ctx, course.live.ID, uid)
 	if err != nil {
 		a.internalError(w, "admin: remove author", err)
 		return
@@ -365,11 +386,11 @@ func (a *API) adminSetCourseOwner(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, map[string]string{"user_id": fieldNotAuthor})
 		return
 	}
-	if err := a.Authors.SetOwner(ctx, course.module.ID, u.ID, userFrom(ctx).ID); err != nil {
+	if err := a.Authors.SetOwner(ctx, course.live.ID, u.ID, userFrom(ctx).ID); err != nil {
 		a.internalError(w, "admin: set owner", err)
 		return
 	}
-	a.writeCourseAuthors(w, r, course.module.ID)
+	a.writeCourseAuthors(w, r, course.live.ID)
 }
 
 func (a *API) adminPreviewContent(w http.ResponseWriter, r *http.Request) {
@@ -386,17 +407,29 @@ func (a *API) adminPreviewContent(w http.ResponseWriter, r *http.Request) {
 
 // writeAdminCourse responds with the course, optionally wrapped by wrap.
 func (a *API) writeAdminCourse(w http.ResponseWriter, r *http.Request, status int, course courseRef, wrap func(apigen.AdminCourse) any) {
-	owner, err := a.authorRef(r.Context(), course.module.OwnerID, nil)
+	ctx := r.Context()
+	owner, err := a.authorRef(ctx, course.live.OwnerID, nil)
 	if err != nil {
 		a.internalError(w, "admin: course owner", err)
 		return
 	}
-	reviews, err := a.latestReviews(r, course.module.ID)
+	reviews, err := a.Reviews.Latest(ctx, []int{course.live.ID})
 	if err != nil {
 		a.internalError(w, "admin: course reviews", err)
 		return
 	}
-	var out any = toAdminCourse(*course.module, owner, course.level, openReview(reviews[course.module.ID], 0))
+	c := toAdminCourse(*course.module, *course.live, owner, course.level, openReview(reviews, course.live.ID))
+	if course.module.DraftOf == nil {
+		draft, err := a.Modules.DraftFor(ctx, course.module.ID)
+		switch {
+		case err == nil:
+			c.DraftID = &draft.ID
+		case !isNotFound(err):
+			a.internalError(w, "admin: course draft", err)
+			return
+		}
+	}
+	var out any = c
 	if wrap != nil {
 		out = wrap(out.(apigen.AdminCourse))
 	}
@@ -453,14 +486,15 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 	return apigen.AuthorRef{ID: u.ID, Name: u.Name, Email: openapi_types.Email(u.Email)}
 }
 
-func toAdminCourse(m model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
+// toAdminCourse describes a course or draft m of the live course.
+func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
-		ID: m.ID, Slug: m.Slug, Title: m.Title, Description: m.Description, Track: m.Track,
+		ID: m.ID, Slug: live.Slug, PreviewSlug: m.Slug, DraftOf: m.DraftOf, Title: m.Title, Description: m.Description, Track: m.Track,
 		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",
-		CoverPreviewURL: "/api/v1/courses/" + m.Slug + "/cover",
+		CoverPreviewURL: "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
 		CreatedAt:       m.CreatedAt,
 	}
 	if out.Tags == nil {

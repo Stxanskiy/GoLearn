@@ -16,7 +16,8 @@ const maxImportBody = 16 << 20
 type importPlan struct {
 	tree   model.CourseTree
 	diff   repository.CourseDiff
-	course *courseRef // nil when the import creates the course
+	course *courseRef // target course or draft; nil when the import creates the course
+	draft  bool       // the published course gets a draft on apply
 	issues []courseio.Issue
 }
 
@@ -30,13 +31,14 @@ func (a *API) adminExportCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: export course", err)
 		return
 	}
+	tree.Module.Slug = course.live.Slug
 	data, err := courseio.Marshal(courseio.FromTree(tree))
 	if err != nil {
 		a.internalError(w, "admin: marshal course", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Disposition", `attachment; filename="`+course.module.Slug+`.course.json"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+course.live.Slug+`.course.json"`)
 	_, _ = w.Write(data)
 }
 
@@ -67,8 +69,21 @@ func (a *API) adminApplyImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
+	targetID := 0
+	if plan.course != nil {
+		pending, err := a.Reviews.Pending(ctx, plan.course.live.ID)
+		if err != nil {
+			a.internalError(w, "import: pending review", err)
+			return
+		}
+		if pending {
+			writeError(w, http.StatusConflict, codeReviewPending, "course is under review")
+			return
+		}
+		targetID = plan.course.module.ID
+	}
 	if plan.course != nil && plan.course.level < needOwner && len(plan.diff.Removed) > 0 {
-		lessons, err := a.Lessons.GetByModuleAll(ctx, plan.course.module.ID)
+		lessons, err := a.Lessons.GetByModuleAll(ctx, targetID)
 		if err != nil {
 			a.internalError(w, "import: lessons", err)
 			return
@@ -84,7 +99,15 @@ func (a *API) adminApplyImport(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	_, err := a.CourseIO.Upsert(ctx, plan.tree)
+	if plan.draft {
+		id, err := a.Drafts.Create(ctx, targetID)
+		if err != nil {
+			a.internalError(w, "import: open draft", err)
+			return
+		}
+		targetID = id
+	}
+	_, err := a.CourseIO.Upsert(ctx, plan.tree, targetID)
 	if isUniqueViolation(err) {
 		writeError(w, http.StatusConflict, codeSlugTaken, "course slug is taken")
 		return
@@ -93,12 +116,16 @@ func (a *API) adminApplyImport(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "import: upsert", err)
 		return
 	}
-	m, err := a.Modules.GetBySlug(ctx, plan.tree.Module.Slug)
-	if err != nil {
-		a.internalError(w, "import: reload course", err)
-		return
+	if targetID == 0 {
+		m, err := a.Modules.GetBySlug(ctx, plan.tree.Module.Slug)
+		if err != nil {
+			a.internalError(w, "import: reload course", err)
+			return
+		}
+		targetID = m.ID
 	}
-	writeJSON(w, http.StatusOK, apigen.ImportResult{CourseID: m.ID, Created: plan.course == nil})
+	isDraft := plan.draft || (plan.course != nil && plan.course.module.DraftOf != nil)
+	writeJSON(w, http.StatusOK, apigen.ImportResult{CourseID: targetID, Created: plan.course == nil, Draft: isDraft})
 }
 
 // planImport decodes and validates a course document, writing the error response itself when it returns false.
@@ -113,6 +140,9 @@ func (a *API) planImport(w http.ResponseWriter, r *http.Request) (importPlan, bo
 	var cur *model.Module
 	m, err := a.Modules.GetBySlug(ctx, strings.TrimSpace(doc.Slug))
 	switch {
+	case err == nil && m.DraftOf != nil:
+		writeValidation(w, map[string]string{"slug": fieldInvalidFormat})
+		return importPlan{}, false
 	case err == nil:
 		level, err := a.courseLevel(ctx, user, m)
 		if err != nil {
@@ -123,7 +153,20 @@ func (a *API) planImport(w http.ResponseWriter, r *http.Request) (importPlan, bo
 			writeError(w, http.StatusConflict, codeSlugTaken, "course slug is taken")
 			return importPlan{}, false
 		}
-		cur, plan.course = m, &courseRef{module: m, level: level}
+		target := m
+		if m.Published {
+			draft, err := a.Modules.DraftFor(ctx, m.ID)
+			switch {
+			case err == nil:
+				target = draft
+			case isNotFound(err):
+				plan.draft = true
+			default:
+				a.internalError(w, "import: find draft", err)
+				return importPlan{}, false
+			}
+		}
+		cur, plan.course = target, &courseRef{module: target, live: m, level: level}
 	case !isNotFound(err):
 		a.internalError(w, "import: find course", err)
 		return importPlan{}, false
@@ -163,11 +206,15 @@ func (a *API) planImport(w http.ResponseWriter, r *http.Request) (importPlan, bo
 		mod.OrderNum = cur.OrderNum
 	}
 	plan.tree.Module = mod
-	publishLessons := plan.course == nil || (!plan.course.module.Published && plan.course.level >= needOwner)
+	publishLessons := plan.course == nil || plan.course.level >= needOwner
 	for i := range plan.tree.Lessons {
 		plan.tree.Lessons[i].Lesson.Published = publishLessons
 	}
-	if plan.diff, err = a.CourseIO.Diff(ctx, plan.tree); err != nil {
+	diffID := 0
+	if plan.course != nil {
+		diffID = plan.course.module.ID
+	}
+	if plan.diff, err = a.CourseIO.Diff(ctx, plan.tree, diffID); err != nil {
 		a.internalError(w, "import: diff", err)
 		return importPlan{}, false
 	}

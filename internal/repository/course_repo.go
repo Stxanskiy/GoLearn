@@ -61,10 +61,16 @@ func (r *CourseRepo) Export(ctx context.Context, moduleID int) (model.CourseTree
 	return tree, nil
 }
 
-// Diff computes what an import of tree would change, without writing anything.
-func (r *CourseRepo) Diff(ctx context.Context, tree model.CourseTree) (CourseDiff, error) {
+// Diff computes what importing tree into moduleID (0: the course with the tree slug) would change, without writing anything.
+func (r *CourseRepo) Diff(ctx context.Context, tree model.CourseTree, moduleID int) (CourseDiff, error) {
 	d := CourseDiff{Slug: tree.Module.Slug, Title: tree.Module.Title}
-	existing, err := r.modules.GetBySlug(ctx, tree.Module.Slug)
+	var existing *model.Module
+	var err error
+	if moduleID != 0 {
+		existing, err = r.modules.GetByID(ctx, moduleID)
+	} else {
+		existing, err = r.modules.GetBySlug(ctx, tree.Module.Slug)
+	}
 	if errors.Is(err, pgx.ErrNoRows) {
 		for _, lb := range tree.Lessons {
 			d.New = append(d.New, LessonRef{lb.Lesson.Slug, lb.Lesson.Title})
@@ -147,8 +153,8 @@ func taskTitles(tasks []model.Task) []string {
 }
 
 // Upsert applies a course tree in one transaction keyed by slug; published and owner apply only to rows it inserts; lessons missing from the tree are deleted, questions and tasks are matched by text and title so student answers and submissions survive.
-func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree) (CourseDiff, error) {
-	d, err := r.Diff(ctx, tree)
+func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree, moduleID int) (CourseDiff, error) {
+	d, err := r.Diff(ctx, tree, moduleID)
 	if err != nil {
 		return d, err
 	}
@@ -163,8 +169,9 @@ func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree) (CourseD
 	if m.Tags == nil {
 		tags = []byte("[]")
 	}
-	var moduleID int
-	err = tx.QueryRow(ctx, `SELECT id FROM modules WHERE slug=$1`, m.Slug).Scan(&moduleID)
+	if moduleID == 0 {
+		err = tx.QueryRow(ctx, `SELECT id FROM modules WHERE slug=$1`, m.Slug).Scan(&moduleID)
+	}
 	switch err {
 	case pgx.ErrNoRows:
 		err = tx.QueryRow(ctx,

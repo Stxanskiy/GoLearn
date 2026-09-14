@@ -92,7 +92,7 @@ func (h *Handler) AdminImportPreview(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, importPreviewResp{Error: "slug курса: только латиница, цифры, дефис"})
 		return
 	}
-	d, err := h.courseRepo.Diff(r.Context(), c.ToTree())
+	d, err := h.courseRepo.Diff(r.Context(), c.ToTree(), 0)
 	if err != nil {
 		writeJSON(w, importPreviewResp{Error: "Ошибка сверки: " + err.Error()})
 		return
@@ -145,7 +145,7 @@ func (h *Handler) AdminImportApply(w http.ResponseWriter, r *http.Request) {
 	for i := range tree.Lessons {
 		tree.Lessons[i].Lesson.Published = true
 	}
-	if _, err := h.courseRepo.Upsert(ctx, tree); err != nil {
+	if _, err := h.courseRepo.Upsert(ctx, tree, 0); err != nil {
 		h.log.Error("admin import course", "slug", c.Slug, "error", err)
 		http.Error(w, "Ошибка импорта: "+err.Error(), 500)
 		return

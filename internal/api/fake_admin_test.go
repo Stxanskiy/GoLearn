@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -349,9 +350,12 @@ func (f fakeCourseIO) Export(_ context.Context, moduleID int) (model.CourseTree,
 	return tree, nil
 }
 
-func (f fakeCourseIO) Diff(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error) {
+func (f fakeCourseIO) Diff(ctx context.Context, tree model.CourseTree, moduleID int) (repository.CourseDiff, error) {
 	d := repository.CourseDiff{Slug: tree.Module.Slug, Title: tree.Module.Title}
 	m, err := fakeModules{f.fakeContent}.GetBySlug(ctx, tree.Module.Slug)
+	if moduleID != 0 {
+		m, err = fakeModules{f.fakeContent}.GetByID(ctx, moduleID)
+	}
 	if err == nil {
 		d.Exists, d.ModuleID = true, m.ID
 	}
@@ -374,17 +378,17 @@ func (f fakeCourseIO) Diff(ctx context.Context, tree model.CourseTree) (reposito
 	return d, nil
 }
 
-func (f fakeCourseIO) Upsert(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error) {
-	d, _ := f.Diff(ctx, tree)
+func (f fakeCourseIO) Upsert(ctx context.Context, tree model.CourseTree, moduleID int) (repository.CourseDiff, error) {
+	d, _ := f.Diff(ctx, tree, moduleID)
 	mods, lessons := fakeModules{f.fakeContent}, fakeLessons{f.fakeContent}
 	id := d.ModuleID
 	if !d.Exists {
 		id, _ = mods.Create(ctx, tree.Module)
 	} else {
 		m := mods.module(id)
-		published, owner, cover := m.Published, m.OwnerID, m.CoverImage
+		published, owner, cover, slug, draftOf := m.Published, m.OwnerID, m.CoverImage, m.Slug, m.DraftOf
 		*m = tree.Module
-		m.ID, m.Published, m.OwnerID = id, published, owner
+		m.ID, m.Published, m.OwnerID, m.Slug, m.DraftOf = id, published, owner, slug, draftOf
 		if m.CoverImage == "" {
 			m.CoverImage = cover
 		}
@@ -404,6 +408,26 @@ func (f fakeCourseIO) Upsert(ctx context.Context, tree model.CourseTree) (reposi
 	}
 	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ModuleID == id && !keep[l.Slug] })
 	return d, nil
+}
+
+func (f fakeModules) DraftFor(_ context.Context, liveID int) (*model.Module, error) {
+	for _, m := range f.modules {
+		if m.DraftOf != nil && *m.DraftOf == liveID {
+			cp := m
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeModules) Drafts(_ context.Context) (map[int]int, error) {
+	out := map[int]int{}
+	for _, m := range f.modules {
+		if m.DraftOf != nil {
+			out[*m.DraftOf] = m.ID
+		}
+	}
+	return out, nil
 }
 
 func (f fakeModules) TrackCounts(_ context.Context) (map[string]int, error) {
@@ -598,19 +622,21 @@ func (f *fakeUsers) DeleteGuarded(ctx context.Context, userID int) error {
 
 type fakeReviews struct{ *fakeContent }
 
-func (f fakeReviews) Create(_ context.Context, moduleID int, lessonID *int, userID int, note string) (int, error) {
-	for _, v := range f.reviews {
-		if v.ModuleID == moduleID && v.Status == repository.ReviewPending && ptrEq(v.LessonID, lessonID) {
-			return 0, errUnique
-		}
+func (f fakeReviews) Create(_ context.Context, moduleID int, kind string, userID int, note string) (int, error) {
+	if ok, _ := f.Pending(context.Background(), moduleID); ok {
+		return 0, errUnique
 	}
 	id := f.id()
-	f.reviews = append(f.reviews, repository.Review{ID: id, ModuleID: moduleID, LessonID: lessonID, RequestedBy: &userID,
+	f.reviews = append(f.reviews, repository.Review{ID: id, ModuleID: moduleID, Kind: kind, RequestedBy: &userID,
 		RequesterName: "user", RequesterEmail: "u@example.com", Status: repository.ReviewPending, Note: note, CreatedAt: time.Now()})
 	return id, nil
 }
 
-func ptrEq(a, b *int) bool { return (a == nil && b == nil) || (a != nil && b != nil && *a == *b) }
+func (f fakeReviews) Pending(_ context.Context, moduleID int) (bool, error) {
+	return slices.ContainsFunc(f.reviews, func(v repository.Review) bool {
+		return v.ModuleID == moduleID && v.Status == repository.ReviewPending
+	}), nil
+}
 
 func (f fakeReviews) review(id int) *repository.Review {
 	for i := range f.reviews {
@@ -624,11 +650,6 @@ func (f fakeReviews) review(id int) *repository.Review {
 func (f fakeReviews) joined(v repository.Review) repository.Review {
 	if m := (fakeModules{f.fakeContent}).module(v.ModuleID); m != nil {
 		v.CourseSlug, v.CourseTitle = m.Slug, m.Title
-	}
-	if v.LessonID != nil {
-		if l := (fakeLessons{f.fakeContent}).lesson(*v.LessonID); l != nil {
-			v.LessonSlug, v.LessonTitle = l.Slug, l.Title
-		}
 	}
 	return v
 }
@@ -654,20 +675,12 @@ func (f fakeReviews) List(ctx context.Context, rf repository.ReviewFilter) ([]re
 	return out, nil
 }
 
-func (f fakeReviews) Latest(_ context.Context, moduleIDs []int) (map[int]map[int]repository.Review, error) {
-	out := map[int]map[int]repository.Review{}
+func (f fakeReviews) Latest(_ context.Context, moduleIDs []int) (map[int]repository.Review, error) {
+	out := map[int]repository.Review{}
 	for _, v := range f.reviews {
-		if !slices.Contains(moduleIDs, v.ModuleID) {
-			continue
+		if slices.Contains(moduleIDs, v.ModuleID) {
+			out[v.ModuleID] = f.joined(v)
 		}
-		key := 0
-		if v.LessonID != nil {
-			key = *v.LessonID
-		}
-		if out[v.ModuleID] == nil {
-			out[v.ModuleID] = map[int]repository.Review{}
-		}
-		out[v.ModuleID][key] = f.joined(v)
 	}
 	return out, nil
 }
@@ -678,14 +691,18 @@ func (f fakeReviews) Decide(_ context.Context, id int, approve bool, adminID int
 		return repository.ErrReviewClosed
 	}
 	v.Status, v.DecidedBy, v.DeciderEmail, v.DecisionNote = repository.ReviewRejected, &adminID, "a@example.com", note
-	if approve {
-		v.Status = repository.ReviewApproved
-		if v.LessonID != nil {
-			(fakeLessons{f.fakeContent}).lesson(*v.LessonID).Published = true
-		} else {
-			(fakeModules{f.fakeContent}).module(v.ModuleID).Published = true
-		}
+	if !approve {
+		return nil
 	}
+	if v.Kind == repository.ReviewChanges {
+		if err := (fakeDrafts{f.fakeContent}).merge(v.ModuleID); err != nil {
+			v.Status, v.DecidedBy = repository.ReviewPending, nil
+			return err
+		}
+	} else {
+		(fakeModules{f.fakeContent}).module(v.ModuleID).Published = true
+	}
+	v.Status = repository.ReviewApproved
 	return nil
 }
 
@@ -695,5 +712,112 @@ func (f fakeReviews) Cancel(_ context.Context, id int) error {
 		return repository.ErrReviewClosed
 	}
 	v.Status = repository.ReviewCancelled
+	return nil
+}
+
+// fakeDrafts copies courses in memory; origins maps draft lesson, question and task ids to live ids.
+type fakeDrafts struct{ *fakeContent }
+
+func (f fakeDrafts) Create(ctx context.Context, liveID int) (int, error) {
+	if _, err := (fakeModules{f.fakeContent}).DraftFor(ctx, liveID); err == nil {
+		return 0, errUnique
+	}
+	live := (fakeModules{f.fakeContent}).module(liveID)
+	draft := *live
+	draft.ID, draft.Slug, draft.Published, draft.DraftOf = f.id(), "~draft-"+strconv.Itoa(liveID), false, &liveID
+	f.modules = append(f.modules, draft)
+	for _, l := range slices.Clone(f.lessons) {
+		if l.ModuleID != liveID {
+			continue
+		}
+		cp := l
+		cp.ID, cp.ModuleID = f.id(), draft.ID
+		f.origins[cp.ID] = l.ID
+		f.lessons = append(f.lessons, cp)
+		for _, q := range f.questions[l.ID] {
+			qc := q
+			qc.ID, qc.QuizID = f.id(), cp.ID
+			f.origins[qc.ID] = q.ID
+			f.questions[cp.ID] = append(f.questions[cp.ID], qc)
+		}
+		for _, t := range f.tasks[l.ID] {
+			tc := t
+			tc.ID, tc.LessonID = f.id(), cp.ID
+			f.origins[tc.ID] = t.ID
+			f.tasks[cp.ID] = append(f.tasks[cp.ID], tc)
+		}
+	}
+	return draft.ID, nil
+}
+
+func (f fakeDrafts) Discard(ctx context.Context, liveID int) error {
+	draft, err := (fakeModules{f.fakeContent}).DraftFor(ctx, liveID)
+	if err != nil {
+		return repository.ErrNoDraft
+	}
+	for i := range f.reviews {
+		if f.reviews[i].ModuleID == liveID && f.reviews[i].Kind == repository.ReviewChanges && f.reviews[i].Status == repository.ReviewPending {
+			f.reviews[i].Status = repository.ReviewCancelled
+		}
+	}
+	return (fakeModules{f.fakeContent}).Delete(ctx, draft.ID)
+}
+
+func (f fakeDrafts) Changes(ctx context.Context, liveID int) (repository.DraftChanges, error) {
+	draft, err := (fakeModules{f.fakeContent}).DraftFor(ctx, liveID)
+	if err != nil {
+		return repository.DraftChanges{}, repository.ErrNoDraft
+	}
+	var out repository.DraftChanges
+	if live := (fakeModules{f.fakeContent}).module(liveID); live.Title != draft.Title {
+		out.CourseFields = []string{"title"}
+	}
+	for _, l := range f.lessons {
+		if l.ModuleID == draft.ID {
+			if _, ok := f.origins[l.ID]; !ok {
+				id := l.ID
+				out.Lessons = append(out.Lessons, repository.LessonChange{DraftLessonID: &id, Slug: l.Slug, Title: l.Title, Change: "added"})
+			}
+		}
+	}
+	return out, nil
+}
+
+// merge replaces the live course content with its draft, keeping live ids of copied rows.
+func (f fakeDrafts) merge(liveID int) error {
+	mods := fakeModules{f.fakeContent}
+	draft, err := mods.DraftFor(context.Background(), liveID)
+	if err != nil {
+		return repository.ErrNoDraft
+	}
+	live := mods.module(liveID)
+	live.Title, live.Description = draft.Title, draft.Description
+	liveID2 := func(id int) int {
+		if o, ok := f.origins[id]; ok {
+			return o
+		}
+		return id
+	}
+	var kept []model.Lesson
+	for _, l := range f.lessons {
+		if l.ModuleID != draft.ID {
+			continue
+		}
+		draftLesson := l.ID
+		l.ID, l.ModuleID = liveID2(l.ID), liveID
+		qs := f.questions[draftLesson]
+		for i := range qs {
+			qs[i].ID, qs[i].QuizID = liveID2(qs[i].ID), l.ID
+		}
+		ts := f.tasks[draftLesson]
+		for i := range ts {
+			ts[i].ID, ts[i].LessonID = liveID2(ts[i].ID), l.ID
+		}
+		f.questions[l.ID], f.tasks[l.ID] = qs, ts
+		kept = append(kept, l)
+	}
+	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ModuleID == liveID || l.ModuleID == draft.ID })
+	f.lessons = append(f.lessons, kept...)
+	f.modules = slices.DeleteFunc(f.modules, func(m model.Module) bool { return m.ID == draft.ID })
 	return nil
 }

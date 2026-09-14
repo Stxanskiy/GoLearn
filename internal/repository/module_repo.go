@@ -19,14 +19,14 @@ func NewModuleRepo(pool *pgxpool.Pool) *ModuleRepo {
 }
 
 const moduleCols = `id, slug, title, description, order_num, track, difficulty, prerequisites,
-	category, label, tags, cover_image, accent, est_minutes, source, published, owner_id, created_at`
+	category, label, tags, cover_image, accent, est_minutes, source, published, owner_id, created_at, draft_of`
 
 func scanModule(row pgx.Row) (model.Module, error) {
 	var m model.Module
 	var prereqJSON, tagsJSON []byte
 	err := row.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
 		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.Accent, &m.EstMinutes, &m.Source,
-		&m.Published, &m.OwnerID, &m.CreatedAt)
+		&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf)
 	if err != nil {
 		return m, err
 	}
@@ -111,7 +111,7 @@ func (r *ModuleRepo) Update(ctx context.Context, m model.Module) error {
 func (r *ModuleRepo) GetForAdmin(ctx context.Context, adminID int) ([]model.Module, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT `+moduleCols+` FROM modules
-		 WHERE published OR owner_id = $1 OR owner_id IS NULL
+		 WHERE draft_of IS NULL AND (published OR owner_id = $1 OR owner_id IS NULL)
 		 ORDER BY order_num`, adminID)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,8 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 		   (SELECT count(*) FROM lessons l WHERE l.module_id = modules.id),
 		   (SELECT count(*) FROM lessons l WHERE l.module_id = modules.id AND l.kind = 'lab')
 		 FROM modules
-		 WHERE $2 OR owner_id = $1 OR EXISTS (SELECT 1 FROM course_authors ca WHERE ca.module_id = modules.id AND ca.user_id = $1)
+		 WHERE draft_of IS NULL
+		   AND ($2 OR owner_id = $1 OR EXISTS (SELECT 1 FROM course_authors ca WHERE ca.module_id = modules.id AND ca.user_id = $1))
 		 ORDER BY order_num, id`, userID, all)
 	if err != nil {
 		return nil, err
@@ -156,7 +157,7 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 		m := &c.Module
 		if err := rows.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
 			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.Accent, &m.EstMinutes, &m.Source,
-			&m.Published, &m.OwnerID, &m.CreatedAt, &c.Lessons, &c.Labs); err != nil {
+			&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &c.Lessons, &c.Labs); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal(prereqJSON, &m.Prerequisites)
@@ -168,7 +169,7 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 
 // TrackCounts returns the number of courses per track.
 func (r *ModuleRepo) TrackCounts(ctx context.Context) (map[string]int, error) {
-	rows, err := r.pool.Query(ctx, `SELECT track, count(*) FROM modules GROUP BY track`)
+	rows, err := r.pool.Query(ctx, `SELECT track, count(*) FROM modules WHERE draft_of IS NULL GROUP BY track`)
 	if err != nil {
 		return nil, err
 	}
@@ -181,6 +182,33 @@ func (r *ModuleRepo) TrackCounts(ctx context.Context) (map[string]int, error) {
 			return nil, err
 		}
 		out[track] = n
+	}
+	return out, rows.Err()
+}
+
+// DraftFor returns the draft copy of a live course.
+func (r *ModuleRepo) DraftFor(ctx context.Context, liveID int) (*model.Module, error) {
+	m, err := scanModule(r.pool.QueryRow(ctx, `SELECT `+moduleCols+` FROM modules WHERE draft_of = $1`, liveID))
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+// Drafts maps live course ids to the ids of their drafts.
+func (r *ModuleRepo) Drafts(ctx context.Context) (map[int]int, error) {
+	rows, err := r.pool.Query(ctx, `SELECT draft_of, id FROM modules WHERE draft_of IS NOT NULL`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[int]int{}
+	for rows.Next() {
+		var live, draft int
+		if err := rows.Scan(&live, &draft); err != nil {
+			return nil, err
+		}
+		out[live] = draft
 	}
 	return out, rows.Err()
 }
@@ -217,9 +245,9 @@ func (r *ModuleRepo) Move(ctx context.Context, id int, dir string) error {
 	if err := tx.QueryRow(ctx, `SELECT track, order_num FROM modules WHERE id=$1`, id).Scan(&track, &ord); err != nil {
 		return err
 	}
-	q := `SELECT id, order_num FROM modules WHERE track=$1 AND order_num > $2 ORDER BY order_num ASC LIMIT 1`
+	q := `SELECT id, order_num FROM modules WHERE track=$1 AND draft_of IS NULL AND order_num > $2 ORDER BY order_num ASC LIMIT 1`
 	if dir == "up" {
-		q = `SELECT id, order_num FROM modules WHERE track=$1 AND order_num < $2 ORDER BY order_num DESC LIMIT 1`
+		q = `SELECT id, order_num FROM modules WHERE track=$1 AND draft_of IS NULL AND order_num < $2 ORDER BY order_num DESC LIMIT 1`
 	}
 	var nid, nord int
 	if err := tx.QueryRow(ctx, q, track, ord).Scan(&nid, &nord); err != nil {

@@ -228,6 +228,27 @@ func (e LabTaskCheckMode) Valid() bool {
 	}
 }
 
+// Defines values for LessonChangeChange.
+const (
+	Added    LessonChangeChange = "added"
+	Modified LessonChangeChange = "modified"
+	Removed  LessonChangeChange = "removed"
+)
+
+// Valid indicates whether the value is a known member of the LessonChangeChange enum.
+func (e LessonChangeChange) Valid() bool {
+	switch e {
+	case Added:
+		return true
+	case Modified:
+		return true
+	case Removed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for LessonKind.
 const (
 	LessonKindLab    LessonKind = "lab"
@@ -270,6 +291,24 @@ func (e ProgressStatus) Valid() bool {
 	case InProgress:
 		return true
 	case NotStarted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewRequestKind.
+const (
+	Changes ReviewRequestKind = "changes"
+	Publish ReviewRequestKind = "publish"
+)
+
+// Valid indicates whether the value is a known member of the ReviewRequestKind enum.
+func (e ReviewRequestKind) Valid() bool {
+	switch e {
+	case Changes:
+		return true
+	case Publish:
 		return true
 	default:
 		return false
@@ -466,17 +505,26 @@ type AdminCourse struct {
 	CreatedAt   time.Time  `json:"created_at"`
 	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
-	EstMinutes  int        `json:"est_minutes"`
+
+	// DraftID Id of the open draft of a live course.
+	DraftID *int `json:"draft_id"`
+
+	// DraftOf Live course id when this is a draft.
+	DraftOf    *int `json:"draft_of"`
+	EstMinutes int  `json:"est_minutes"`
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
 	ID             int  `json:"id"`
 
 	// Label Null when derived.
-	Label     *CourseLabel `json:"label"`
-	OrderNum  int          `json:"order_num"`
-	Owner     *AuthorRef   `json:"owner"`
-	Published bool         `json:"published"`
+	Label    *CourseLabel `json:"label"`
+	OrderNum int          `json:"order_num"`
+	Owner    *AuthorRef   `json:"owner"`
+
+	// PreviewSlug Slug for the student pages (`/courses/{preview_slug}`); differs from `slug` for drafts.
+	PreviewSlug string `json:"preview_slug"`
+	Published   bool   `json:"published"`
 
 	// Review Latest course review while it is pending or rejected.
 	Review *ReviewRequest    `json:"review"`
@@ -541,7 +589,13 @@ type AdminCourseRow struct {
 	CreatedAt   time.Time  `json:"created_at"`
 	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
-	EstMinutes  int        `json:"est_minutes"`
+
+	// DraftID Id of the open draft of a live course.
+	DraftID *int `json:"draft_id"`
+
+	// DraftOf Live course id when this is a draft.
+	DraftOf    *int `json:"draft_of"`
+	EstMinutes int  `json:"est_minutes"`
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
@@ -553,7 +607,10 @@ type AdminCourseRow struct {
 	LessonsCount int          `json:"lessons_count"`
 	OrderNum     int          `json:"order_num"`
 	Owner        *AuthorRef   `json:"owner"`
-	Published    bool         `json:"published"`
+
+	// PreviewSlug Slug for the student pages (`/courses/{preview_slug}`); differs from `slug` for drafts.
+	PreviewSlug string `json:"preview_slug"`
+	Published   bool   `json:"published"`
 
 	// Review Latest course review while it is pending or rejected.
 	Review *ReviewRequest       `json:"review"`
@@ -592,10 +649,7 @@ type AdminLessonSource string
 type AdminLessonDetail struct {
 	Lesson    AdminLesson     `json:"lesson"`
 	Questions []AdminQuestion `json:"questions"`
-
-	// Review Latest lesson review while it is pending or rejected.
-	Review *ReviewRequest `json:"review"`
-	Tasks  []AdminTask    `json:"tasks"`
+	Tasks     []AdminTask     `json:"tasks"`
 }
 
 // AdminLessonInput defines model for AdminLessonInput.
@@ -619,13 +673,10 @@ type AdminLessonRow struct {
 	Kind           LessonKind `json:"kind"`
 	Published      bool       `json:"published"`
 	QuestionsCount int        `json:"questions_count"`
-
-	// ReviewStatus Latest lesson review status while pending or rejected.
-	ReviewStatus *ReviewStatus `json:"review_status"`
-	Slug         string        `json:"slug"`
-	TasksCount   int           `json:"tasks_count"`
-	Title        string        `json:"title"`
-	VMImage      string        `json:"vm_image"`
+	Slug           string     `json:"slug"`
+	TasksCount     int        `json:"tasks_count"`
+	Title          string     `json:"title"`
+	VMImage        string     `json:"vm_image"`
 }
 
 // AdminQuestion defines model for AdminQuestion.
@@ -991,6 +1042,15 @@ type DashboardOverview struct {
 // Difficulty defines model for Difficulty.
 type Difficulty string
 
+// DraftChanges defines model for DraftChanges.
+type DraftChanges struct {
+	// CourseFields Changed course fields (e.g. `title`, `cover_image`).
+	CourseFields []string `json:"course_fields"`
+
+	// Lessons Changed lessons only, in draft order; removed lessons last.
+	Lessons []LessonChange `json:"lessons"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	Error ErrorBody `json:"error"`
@@ -998,7 +1058,7 @@ type Error struct {
 
 // ErrorBody defines model for ErrorBody.
 type ErrorBody struct {
-	// Code Examples: unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, review_required, review_pending, sandbox_disabled
+	// Code Examples: unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, review_required, review_pending, draft_required, sandbox_disabled
 	Code    string        `json:"code"`
 	Details *ErrorDetails `json:"details,omitempty"`
 
@@ -1079,8 +1139,19 @@ type ImportPreview struct {
 
 // ImportResult defines model for ImportResult.
 type ImportResult struct {
+	// CourseID Course or draft the document was written to.
 	CourseID int  `json:"course_id"`
 	Created  bool `json:"created"`
+
+	// Draft The course is published and the document went into its draft.
+	Draft bool `json:"draft"`
+}
+
+// ItemChanges defines model for ItemChanges.
+type ItemChanges struct {
+	Added    int `json:"added"`
+	Modified int `json:"modified"`
+	Removed  int `json:"removed"`
 }
 
 // Lab defines model for Lab.
@@ -1154,6 +1225,21 @@ type LandingTrack struct {
 	Name         string `json:"name"`
 	Slug         string `json:"slug"`
 }
+
+// LessonChange defines model for LessonChange.
+type LessonChange struct {
+	Change        LessonChangeChange `json:"change"`
+	DraftLessonID *int               `json:"draft_lesson_id"`
+	Fields        []string           `json:"fields"`
+	LiveLessonID  *int               `json:"live_lesson_id"`
+	Questions     ItemChanges        `json:"questions"`
+	Slug          string             `json:"slug"`
+	Tasks         ItemChanges        `json:"tasks"`
+	Title         string             `json:"title"`
+}
+
+// LessonChangeChange defines model for LessonChange.Change.
+type LessonChangeChange string
 
 // LessonDetail defines model for LessonDetail.
 type LessonDetail struct {
@@ -1305,14 +1391,17 @@ type ReviewRequest struct {
 	DecisionNote string `json:"decision_note"`
 	ID           int    `json:"id"`
 
-	// Lesson Null for a course review.
-	Lesson *ContentRef `json:"lesson"`
+	// Kind `publish` an unpublished course or apply the draft `changes` of a published one.
+	Kind ReviewRequestKind `json:"kind"`
 
 	// Note Message from the author.
 	Note        string       `json:"note"`
 	RequestedBy *AuthorRef   `json:"requested_by"`
 	Status      ReviewStatus `json:"status"`
 }
+
+// ReviewRequestKind `publish` an unpublished course or apply the draft `changes` of a published one.
+type ReviewRequestKind string
 
 // ReviewStatus defines model for ReviewStatus.
 type ReviewStatus string
@@ -1513,6 +1602,9 @@ type TermRows = int
 
 // UserID defines model for UserId.
 type UserID = int
+
+// ContentConflict defines model for ContentConflict.
+type ContentConflict = Error
 
 // Forbidden defines model for Forbidden.
 type Forbidden = Error
@@ -1804,9 +1896,6 @@ type AdminSetLessonPublishedJSONRequestBody AdminSetLessonPublishedJSONBody
 
 // AdminCreateQuestionJSONRequestBody defines body for AdminCreateQuestion for application/json ContentType.
 type AdminCreateQuestionJSONRequestBody = AdminQuestionInput
-
-// AdminRequestLessonReviewJSONRequestBody defines body for AdminRequestLessonReview for application/json ContentType.
-type AdminRequestLessonReviewJSONRequestBody = ReviewNote
 
 // AdminCreateTaskJSONRequestBody defines body for AdminCreateTask for application/json ContentType.
 type AdminCreateTaskJSONRequestBody = AdminTaskInput

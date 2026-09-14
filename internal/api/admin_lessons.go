@@ -12,7 +12,7 @@ import (
 
 func (a *API) adminCreateLesson(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	var body apigen.AdminLessonInput
@@ -24,7 +24,7 @@ func (a *API) adminCreateLesson(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, fields)
 		return
 	}
-	if deref(body.Published) && !checkPublishedChange(w, course.level, true, true, course.module.Published) {
+	if deref(body.Published) && !a.checkLessonPublished(w, r, course, true) {
 		return
 	}
 	ctx := r.Context()
@@ -52,11 +52,6 @@ func (a *API) adminGetLesson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	reviews, err := a.latestReviews(r, l.ModuleID)
-	if err != nil {
-		a.internalError(w, "admin: lesson reviews", err)
-		return
-	}
 	questions, err := a.quizQuestions(ctx, l.ID)
 	if err != nil {
 		a.internalError(w, "admin: lesson questions", err)
@@ -69,7 +64,6 @@ func (a *API) adminGetLesson(w http.ResponseWriter, r *http.Request) {
 	}
 	out := apigen.AdminLessonDetail{
 		Lesson:    toAdminLesson(*l),
-		Review:    openReview(reviews[l.ModuleID], l.ID),
 		Questions: make([]apigen.AdminQuestion, 0, len(questions)),
 		Tasks:     make([]apigen.AdminTask, 0, len(tasks)),
 	}
@@ -84,7 +78,7 @@ func (a *API) adminGetLesson(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminUpdateLesson(w http.ResponseWriter, r *http.Request) {
 	cur, course, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	var body apigen.AdminLessonInput
@@ -98,7 +92,7 @@ func (a *API) adminUpdateLesson(w http.ResponseWriter, r *http.Request) {
 	}
 	l.ID, l.ModuleID, l.Track, l.OrderNum, l.Published = cur.ID, cur.ModuleID, cur.Track, cur.OrderNum, cur.Published
 	if body.Published != nil && *body.Published != cur.Published {
-		if !checkPublishedChange(w, course.level, *body.Published, true, course.module.Published) {
+		if !a.checkLessonPublished(w, r, course, *body.Published) {
 			return
 		}
 		l.Published = *body.Published
@@ -117,7 +111,7 @@ func (a *API) adminUpdateLesson(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminDeleteLesson(w http.ResponseWriter, r *http.Request) {
 	l, course, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	if l.Published && course.level < needOwner {
@@ -137,7 +131,7 @@ func (a *API) adminSetLessonPublished(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var body apigen.Published
-	if !decodeJSON(w, r, &body) || !checkPublishedChange(w, course.level, body.Published, true, course.module.Published) {
+	if !decodeJSON(w, r, &body) || !a.checkLessonPublished(w, r, course, body.Published) {
 		return
 	}
 	if err := a.Lessons.SetPublished(r.Context(), l.ID, body.Published); err != nil {
@@ -148,8 +142,8 @@ func (a *API) adminSetLessonPublished(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminMoveLesson(w http.ResponseWriter, r *http.Request) {
-	l, _, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	l, course, ok := a.managedLesson(w, r, needEdit)
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	dir, ok := decodeMove(w, r)
@@ -164,8 +158,8 @@ func (a *API) adminMoveLesson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminDuplicateLesson(w http.ResponseWriter, r *http.Request) {
-	l, _, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	l, course, ok := a.managedLesson(w, r, needEdit)
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	id, err := a.Lessons.DuplicateLesson(r.Context(), l.ID)
@@ -177,8 +171,8 @@ func (a *API) adminDuplicateLesson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminCreateQuestion(w http.ResponseWriter, r *http.Request) {
-	l, _, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	l, course, ok := a.managedLesson(w, r, needEdit)
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	var body apigen.AdminQuestionInput
@@ -239,8 +233,8 @@ func (a *API) adminDeleteQuestion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminCreateTask(w http.ResponseWriter, r *http.Request) {
-	l, _, ok := a.managedLesson(w, r, needEdit)
-	if !ok {
+	l, course, ok := a.managedLesson(w, r, needEdit)
+	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
 	var body apigen.AdminTaskInput
@@ -295,7 +289,7 @@ func (a *API) adminDeleteTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// managedQuestion loads the questionId question and checks edit access to its course.
+// managedQuestion loads the questionId question for a change, checking edit access to its course.
 func (a *API) managedQuestion(w http.ResponseWriter, r *http.Request) (*model.QuizQuestion, int, bool) {
 	id, ok := pathID(w, r, "questionId", "question not found")
 	if !ok {
@@ -316,13 +310,13 @@ func (a *API) managedQuestion(w http.ResponseWriter, r *http.Request) (*model.Qu
 		a.internalError(w, "admin: question lesson", err)
 		return nil, 0, false
 	}
-	if _, _, ok := a.managedLessonByID(w, r, lessonID, needEdit); !ok {
+	if _, course, ok := a.managedLessonByID(w, r, lessonID, needEdit); !ok || !a.checkEditable(w, r, course) {
 		return nil, 0, false
 	}
 	return q, lessonID, true
 }
 
-// managedTask loads the taskId task and checks edit access to its course.
+// managedTask loads the taskId task for a change, checking edit access to its course.
 func (a *API) managedTask(w http.ResponseWriter, r *http.Request) (*model.Task, bool) {
 	id, ok := pathID(w, r, "taskId", "task not found")
 	if !ok {
@@ -337,7 +331,7 @@ func (a *API) managedTask(w http.ResponseWriter, r *http.Request) (*model.Task, 
 		a.internalError(w, "admin: load task", err)
 		return nil, false
 	}
-	if _, _, ok := a.managedLessonByID(w, r, t.LessonID, needEdit); !ok {
+	if _, course, ok := a.managedLessonByID(w, r, t.LessonID, needEdit); !ok || !a.checkEditable(w, r, course) {
 		return nil, false
 	}
 	return t, true

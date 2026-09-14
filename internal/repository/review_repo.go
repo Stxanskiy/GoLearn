@@ -17,18 +17,22 @@ const (
 	ReviewCancelled = "cancelled"
 )
 
+// Review request kinds.
+const (
+	ReviewPublish = "publish" // publish an unpublished course
+	ReviewChanges = "changes" // apply the draft of a published course
+)
+
 // ErrReviewClosed means the review request is no longer pending.
 var ErrReviewClosed = errors.New("review request is not pending")
 
-// Review is a request to publish a course (LessonID nil) or a lesson, with display fields joined in.
+// Review is a moderation request for a course, with display fields joined in.
 type Review struct {
 	ID             int
 	ModuleID       int
 	CourseSlug     string
 	CourseTitle    string
-	LessonID       *int
-	LessonSlug     string
-	LessonTitle    string
+	Kind           string
 	Status         string
 	Note           string
 	RequestedBy    *int
@@ -58,30 +62,37 @@ func NewReviewRepo(pool *pgxpool.Pool) *ReviewRepo {
 	return &ReviewRepo{pool: pool}
 }
 
-const reviewSelect = `SELECT r.id, r.module_id, m.slug, m.title, r.lesson_id, COALESCE(l.slug, ''), COALESCE(l.title, ''),
+const reviewSelect = `SELECT r.id, r.module_id, m.slug, m.title, r.kind,
 	r.status, r.note, r.requested_by, COALESCE(ru.name, ''), COALESCE(ru.email, ''),
 	r.decision_note, r.decided_by, COALESCE(du.name, ''), COALESCE(du.email, ''), r.created_at, r.decided_at
 	FROM review_requests r
 	JOIN modules m ON m.id = r.module_id
-	LEFT JOIN lessons l ON l.id = r.lesson_id
 	LEFT JOIN users ru ON ru.id = r.requested_by
 	LEFT JOIN users du ON du.id = r.decided_by`
 
 func scanReview(row pgx.Row) (Review, error) {
 	var v Review
-	err := row.Scan(&v.ID, &v.ModuleID, &v.CourseSlug, &v.CourseTitle, &v.LessonID, &v.LessonSlug, &v.LessonTitle,
+	err := row.Scan(&v.ID, &v.ModuleID, &v.CourseSlug, &v.CourseTitle, &v.Kind,
 		&v.Status, &v.Note, &v.RequestedBy, &v.RequesterName, &v.RequesterEmail,
 		&v.DecisionNote, &v.DecidedBy, &v.DeciderName, &v.DeciderEmail, &v.CreatedAt, &v.DecidedAt)
 	return v, err
 }
 
-// Create opens a pending request; a second pending request for the same target is a unique violation.
-func (r *ReviewRepo) Create(ctx context.Context, moduleID int, lessonID *int, userID int, note string) (int, error) {
+// Create opens a pending request; a second pending request for the course is a unique violation.
+func (r *ReviewRepo) Create(ctx context.Context, moduleID int, kind string, userID int, note string) (int, error) {
 	var id int
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO review_requests (module_id, lesson_id, requested_by, note) VALUES ($1, $2, $3, $4) RETURNING id`,
-		moduleID, lessonID, userID, note).Scan(&id)
+		`INSERT INTO review_requests (module_id, kind, requested_by, note) VALUES ($1, $2, $3, $4) RETURNING id`,
+		moduleID, kind, userID, note).Scan(&id)
 	return id, err
+}
+
+// Pending reports whether the course has a pending request.
+func (r *ReviewRepo) Pending(ctx context.Context, moduleID int) (bool, error) {
+	var ok bool
+	err := r.pool.QueryRow(ctx,
+		`SELECT EXISTS (SELECT 1 FROM review_requests WHERE module_id = $1 AND status = 'pending')`, moduleID).Scan(&ok)
+	return ok, err
 }
 
 func (r *ReviewRepo) Get(ctx context.Context, id int) (*Review, error) {
@@ -100,22 +111,15 @@ func (r *ReviewRepo) List(ctx context.Context, f ReviewFilter) ([]Review, error)
 		ORDER BY r.created_at DESC, r.id DESC LIMIT 200`, f.Status, f.ModuleID, f.EditorID)
 }
 
-// Latest returns the newest request per target (course or lesson) of the given courses, keyed by lesson id with 0 for the course.
-func (r *ReviewRepo) Latest(ctx context.Context, moduleIDs []int) (map[int]map[int]Review, error) {
+// Latest returns the newest request of each course.
+func (r *ReviewRepo) Latest(ctx context.Context, moduleIDs []int) (map[int]Review, error) {
 	rows, err := r.query(ctx, reviewSelect+` WHERE r.module_id = ANY($1) ORDER BY r.created_at, r.id`, moduleIDs)
 	if err != nil {
 		return nil, err
 	}
-	out := map[int]map[int]Review{}
+	out := map[int]Review{}
 	for _, v := range rows {
-		key := 0
-		if v.LessonID != nil {
-			key = *v.LessonID
-		}
-		if out[v.ModuleID] == nil {
-			out[v.ModuleID] = map[int]Review{}
-		}
-		out[v.ModuleID][key] = v
+		out[v.ModuleID] = v
 	}
 	return out, nil
 }
@@ -137,7 +141,7 @@ func (r *ReviewRepo) query(ctx context.Context, sql string, args ...any) ([]Revi
 	return out, rows.Err()
 }
 
-// Decide approves or rejects a pending request; approval publishes its course or lesson in the same transaction.
+// Decide approves or rejects a pending request; approval publishes the course or applies its draft in the same transaction.
 func (r *ReviewRepo) Decide(ctx context.Context, id int, approve bool, adminID int, note string) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -149,26 +153,26 @@ func (r *ReviewRepo) Decide(ctx context.Context, id int, approve bool, adminID i
 		status = ReviewApproved
 	}
 	var moduleID int
-	var lessonID *int
+	var kind string
 	err = tx.QueryRow(ctx,
 		`UPDATE review_requests SET status = $1, decided_by = $2, decision_note = $3, decided_at = NOW()
-		 WHERE id = $4 AND status = 'pending' RETURNING module_id, lesson_id`,
-		status, adminID, note, id).Scan(&moduleID, &lessonID)
+		 WHERE id = $4 AND status = 'pending' RETURNING module_id, kind`,
+		status, adminID, note, id).Scan(&moduleID, &kind)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return ErrReviewClosed
 	}
 	if err != nil {
 		return err
 	}
-	if approve {
-		if lessonID != nil {
-			_, err = tx.Exec(ctx, `UPDATE lessons SET published = TRUE WHERE id = $1`, *lessonID)
-		} else {
-			_, err = tx.Exec(ctx, `UPDATE modules SET published = TRUE WHERE id = $1`, moduleID)
-		}
-		if err != nil {
-			return err
-		}
+	switch {
+	case !approve:
+	case kind == ReviewChanges:
+		err = mergeDraft(ctx, tx, moduleID)
+	default:
+		_, err = tx.Exec(ctx, `UPDATE modules SET published = TRUE WHERE id = $1`, moduleID)
+	}
+	if err != nil {
+		return err
 	}
 	return tx.Commit(ctx)
 }
