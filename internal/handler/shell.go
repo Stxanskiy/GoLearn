@@ -126,6 +126,10 @@ func (h *Handler) ShellStepDone(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "task not found", 404)
 		return
 	}
+	if task.CheckScript != "" || len(task.TestCases) > 0 {
+		http.Error(w, "task must pass its check", http.StatusConflict)
+		return
+	}
 	_ = h.submissionRepo.Save(r.Context(), user.ID, taskID, "[manual]", "", "", true)
 	if allDone, e := h.submissionRepo.AllLessonTasksPassed(r.Context(), user.ID, task.LessonID); e == nil && allDone {
 		_ = h.progressRepo.Upsert(r.Context(), user.ID, task.LessonID, "completed")
