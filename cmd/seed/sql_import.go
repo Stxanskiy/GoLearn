@@ -62,16 +62,16 @@ func sqlAcademyModules() []M {
 	sort.Slice(qs, func(i, j int) bool { return qs[i].ID < qs[j].ID })
 
 	groups := []struct {
-		diff, slug, title string
+		diff, level, slug, title string
 	}{
-		{"easy", "sql-easy", "Лёгкие задачи"},
-		{"medium", "sql-medium", "Средние задачи"},
-		{"hard", "sql-hard", "Сложные задачи"},
+		{"easy", "beginner", "sql-easy", "Лёгкие задачи"},
+		{"medium", "intermediate", "sql-medium", "Средние задачи"},
+		{"hard", "advanced", "sql-hard", "Сложные задачи"},
 	}
 	var mods []M
 	for _, g := range groups {
 		m := M{
-			Slug: g.slug, Title: g.title, Track: "database", Category: "Database", Difficulty: g.diff,
+			Slug: g.slug, Title: g.title, Track: "database", Category: "Database", Difficulty: g.level,
 			Description: "Практика SQL: реальные задачи со схемами БД и проверкой прямо в браузере.",
 		}
 		order := 0
