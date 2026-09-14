@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"sort"
 
@@ -22,9 +23,19 @@ type fakeContent struct {
 	cont      *repository.ContinueLesson
 	stats     repository.PlatformStats
 	questions map[int][]model.QuizQuestion // lesson id → quiz questions
-	tasks     map[int]int                  // lesson id → task count
-	answers   map[int]map[int]int          // user id → question id → selected
+	tasks     map[int][]model.Task         // lesson id → tasks
+	passed    map[int]map[int]bool         // user id → task id → passed
+	saves     []fakeSubmission
+	answers   map[int]map[int]int // user id → question id → selected
 	attempts  []fakeAttempt
+	sandbox   *fakeSandbox
+	code      *fakeCode
+}
+
+type fakeSubmission struct {
+	userID, taskID int
+	code, output   string
+	passed         bool
 }
 
 type fakeAttempt struct {
@@ -35,7 +46,8 @@ type fakeAttempt struct {
 func newFakeContent() *fakeContent {
 	return &fakeContent{
 		progress: map[int][]model.Progress{}, labPassed: map[int]map[int]bool{},
-		questions: map[int][]model.QuizQuestion{}, tasks: map[int]int{}, answers: map[int]map[int]int{},
+		questions: map[int][]model.QuizQuestion{}, tasks: map[int][]model.Task{}, answers: map[int]map[int]int{},
+		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(), code: &fakeCode{},
 	}
 }
 
@@ -50,6 +62,8 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Sims:         fakeSims{f},
 		QuizAnswers:  fakeQuizAnswers{f},
 		QuizAttempts: fakeQuizAttempts{f},
+		Sandbox:      f.sandbox,
+		Code:         f.code,
 	}
 }
 
@@ -161,7 +175,27 @@ func (f fakeLessons) GetQuiz(_ context.Context, lessonID int) (*model.Quiz, []mo
 }
 
 func (f fakeLessons) CountsForLesson(_ context.Context, lessonID int) (questions, tasks int) {
-	return len(f.questions[lessonID]), f.tasks[lessonID]
+	return len(f.questions[lessonID]), len(f.tasks[lessonID])
+}
+
+func (f fakeLessons) GetTasks(_ context.Context, lessonID int) ([]model.Task, error) {
+	return f.tasks[lessonID], nil
+}
+
+func (f fakeLessons) GetTaskByID(_ context.Context, taskID int) (*model.Task, error) {
+	for _, ts := range f.tasks {
+		for _, t := range ts {
+			if t.ID == taskID {
+				cp := t
+				return &cp, nil
+			}
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeLessons) LessonSandbox(_ context.Context, lessonID int) (string, string, error) {
+	return "golearn/sandbox:latest", fmt.Sprintf("setup-%d", lessonID), nil
 }
 
 type fakeProgress struct{ *fakeContent }
@@ -201,6 +235,12 @@ func (f fakeProgress) SaveNotes(_ context.Context, userID, lessonID int, notes s
 	return nil
 }
 
+func (f fakeProgress) ResetLesson(_ context.Context, userID, lessonID int) error {
+	p := f.row(userID, lessonID)
+	p.Status, p.QuizScore, p.QuizTotal = "not_started", nil, nil
+	return nil
+}
+
 func (f fakeProgress) SaveQuizResult(_ context.Context, userID, lessonID, score, total int) error {
 	p := f.row(userID, lessonID)
 	p.QuizScore, p.QuizTotal = &score, &total
@@ -223,7 +263,48 @@ func (f fakeProgress) LatestInProgress(_ context.Context, _ int) (*repository.Co
 type fakeSubmissions struct{ *fakeContent }
 
 func (f fakeSubmissions) LessonLabStatus(_ context.Context, userID int) (map[int]bool, error) {
-	return f.labPassed[userID], nil
+	out := map[int]bool{}
+	for id, ok := range f.labPassed[userID] {
+		out[id] = ok
+	}
+	for lessonID, ts := range f.tasks {
+		all := len(ts) > 0
+		for _, t := range ts {
+			all = all && f.passed[userID][t.ID]
+		}
+		if all {
+			out[lessonID] = true
+		}
+	}
+	return out, nil
+}
+
+func (f fakeSubmissions) PassedTaskIDs(_ context.Context, userID, lessonID int) (map[int]bool, error) {
+	out := map[int]bool{}
+	for _, t := range f.tasks[lessonID] {
+		if f.passed[userID][t.ID] {
+			out[t.ID] = true
+		}
+	}
+	return out, nil
+}
+
+func (f fakeSubmissions) Save(_ context.Context, userID, taskID int, code, output, _ string, passed bool) error {
+	f.fakeContent.saves = append(f.fakeContent.saves, fakeSubmission{userID, taskID, code, output, passed})
+	if passed {
+		if f.passed[userID] == nil {
+			f.passed[userID] = map[int]bool{}
+		}
+		f.passed[userID][taskID] = true
+	}
+	return nil
+}
+
+func (f fakeSubmissions) ResetLesson(_ context.Context, userID, lessonID int) error {
+	for _, t := range f.tasks[lessonID] {
+		delete(f.passed[userID], t.ID)
+	}
+	return nil
 }
 
 type fakeSpecs struct{ *fakeContent }

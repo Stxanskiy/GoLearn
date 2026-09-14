@@ -459,7 +459,7 @@ paths:
       tags: [labs]
       summary: Get lab
       operationId: getLab
-      description: Lab page (tasks, theory, quiz, sandbox state). Never exposes solutions or check scripts.
+      description: Lab page (tasks, theory, quiz, sandbox state). Never exposes solutions or check scripts. `404` when the lesson has no tasks.
       responses:
         '200':
           description: Lab.
@@ -502,7 +502,7 @@ paths:
       tags: [labs]
       summary: Retry lab
       operationId: retryLab
-      description: Deletes the user's submissions for the lab, resets progress (notes kept) and tears the sandbox down.
+      description: Deletes the user's submissions and current quiz answers for the lab, resets progress (notes and attempt history kept) and tears the sandbox down.
       responses:
         '204': { description: Lab reset. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -524,8 +524,9 @@ paths:
       responses:
         '101': { description: Switching protocols. }
         '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { description: '`origin_mismatch`.' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
   /lessons/{lessonId}/lab/git-graph:
@@ -535,7 +536,7 @@ paths:
       tags: [labs]
       summary: Get lab git graph
       operationId: getLabGitGraph
-      description: Parsed `git log --all` of `/root/project` (latest 60 commits, newest first). Empty list if no repo.
+      description: Parsed `git log --all` of `/root/project` (latest 60 commits, newest first). Empty list if no repo or no running sandbox; never boots one.
       responses:
         '200':
           description: Commits.
@@ -560,22 +561,11 @@ paths:
           description: Directory listing.
           content:
             application/json:
-              schema:
-                type: object
-                required: [path, entries]
-                properties:
-                  path: { type: string }
-                  entries:
-                    type: array
-                    items:
-                      type: object
-                      required: [name, is_dir]
-                      properties:
-                        name: { type: string }
-                        is_dir: { type: boolean }
+              schema: { $ref: '#/components/schemas/LabDirListing' }
         '400': { $ref: '#/components/responses/PathOutsideJail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/SandboxNotRunning' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
@@ -587,7 +577,7 @@ paths:
       tags: [labs]
       summary: Read lab file
       operationId: readLabFile
-      description: Raw file bytes, up to 512 KiB.
+      description: Raw file bytes, up to 2 MiB.
       responses:
         '200':
           description: File content.
@@ -601,6 +591,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '409': { $ref: '#/components/responses/SandboxNotRunning' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
     put:
@@ -622,6 +613,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '409': { $ref: '#/components/responses/SandboxNotRunning' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
@@ -644,7 +636,7 @@ paths:
       description: |
         Proxies GET to `http://127.0.0.1:{port}/{path}` inside the sandbox, for an
         `<iframe sandbox="allow-scripts allow-forms">`. HTML gets a `<base href>` injected.
-        Upstream errors render a placeholder HTML page with status 200.
+        Upstream errors or a stopped sandbox render a placeholder HTML page with status 200.
       responses:
         '200':
           description: Upstream response (status and Content-Type mirrored).
@@ -675,6 +667,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
@@ -708,7 +701,9 @@ paths:
       summary: Run task code
       operationId: runTaskCode
       deprecated: true
-      description: Go code task — runs the code against the task's test cases. Kept while Go tasks exist.
+      description: |
+        Go code task — runs the code against the task's test cases (expected output is never returned).
+        `409 task_not_code` for shell tasks. Kept while Go tasks exist.
       requestBody:
         required: true
         content:
@@ -722,7 +717,14 @@ paths:
               schema: { $ref: '#/components/schemas/RunResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`task_not_code`.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '502': { $ref: '#/components/responses/SandboxError' }
 
   # ───────────────────────────── trainers ─────────────────────────────
   /playground/run:
@@ -745,6 +747,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '429': { $ref: '#/components/responses/RateLimited' }
+        '502': { $ref: '#/components/responses/SandboxError' }
 
   /git-trainer/session:
     get:
@@ -1856,6 +1859,11 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
+    SandboxNotRunning:
+      description: '`sandbox_not_running` — open the terminal first.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     SandboxError:
       description: '`sandbox_error` (boot failed, no free slots, command failed).'
       content:
@@ -2265,6 +2273,22 @@ components:
         explanation_html: { type: string }
 
     # ── labs ──
+    LabDirListing:
+      type: object
+      required: [path, entries]
+      properties:
+        path: { type: string }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/LabFileEntry' }
+
+    LabFileEntry:
+      type: object
+      required: [name, is_dir]
+      properties:
+        name: { type: string }
+        is_dir: { type: boolean }
+
     SandboxSession:
       type: object
       required: [enabled, running]
@@ -2272,7 +2296,7 @@ components:
         enabled: { type: boolean, description: Sandbox configured on the server. }
         running: { type: boolean }
         started_at: { type: [string, 'null'], format: date-time }
-        expires_at: { type: [string, 'null'], format: date-time, description: Hard session limit (1 h). }
+        expires_at: { type: [string, 'null'], format: date-time, description: 'Idle timeout (30 min) or hard limit (1 h), whichever is sooner.' }
 
     LabTask:
       type: object
@@ -2326,23 +2350,27 @@ components:
       properties:
         commits:
           type: array
-          items:
-            type: object
-            required: [hash, parents, refs, subject]
-            properties:
-              hash: { type: string }
-              parents:
-                type: array
-                items: { type: string }
-              refs:
-                type: array
-                items:
-                  type: object
-                  required: [name, type]
-                  properties:
-                    name: { type: string }
-                    type: { type: string, enum: [head, branch, remote, tag] }
-              subject: { type: string }
+          items: { $ref: '#/components/schemas/GitCommit' }
+
+    GitCommit:
+      type: object
+      required: [hash, parents, refs, subject]
+      properties:
+        hash: { type: string }
+        parents:
+          type: array
+          items: { type: string }
+        refs:
+          type: array
+          items: { $ref: '#/components/schemas/GitRef' }
+        subject: { type: string }
+
+    GitRef:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [head, branch, remote, tag] }
 
     RunRequest:
       type: object
@@ -2363,14 +2391,16 @@ components:
         lesson_status: { $ref: '#/components/schemas/ProgressStatus' }
         test_results:
           type: array
-          items:
-            type: object
-            required: [index, passed]
-            properties:
-              index: { type: integer }
-              passed: { type: boolean }
-              input: { type: string }
-              actual: { type: string }
+          items: { $ref: '#/components/schemas/RunTestResult' }
+
+    RunTestResult:
+      type: object
+      required: [index, passed, input, actual]
+      properties:
+        index: { type: integer }
+        passed: { type: boolean }
+        input: { type: string }
+        actual: { type: string }
 
     GlossaryItem:
       type: object

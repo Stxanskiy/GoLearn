@@ -30,7 +30,7 @@ func lessonsFixture(t *testing.T) (http.Handler, *fakeContent) {
 		{ID: 1001, Question: "Pick <b>two</b>", Options: []string{"one", "two", "three"}, OptionExpl: []string{"no", "yes", "no"}, CorrectIndex: 1, Explanation: "Because"},
 		{ID: 1002, Question: `<img src=x onerror="steal()">Yes?`, Options: []string{"yes", "no"}, CorrectIndex: 0},
 	}
-	c.tasks[102] = 3
+	c.tasks[102] = []model.Task{{ID: 900, LessonID: 102, Kind: "shell"}}
 	return newTestAPIWith(t, users, c), c
 }
 

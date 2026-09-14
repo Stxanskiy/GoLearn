@@ -28,6 +28,14 @@ const (
 	codeRegistrationClosed = "registration_closed"
 	codeEmailTaken         = "email_taken"
 	codeCompletionDerived  = "completion_derived"
+	codeSandboxDisabled    = "sandbox_disabled"
+	codeSandboxNotRunning  = "sandbox_not_running"
+	codeSandboxError       = "sandbox_error"
+	codePathOutsideJail    = "path_outside_jail"
+	codeFileTooLarge       = "file_too_large"
+	codeTaskNotAutoChecked = "task_not_auto_checked"
+	codeTaskAutoChecked    = "task_auto_checked"
+	codeTaskNotCode        = "task_not_code"
 )
 
 // Field-level validation codes.

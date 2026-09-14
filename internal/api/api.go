@@ -8,6 +8,7 @@ import (
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
+	"github.com/backendraz/golearn/internal/runner"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -36,6 +37,9 @@ type lessonStore interface {
 	GetByID(ctx context.Context, id int) (*model.Lesson, error)
 	GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []model.QuizQuestion, error)
 	CountsForLesson(ctx context.Context, lessonID int) (questions, tasks int)
+	GetTasks(ctx context.Context, lessonID int) ([]model.Task, error)
+	GetTaskByID(ctx context.Context, taskID int) (*model.Task, error)
+	LessonSandbox(ctx context.Context, lessonID int) (image, setup string, err error)
 }
 
 type progressStore interface {
@@ -47,6 +51,7 @@ type progressStore interface {
 	Upsert(ctx context.Context, userID, lessonID int, status string) error
 	SaveNotes(ctx context.Context, userID, lessonID int, notes string) error
 	SaveQuizResult(ctx context.Context, userID, lessonID, score, total int) error
+	ResetLesson(ctx context.Context, userID, lessonID int) error
 }
 
 type quizAttemptStore interface {
@@ -62,6 +67,31 @@ type quizAnswerStore interface {
 
 type submissionStore interface {
 	LessonLabStatus(ctx context.Context, userID int) (map[int]bool, error)
+	PassedTaskIDs(ctx context.Context, userID, lessonID int) (map[int]bool, error)
+	Save(ctx context.Context, userID, taskID int, code, output, errors string, passed bool) error
+	ResetLesson(ctx context.Context, userID, lessonID int) error
+}
+
+// sandbox is the per-user lab VM runner.
+type sandbox interface {
+	Enabled() bool
+	Session(userID int, key string) (runner.SessionInfo, bool)
+	Touch(userID int, key string)
+	EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error)
+	OpenPTY(handle string, cols, rows int) (*runner.PTYSession, error)
+	Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error)
+	Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error)
+	Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error)
+	FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]runner.FSEntry, error)
+	FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error)
+	FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error
+	Reset(ctx context.Context, userID int, key string) error
+}
+
+// codeRunner runs Go playground and code-task programs.
+type codeRunner interface {
+	Run(ctx context.Context, code, stdin string) (*runner.Result, error)
+	RunWithTests(ctx context.Context, code string, tests []struct{ Input, Expected string }) (*runner.RunResult, error)
 }
 
 type specStore interface {
@@ -74,7 +104,7 @@ type simStore interface {
 	Get(ctx context.Context, slug string) (*model.Simulator, error)
 }
 
-// Stores are the repositories the API reads and writes.
+// Stores are the repositories and runners the API uses.
 type Stores struct {
 	Users        userStore
 	Modules      moduleStore
@@ -85,6 +115,8 @@ type Stores struct {
 	Sims         simStore
 	QuizAnswers  quizAnswerStore
 	QuizAttempts quizAttemptStore
+	Sandbox      sandbox
+	Code         codeRunner
 }
 
 // Config holds API settings.
@@ -141,6 +173,26 @@ func (a *API) Routes() chi.Router {
 		r.Post("/lessons/{lessonId}/quiz/answers", a.answerQuizQuestion)
 		r.Delete("/lessons/{lessonId}/quiz/answers", a.resetQuizAttempt)
 		r.Post("/lessons/{lessonId}/quiz/submit", a.submitQuiz)
+
+		r.Get("/lessons/{lessonId}/lab", a.getLab)
+		r.Get("/lessons/{lessonId}/lab/session", a.getLabSession)
+		r.Delete("/lessons/{lessonId}/lab/session", a.stopLabSession)
+		r.Post("/lessons/{lessonId}/lab/retry", a.retryLab)
+		r.Get("/lessons/{lessonId}/lab/terminal", a.openLabTerminal)
+		r.Get("/lessons/{lessonId}/lab/git-graph", a.getLabGitGraph)
+		r.Get("/lessons/{lessonId}/lab/fs/entries", a.listLabFiles)
+		r.Get("/lessons/{lessonId}/lab/fs/content", a.readLabFile)
+		r.Put("/lessons/{lessonId}/lab/fs/content", a.writeLabFile)
+		r.Get("/lessons/{lessonId}/lab/preview/{port}/*", a.previewLab)
+		r.Post("/tasks/{taskId}/check", a.checkTask)
+		r.Post("/tasks/{taskId}/done", a.markTaskDone)
+		r.Post("/tasks/{taskId}/run", a.runTaskCode)
+
+		r.Post("/playground/run", a.runPlayground)
+		r.Get("/git-trainer/session", a.getGitTrainerSession)
+		r.Delete("/git-trainer/session", a.resetGitTrainer)
+		r.Get("/git-trainer/terminal", a.openGitTrainerTerminal)
+		r.Get("/git-trainer/git-graph", a.getGitTrainerGraph)
 	})
 	return r
 }

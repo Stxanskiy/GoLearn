@@ -123,6 +123,8 @@ func main() {
 		Sims:         simRepo,
 		QuizAnswers:  repository.NewQuizAnswerRepo(pool),
 		QuizAttempts: quizAttemptRepo,
+		Sandbox:      vmRunner,
+		Code:         codeRunner,
 	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
 	r.Mount("/api/v1", apiV1.Routes())
 	h.RegisterRoutes(r)

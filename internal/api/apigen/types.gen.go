@@ -126,16 +126,16 @@ func (e Difficulty) Valid() bool {
 	}
 }
 
-// Defines values for GitGraphCommitsRefsType.
+// Defines values for GitRefType.
 const (
-	Branch GitGraphCommitsRefsType = "branch"
-	Head   GitGraphCommitsRefsType = "head"
-	Remote GitGraphCommitsRefsType = "remote"
-	Tag    GitGraphCommitsRefsType = "tag"
+	Branch GitRefType = "branch"
+	Head   GitRefType = "head"
+	Remote GitRefType = "remote"
+	Tag    GitRefType = "tag"
 )
 
-// Valid indicates whether the value is a known member of the GitGraphCommitsRefsType enum.
-func (e GitGraphCommitsRefsType) Valid() bool {
+// Valid indicates whether the value is a known member of the GitRefType enum.
+func (e GitRefType) Valid() bool {
 	switch e {
 	case Branch:
 		return true
@@ -881,21 +881,27 @@ type ErrorDetails struct {
 	Issues *[]ImportIssue     `json:"issues,omitempty"`
 }
 
-// GitGraph defines model for GitGraph.
-type GitGraph struct {
-	Commits []struct {
-		Hash    string   `json:"hash"`
-		Parents []string `json:"parents"`
-		Refs    []struct {
-			Name string                  `json:"name"`
-			Type GitGraphCommitsRefsType `json:"type"`
-		} `json:"refs"`
-		Subject string `json:"subject"`
-	} `json:"commits"`
+// GitCommit defines model for GitCommit.
+type GitCommit struct {
+	Hash    string   `json:"hash"`
+	Parents []string `json:"parents"`
+	Refs    []GitRef `json:"refs"`
+	Subject string   `json:"subject"`
 }
 
-// GitGraphCommitsRefsType defines model for GitGraph.Commits.Refs.Type.
-type GitGraphCommitsRefsType string
+// GitGraph defines model for GitGraph.
+type GitGraph struct {
+	Commits []GitCommit `json:"commits"`
+}
+
+// GitRef defines model for GitRef.
+type GitRef struct {
+	Name string     `json:"name"`
+	Type GitRefType `json:"type"`
+}
+
+// GitRefType defines model for GitRef.Type.
+type GitRefType string
 
 // GlossaryItem defines model for GlossaryItem.
 type GlossaryItem struct {
@@ -950,6 +956,18 @@ type Lab struct {
 
 // LabMode defines model for Lab.Mode.
 type LabMode string
+
+// LabDirListing defines model for LabDirListing.
+type LabDirListing struct {
+	Entries []LabFileEntry `json:"entries"`
+	Path    string         `json:"path"`
+}
+
+// LabFileEntry defines model for LabFileEntry.
+type LabFileEntry struct {
+	IsDir bool   `json:"is_dir"`
+	Name  string `json:"name"`
+}
 
 // LabTask defines model for LabTask.
 type LabTask struct {
@@ -1146,18 +1164,21 @@ type RunRequest struct {
 
 // RunResult defines model for RunResult.
 type RunResult struct {
-	AllPassed    *bool           `json:"all_passed,omitempty"`
-	Errors       string          `json:"errors"`
-	ExitCode     int             `json:"exit_code"`
-	LessonStatus *ProgressStatus `json:"lesson_status,omitempty"`
-	Output       string          `json:"output"`
-	TestResults  *[]struct {
-		Actual *string `json:"actual,omitempty"`
-		Index  int     `json:"index"`
-		Input  *string `json:"input,omitempty"`
-		Passed bool    `json:"passed"`
-	} `json:"test_results,omitempty"`
-	TimedOut bool `json:"timed_out"`
+	AllPassed    *bool            `json:"all_passed,omitempty"`
+	Errors       string           `json:"errors"`
+	ExitCode     int              `json:"exit_code"`
+	LessonStatus *ProgressStatus  `json:"lesson_status,omitempty"`
+	Output       string           `json:"output"`
+	TestResults  *[]RunTestResult `json:"test_results,omitempty"`
+	TimedOut     bool             `json:"timed_out"`
+}
+
+// RunTestResult defines model for RunTestResult.
+type RunTestResult struct {
+	Actual string `json:"actual"`
+	Index  int    `json:"index"`
+	Input  string `json:"input"`
+	Passed bool   `json:"passed"`
 }
 
 // SandboxSession defines model for SandboxSession.
@@ -1346,6 +1367,9 @@ type SandboxDisabled = Error
 
 // SandboxError defines model for SandboxError.
 type SandboxError = Error
+
+// SandboxNotRunning defines model for SandboxNotRunning.
+type SandboxNotRunning = Error
 
 // SlugTaken defines model for SlugTaken.
 type SlugTaken = Error
