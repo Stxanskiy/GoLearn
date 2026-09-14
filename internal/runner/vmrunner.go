@@ -3,7 +3,9 @@ package runner
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strconv"
@@ -88,10 +90,10 @@ const (
 
 func NewVMRunner() *VMRunner {
 	v := &VMRunner{
-		host:   shellEnv("FC_SSH_HOST", ""),
-		port:   shellEnv("FC_SSH_PORT", "22"),
-		user:   shellEnv("FC_SSH_USER", "glvm"),
-		dir:    shellEnv("FC_DIR", "/opt/fc"),
+		host:      shellEnv("FC_SSH_HOST", ""),
+		port:      shellEnv("FC_SSH_PORT", "22"),
+		user:      shellEnv("FC_SSH_USER", "glvm"),
+		dir:       shellEnv("FC_DIR", "/opt/fc"),
 		kernel:    shellEnv("FC_KERNEL", "vmlinux-6.1.128-tot"),
 		rootfs:    shellEnv("FC_ROOTFS", "rootfs-docker.ext4"),
 		rootfsK8s: shellEnv("FC_ROOTFS_K8S", "rootfs-k8s.ext4"),
@@ -187,6 +189,40 @@ func (v *VMRunner) runHost(ctx context.Context, script string) (string, int, err
 	return string(out), exit, err
 }
 
+// runHostStdin is runHost with stdin streamed to the script (the script is not piped through bash's stdin).
+func (v *VMRunner) runHostStdin(ctx context.Context, script string, stdin io.Reader) (string, int, error) {
+	b64 := base64.StdEncoding.EncodeToString([]byte(script))
+	remote := fmt.Sprintf(`bash -c "$(echo %s | base64 -d)"`, b64)
+	cmd := exec.CommandContext(ctx, "ssh",
+		"-i", v.keyFile,
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "UserKnownHostsFile=/dev/null",
+		"-o", "ConnectTimeout=8",
+		"-o", "LogLevel=ERROR",
+		"-p", v.port,
+		v.user+"@"+v.host,
+		remote,
+	)
+	cmd.Stdin = stdin
+	out, err := cmd.CombinedOutput()
+	exit := 0
+	if ee, ok := err.(*exec.ExitError); ok {
+		exit = ee.ExitCode()
+		err = nil
+	}
+	return string(out), exit, err
+}
+
+// sshIntoStdin is sshInto without -n, so the VM script reads the host command's stdin.
+func (v *VMRunner) sshIntoStdin(ip, inner string) string {
+	b64 := base64.StdEncoding.EncodeToString([]byte(inner))
+	return fmt.Sprintf(
+		`ssh -i %s/%s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `+
+			`-o ConnectTimeout=5 -o LogLevel=ERROR root@%s `+
+			`"$(echo %s | base64 -d)" 2>&1`,
+		v.dir, v.vmkey, ip, b64)
+}
+
 // sshInto builds the command the FC host runs to reach a VM: ssh with the on-host
 // vmkey to root@<ip>. `inner` is base64-decoded and piped to bash inside the VM.
 func (v *VMRunner) sshInto(ip, inner string) string {
@@ -206,6 +242,37 @@ func (v *VMRunner) touch(sid string) {
 		s.last = time.Now()
 	}
 	v.mu.Unlock()
+}
+
+// SessionInfo describes a live sandbox session's lifetime.
+type SessionInfo struct {
+	Started   time.Time
+	ExpiresAt time.Time // earliest of idle timeout and hard limit
+}
+
+// Session returns lifetime info of the user's session for key, if one is alive.
+func (v *VMRunner) Session(userID int, key string) (SessionInfo, bool) {
+	if !v.Enabled() {
+		return SessionInfo{}, false
+	}
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	s := v.sessions[vmSID(userID, key)]
+	if s == nil {
+		return SessionInfo{}, false
+	}
+	exp := s.started.Add(shellSessionMax)
+	if idle := s.last.Add(shellSessionTTL); idle.Before(exp) {
+		exp = idle
+	}
+	return SessionInfo{Started: s.started, ExpiresAt: exp}, true
+}
+
+// Touch marks the user's session as active (e.g. on terminal keystrokes).
+func (v *VMRunner) Touch(userID int, key string) {
+	if v.Enabled() {
+		v.touch(vmSID(userID, key))
+	}
 }
 
 // HasSession reports whether a VM for this user+lesson is currently alive, so the
@@ -367,21 +434,21 @@ fi
 %[15]s
 echo "GLVMOK %[13]s"
 `,
-		work,           // 1
-		tap,            // 2
-		hostIP,         // 3
-		v.dir,          // 4
-		rootfs,         // 5
-		v.kernel,       // 6
-		bootArgs,       // 7
-		mac,            // 8
-		vcpus,          // 9
-		mem,            // 10
+		work,                        // 1
+		tap,                         // 2
+		hostIP,                      // 3
+		v.dir,                       // 4
+		rootfs,                      // 5
+		v.kernel,                    // 6
+		bootArgs,                    // 7
+		mac,                         // 8
+		vcpus,                       // 9
+		mem,                         // 10
 		int(vmBootWait/time.Second), // 11
-		v.vmkey,        // 12
-		vmip,           // 13
-		setupB64,       // 14
-		k8sWait,        // 15
+		v.vmkey,                     // 12
+		vmip,                        // 13
+		setupB64,                    // 14
+		k8sWait,                     // 15
 	)
 
 	out, _, err := v.runHost(ctx, script)
@@ -406,7 +473,7 @@ func (v *VMRunner) alive(ctx context.Context, ip string) bool {
 	return strings.Contains(out, "GLUP")
 }
 
-// execVM runs a script inside the VM and returns combined output + exit code.
+// execVM runs a script inside the VM and returns combined output (truncated for display) + exit code.
 func (v *VMRunner) execVM(ctx context.Context, ip, script string) (string, int, error) {
 	out, exit, err := v.runHost(ctx, v.sshInto(ip, script))
 	if len(out) > maxShellOutput {
@@ -454,6 +521,17 @@ func (v *VMRunner) Preview(ctx context.Context, userID int, key, image, setup st
 	if err != nil {
 		return nil, "", 0, err
 	}
+	body, ct, status, err := v.previewVM(ctx, ip, port, path)
+	if err == nil {
+		v.touch(vmSID(userID, key))
+	}
+	return body, ct, status, err
+}
+
+// maxPreviewBody caps a proxied preview response.
+const maxPreviewBody = 4 << 20
+
+func (v *VMRunner) previewVM(ctx context.Context, ip string, port int, path string) ([]byte, string, int, error) {
 	if port <= 0 {
 		port = 80
 	}
@@ -461,25 +539,28 @@ func (v *VMRunner) Preview(ctx context.Context, userID int, key, image, setup st
 		path = "/" + path
 	}
 	script := fmt.Sprintf(`
-url="http://127.0.0.1:%d%s"
+url=$(printf %%s '%s' | base64 -d)
 if ! command -v curl >/dev/null 2>&1; then echo "GLPREVERR curl-missing"; exit 0; fi
-if ! curl -s -m 8 -D /tmp/.glph -o /tmp/.glpb "$url" 2>/dev/null; then echo "GLPREVERR no-server"; exit 0; fi
+if ! curl -s -m 8 --max-filesize %d -D /tmp/.glph -o /tmp/.glpb "$url" 2>/dev/null; then echo "GLPREVERR no-server"; exit 0; fi
 code=$(head -1 /tmp/.glph 2>/dev/null | tr -d '\r' | awk '{print $2}')
 ct=$(grep -i '^content-type:' /tmp/.glph 2>/dev/null | head -1 | tr -d '\r' | cut -d' ' -f2-)
 echo "GLPREVIEW ${code:-200} ${ct:-text/html}"
 base64 /tmp/.glpb 2>/dev/null
-`, port, path)
-	out, _, err := v.execVM(ctx, ip, script)
+`, base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("http://127.0.0.1:%d%s", port, path))), maxPreviewBody)
+	out, _, err := v.runHost(ctx, v.sshInto(ip, script))
 	if err != nil {
 		return nil, "", 0, err
 	}
-	v.touch(vmSID(userID, key))
-	nl := strings.IndexByte(out, '\n')
-	if nl < 0 {
+	i := strings.Index(out, "GLPREV")
+	if i < 0 {
 		return nil, "", 0, fmt.Errorf("preview: пустой ответ песочницы")
 	}
+	out = out[i:]
+	nl := strings.IndexByte(out, '\n')
+	if nl < 0 {
+		nl = len(out)
+	}
 	head := strings.TrimSpace(out[:nl])
-	bodyB64 := strings.TrimSpace(out[nl+1:])
 	if strings.HasPrefix(head, "GLPREVERR") {
 		return nil, "", 0, fmt.Errorf("preview: %s", strings.TrimSpace(strings.TrimPrefix(head, "GLPREVERR")))
 	}
@@ -489,7 +570,7 @@ base64 /tmp/.glpb 2>/dev/null
 	if len(fields) > 1 && strings.TrimSpace(fields[1]) != "" {
 		ct = strings.TrimSpace(fields[1])
 	}
-	body, derr := base64.StdEncoding.DecodeString(strings.ReplaceAll(bodyB64, "\n", ""))
+	body, derr := base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out[nl:]), "\n", ""))
 	if derr != nil {
 		return nil, "", 0, fmt.Errorf("preview: не удалось раскодировать тело: %w", derr)
 	}
@@ -498,33 +579,72 @@ base64 /tmp/.glpb 2>/dev/null
 
 // ── In-VM file editor backend (Monaco), mirrors ShellRunner ──
 
-func (v *VMRunner) fsExec(ctx context.Context, userID int, key, image, setup, script string) (string, error) {
+// Sandbox file errors.
+var (
+	ErrFileNotFound = errors.New("file not found")
+	ErrFileTooLarge = errors.New("file too large")
+)
+
+// MaxFileSize is the largest file the editor reads or writes.
+const MaxFileSize = 2 << 20
+
+func (v *VMRunner) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
 	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
 	defer cancel()
 	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	out, _, err := v.execVM(ctx, ip, script)
+	entries, err := v.listDirVM(ctx, ip, dir)
 	if err == nil {
 		v.touch(vmSID(userID, key))
 	}
-	return out, err
+	return entries, err
 }
 
-func (v *VMRunner) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
-	db := base64.StdEncoding.EncodeToString([]byte(dir))
-	script := fmt.Sprintf(`d=$(printf %%s '%s' | base64 -d)
-find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C sort -t'\t' -k1,1 -k2,2`, db)
-	out, err := v.fsExec(ctx, userID, key, image, setup, script)
+func (v *VMRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
+	defer cancel()
+	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
 	if err != nil {
 		return nil, err
 	}
-	var entries []FSEntry
-	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
-		if line == "" {
-			continue
-		}
+	data, err := v.readFileVM(ctx, ip, file)
+	if err == nil {
+		v.touch(vmSID(userID, key))
+	}
+	return data, err
+}
+
+func (v *VMRunner) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
+	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
+	defer cancel()
+	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	if err != nil {
+		return err
+	}
+	err = v.writeFileVM(ctx, ip, file, content)
+	if err == nil {
+		v.touch(vmSID(userID, key))
+	}
+	return err
+}
+
+func (v *VMRunner) listDirVM(ctx context.Context, ip, dir string) ([]FSEntry, error) {
+	script := fmt.Sprintf(`d=$(printf %%s '%s' | base64 -d)
+echo GLLIST
+find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C sort`,
+		base64.StdEncoding.EncodeToString([]byte(dir)))
+	out, _, err := v.execVM(ctx, ip, script)
+	if err != nil {
+		return nil, err
+	}
+	i := strings.Index(out, "GLLIST\n")
+	if i < 0 {
+		return nil, fmt.Errorf("list: %s", strings.TrimSpace(out))
+	}
+	entries := []FSEntry{}
+	for _, line := range strings.Split(strings.TrimSpace(out[i+len("GLLIST\n"):]), "\n") {
 		parts := strings.SplitN(line, "\t", 2)
 		if len(parts) != 2 {
 			continue
@@ -534,23 +654,38 @@ find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C so
 	return entries, nil
 }
 
-func (v *VMRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
-	fb := base64.StdEncoding.EncodeToString([]byte(file))
+func (v *VMRunner) readFileVM(ctx context.Context, ip, file string) ([]byte, error) {
 	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
-[ -f "$f" ] && head -c 524288 "$f" | base64`, fb)
-	out, err := v.fsExec(ctx, userID, key, image, setup, script)
+[ -f "$f" ] || { echo GLNOFILE; exit 0; }
+[ "$(stat -c %%s "$f")" -gt %d ] && { echo GLTOOBIG; exit 0; }
+echo GLFILE
+base64 "$f"`, base64.StdEncoding.EncodeToString([]byte(file)), MaxFileSize)
+	out, _, err := v.runHost(ctx, v.sshInto(ip, script))
 	if err != nil {
 		return nil, err
 	}
-	return base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out), "\n", ""))
+	switch {
+	case strings.Contains(out, "GLNOFILE"):
+		return nil, ErrFileNotFound
+	case strings.Contains(out, "GLTOOBIG"):
+		return nil, ErrFileTooLarge
+	}
+	i := strings.Index(out, "GLFILE\n")
+	if i < 0 {
+		return nil, fmt.Errorf("read: %s", strings.TrimSpace(out))
+	}
+	return base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out[i+len("GLFILE\n"):]), "\n", ""))
 }
 
-func (v *VMRunner) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
-	fb := base64.StdEncoding.EncodeToString([]byte(file))
-	cb := base64.StdEncoding.EncodeToString(content)
-	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
-mkdir -p "$(dirname "$f")" && printf %%s '%s' | base64 -d > "$f" && echo GLOK`, fb, cb)
-	out, err := v.fsExec(ctx, userID, key, image, setup, script)
+// writeFileVM streams content through stdin, so its size is not bound by command-line limits.
+func (v *VMRunner) writeFileVM(ctx context.Context, ip, file string, content []byte) error {
+	if len(content) > MaxFileSize {
+		return ErrFileTooLarge
+	}
+	inner := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
+mkdir -p "$(dirname "$f")" && base64 -d > "$f" && echo GLOK`, base64.StdEncoding.EncodeToString([]byte(file)))
+	payload := base64.StdEncoding.EncodeToString(content)
+	out, _, err := v.runHostStdin(ctx, v.sshIntoStdin(ip, inner), strings.NewReader(payload))
 	if err != nil {
 		return err
 	}
