@@ -313,7 +313,7 @@ paths:
       description: |
         Theory / quiz / sql / sim lesson. Pure read — no progress side effects
         (call `POST /lessons/{lessonId}/visit`). For `kind=lab` use `GET /lessons/{lessonId}/lab`.
-        Quiz questions come without correct answers.
+        Quiz questions come without correct answers. Draft lessons and courses are `404` except for admins.
       responses:
         '200':
           description: Lesson.
@@ -400,12 +400,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [question_id, selected_index]
-              properties:
-                question_id: { type: integer }
-                selected_index: { type: integer, minimum: 0 }
+            schema: { $ref: '#/components/schemas/QuizAnswerInput' }
       responses:
         '200':
           description: Answer result.
@@ -434,7 +429,8 @@ paths:
       operationId: submitQuiz
       description: |
         Scores the attempt and saves `quiz_score`/`quiz_total`. Questions answered via
-        `POST .../answers` use the stored answer; `answers` fills the rest (full-page quiz).
+        `POST .../answers` keep the stored answer; `answers` fills (and stores) the rest.
+        Unanswered questions count as wrong. `404` when the lesson has no quiz.
       requestBody:
         required: false
         content:
@@ -444,12 +440,7 @@ paths:
               properties:
                 answers:
                   type: array
-                  items:
-                    type: object
-                    required: [question_id, selected_index]
-                    properties:
-                      question_id: { type: integer }
-                      selected_index: { type: integer, minimum: 0 }
+                  items: { $ref: '#/components/schemas/QuizAnswerInput' }
       responses:
         '200':
           description: Quiz result.
@@ -458,6 +449,7 @@ paths:
               schema: { $ref: '#/components/schemas/QuizResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
 
   # ───────────────────────────── labs ─────────────────────────────
   /lessons/{lessonId}/lab:
@@ -2164,25 +2156,36 @@ components:
         title: { type: string }
         tables:
           type: array
-          items:
-            type: object
-            required: [id, columns]
-            properties:
-              id: { type: string }
-              columns:
-                type: array
-                items:
-                  type: object
-                  required: [name, type, is_key]
-                  properties:
-                    name: { type: string }
-                    type: { type: string }
-                    is_key: { type: boolean }
-                    description: { type: string }
+          items: { $ref: '#/components/schemas/SqlTable' }
         ddl: { type: string, description: SQLite CREATE TABLE statements for sql.js. }
         expected_columns:
           type: array
           items: { type: string }
+
+    SqlTable:
+      type: object
+      required: [id, columns]
+      properties:
+        id: { type: string }
+        columns:
+          type: array
+          items: { $ref: '#/components/schemas/SqlColumn' }
+
+    SqlColumn:
+      type: object
+      required: [name, type, is_key]
+      properties:
+        name: { type: string }
+        type: { type: string }
+        is_key: { type: boolean }
+        description: { type: string }
+
+    QuizAnswerInput:
+      type: object
+      required: [question_id, selected_index]
+      properties:
+        question_id: { type: integer }
+        selected_index: { type: integer, minimum: 0 }
 
     QuizQuestionPublic:
       type: object
@@ -2243,19 +2246,21 @@ components:
         percent: { type: integer }
         results:
           type: array
-          items:
-            type: object
-            required: [question_id, question_html, options_html, selected_index, correct_index, is_correct]
-            properties:
-              question_id: { type: integer }
-              question_html: { type: string }
-              options_html:
-                type: array
-                items: { type: string }
-              selected_index: { type: [integer, 'null'] }
-              correct_index: { type: integer }
-              is_correct: { type: boolean }
-              explanation_html: { type: string }
+          items: { $ref: '#/components/schemas/QuizQuestionResult' }
+
+    QuizQuestionResult:
+      type: object
+      required: [question_id, question_html, options_html, selected_index, correct_index, is_correct]
+      properties:
+        question_id: { type: integer }
+        question_html: { type: string }
+        options_html:
+          type: array
+          items: { type: string }
+        selected_index: { type: [integer, 'null'], description: Null when unanswered. }
+        correct_index: { type: integer }
+        is_correct: { type: boolean }
+        explanation_html: { type: string }
 
     # ── labs ──
     SandboxSession:

@@ -21,10 +21,16 @@ type fakeContent struct {
 	overview  model.ProgressOverview
 	cont      *repository.ContinueLesson
 	stats     repository.PlatformStats
+	questions map[int][]model.QuizQuestion // lesson id → quiz questions
+	tasks     map[int]int                  // lesson id → task count
+	answers   map[int]map[int]int          // user id → question id → selected
 }
 
 func newFakeContent() *fakeContent {
-	return &fakeContent{progress: map[int][]model.Progress{}, labPassed: map[int]map[int]bool{}}
+	return &fakeContent{
+		progress: map[int][]model.Progress{}, labPassed: map[int]map[int]bool{},
+		questions: map[int][]model.QuizQuestion{}, tasks: map[int]int{}, answers: map[int]map[int]int{},
+	}
 }
 
 func (f *fakeContent) stores(users *fakeUsers) Stores {
@@ -36,6 +42,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Submissions: fakeSubmissions{f},
 		Specs:       fakeSpecs{f},
 		Sims:        fakeSims{f},
+		QuizAnswers: fakeQuizAnswers{f},
 	}
 }
 
@@ -55,6 +62,16 @@ func (f fakeModules) GetAll(_ context.Context) ([]model.Module, error) {
 func (f fakeModules) GetBySlug(_ context.Context, slug string) (*model.Module, error) {
 	for _, m := range f.modules {
 		if m.Slug == slug {
+			cp := m
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeModules) GetByID(_ context.Context, id int) (*model.Module, error) {
+	for _, m := range f.modules {
+		if m.ID == id {
 			cp := m
 			return &cp, nil
 		}
@@ -108,7 +125,80 @@ func (f fakeLessons) ListPublishedOutline(ctx context.Context) ([]model.Lesson, 
 	return out, nil
 }
 
+func (f fakeLessons) GetBySlug(_ context.Context, moduleID int, slug string) (*model.Lesson, error) {
+	for _, l := range f.lessons {
+		if l.ModuleID == moduleID && l.Slug == slug {
+			cp := l
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeLessons) GetByID(_ context.Context, id int) (*model.Lesson, error) {
+	for _, l := range f.lessons {
+		if l.ID == id {
+			cp := l
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeLessons) GetQuiz(_ context.Context, lessonID int) (*model.Quiz, []model.QuizQuestion, error) {
+	qs, ok := f.questions[lessonID]
+	if !ok {
+		return nil, nil, pgx.ErrNoRows
+	}
+	return &model.Quiz{ID: lessonID, LessonID: lessonID}, qs, nil
+}
+
+func (f fakeLessons) CountsForLesson(_ context.Context, lessonID int) (questions, tasks int) {
+	return len(f.questions[lessonID]), f.tasks[lessonID]
+}
+
 type fakeProgress struct{ *fakeContent }
+
+func (f fakeProgress) row(userID, lessonID int) *model.Progress {
+	for i := range f.progress[userID] {
+		if f.progress[userID][i].LessonID == lessonID {
+			return &f.progress[userID][i]
+		}
+	}
+	f.progress[userID] = append(f.progress[userID], model.Progress{LessonID: lessonID, Status: "in_progress"})
+	return &f.progress[userID][len(f.progress[userID])-1]
+}
+
+func (f fakeProgress) Get(_ context.Context, userID, lessonID int) (*model.Progress, error) {
+	for _, p := range f.progress[userID] {
+		if p.LessonID == lessonID {
+			cp := p
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeProgress) Start(_ context.Context, userID, lessonID int) error {
+	f.row(userID, lessonID)
+	return nil
+}
+
+func (f fakeProgress) Upsert(_ context.Context, userID, lessonID int, status string) error {
+	f.row(userID, lessonID).Status = status
+	return nil
+}
+
+func (f fakeProgress) SaveNotes(_ context.Context, userID, lessonID int, notes string) error {
+	f.row(userID, lessonID).Notes = notes
+	return nil
+}
+
+func (f fakeProgress) SaveQuizResult(_ context.Context, userID, lessonID, score, total int) error {
+	p := f.row(userID, lessonID)
+	p.QuizScore, p.QuizTotal = &score, &total
+	return nil
+}
 
 func (f fakeProgress) GetAll(_ context.Context, userID int) ([]model.Progress, error) {
 	return f.progress[userID], nil
@@ -171,4 +261,34 @@ func (f fakeSims) Get(_ context.Context, slug string) (*model.Simulator, error) 
 		}
 	}
 	return nil, pgx.ErrNoRows
+}
+
+type fakeQuizAnswers struct{ *fakeContent }
+
+func (f fakeQuizAnswers) Record(_ context.Context, userID, questionID, selected int) (int, bool, error) {
+	if f.answers[userID] == nil {
+		f.answers[userID] = map[int]int{}
+	}
+	if stored, ok := f.answers[userID][questionID]; ok {
+		return stored, false, nil
+	}
+	f.answers[userID][questionID] = selected
+	return selected, true, nil
+}
+
+func (f fakeQuizAnswers) ForLesson(_ context.Context, userID, lessonID int) (map[int]int, error) {
+	out := map[int]int{}
+	for _, q := range f.questions[lessonID] {
+		if sel, ok := f.answers[userID][q.ID]; ok {
+			out[q.ID] = sel
+		}
+	}
+	return out, nil
+}
+
+func (f fakeQuizAnswers) ResetLesson(_ context.Context, userID, lessonID int) error {
+	for _, q := range f.questions[lessonID] {
+		delete(f.answers[userID], q.ID)
+	}
+	return nil
 }

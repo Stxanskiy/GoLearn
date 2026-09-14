@@ -65,6 +65,15 @@ func (r *ProgressRepo) Upsert(ctx context.Context, userID, lessonID int, status 
 	return err
 }
 
+// Start marks a lesson in_progress if the user has no progress for it yet.
+func (r *ProgressRepo) Start(ctx context.Context, userID, lessonID int) error {
+	_, err := r.pool.Exec(ctx, `
+		INSERT INTO progress (user_id, lesson_id, status, updated_at)
+		VALUES ($1, $2, 'in_progress', NOW())
+		ON CONFLICT (user_id, lesson_id) DO NOTHING`, userID, lessonID)
+	return err
+}
+
 func (r *ProgressRepo) SaveQuizResult(ctx context.Context, userID, lessonID, score, total int) error {
 	now := time.Now()
 	_, err := r.pool.Exec(ctx, `

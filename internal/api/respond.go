@@ -27,6 +27,7 @@ const (
 	codeAccountBlocked     = "account_blocked"
 	codeRegistrationClosed = "registration_closed"
 	codeEmailTaken         = "email_taken"
+	codeCompletionDerived  = "completion_derived"
 )
 
 // Field-level validation codes.
@@ -56,6 +57,14 @@ func writeValidation(w http.ResponseWriter, fields map[string]string) {
 		Message: "request validation failed",
 		Details: &apigen.ErrorDetails{Fields: &fields},
 	}})
+}
+
+// decodeOptionalJSON is decodeJSON that accepts an empty body.
+func decodeOptionalJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
+	if r.ContentLength == 0 && r.Header.Get("Content-Type") == "" {
+		return true
+	}
+	return decodeJSON(w, r, dst)
 }
 
 // decodeJSON reads a JSON body into dst; on failure it writes the error response and returns false.

@@ -24,6 +24,7 @@ type userStore interface {
 type moduleStore interface {
 	GetAll(ctx context.Context) ([]model.Module, error)
 	GetBySlug(ctx context.Context, slug string) (*model.Module, error)
+	GetByID(ctx context.Context, id int) (*model.Module, error)
 	Neighbors(ctx context.Context, m model.Module, tracks []string) (prev, next *model.Module, err error)
 	Stats(ctx context.Context) (repository.PlatformStats, error)
 }
@@ -31,12 +32,27 @@ type moduleStore interface {
 type lessonStore interface {
 	GetByModule(ctx context.Context, moduleID int) ([]model.Lesson, error)
 	ListPublishedOutline(ctx context.Context) ([]model.Lesson, error)
+	GetBySlug(ctx context.Context, moduleID int, slug string) (*model.Lesson, error)
+	GetByID(ctx context.Context, id int) (*model.Lesson, error)
+	GetQuiz(ctx context.Context, lessonID int) (*model.Quiz, []model.QuizQuestion, error)
+	CountsForLesson(ctx context.Context, lessonID int) (questions, tasks int)
 }
 
 type progressStore interface {
 	GetAll(ctx context.Context, userID int) ([]model.Progress, error)
 	Overview(ctx context.Context, userID int) (*model.ProgressOverview, error)
 	LatestInProgress(ctx context.Context, userID int) (*repository.ContinueLesson, error)
+	Get(ctx context.Context, userID, lessonID int) (*model.Progress, error)
+	Start(ctx context.Context, userID, lessonID int) error
+	Upsert(ctx context.Context, userID, lessonID int, status string) error
+	SaveNotes(ctx context.Context, userID, lessonID int, notes string) error
+	SaveQuizResult(ctx context.Context, userID, lessonID, score, total int) error
+}
+
+type quizAnswerStore interface {
+	Record(ctx context.Context, userID, questionID, selected int) (stored int, created bool, err error)
+	ForLesson(ctx context.Context, userID, lessonID int) (map[int]int, error)
+	ResetLesson(ctx context.Context, userID, lessonID int) error
 }
 
 type submissionStore interface {
@@ -62,6 +78,7 @@ type Stores struct {
 	Submissions submissionStore
 	Specs       specStore
 	Sims        simStore
+	QuizAnswers quizAnswerStore
 }
 
 // Config holds API settings.
@@ -110,6 +127,14 @@ func (a *API) Routes() chi.Router {
 		r.Get("/courses/{courseSlug}", a.getCourse)
 		r.Get("/simulators", a.listSimulators)
 		r.Get("/simulators/{simSlug}", a.getSimulator)
+
+		r.Get("/courses/{courseSlug}/lessons/{lessonSlug}", a.getLesson)
+		r.Post("/lessons/{lessonId}/visit", a.visitLesson)
+		r.Post("/lessons/{lessonId}/complete", a.completeLesson)
+		r.Put("/lessons/{lessonId}/notes", a.saveLessonNotes)
+		r.Post("/lessons/{lessonId}/quiz/answers", a.answerQuizQuestion)
+		r.Delete("/lessons/{lessonId}/quiz/answers", a.resetQuizAttempt)
+		r.Post("/lessons/{lessonId}/quiz/submit", a.submitQuiz)
 	})
 	return r
 }

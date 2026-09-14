@@ -117,6 +117,7 @@ func main() {
 		Submissions: submissionRepo,
 		Specs:       specRepo,
 		Sims:        simRepo,
+		QuizAnswers: repository.NewQuizAnswerRepo(pool),
 	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
 	r.Mount("/api/v1", apiV1.Routes())
 	h.RegisterRoutes(r)

@@ -1079,6 +1079,12 @@ type Profile struct {
 // ProgressStatus defines model for ProgressStatus.
 type ProgressStatus string
 
+// QuizAnswerInput defines model for QuizAnswerInput.
+type QuizAnswerInput struct {
+	QuestionID    int `json:"question_id"`
+	SelectedIndex int `json:"selected_index"`
+}
+
 // QuizAnswerResult defines model for QuizAnswerResult.
 type QuizAnswerResult struct {
 	CorrectIndex    int     `json:"correct_index"`
@@ -1101,20 +1107,25 @@ type QuizQuestionPublic struct {
 	QuestionHTML string            `json:"question_html"`
 }
 
+// QuizQuestionResult defines model for QuizQuestionResult.
+type QuizQuestionResult struct {
+	CorrectIndex    int      `json:"correct_index"`
+	ExplanationHTML *string  `json:"explanation_html,omitempty"`
+	IsCorrect       bool     `json:"is_correct"`
+	OptionsHTML     []string `json:"options_html"`
+	QuestionHTML    string   `json:"question_html"`
+	QuestionID      int      `json:"question_id"`
+
+	// SelectedIndex Null when unanswered.
+	SelectedIndex *int `json:"selected_index"`
+}
+
 // QuizResult defines model for QuizResult.
 type QuizResult struct {
-	Percent int `json:"percent"`
-	Results []struct {
-		CorrectIndex    int      `json:"correct_index"`
-		ExplanationHTML *string  `json:"explanation_html,omitempty"`
-		IsCorrect       bool     `json:"is_correct"`
-		OptionsHTML     []string `json:"options_html"`
-		QuestionHTML    string   `json:"question_html"`
-		QuestionID      int      `json:"question_id"`
-		SelectedIndex   *int     `json:"selected_index"`
-	} `json:"results"`
-	Score int `json:"score"`
-	Total int `json:"total"`
+	Percent int                  `json:"percent"`
+	Results []QuizQuestionResult `json:"results"`
+	Score   int                  `json:"score"`
+	Total   int                  `json:"total"`
 }
 
 // Role defines model for Role.
@@ -1224,21 +1235,27 @@ type SpecializationWithCourses struct {
 	Slug        string `json:"slug"`
 }
 
+// SQLColumn defines model for SqlColumn.
+type SQLColumn struct {
+	Description *string `json:"description,omitempty"`
+	IsKey       bool    `json:"is_key"`
+	Name        string  `json:"name"`
+	Type        string  `json:"type"`
+}
+
 // SQLSchema SQL practice data (was the `.sql-erd[data-schema]` island in content HTML).
 type SQLSchema struct {
 	// Ddl SQLite CREATE TABLE statements for sql.js.
-	Ddl             string   `json:"ddl"`
-	ExpectedColumns []string `json:"expected_columns"`
-	Tables          []struct {
-		Columns []struct {
-			Description *string `json:"description,omitempty"`
-			IsKey       bool    `json:"is_key"`
-			Name        string  `json:"name"`
-			Type        string  `json:"type"`
-		} `json:"columns"`
-		ID string `json:"id"`
-	} `json:"tables"`
-	Title string `json:"title"`
+	Ddl             string     `json:"ddl"`
+	ExpectedColumns []string   `json:"expected_columns"`
+	Tables          []SQLTable `json:"tables"`
+	Title           string     `json:"title"`
+}
+
+// SQLTable defines model for SqlTable.
+type SQLTable struct {
+	Columns []SQLColumn `json:"columns"`
+	ID      string      `json:"id"`
 }
 
 // TaskCheckResult defines model for TaskCheckResult.
@@ -1503,18 +1520,9 @@ type SaveLessonNotesJSONBody struct {
 	Notes string `json:"notes"`
 }
 
-// AnswerQuizQuestionJSONBody defines parameters for AnswerQuizQuestion.
-type AnswerQuizQuestionJSONBody struct {
-	QuestionID    int `json:"question_id"`
-	SelectedIndex int `json:"selected_index"`
-}
-
 // SubmitQuizJSONBody defines parameters for SubmitQuiz.
 type SubmitQuizJSONBody struct {
-	Answers *[]struct {
-		QuestionID    int `json:"question_id"`
-		SelectedIndex int `json:"selected_index"`
-	} `json:"answers,omitempty"`
+	Answers *[]QuizAnswerInput `json:"answers,omitempty"`
 }
 
 // AdminPreviewContentJSONRequestBody defines body for AdminPreviewContent for application/json ContentType.
@@ -1611,7 +1619,7 @@ type RegisterJSONRequestBody RegisterJSONBody
 type SaveLessonNotesJSONRequestBody SaveLessonNotesJSONBody
 
 // AnswerQuizQuestionJSONRequestBody defines body for AnswerQuizQuestion for application/json ContentType.
-type AnswerQuizQuestionJSONRequestBody AnswerQuizQuestionJSONBody
+type AnswerQuizQuestionJSONRequestBody = QuizAnswerInput
 
 // SubmitQuizJSONRequestBody defines body for SubmitQuiz for application/json ContentType.
 type SubmitQuizJSONRequestBody SubmitQuizJSONBody
