@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
 
+	"github.com/backendraz/golearn/internal/lab"
 	"github.com/gorilla/websocket"
 )
 
@@ -22,15 +22,6 @@ var upgrader = websocket.Upgrader{
 		return err == nil && u.Host == r.Host
 	},
 }
-
-// labBanner is shown when a sandbox terminal opens (ANSI cyan, CRLF endings).
-const labBanner = "\x1b[1;36m" +
-	"\r\n ████████   ██████   ████████" +
-	"\r\n    ██     ██    ██     ██   " +
-	"\r\n    ██     ██    ██     ██   " +
-	"\r\n    ██     ██    ██     ██   " +
-	"\r\n    ██      ██████      ██   " +
-	"\x1b[0m\r\n\x1b[90m Welcome to your TOT lab environment!\x1b[0m\r\n\r\n"
 
 // TermWS upgrades to a WebSocket and attaches a real interactive PTY shell to
 // the user's sandbox container. Query: ?kind=git  OR  ?task=<id>.
@@ -52,14 +43,14 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	switch {
 	case q.Get("kind") == "git":
-		key, image, setup = gitKey, gitImage, gitSetup
+		key, image, setup = lab.GitTrainerKey, lab.GitTrainerImage, lab.GitTrainerSetup
 	case q.Get("lesson") != "":
 		lessonID, err := strconv.Atoi(q.Get("lesson"))
 		if err != nil {
 			http.Error(w, "bad lesson id", 400)
 			return
 		}
-		key = labKey(lessonID)
+		key = lab.Key(lessonID)
 		image, setup = h.labSandbox(r, lessonID)
 	default:
 		id, err := strconv.Atoi(q.Get("task"))
@@ -72,7 +63,7 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "task not found", 404)
 			return
 		}
-		key = labKey(task.LessonID)
+		key = lab.Key(task.LessonID)
 		image, setup = h.labSandbox(r, task.LessonID)
 	}
 
@@ -82,7 +73,7 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	_ = conn.WriteMessage(websocket.TextMessage, []byte(labBanner))
+	_ = conn.WriteMessage(websocket.TextMessage, []byte(lab.Banner))
 
 	// The sandbox is started AFTER the upgrade so that a failure can be
 	// explained inside the terminal. Failing before it leaves the browser with
@@ -115,41 +106,5 @@ func (h *Handler) TermWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer pty.Close()
 
-	// PTY output -> WebSocket
-	go func() {
-		buf := make([]byte, 4096)
-		for {
-			n, err := pty.Stdout.Read(buf)
-			if n > 0 {
-				if e := conn.WriteMessage(websocket.BinaryMessage, buf[:n]); e != nil {
-					return
-				}
-			}
-			if err != nil {
-				_ = conn.WriteMessage(websocket.TextMessage, []byte("\r\n\x1b[90m[сессия завершена]\x1b[0m\r\n"))
-				_ = conn.Close()
-				return
-			}
-		}
-	}()
-
-	// WebSocket input -> PTY (text frames may carry a resize control message)
-	for {
-		mt, data, err := conn.ReadMessage()
-		if err != nil {
-			return
-		}
-		if mt == websocket.TextMessage {
-			var ctl struct {
-				Resize []int `json:"resize"`
-			}
-			if json.Unmarshal(data, &ctl) == nil && len(ctl.Resize) == 2 {
-				pty.Resize(ctl.Resize[1], ctl.Resize[0]) // rows, cols
-				continue
-			}
-		}
-		if _, err := pty.Stdin.Write(data); err != nil {
-			return
-		}
-	}
+	lab.Pump(conn, pty, func() { h.shell.Touch(user.ID, key) })
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/backendraz/golearn/internal/handler"
 	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/backendraz/golearn/internal/repository"
+	"github.com/backendraz/golearn/internal/runner"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -61,6 +62,8 @@ func main() {
 	courseRepo := repository.NewCourseRepo(pool, moduleRepo, lessonRepo)
 	simRepo := repository.NewSimRepo(pool)
 	quizAttemptRepo := repository.NewQuizAttemptRepo(pool)
+	codeRunner := runner.New()
+	vmRunner := runner.NewVMRunner()
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -73,7 +76,7 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, vmRunner, log)
 
 	// Seed the built-in simulator scenarios into the DB once so they are editable.
 	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)

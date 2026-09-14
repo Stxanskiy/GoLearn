@@ -5,22 +5,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 	"strconv"
 	"strings"
 
+	"github.com/backendraz/golearn/internal/lab"
 	"github.com/go-chi/chi/v5"
 )
 
 type shellExecReq struct {
 	Command string `json:"command"`
 }
-
-// labKey names the sandbox session shared by a whole lab. Every step of a
-// lesson — the interactive terminal and each step's check — must run in the
-// SAME container, otherwise a check looks at an empty filesystem and can never
-// pass.
-func labKey(lessonID int) string { return fmt.Sprintf("l%d", lessonID) }
 
 // labSandbox resolves the image and combined setup script for a lesson's lab.
 func (h *Handler) labSandbox(r *http.Request, lessonID int) (image, setup string) {
@@ -59,7 +53,7 @@ func (h *Handler) ShellExec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	image, setup := h.labSandbox(r, task.LessonID)
-	out, err := h.shell.Exec(r.Context(), user.ID, labKey(task.LessonID), image, setup, req.Command)
+	out, err := h.shell.Exec(r.Context(), user.ID, lab.Key(task.LessonID), image, setup, req.Command)
 	if err != nil {
 		h.log.Error("shell exec", "error", err)
 		writeJSON(w, map[string]any{"output": "Ошибка песочницы: " + err.Error()})
@@ -96,7 +90,7 @@ func (h *Handler) ShellCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	image, setup := h.labSandbox(r, task.LessonID)
-	passed, out, err := h.shell.Check(r.Context(), user.ID, labKey(task.LessonID), image, setup, task.CheckScript)
+	passed, out, err := h.shell.Check(r.Context(), user.ID, lab.Key(task.LessonID), image, setup, task.CheckScript)
 	if err != nil {
 		h.log.Error("shell check", "error", err)
 		writeJSON(w, map[string]any{"passed": false, "output": "Ошибка проверки: " + err.Error()})
@@ -155,7 +149,7 @@ func (h *Handler) LabReset(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad lesson id", 400)
 		return
 	}
-	_ = h.shell.Reset(r.Context(), user.ID, labKey(lessonID))
+	_ = h.shell.Reset(r.Context(), user.ID, lab.Key(lessonID))
 	writeJSON(w, map[string]any{"ok": true})
 }
 
@@ -172,7 +166,7 @@ func (h *Handler) LabStatus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad lesson id", 400)
 		return
 	}
-	writeJSON(w, map[string]any{"running": h.shell.HasSession(user.ID, labKey(lessonID))})
+	writeJSON(w, map[string]any{"running": h.shell.HasSession(user.ID, lab.Key(lessonID))})
 }
 
 // LabRetry handles POST /api/lab/{lessonID}/retry — "Пройти заново": clears the
@@ -199,7 +193,7 @@ func (h *Handler) LabRetry(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "reset failed", 500)
 		return
 	}
-	_ = h.shell.Reset(r.Context(), user.ID, labKey(lessonID))
+	_ = h.shell.Reset(r.Context(), user.ID, lab.Key(lessonID))
 	writeJSON(w, map[string]any{"ok": true})
 }
 
@@ -232,14 +226,14 @@ func (h *Handler) LabPreview(w http.ResponseWriter, r *http.Request) {
 		path += "?" + r.URL.RawQuery
 	}
 	image, setup := h.labSandbox(r, lessonID)
-	body, ct, status, err := h.shell.Preview(r.Context(), user.ID, labKey(lessonID), image, setup, port, path)
+	body, ct, status, err := h.shell.Preview(r.Context(), user.ID, lab.Key(lessonID), image, setup, port, path)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_, _ = w.Write([]byte(previewErrPage(port, err)))
+		_, _ = w.Write([]byte(lab.PreviewErrorPage(port, err)))
 		return
 	}
 	if strings.HasPrefix(ct, "text/html") {
-		body = injectBase(body, fmt.Sprintf("/api/lab/%d/preview/%d/", lessonID, port))
+		body = lab.InjectBase(body, fmt.Sprintf("/api/lab/%d/preview/%d/", lessonID, port))
 	}
 	if ct == "" {
 		ct = "application/octet-stream"
@@ -251,37 +245,6 @@ func (h *Handler) LabPreview(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(status)
 	_, _ = w.Write(body)
-}
-
-// injectBase inserts a <base> tag so relative links on the previewed page point
-// back through the proxy prefix instead of the LMS origin.
-func injectBase(body []byte, base string) []byte {
-	tag := []byte(`<base href="` + base + `">`)
-	lower := strings.ToLower(string(body))
-	if i := strings.Index(lower, "<head>"); i >= 0 {
-		i += len("<head>")
-		return append(append(append([]byte{}, body[:i]...), tag...), body[i:]...)
-	}
-	return append(tag, body...)
-}
-
-// fsEditRoot is what the in-lab editor may browse and edit.
-const fsEditRoot = "/root"
-
-// jailPath cleans p and confirms it stays under /root — the editor must not read
-// or write anywhere else in the container.
-func jailPath(p string) (string, bool) {
-	if strings.TrimSpace(p) == "" {
-		p = fsEditRoot
-	}
-	if !strings.HasPrefix(p, "/") {
-		p = fsEditRoot + "/" + p
-	}
-	p = path.Clean(p)
-	if p != fsEditRoot && !strings.HasPrefix(p, fsEditRoot+"/") {
-		return "", false
-	}
-	return p, true
 }
 
 // fsLessonID resolves the lesson id and jailed path shared by the FS handlers.
@@ -300,7 +263,7 @@ func (h *Handler) fsCommon(w http.ResponseWriter, r *http.Request) (userID, less
 		http.Error(w, "bad lesson id", 400)
 		return
 	}
-	p, jok := jailPath(r.URL.Query().Get("path"))
+	p, jok := lab.JailPath(r.URL.Query().Get("path"))
 	if !jok {
 		http.Error(w, "path outside /root", 400)
 		return
@@ -315,7 +278,7 @@ func (h *Handler) LabFSList(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	entries, err := h.shell.FSList(r.Context(), userID, labKey(lessonID), image, setup, p)
+	entries, err := h.shell.FSList(r.Context(), userID, lab.Key(lessonID), image, setup, p)
 	if err != nil {
 		writeJSON(w, map[string]any{"error": err.Error()})
 		return
@@ -329,7 +292,7 @@ func (h *Handler) LabFSRead(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	data, err := h.shell.FSRead(r.Context(), userID, labKey(lessonID), image, setup, p)
+	data, err := h.shell.FSRead(r.Context(), userID, lab.Key(lessonID), image, setup, p)
 	if err != nil {
 		writeJSON(w, map[string]any{"error": err.Error()})
 		return
@@ -348,25 +311,9 @@ func (h *Handler) LabFSWrite(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "read body", 400)
 		return
 	}
-	if err := h.shell.FSWrite(r.Context(), userID, labKey(lessonID), image, setup, p, body); err != nil {
+	if err := h.shell.FSWrite(r.Context(), userID, lab.Key(lessonID), image, setup, p, body); err != nil {
 		writeJSON(w, map[string]any{"error": err.Error()})
 		return
 	}
 	writeJSON(w, map[string]any{"ok": true, "path": p})
-}
-
-func previewErrPage(port int, err error) string {
-	reason := "на этом порту пока никто не отвечает"
-	if strings.Contains(err.Error(), "curl-missing") {
-		reason = "в этой песочнице нет curl"
-	}
-	return fmt.Sprintf(`<!doctype html><html lang="ru"><head><meta charset="utf-8">`+
-		`<style>body{margin:0;font-family:system-ui,sans-serif;background:#22201b;color:#d6c9b6;`+
-		`display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}`+
-		`.c{max-width:420px;padding:24px}h2{margin:0 0 8px;font-size:1.1em;color:#e8dcc8}`+
-		`code{background:#000;padding:2px 7px;border-radius:5px;color:#7fd6c2}p{line-height:1.6;font-size:.9em;color:#a89a85}</style>`+
-		`</head><body><div class="c"><h2>Пока нечего показать</h2>`+
-		`<p>Web Preview обращается к <code>127.0.0.1:%d</code> внутри песочницы — %s.<br><br>`+
-		`Запусти сервер в терминале (например <code>python3 -m http.server %d</code> или свой контейнер), затем нажми «Обновить».</p></div></body></html>`,
-		port, reason, port)
 }

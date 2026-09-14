@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
-	"strings"
 
+	"github.com/backendraz/golearn/internal/lab"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
 )
@@ -62,8 +62,7 @@ func (h *Handler) TasksPage(w http.ResponseWriter, r *http.Request) {
 		data.IsShellLab = true
 	}
 	// Git-course labs get a live commit-graph beside the terminal.
-	data.IsGitLab = strings.EqualFold(mod.Category, "Git") ||
-		strings.Contains(strings.ToLower(mod.Slug), "git")
+	data.IsGitLab = lab.IsGitLab(*mod)
 
 	// Prev/next lesson so a finished lab offers a way forward (same order the
 	// lesson page uses).
