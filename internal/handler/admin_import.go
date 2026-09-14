@@ -7,6 +7,7 @@ import (
 
 	"github.com/backendraz/golearn/internal/courseio"
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -99,10 +100,18 @@ func (h *Handler) AdminImportPreview(w http.ResponseWriter, r *http.Request) {
 	issues := courseio.Validate(c)
 	writeJSON(w, importPreviewResp{
 		OK: true, Slug: d.Slug, Title: d.Title, Exists: d.Exists, Lessons: len(c.Lessons),
-		New: d.New, Updated: d.Updated, Removed: d.Removed,
-		NewCount: d.NewCount, UpdCount: d.UpdCount, DelCount: d.DelCount,
+		New: lessonTitles(d.New), Updated: lessonTitles(d.Updated), Removed: lessonTitles(d.Removed),
+		NewCount: len(d.New), UpdCount: len(d.Updated), DelCount: len(d.Removed),
 		Issues: issues, Blocked: courseio.HasErrors(issues),
 	})
+}
+
+func lessonTitles(refs []repository.LessonRef) []string {
+	out := make([]string, len(refs))
+	for i, l := range refs {
+		out[i] = l.Title
+	}
+	return out
 }
 
 // AdminImportApply parses the JSON and upserts the whole course in one transaction.
