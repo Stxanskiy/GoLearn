@@ -73,6 +73,19 @@ func (r *SpecRepo) Upsert(ctx context.Context, s model.Specialization) error {
 	return err
 }
 
+// NextOrder returns an order_num after every section.
+func (r *SpecRepo) NextOrder(ctx context.Context) (int, error) {
+	var n int
+	err := r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num), 0) + 1 FROM specializations`).Scan(&n)
+	return n, err
+}
+
+// SetCover replaces the section cover (data URI, URL or empty for the generated one).
+func (r *SpecRepo) SetCover(ctx context.Context, slug, cover string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE specializations SET cover_image = $1 WHERE slug = $2`, cover, slug)
+	return err
+}
+
 // SetPublished toggles a section's draft/published state.
 func (r *SpecRepo) SetPublished(ctx context.Context, slug string, published bool) error {
 	_, err := r.pool.Exec(ctx, `UPDATE specializations SET published = $1 WHERE slug = $2`, published, slug)

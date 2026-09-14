@@ -166,6 +166,25 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 	return out, rows.Err()
 }
 
+// TrackCounts returns the number of courses per track.
+func (r *ModuleRepo) TrackCounts(ctx context.Context) (map[string]int, error) {
+	rows, err := r.pool.Query(ctx, `SELECT track, count(*) FROM modules GROUP BY track`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]int{}
+	for rows.Next() {
+		var track string
+		var n int
+		if err := rows.Scan(&track, &n); err != nil {
+			return nil, err
+		}
+		out[track] = n
+	}
+	return out, rows.Err()
+}
+
 // NextOrder returns an order_num after every existing course.
 func (r *ModuleRepo) NextOrder(ctx context.Context) (int, error) {
 	var n int

@@ -40,6 +40,7 @@ const (
 	codeSlugTaken          = "slug_taken"
 	codeAlreadyAuthor      = "already_author"
 	codeImportBlocked      = "import_blocked"
+	codeSpecNotEmpty       = "specialization_not_empty"
 )
 
 // Field-level validation codes.

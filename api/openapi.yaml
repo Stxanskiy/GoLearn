@@ -1604,7 +1604,7 @@ paths:
       tags: [admin-simulators]
       summary: Update simulator
       operationId: adminUpdateSimulator
-      description: 'Admin only. `scenario.slug` must equal the path slug (`422 slug_immutable`).'
+      description: 'Admin only. `scenario.slug` must equal the path slug (`422` with `fields["scenario.slug"]` = `invalid_value`).'
       requestBody:
         required: true
         content:
@@ -2826,29 +2826,32 @@ components:
       properties:
         name: { type: string, minLength: 1, maxLength: 80 }
         icon: { type: string, maxLength: 16 }
-        description: { type: string }
-        cover_url: { type: [string, 'null'], format: uri }
-        published: { type: boolean, default: true }
+        description: { type: string, maxLength: 5000 }
+        cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
+        published: { type: boolean, description: Omitted → unchanged (draft on create). }
 
     AdminSpecialization:
-      allOf:
-        - $ref: '#/components/schemas/AdminSpecializationInput'
-        - type: object
-          required: [slug, order_num, owner_id, courses_count, has_custom_cover, cover_preview_url]
-          properties:
-            slug: { type: string }
-            order_num: { type: integer }
-            owner_id: { type: [integer, 'null'] }
-            courses_count: { type: integer }
-            has_custom_cover: { type: boolean }
-            cover_preview_url: { type: string }
+      type: object
+      required: [slug, name, icon, description, published, order_num, owner_id, courses_count, cover_url, has_custom_cover, cover_preview_url]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        icon: { type: string }
+        description: { type: string }
+        published: { type: boolean }
+        order_num: { type: integer }
+        owner_id: { type: [integer, 'null'] }
+        courses_count: { type: integer, description: Courses whose track belongs to the specialization. }
+        cover_url: { type: [string, 'null'], description: External cover URL. }
+        has_custom_cover: { type: boolean }
+        cover_preview_url: { type: string }
 
     AdminSimulatorInput:
       type: object
       required: [scenario]
       properties:
         scenario: { $ref: '#/components/schemas/Scenario' }
-        published: { type: boolean, default: true }
+        published: { type: boolean, description: Omitted → unchanged (draft on create). }
 
     AdminSimulatorRow:
       type: object

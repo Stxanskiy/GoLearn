@@ -632,6 +632,7 @@ type AdminSimulator struct {
 
 // AdminSimulatorInput defines model for AdminSimulatorInput.
 type AdminSimulatorInput struct {
+	// Published Omitted → unchanged (draft on create).
 	Published *bool    `json:"published,omitempty"`
 	Scenario  Scenario `json:"scenario"`
 }
@@ -649,26 +650,32 @@ type AdminSimulatorRow struct {
 
 // AdminSpecialization defines model for AdminSpecialization.
 type AdminSpecialization struct {
-	CoursesCount    int     `json:"courses_count"`
-	CoverPreviewURL string  `json:"cover_preview_url"`
-	CoverURL        *string `json:"cover_url,omitempty"`
-	Description     *string `json:"description,omitempty"`
-	HasCustomCover  bool    `json:"has_custom_cover"`
-	Icon            *string `json:"icon,omitempty"`
-	Name            string  `json:"name"`
-	OrderNum        int     `json:"order_num"`
-	OwnerID         *int    `json:"owner_id"`
-	Published       *bool   `json:"published,omitempty"`
-	Slug            string  `json:"slug"`
+	// CoursesCount Courses whose track belongs to the specialization.
+	CoursesCount    int    `json:"courses_count"`
+	CoverPreviewURL string `json:"cover_preview_url"`
+
+	// CoverURL External cover URL.
+	CoverURL       *string `json:"cover_url"`
+	Description    string  `json:"description"`
+	HasCustomCover bool    `json:"has_custom_cover"`
+	Icon           string  `json:"icon"`
+	Name           string  `json:"name"`
+	OrderNum       int     `json:"order_num"`
+	OwnerID        *int    `json:"owner_id"`
+	Published      bool    `json:"published"`
+	Slug           string  `json:"slug"`
 }
 
 // AdminSpecializationInput defines model for AdminSpecializationInput.
 type AdminSpecializationInput struct {
+	// CoverURL External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.
 	CoverURL    *string `json:"cover_url,omitempty"`
 	Description *string `json:"description,omitempty"`
 	Icon        *string `json:"icon,omitempty"`
 	Name        string  `json:"name"`
-	Published   *bool   `json:"published,omitempty"`
+
+	// Published Omitted → unchanged (draft on create).
+	Published *bool `json:"published,omitempty"`
 }
 
 // AdminTask defines model for AdminTask.
@@ -1534,12 +1541,15 @@ type AdminSetSimulatorPublishedJSONBody struct {
 
 // AdminCreateSpecializationJSONBody defines parameters for AdminCreateSpecialization.
 type AdminCreateSpecializationJSONBody struct {
+	// CoverURL External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.
 	CoverURL    *string `json:"cover_url,omitempty"`
 	Description *string `json:"description,omitempty"`
 	Icon        *string `json:"icon,omitempty"`
 	Name        string  `json:"name"`
-	Published   *bool   `json:"published,omitempty"`
-	Slug        Slug    `json:"slug"`
+
+	// Published Omitted → unchanged (draft on create).
+	Published *bool `json:"published,omitempty"`
+	Slug      Slug  `json:"slug"`
 }
 
 // AdminUploadSpecializationCoverMultipartBody defines parameters for AdminUploadSpecializationCover.

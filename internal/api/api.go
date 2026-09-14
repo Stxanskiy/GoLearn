@@ -30,6 +30,7 @@ type moduleStore interface {
 	Neighbors(ctx context.Context, m model.Module, tracks []string) (prev, next *model.Module, err error)
 	Stats(ctx context.Context) (repository.PlatformStats, error)
 	ListManaged(ctx context.Context, userID int, all bool) ([]repository.CourseRow, error)
+	TrackCounts(ctx context.Context) (map[string]int, error)
 	NextOrder(ctx context.Context) (int, error)
 	Create(ctx context.Context, m model.Module) (int, error)
 	Update(ctx context.Context, m model.Module) error
@@ -139,11 +140,24 @@ type codeRunner interface {
 type specStore interface {
 	ListPublished(ctx context.Context) ([]model.Specialization, error)
 	Get(ctx context.Context, slug string) (*model.Specialization, error)
+	List(ctx context.Context) ([]model.Specialization, error)
+	NextOrder(ctx context.Context) (int, error)
+	Upsert(ctx context.Context, s model.Specialization) error
+	Delete(ctx context.Context, slug string) error
+	SetPublished(ctx context.Context, slug string, published bool) error
+	Move(ctx context.Context, slug, dir string) error
+	SetCover(ctx context.Context, slug, cover string) error
 }
 
 type simStore interface {
 	ListPublished(ctx context.Context) ([]model.Simulator, error)
 	Get(ctx context.Context, slug string) (*model.Simulator, error)
+	List(ctx context.Context) ([]model.Simulator, error)
+	Count(ctx context.Context) (int, error)
+	Upsert(ctx context.Context, s model.Simulator) error
+	Delete(ctx context.Context, slug string) error
+	SetPublished(ctx context.Context, slug string, published bool) error
+	Move(ctx context.Context, slug, dir string) error
 }
 
 // Stores are the repositories and runners the API uses.
@@ -257,6 +271,26 @@ func (a *API) Routes() chi.Router {
 			r.Get("/admin/courses/{courseId}/export", a.adminExportCourse)
 			r.Post("/admin/import/preview", a.adminPreviewImport)
 			r.Post("/admin/import", a.adminApplyImport)
+			r.Get("/admin/specializations", a.adminListSpecializations)
+
+			r.Group(func(r chi.Router) {
+				r.Use(requireAdmin)
+				r.Post("/admin/specializations", a.adminCreateSpecialization)
+				r.Put("/admin/specializations/{specSlug}", a.adminUpdateSpecialization)
+				r.Delete("/admin/specializations/{specSlug}", a.adminDeleteSpecialization)
+				r.Put("/admin/specializations/{specSlug}/published", a.adminSetSpecializationPublished)
+				r.Post("/admin/specializations/{specSlug}/move", a.adminMoveSpecialization)
+				r.Put("/admin/specializations/{specSlug}/cover", a.adminUploadSpecializationCover)
+				r.Delete("/admin/specializations/{specSlug}/cover", a.adminDeleteSpecializationCover)
+
+				r.Get("/admin/simulators", a.adminListSimulators)
+				r.Post("/admin/simulators", a.adminCreateSimulator)
+				r.Get("/admin/simulators/{simSlug}", a.adminGetSimulator)
+				r.Put("/admin/simulators/{simSlug}", a.adminUpdateSimulator)
+				r.Delete("/admin/simulators/{simSlug}", a.adminDeleteSimulator)
+				r.Put("/admin/simulators/{simSlug}/published", a.adminSetSimulatorPublished)
+				r.Post("/admin/simulators/{simSlug}/move", a.adminMoveSimulator)
+			})
 
 			r.Post("/admin/courses/{courseId}/lessons", a.adminCreateLesson)
 			r.Get("/admin/lessons/{lessonId}", a.adminGetLesson)

@@ -403,3 +403,108 @@ func (f fakeCourseIO) Upsert(ctx context.Context, tree model.CourseTree) (reposi
 	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ModuleID == id && !keep[l.Slug] })
 	return d, nil
 }
+
+func (f fakeModules) TrackCounts(_ context.Context) (map[string]int, error) {
+	out := map[string]int{}
+	for _, m := range f.modules {
+		out[m.Track]++
+	}
+	return out, nil
+}
+
+func (f fakeSpecs) spec(slug string) *model.Specialization {
+	for i := range f.specs {
+		if f.specs[i].Slug == slug {
+			return &f.specs[i]
+		}
+	}
+	return nil
+}
+
+func (f fakeSpecs) List(_ context.Context) ([]model.Specialization, error) { return f.specs, nil }
+
+func (f fakeSpecs) NextOrder(_ context.Context) (int, error) { return len(f.specs) + 1, nil }
+
+func (f fakeSpecs) Upsert(_ context.Context, s model.Specialization) error {
+	cur := f.spec(s.Slug)
+	if cur == nil {
+		f.specs = append(f.specs, s)
+		return nil
+	}
+	owner, cover := cur.OwnerID, cur.CoverImage
+	*cur = s
+	cur.OwnerID = owner
+	if s.CoverImage == "" {
+		cur.CoverImage = cover
+	}
+	return nil
+}
+
+func (f fakeSpecs) Delete(_ context.Context, slug string) error {
+	f.specs = slices.DeleteFunc(f.specs, func(s model.Specialization) bool { return s.Slug == slug })
+	return nil
+}
+
+func (f fakeSpecs) SetPublished(_ context.Context, slug string, published bool) error {
+	if s := f.spec(slug); s != nil {
+		s.Published = published
+	}
+	return nil
+}
+
+func (f fakeSpecs) Move(_ context.Context, slug, dir string) error {
+	if s := f.spec(slug); s != nil && dir == "up" {
+		s.OrderNum--
+	}
+	return nil
+}
+
+func (f fakeSpecs) SetCover(_ context.Context, slug, cover string) error {
+	if s := f.spec(slug); s != nil {
+		s.CoverImage = cover
+	}
+	return nil
+}
+
+func (f fakeSims) sim(slug string) *model.Simulator {
+	for i := range f.sims {
+		if f.sims[i].Slug == slug {
+			return &f.sims[i]
+		}
+	}
+	return nil
+}
+
+func (f fakeSims) List(_ context.Context) ([]model.Simulator, error) { return f.sims, nil }
+
+func (f fakeSims) Count(_ context.Context) (int, error) { return len(f.sims), nil }
+
+func (f fakeSims) Upsert(_ context.Context, s model.Simulator) error {
+	if cur := f.sim(s.Slug); cur != nil {
+		owner := cur.OwnerID
+		*cur = s
+		cur.OwnerID = owner
+		return nil
+	}
+	f.sims = append(f.sims, s)
+	return nil
+}
+
+func (f fakeSims) Delete(_ context.Context, slug string) error {
+	f.sims = slices.DeleteFunc(f.sims, func(s model.Simulator) bool { return s.Slug == slug })
+	return nil
+}
+
+func (f fakeSims) SetPublished(_ context.Context, slug string, published bool) error {
+	if s := f.sim(slug); s != nil {
+		s.Published = published
+	}
+	return nil
+}
+
+func (f fakeSims) Move(_ context.Context, slug, dir string) error {
+	if s := f.sim(slug); s != nil && dir == "up" {
+		s.OrderNum--
+	}
+	return nil
+}
