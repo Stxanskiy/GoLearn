@@ -4,47 +4,15 @@ import (
 	"context"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
+	"github.com/backendraz/golearn/internal/auth"
 	"github.com/backendraz/golearn/internal/repository"
 )
 
 type contextKey string
 
 const userContextKey contextKey = "user"
-
-// registrationOpen reports whether self-registration is enabled.
-// Disabled by default; set REGISTRATION_OPEN=true to allow sign-ups.
-func registrationOpen() bool {
-	return os.Getenv("REGISTRATION_OPEN") == "true"
-}
-
-// setSessionCookie writes the session cookie with secure defaults. Secure is
-// enabled when the request arrived over HTTPS (directly or via a TLS proxy).
-func setSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
-	secure := r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session",
-		Value:    token,
-		Path:     "/",
-		MaxAge:   30 * 24 * 3600,
-		HttpOnly: true,
-		Secure:   secure,
-		SameSite: http.SameSiteLaxMode,
-	})
-}
-
-// adminEmails returns the set of emails granted admin via ADMIN_EMAILS env.
-func adminEmails() map[string]bool {
-	set := make(map[string]bool)
-	for _, e := range strings.Split(os.Getenv("ADMIN_EMAILS"), ",") {
-		if e = strings.ToLower(strings.TrimSpace(e)); e != "" {
-			set[e] = true
-		}
-	}
-	return set
-}
 
 func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -69,12 +37,7 @@ func (h *Handler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Auto-promote configured emails to admin (ADMIN_EMAILS=a@x,b@y).
-		if !user.IsAdmin() && adminEmails()[strings.ToLower(user.Email)] {
-			if err := h.userRepo.SetRole(r.Context(), user.ID, "admin"); err == nil {
-				user.Role = "admin"
-			}
-		}
+		auth.PromoteEnvAdmin(r.Context(), h.userRepo, user)
 		// Non-sensitive hint cookie so the navbar can show the admin link
 		// (/admin itself is still guarded by AdminMiddleware).
 		if user.IsAdmin() {
@@ -114,40 +77,40 @@ func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	h.render(w, "login", map[string]any{"Error": "", "RegistrationOpen": registrationOpen()})
+	h.render(w, "login", map[string]any{"Error": "", "RegistrationOpen": auth.RegistrationOpen()})
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	email := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
 
-	if !loginRL.allow(clientIP(r)) {
-		h.render(w, "login", map[string]any{"Error": "Слишком много попыток входа. Подождите несколько минут.", "RegistrationOpen": registrationOpen()})
+	if !auth.LoginLimiter.Allow(auth.ClientIP(r)) {
+		h.render(w, "login", map[string]any{"Error": "Слишком много попыток входа. Подождите несколько минут.", "RegistrationOpen": auth.RegistrationOpen()})
 		return
 	}
 
 	user, err := h.userRepo.GetByEmail(r.Context(), email)
 	if err != nil || !h.userRepo.CheckPassword(user, password) {
-		h.render(w, "login", map[string]any{"Error": "Неверный email или пароль", "RegistrationOpen": registrationOpen()})
+		h.render(w, "login", map[string]any{"Error": "Неверный email или пароль", "RegistrationOpen": auth.RegistrationOpen()})
 		return
 	}
 	if user.Blocked {
-		h.render(w, "login", map[string]any{"Error": "Аккаунт заблокирован — обратитесь к администратору", "RegistrationOpen": registrationOpen()})
+		h.render(w, "login", map[string]any{"Error": "Аккаунт заблокирован — обратитесь к администратору", "RegistrationOpen": auth.RegistrationOpen()})
 		return
 	}
 
 	token, err := h.userRepo.CreateSession(r.Context(), user.ID)
 	if err != nil {
-		h.render(w, "login", map[string]any{"Error": "Ошибка сервера", "RegistrationOpen": registrationOpen()})
+		h.render(w, "login", map[string]any{"Error": "Ошибка сервера", "RegistrationOpen": auth.RegistrationOpen()})
 		return
 	}
 
-	setSessionCookie(w, r, token)
+	auth.SetSessionCookie(w, r, token)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) RegisterPage(w http.ResponseWriter, r *http.Request) {
-	if !registrationOpen() {
+	if !auth.RegistrationOpen() {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -155,7 +118,7 @@ func (h *Handler) RegisterPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	if !registrationOpen() {
+	if !auth.RegistrationOpen() {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -179,7 +142,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, _ := h.userRepo.CreateSession(r.Context(), user.ID)
-	setSessionCookie(w, r, token)
+	auth.SetSessionCookie(w, r, token)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -188,7 +151,6 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		h.userRepo.DeleteSession(r.Context(), cookie.Value)
 	}
-	http.SetCookie(w, &http.Cookie{Name: "session", Value: "", MaxAge: -1, Path: "/"})
-	http.SetCookie(w, &http.Cookie{Name: "gl_role", Value: "", MaxAge: -1, Path: "/"})
+	auth.ClearAuthCookies(w)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
