@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
@@ -507,4 +508,89 @@ func (f fakeSims) Move(_ context.Context, slug, dir string) error {
 		s.OrderNum--
 	}
 	return nil
+}
+
+func (f *fakeUsers) ListPage(_ context.Context, q string, beforeID, limit int) ([]repository.User, error) {
+	var out []repository.User
+	for _, u := range f.byEmail {
+		if (beforeID == 0 || u.ID < beforeID) && (q == "" || strings.Contains(u.Name, q) || strings.Contains(u.Email, q)) {
+			out = append(out, *u)
+		}
+	}
+	slices.SortFunc(out, func(a, b repository.User) int { return b.ID - a.ID })
+	return out[:min(limit, len(out))], nil
+}
+
+func (f *fakeUsers) CreateWithRole(ctx context.Context, email, password, name, role string) (*repository.User, error) {
+	u, err := f.Create(ctx, email, password, name)
+	if err != nil {
+		return nil, err
+	}
+	u.Role = role
+	return u, nil
+}
+
+func (f *fakeUsers) byID(id int) *repository.User {
+	for _, u := range f.byEmail {
+		if u.ID == id {
+			return u
+		}
+	}
+	return nil
+}
+
+func (f *fakeUsers) activeAdmins() int {
+	n := 0
+	for _, u := range f.byEmail {
+		if u.Role == repository.RoleAdmin && !u.Blocked {
+			n++
+		}
+	}
+	return n
+}
+
+func (f *fakeUsers) SetAccess(ctx context.Context, userID int, role string, blocked bool) error {
+	u := f.byID(userID)
+	if u == nil {
+		return pgx.ErrNoRows
+	}
+	prevRole, prevBlocked := u.Role, u.Blocked
+	u.Role, u.Blocked = role, blocked
+	if f.activeAdmins() == 0 {
+		u.Role, u.Blocked = prevRole, prevBlocked
+		return repository.ErrLastAdmin
+	}
+	if blocked {
+		return f.DeleteSessions(ctx, userID)
+	}
+	return nil
+}
+
+func (f *fakeUsers) SetPassword(_ context.Context, userID int, password string) error {
+	if u := f.byID(userID); u != nil {
+		u.PasswordHash = password
+	}
+	return nil
+}
+
+func (f *fakeUsers) DeleteSessions(_ context.Context, userID int) error {
+	for token, id := range f.sessions {
+		if id == userID {
+			delete(f.sessions, token)
+		}
+	}
+	return nil
+}
+
+func (f *fakeUsers) DeleteGuarded(ctx context.Context, userID int) error {
+	u := f.byID(userID)
+	if u == nil {
+		return nil
+	}
+	delete(f.byEmail, u.Email)
+	if f.activeAdmins() == 0 {
+		f.byEmail[u.Email] = u
+		return repository.ErrLastAdmin
+	}
+	return f.DeleteSessions(ctx, userID)
 }

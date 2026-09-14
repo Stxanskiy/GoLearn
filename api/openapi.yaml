@@ -1680,14 +1680,7 @@ paths:
           description: Users, newest first.
           content:
             application/json:
-              schema:
-                type: object
-                required: [items]
-                properties:
-                  items:
-                    type: array
-                    items: { $ref: '#/components/schemas/AdminUser' }
-                  next_cursor: { type: [string, 'null'] }
+              schema: { $ref: '#/components/schemas/AdminUserPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
     post:
@@ -1731,8 +1724,9 @@ paths:
       operationId: adminUpdateUser
       description: |
         Admin only.
-        Changes role and/or blocked flag. Blocking revokes all sessions.
-        Not allowed on yourself (`409 self_modification`) or on the last admin (`409 last_admin`).
+        Changes role and/or blocked flag. Blocking revokes all sessions. An author who
+        loses the role keeps course ownership records but no access until promoted again.
+        Not allowed on yourself (`409 self_modification`) or when it leaves no active admin (`409 last_admin`).
       requestBody:
         required: true
         content:
@@ -1761,7 +1755,7 @@ paths:
       tags: [admin-users]
       summary: Delete user
       operationId: adminDeleteUser
-      description: Admin only. Hard delete; cascades to sessions, progress and submissions.
+      description: Admin only. Hard delete; cascades to sessions, progress, submissions and co-authorships; owned courses become platform courses.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -2872,6 +2866,15 @@ components:
           required: [scenario]
           properties:
             scenario: { $ref: '#/components/schemas/Scenario' }
+
+    AdminUserPage:
+      type: object
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AdminUser' }
+        next_cursor: { type: [string, 'null'], description: Pass as `cursor` for the next page; null on the last page. }
 
     AdminUser:
       type: object

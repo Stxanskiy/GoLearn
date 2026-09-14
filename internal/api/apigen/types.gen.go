@@ -733,6 +733,14 @@ type AdminUser struct {
 	RolePinnedByEnv bool `json:"role_pinned_by_env"`
 }
 
+// AdminUserPage defines model for AdminUserPage.
+type AdminUserPage struct {
+	Items []AdminUser `json:"items"`
+
+	// NextCursor Pass as `cursor` for the next page; null on the last page.
+	NextCursor *string `json:"next_cursor"`
+}
+
 // AuthConfig defines model for AuthConfig.
 type AuthConfig struct {
 	RegistrationOpen bool `json:"registration_open"`

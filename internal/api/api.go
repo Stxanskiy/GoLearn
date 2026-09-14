@@ -21,6 +21,12 @@ type userStore interface {
 	DeleteSession(ctx context.Context, token string) error
 	SetRole(ctx context.Context, userID int, role string) error
 	GetByID(ctx context.Context, id int) (*repository.User, error)
+	ListPage(ctx context.Context, q string, beforeID, limit int) ([]repository.User, error)
+	CreateWithRole(ctx context.Context, email, password, name, role string) (*repository.User, error)
+	SetAccess(ctx context.Context, userID int, role string, blocked bool) error
+	SetPassword(ctx context.Context, userID int, password string) error
+	DeleteSessions(ctx context.Context, userID int) error
+	DeleteGuarded(ctx context.Context, userID int) error
 }
 
 type moduleStore interface {
@@ -290,6 +296,12 @@ func (a *API) Routes() chi.Router {
 				r.Delete("/admin/simulators/{simSlug}", a.adminDeleteSimulator)
 				r.Put("/admin/simulators/{simSlug}/published", a.adminSetSimulatorPublished)
 				r.Post("/admin/simulators/{simSlug}/move", a.adminMoveSimulator)
+
+				r.Get("/admin/users", a.adminListUsers)
+				r.Post("/admin/users", a.adminCreateUser)
+				r.Patch("/admin/users/{userId}", a.adminUpdateUser)
+				r.Delete("/admin/users/{userId}", a.adminDeleteUser)
+				r.Put("/admin/users/{userId}/password", a.adminSetUserPassword)
 			})
 
 			r.Post("/admin/courses/{courseId}/lessons", a.adminCreateLesson)

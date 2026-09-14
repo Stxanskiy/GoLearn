@@ -255,12 +255,14 @@ func (a *API) adminAddCourseAuthor(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	var body apigen.AdminAddCourseAuthorJSONRequestBody
+	var body struct {
+		Email string `json:"email"`
+	}
 	if !decodeJSON(w, r, &body) {
 		return
 	}
 	ctx := r.Context()
-	email := strings.TrimSpace(string(body.Email))
+	email := strings.TrimSpace(body.Email)
 	u, err := a.Users.GetByEmail(ctx, email)
 	if isNotFound(err) && email != strings.ToLower(email) {
 		u, err = a.Users.GetByEmail(ctx, strings.ToLower(email))

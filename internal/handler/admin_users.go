@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -99,8 +100,7 @@ func (h *Handler) AdminUserSetRole(w http.ResponseWriter, r *http.Request) {
 	if role != repository.RoleAdmin && role != repository.RoleAuthor {
 		role = repository.RoleStudent
 	}
-	_ = h.userRepo.SetRole(r.Context(), id, role)
-	usersBack(w, r, "")
+	h.setAccess(w, r, id, func(u *repository.User) { u.Role = role })
 }
 
 // AdminUserBlock blocks/unblocks a user (blocked=1 blocks). Self-block is refused.
@@ -111,8 +111,8 @@ func (h *Handler) AdminUserBlock(w http.ResponseWriter, r *http.Request) {
 		usersBack(w, r, "Нельзя заблокировать себя")
 		return
 	}
-	_ = h.userRepo.SetBlocked(r.Context(), id, r.FormValue("blocked") == "1")
-	usersBack(w, r, "")
+	blocked := r.FormValue("blocked") == "1"
+	h.setAccess(w, r, id, func(u *repository.User) { u.Blocked = blocked })
 }
 
 // AdminUserDelete removes a user. Self-delete is refused.
@@ -122,7 +122,10 @@ func (h *Handler) AdminUserDelete(w http.ResponseWriter, r *http.Request) {
 		usersBack(w, r, "Нельзя удалить себя")
 		return
 	}
-	_ = h.userRepo.Delete(r.Context(), id)
+	if err := h.userRepo.DeleteGuarded(r.Context(), id); errors.Is(err, repository.ErrLastAdmin) {
+		usersBack(w, r, "Нельзя удалить последнего администратора")
+		return
+	}
 	usersBack(w, r, "")
 }
 
@@ -137,6 +140,22 @@ func (h *Handler) AdminUserResetPassword(w http.ResponseWriter, r *http.Request)
 	}
 	if err := h.userRepo.SetPassword(r.Context(), id, pw); err != nil {
 		usersBack(w, r, "Ошибка сброса пароля")
+		return
+	}
+	_ = h.userRepo.DeleteSessions(r.Context(), id)
+	usersBack(w, r, "")
+}
+
+// setAccess applies a role or block change without removing the last active admin.
+func (h *Handler) setAccess(w http.ResponseWriter, r *http.Request, id int, change func(u *repository.User)) {
+	u, err := h.userRepo.GetByID(r.Context(), id)
+	if err != nil {
+		usersBack(w, r, "Пользователь не найден")
+		return
+	}
+	change(u)
+	if err := h.userRepo.SetAccess(r.Context(), id, u.Role, u.Blocked); errors.Is(err, repository.ErrLastAdmin) {
+		usersBack(w, r, "Нужен хотя бы один активный администратор")
 		return
 	}
 	usersBack(w, r, "")

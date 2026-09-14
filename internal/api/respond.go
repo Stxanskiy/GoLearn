@@ -41,6 +41,9 @@ const (
 	codeAlreadyAuthor      = "already_author"
 	codeImportBlocked      = "import_blocked"
 	codeSpecNotEmpty       = "specialization_not_empty"
+	codeSelfModification   = "self_modification"
+	codeLastAdmin          = "last_admin"
+	codeRolePinnedByEnv    = "role_pinned_by_env"
 )
 
 // Field-level validation codes.
