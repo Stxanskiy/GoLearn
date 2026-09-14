@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -93,21 +95,28 @@ func (r *ProgressRepo) Overview(ctx context.Context, userID int) (*model.Progres
 		TrainersTot:   3, // overridden by handler
 	}
 
-	_ = r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM lessons`).Scan(&o.ArticlesTotal)
+	_ = r.pool.QueryRow(ctx, `
+		SELECT COUNT(*) FROM lessons l JOIN modules m ON m.id = l.module_id
+		WHERE l.published AND m.published`).Scan(&o.ArticlesTotal)
 	_ = r.pool.QueryRow(ctx,
 		`SELECT COUNT(*) FROM progress WHERE user_id=$1 AND status IN ('in_progress','completed')`, userID).Scan(&o.ArticlesRead)
 	_ = r.pool.QueryRow(ctx,
 		`SELECT COUNT(*) FROM progress WHERE user_id=$1 AND quiz_score IS NOT NULL`, userID).Scan(&o.TestsPassed)
 	_ = r.pool.QueryRow(ctx,
 		`SELECT COUNT(DISTINCT task_id) FROM submissions WHERE user_id=$1 AND passed = true`, userID).Scan(&o.TasksSolved)
-	_ = r.pool.QueryRow(ctx,
-		`SELECT COUNT(DISTINCT lesson_id) FROM tasks`).Scan(&o.LabsTotal)
+	_ = r.pool.QueryRow(ctx, `
+		SELECT COUNT(DISTINCT t.lesson_id) FROM tasks t
+		JOIN lessons l ON l.id = t.lesson_id JOIN modules m ON m.id = l.module_id
+		WHERE l.published AND m.published`).Scan(&o.LabsTotal)
 	_ = r.pool.QueryRow(ctx, `
 		SELECT COUNT(*) FROM (
 			SELECT t.lesson_id,
 			       COUNT(*) total,
 			       COUNT(DISTINCT CASE WHEN s.passed THEN t.id END) passed
-			FROM tasks t LEFT JOIN submissions s ON s.task_id = t.id AND s.user_id = $1
+			FROM tasks t
+			JOIN lessons l ON l.id = t.lesson_id JOIN modules m ON m.id = l.module_id
+			LEFT JOIN submissions s ON s.task_id = t.id AND s.user_id = $1
+			WHERE l.published AND m.published
 			GROUP BY t.lesson_id
 		) x WHERE total > 0 AND passed >= total`, userID).Scan(&o.LabsDone)
 
@@ -132,6 +141,36 @@ func (r *ProgressRepo) Overview(ctx context.Context, userID int) (*model.Progres
 	o.ActiveDays = len(o.Activity)
 	o.Streak = computeStreak(o.Activity)
 	return o, nil
+}
+
+// ContinueLesson is the lesson a user most recently worked on.
+type ContinueLesson struct {
+	LessonID    int
+	LessonSlug  string
+	LessonTitle string
+	LessonKind  string
+	ModuleSlug  string
+	ModuleTitle string
+}
+
+// LatestInProgress returns the most recently updated unfinished published lesson, or nil.
+func (r *ProgressRepo) LatestInProgress(ctx context.Context, userID int) (*ContinueLesson, error) {
+	var c ContinueLesson
+	err := r.pool.QueryRow(ctx, `
+		SELECT l.id, l.slug, l.title, l.kind, m.slug, m.title
+		FROM progress p
+		JOIN lessons l ON l.id = p.lesson_id JOIN modules m ON m.id = l.module_id
+		WHERE p.user_id = $1 AND p.status = 'in_progress' AND l.published AND m.published
+		  AND NOT (l.kind = 'quiz' AND p.quiz_score IS NOT NULL)
+		ORDER BY p.updated_at DESC LIMIT 1`, userID).
+		Scan(&c.LessonID, &c.LessonSlug, &c.LessonTitle, &c.LessonKind, &c.ModuleSlug, &c.ModuleTitle)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
 
 // computeStreak counts consecutive days with activity ending today or yesterday.

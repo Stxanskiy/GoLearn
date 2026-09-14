@@ -35,14 +35,14 @@ func (a *API) sessionUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		user, err := a.users.GetUserBySession(r.Context(), c.Value)
+		user, err := a.Users.GetUserBySession(r.Context(), c.Value)
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
 			auth.ClearAuthCookies(w)
 		case err != nil:
 			a.log.Error("resolve session", "error", err)
 		default:
-			auth.PromoteEnvAdmin(r.Context(), a.users, user)
+			auth.PromoteEnvAdmin(r.Context(), a.Users, user)
 			r = r.WithContext(context.WithValue(r.Context(), ctxKey{}, user))
 		}
 		next.ServeHTTP(w, r)

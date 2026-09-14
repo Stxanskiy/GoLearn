@@ -179,13 +179,7 @@ paths:
           description: Profile page data.
           content:
             application/json:
-              schema:
-                type: object
-                required: [user, lessons_completed, lessons_started]
-                properties:
-                  user: { $ref: '#/components/schemas/Me' }
-                  lessons_completed: { type: integer }
-                  lessons_started: { type: integer }
+              schema: { $ref: '#/components/schemas/Profile' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /me/dashboard:
@@ -211,7 +205,7 @@ paths:
       summary: Get landing
       operationId: getLanding
       security: []
-      description: Anonymous landing data; cacheable (ISR). Counts include published content only.
+      description: Anonymous landing data; cacheable (ISR). Counts include published content only; trainer courses are not counted as courses.
       responses:
         '200':
           description: Landing data.
@@ -246,6 +240,7 @@ paths:
       tags: [catalog]
       summary: Get specialization
       operationId: getSpecialization
+      description: Draft specializations are `404` except for admins.
       responses:
         '200':
           description: Specialization with its courses.
@@ -279,7 +274,7 @@ paths:
       tags: [catalog]
       summary: Get course
       operationId: getCourse
-      description: Course page. Drafts are `404` for students.
+      description: Course page with published lessons. Draft courses are `404` except for admins.
       responses:
         '200':
           description: Course with its chapter list.
@@ -1981,59 +1976,76 @@ components:
       required: [overview, activity]
       properties:
         continue:
-          type: [object, 'null']
           description: Latest in-progress lesson.
-          required: [course, lesson, lesson_id, kind]
-          properties:
-            course: { $ref: '#/components/schemas/LinkRef' }
-            lesson: { $ref: '#/components/schemas/LinkRef' }
-            lesson_id: { type: integer }
-            kind: { $ref: '#/components/schemas/LessonKind' }
-        overview:
-          type: object
-          required: [streak, active_days, tasks_solved, labs_done, labs_total, lessons_read, lessons_total, tests_passed, simulators_done, simulators_total, trainers_done, trainers_total]
-          properties:
-            streak: { type: integer }
-            active_days: { type: integer }
-            tasks_solved: { type: integer }
-            labs_done: { type: integer }
-            labs_total: { type: integer }
-            lessons_read: { type: integer }
-            lessons_total: { type: integer }
-            tests_passed: { type: integer }
-            simulators_done: { type: integer }
-            simulators_total: { type: integer }
-            trainers_done: { type: integer }
-            trainers_total: { type: integer }
+          oneOf: [{ $ref: '#/components/schemas/ContinueLesson' }, { type: 'null' }]
+        overview: { $ref: '#/components/schemas/DashboardOverview' }
         activity:
           type: object
           description: '`YYYY-MM-DD` → activity count, last 365 days.'
           additionalProperties: { type: integer }
+
+    Profile:
+      type: object
+      required: [user, lessons_completed, lessons_started]
+      properties:
+        user: { $ref: '#/components/schemas/Me' }
+        lessons_completed: { type: integer }
+        lessons_started: { type: integer }
+
+    ContinueLesson:
+      type: object
+      required: [course, lesson, lesson_id, kind]
+      properties:
+        course: { $ref: '#/components/schemas/LinkRef' }
+        lesson: { $ref: '#/components/schemas/LinkRef' }
+        lesson_id: { type: integer }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+
+    DashboardOverview:
+      type: object
+      required: [streak, active_days, tasks_solved, labs_done, labs_total, lessons_read, lessons_total, tests_passed, simulators_done, simulators_total, trainers_done, trainers_total]
+      properties:
+        streak: { type: integer }
+        active_days: { type: integer }
+        tasks_solved: { type: integer }
+        labs_done: { type: integer }
+        labs_total: { type: integer }
+        lessons_read: { type: integer }
+        lessons_total: { type: integer }
+        tests_passed: { type: integer }
+        simulators_done: { type: integer, description: Not tracked yet — always 0. }
+        simulators_total: { type: integer }
+        trainers_done: { type: integer, description: Completed trainer (gym) courses. }
+        trainers_total: { type: integer }
 
     # ── public ──
     Landing:
       type: object
       required: [stats, tracks]
       properties:
-        stats:
-          type: object
-          required: [courses, lessons, labs, auto_checked_tasks]
-          properties:
-            courses: { type: integer }
-            lessons: { type: integer }
-            labs: { type: integer }
-            auto_checked_tasks: { type: integer }
+        stats: { $ref: '#/components/schemas/LandingStats' }
         tracks:
           type: array
-          items:
-            type: object
-            required: [slug, name, icon, description, courses_count]
-            properties:
-              slug: { type: string }
-              name: { type: string }
-              icon: { type: string }
-              description: { type: string }
-              courses_count: { type: integer }
+          items: { $ref: '#/components/schemas/LandingTrack' }
+
+    LandingStats:
+      type: object
+      required: [courses, lessons, labs, auto_checked_tasks]
+      properties:
+        courses: { type: integer }
+        lessons: { type: integer }
+        labs: { type: integer }
+        auto_checked_tasks: { type: integer }
+
+    LandingTrack:
+      type: object
+      required: [slug, name, icon, description, courses_count]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        icon: { type: string }
+        description: { type: string }
+        courses_count: { type: integer }
 
     # ── catalog ──
     Specialization:
@@ -2389,37 +2401,43 @@ components:
         intro: { type: string }
         metrics:
           type: array
-          items:
-            type: object
-            required: [key, label, unit, start, higher]
-            properties:
-              key: { type: string }
-              label: { type: string }
-              unit: { type: string }
-              start: { type: integer }
-              higher: { type: boolean, description: Higher value is better. }
+          items: { $ref: '#/components/schemas/ScenarioMetric' }
         turns:
           type: array
           minItems: 1
-          items:
-            type: object
-            required: [title, situation, choices]
-            properties:
-              title: { type: string }
-              situation: { type: string }
-              choices:
-                type: array
-                minItems: 1
-                items:
-                  type: object
-                  required: [text, effects, result]
-                  properties:
-                    text: { type: string }
-                    effects:
-                      type: object
-                      description: Metric key → integer delta; keys must exist in `metrics`.
-                      additionalProperties: { type: integer }
-                    result: { type: string }
+          items: { $ref: '#/components/schemas/ScenarioTurn' }
+
+    ScenarioMetric:
+      type: object
+      required: [key, label, unit, start, higher]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        unit: { type: string }
+        start: { type: integer }
+        higher: { type: boolean, description: Higher value is better. }
+
+    ScenarioTurn:
+      type: object
+      required: [title, situation, choices]
+      properties:
+        title: { type: string }
+        situation: { type: string }
+        choices:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/ScenarioChoice' }
+
+    ScenarioChoice:
+      type: object
+      required: [text, effects, result]
+      properties:
+        text: { type: string }
+        effects:
+          type: object
+          description: Metric key → integer delta; keys must exist in `metrics`.
+          additionalProperties: { type: integer }
+        result: { type: string }
 
     # ── admin ──
     Ownership:

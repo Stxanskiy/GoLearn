@@ -49,12 +49,12 @@ func (a *API) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.users.GetByEmail(r.Context(), email)
+	user, err := a.Users.GetByEmail(r.Context(), email)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		a.internalError(w, "load user", err)
 		return
 	}
-	if user == nil || !a.users.CheckPassword(user, body.Password) {
+	if user == nil || !a.Users.CheckPassword(user, body.Password) {
 		writeError(w, http.StatusUnauthorized, codeInvalidCredentials, "invalid email or password")
 		return
 	}
@@ -84,7 +84,7 @@ func (a *API) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.users.Create(r.Context(), email, body.Password, name)
+	user, err := a.Users.Create(r.Context(), email, body.Password, name)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		writeError(w, http.StatusConflict, codeEmailTaken, "email already registered")
@@ -128,7 +128,7 @@ func validateRegistration(name, email, password string) map[string]string {
 
 func (a *API) logout(w http.ResponseWriter, r *http.Request) {
 	if c, err := r.Cookie(auth.SessionCookie); err == nil && c.Value != "" {
-		if err := a.users.DeleteSession(r.Context(), c.Value); err != nil {
+		if err := a.Users.DeleteSession(r.Context(), c.Value); err != nil {
 			a.log.Error("delete session", "error", err)
 		}
 	}
@@ -142,12 +142,12 @@ func (a *API) getMe(w http.ResponseWriter, r *http.Request) {
 
 // startSession creates a session, sets the cookie and responds with the user.
 func (a *API) startSession(w http.ResponseWriter, r *http.Request, user *repository.User, status int) {
-	token, err := a.users.CreateSession(r.Context(), user.ID)
+	token, err := a.Users.CreateSession(r.Context(), user.ID)
 	if err != nil {
 		a.internalError(w, "create session", err)
 		return
 	}
-	auth.PromoteEnvAdmin(r.Context(), a.users, user)
+	auth.PromoteEnvAdmin(r.Context(), a.Users, user)
 	auth.SetSessionCookie(w, r, token)
 	writeJSON(w, status, toMe(user))
 }

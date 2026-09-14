@@ -66,6 +66,28 @@ func (r *LessonRepo) lessonsByModule(ctx context.Context, moduleID int, publishe
 	return lessons, rows.Err()
 }
 
+// ListPublishedOutline returns id, module, slug, title, kind and order of every published lesson in a published module.
+func (r *LessonRepo) ListPublishedOutline(ctx context.Context) ([]model.Lesson, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT l.id, l.module_id, l.slug, l.title, l.kind, l.order_num, l.published
+		FROM lessons l JOIN modules m ON m.id = l.module_id
+		WHERE l.published AND m.published
+		ORDER BY l.module_id, l.order_num`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var lessons []model.Lesson
+	for rows.Next() {
+		var l model.Lesson
+		if err := rows.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Kind, &l.OrderNum, &l.Published); err != nil {
+			return nil, err
+		}
+		lessons = append(lessons, l)
+	}
+	return lessons, rows.Err()
+}
+
 func (r *LessonRepo) GetBySlug(ctx context.Context, moduleID int, slug string) (*model.Lesson, error) {
 	l, err := scanLesson(r.pool.QueryRow(ctx,
 		`SELECT `+lessonCols+` FROM lessons WHERE module_id = $1 AND slug = $2`, moduleID, slug))

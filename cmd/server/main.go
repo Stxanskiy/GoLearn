@@ -109,7 +109,16 @@ func main() {
 		staticHandler.ServeHTTP(w, req)
 	}))
 
-	r.Mount("/api/v1", api.New(userRepo, api.Config{AllowedOrigins: cfg.AppOrigins}, log).Routes())
+	apiV1 := api.New(api.Stores{
+		Users:       userRepo,
+		Modules:     moduleRepo,
+		Lessons:     lessonRepo,
+		Progress:    progressRepo,
+		Submissions: submissionRepo,
+		Specs:       specRepo,
+		Sims:        simRepo,
+	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
+	r.Mount("/api/v1", apiV1.Routes())
 	h.RegisterRoutes(r)
 
 	srv := &http.Server{

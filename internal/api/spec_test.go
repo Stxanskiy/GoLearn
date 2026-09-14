@@ -26,7 +26,7 @@ func TestRoutesMatchSpec(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	api := New(newFakeUsers(), Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	api := New(newFakeContent().stores(newFakeUsers()), Config{}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	wildcard := regexp.MustCompile(`/\*$`)
 	count := 0
 	err = chi.Walk(api.Routes(), func(method, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {

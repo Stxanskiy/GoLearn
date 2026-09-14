@@ -721,6 +721,14 @@ type Category = string
 // ContentFormat defines model for ContentFormat.
 type ContentFormat string
 
+// ContinueLesson defines model for ContinueLesson.
+type ContinueLesson struct {
+	Course   LinkRef    `json:"course"`
+	Kind     LessonKind `json:"kind"`
+	Lesson   LinkRef    `json:"lesson"`
+	LessonID int        `json:"lesson_id"`
+}
+
 // CourseCard defines model for CourseCard.
 type CourseCard struct {
 	// Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
@@ -824,26 +832,28 @@ type Dashboard struct {
 	Activity map[string]int `json:"activity"`
 
 	// Continue Latest in-progress lesson.
-	Continue *struct {
-		Course   LinkRef    `json:"course"`
-		Kind     LessonKind `json:"kind"`
-		Lesson   LinkRef    `json:"lesson"`
-		LessonID int        `json:"lesson_id"`
-	} `json:"continue,omitempty"`
-	Overview struct {
-		ActiveDays      int `json:"active_days"`
-		LabsDone        int `json:"labs_done"`
-		LabsTotal       int `json:"labs_total"`
-		LessonsRead     int `json:"lessons_read"`
-		LessonsTotal    int `json:"lessons_total"`
-		SimulatorsDone  int `json:"simulators_done"`
-		SimulatorsTotal int `json:"simulators_total"`
-		Streak          int `json:"streak"`
-		TasksSolved     int `json:"tasks_solved"`
-		TestsPassed     int `json:"tests_passed"`
-		TrainersDone    int `json:"trainers_done"`
-		TrainersTotal   int `json:"trainers_total"`
-	} `json:"overview"`
+	Continue *ContinueLesson   `json:"continue,omitempty"`
+	Overview DashboardOverview `json:"overview"`
+}
+
+// DashboardOverview defines model for DashboardOverview.
+type DashboardOverview struct {
+	ActiveDays   int `json:"active_days"`
+	LabsDone     int `json:"labs_done"`
+	LabsTotal    int `json:"labs_total"`
+	LessonsRead  int `json:"lessons_read"`
+	LessonsTotal int `json:"lessons_total"`
+
+	// SimulatorsDone Not tracked yet — always 0.
+	SimulatorsDone  int `json:"simulators_done"`
+	SimulatorsTotal int `json:"simulators_total"`
+	Streak          int `json:"streak"`
+	TasksSolved     int `json:"tasks_solved"`
+	TestsPassed     int `json:"tests_passed"`
+
+	// TrainersDone Completed trainer (gym) courses.
+	TrainersDone  int `json:"trainers_done"`
+	TrainersTotal int `json:"trainers_total"`
 }
 
 // Difficulty defines model for Difficulty.
@@ -962,19 +972,25 @@ type LabTaskCheckMode string
 
 // Landing defines model for Landing.
 type Landing struct {
-	Stats struct {
-		AutoCheckedTasks int `json:"auto_checked_tasks"`
-		Courses          int `json:"courses"`
-		Labs             int `json:"labs"`
-		Lessons          int `json:"lessons"`
-	} `json:"stats"`
-	Tracks []struct {
-		CoursesCount int    `json:"courses_count"`
-		Description  string `json:"description"`
-		Icon         string `json:"icon"`
-		Name         string `json:"name"`
-		Slug         string `json:"slug"`
-	} `json:"tracks"`
+	Stats  LandingStats   `json:"stats"`
+	Tracks []LandingTrack `json:"tracks"`
+}
+
+// LandingStats defines model for LandingStats.
+type LandingStats struct {
+	AutoCheckedTasks int `json:"auto_checked_tasks"`
+	Courses          int `json:"courses"`
+	Labs             int `json:"labs"`
+	Lessons          int `json:"lessons"`
+}
+
+// LandingTrack defines model for LandingTrack.
+type LandingTrack struct {
+	CoursesCount int    `json:"courses_count"`
+	Description  string `json:"description"`
+	Icon         string `json:"icon"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
 }
 
 // LessonDetail defines model for LessonDetail.
@@ -1052,6 +1068,13 @@ type Ownership struct {
 
 // OwnershipSource defines model for Ownership.Source.
 type OwnershipSource string
+
+// Profile defines model for Profile.
+type Profile struct {
+	LessonsCompleted int `json:"lessons_completed"`
+	LessonsStarted   int `json:"lessons_started"`
+	User             Me  `json:"user"`
+}
 
 // ProgressStatus defines model for ProgressStatus.
 type ProgressStatus string
@@ -1132,29 +1155,38 @@ type SandboxSession struct {
 
 // Scenario defines model for Scenario.
 type Scenario struct {
-	Icon    string `json:"icon"`
-	Intro   string `json:"intro"`
-	Metrics []struct {
-		// Higher Higher value is better.
-		Higher bool   `json:"higher"`
-		Key    string `json:"key"`
-		Label  string `json:"label"`
-		Start  int    `json:"start"`
-		Unit   string `json:"unit"`
-	} `json:"metrics"`
-	Role  string `json:"role"`
-	Slug  Slug   `json:"slug"`
-	Title string `json:"title"`
-	Turns []struct {
-		Choices []struct {
-			// Effects Metric key → integer delta; keys must exist in `metrics`.
-			Effects map[string]int `json:"effects"`
-			Result  string         `json:"result"`
-			Text    string         `json:"text"`
-		} `json:"choices"`
-		Situation string `json:"situation"`
-		Title     string `json:"title"`
-	} `json:"turns"`
+	Icon    string           `json:"icon"`
+	Intro   string           `json:"intro"`
+	Metrics []ScenarioMetric `json:"metrics"`
+	Role    string           `json:"role"`
+	Slug    Slug             `json:"slug"`
+	Title   string           `json:"title"`
+	Turns   []ScenarioTurn   `json:"turns"`
+}
+
+// ScenarioChoice defines model for ScenarioChoice.
+type ScenarioChoice struct {
+	// Effects Metric key → integer delta; keys must exist in `metrics`.
+	Effects map[string]int `json:"effects"`
+	Result  string         `json:"result"`
+	Text    string         `json:"text"`
+}
+
+// ScenarioMetric defines model for ScenarioMetric.
+type ScenarioMetric struct {
+	// Higher Higher value is better.
+	Higher bool   `json:"higher"`
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Start  int    `json:"start"`
+	Unit   string `json:"unit"`
+}
+
+// ScenarioTurn defines model for ScenarioTurn.
+type ScenarioTurn struct {
+	Choices   []ScenarioChoice `json:"choices"`
+	Situation string           `json:"situation"`
+	Title     string           `json:"title"`
 }
 
 // SimulatorSummary defines model for SimulatorSummary.

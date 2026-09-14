@@ -91,10 +91,15 @@ func (f *fakeUsers) SetRole(_ context.Context, userID int, role string) error {
 
 func newTestAPI(t *testing.T, users *fakeUsers) http.Handler {
 	t.Helper()
+	return newTestAPIWith(t, users, newFakeContent())
+}
+
+func newTestAPIWith(t *testing.T, users *fakeUsers, content *fakeContent) http.Handler {
+	t.Helper()
 	auth.LoginLimiter = auth.NewLimiter(10, time.Minute)
 	auth.RegisterLimiter = auth.NewLimiter(5, time.Minute)
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return New(users, Config{AllowedOrigins: []string{"http://localhost:3000"}}, log).Routes()
+	return New(content.stores(users), Config{AllowedOrigins: []string{"http://localhost:3000"}}, log).Routes()
 }
 
 type reqOpt func(*http.Request)

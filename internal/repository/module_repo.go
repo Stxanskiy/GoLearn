@@ -213,15 +213,18 @@ type PlatformStats struct {
 	AutoChecked int
 }
 
-// Stats counts what the platform currently offers. Shown to visitors, so the
-// numbers come from the database rather than from a hand-written claim.
+// Stats counts published content; trainer (gym) modules are not counted as courses.
 func (r *ModuleRepo) Stats(ctx context.Context) (PlatformStats, error) {
 	var s PlatformStats
 	err := r.pool.QueryRow(ctx, `
-		SELECT (SELECT count(*) FROM modules),
-		       (SELECT count(*) FROM lessons),
-		       (SELECT count(*) FROM lessons WHERE kind = 'lab'),
-		       (SELECT count(*) FROM tasks  WHERE check_script <> '')`).
+		WITH pub AS (
+			SELECT l.id, l.kind FROM lessons l JOIN modules m ON m.id = l.module_id
+			WHERE l.published AND m.published
+		)
+		SELECT (SELECT count(*) FROM modules WHERE published AND track <> 'gym'),
+		       (SELECT count(*) FROM pub),
+		       (SELECT count(*) FROM pub WHERE kind = 'lab'),
+		       (SELECT count(*) FROM tasks t JOIN pub ON pub.id = t.lesson_id WHERE t.check_script <> '')`).
 		Scan(&s.Courses, &s.Lessons, &s.Labs, &s.AutoChecked)
 	return s, err
 }

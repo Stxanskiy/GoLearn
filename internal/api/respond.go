@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/backendraz/golearn/internal/api/apigen"
+	"github.com/jackc/pgx/v5"
 )
 
 // Error codes shared with the frontend (see Error in api/openapi.yaml).
@@ -73,4 +74,9 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 		return false
 	}
 	return true
+}
+
+// isNotFound reports whether a repository error means the row does not exist.
+func isNotFound(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }
