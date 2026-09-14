@@ -6,8 +6,10 @@ package courseio
 
 import (
 	"encoding/json"
+	"slices"
 	"strconv"
 
+	"github.com/backendraz/golearn/internal/lab"
 	"github.com/backendraz/golearn/internal/model"
 )
 
@@ -142,63 +144,93 @@ func (c Course) ToTree() model.CourseTree {
 
 // Issue is a validation finding. Level is "error" (blocks import) or "warn".
 type Issue struct {
-	Level string `json:"level"`
-	Msg   string `json:"msg"`
+	Level      string `json:"level"`
+	Code       string `json:"code"`
+	LessonSlug string `json:"lesson_slug,omitempty"`
+	Path       string `json:"path,omitempty"`
+	Msg        string `json:"msg"`
 }
 
 func kindOK(k string) bool {
 	switch k {
-	case "", "theory", "quiz", "lab", "sim":
+	case "", "theory", "quiz", "lab", "sim", "sql":
 		return true
 	}
 	return false
 }
 
-// Validate checks a course for structural problems. "error" issues should block
-// the import; "warn" issues are advisory. Empty slug/title of the course itself
-// are handled by the caller and not repeated here.
+// Validate checks a course for structural problems. "error" issues block the
+// import; "warn" issues are advisory. The course slug and title are checked by the caller.
 func Validate(c Course) []Issue {
 	var out []Issue
+	add := func(level, code string, l *Lesson, path, msg string) {
+		is := Issue{Level: level, Code: code, Path: path, Msg: msg}
+		if l != nil {
+			is.LessonSlug = l.Slug
+		}
+		out = append(out, is)
+	}
 	seen := map[string]int{}
 	if len(c.Lessons) == 0 {
-		out = append(out, Issue{"warn", "в курсе нет ни одной главы"})
+		add("warn", "no_lessons", nil, "/lessons", "в курсе нет ни одной главы")
 	}
-	for i, l := range c.Lessons {
-		n := i + 1
-		if l.Slug == "" {
-			out = append(out, Issue{"error", "глава " + strconv.Itoa(n) + ": пустой slug"})
-		} else {
+	for i := range c.Lessons {
+		l := &c.Lessons[i]
+		n := strconv.Itoa(i + 1)
+		lp := "/lessons/" + strconv.Itoa(i)
+		switch {
+		case l.Slug == "":
+			add("error", "lesson_slug_empty", l, lp+"/slug", "глава "+n+": пустой slug")
+		case !slugOK(l.Slug):
+			add("error", "lesson_slug_invalid", l, lp+"/slug", "глава "+n+": slug «"+l.Slug+"» — только латиница, цифры, дефис")
+		default:
 			seen[l.Slug]++
 			if seen[l.Slug] == 2 {
-				out = append(out, Issue{"error", "дублирующийся slug главы: " + l.Slug})
+				add("error", "lesson_slug_duplicate", l, lp+"/slug", "дублирующийся slug главы: "+l.Slug)
 			}
 		}
 		if l.Title == "" {
-			out = append(out, Issue{"warn", "глава " + strconv.Itoa(n) + ": пустой заголовок"})
+			add("error", "lesson_title_empty", l, lp+"/title", "глава "+n+": пустой заголовок")
 		}
 		if !kindOK(l.Kind) {
-			out = append(out, Issue{"warn", "глава «" + l.Title + "»: необычный kind «" + l.Kind + "» (ожидается theory/quiz/lab/sim)"})
+			add("error", "unknown_kind", l, lp+"/kind", "глава «"+l.Title+"»: неизвестный kind «"+l.Kind+"» (theory/quiz/lab/sim/sql)")
 		}
 		if l.Format != "" && l.Format != "html" && l.Format != "md" {
-			out = append(out, Issue{"warn", "глава «" + l.Title + "»: format «" + l.Format + "» (ожидается html/md)"})
+			add("error", "unknown_format", l, lp+"/format", "глава «"+l.Title+"»: format «"+l.Format+"» (ожидается html/md)")
 		}
 		for qi, q := range l.Quiz {
+			qp := lp + "/quiz/" + strconv.Itoa(qi)
 			if len(q.Options) < 2 {
-				out = append(out, Issue{"warn", "глава «" + l.Title + "», вопрос " + strconv.Itoa(qi+1) + ": меньше 2 вариантов"})
+				add("error", "too_few_options", l, qp+"/options", "глава «"+l.Title+"», вопрос "+strconv.Itoa(qi+1)+": меньше 2 вариантов")
 			}
 			if q.Correct < 1 || q.Correct > len(q.Options) {
-				out = append(out, Issue{"warn", "глава «" + l.Title + "», вопрос " + strconv.Itoa(qi+1) + ": correct вне диапазона 1.." + strconv.Itoa(len(q.Options))})
+				add("error", "correct_out_of_range", l, qp+"/correct", "глава «"+l.Title+"», вопрос "+strconv.Itoa(qi+1)+": correct вне диапазона 1.."+strconv.Itoa(len(q.Options)))
 			}
 		}
-		for _, tk := range l.Tasks {
+		for ti, tk := range l.Tasks {
+			tp := lp + "/tasks/" + strconv.Itoa(ti)
+			if tk.Title == "" {
+				add("error", "task_title_empty", l, tp+"/title", "глава «"+l.Title+"», задание "+strconv.Itoa(ti+1)+": пустой заголовок")
+			}
+			if tk.SandboxImage != "" && !slices.Contains(lab.SandboxImages, tk.SandboxImage) {
+				add("error", "unknown_sandbox_image", l, tp+"/sandbox_image", "задание «"+tk.Title+"»: неизвестный sandbox_image «"+tk.SandboxImage+"»")
+			}
 			if tk.CheckScript != "" && tk.SandboxImage == "" && l.VMImage == "" {
-				out = append(out, Issue{"warn", "задание «" + tk.Title + "»: есть check, но не указан sandbox_image (и у главы нет vm_image)"})
+				add("warn", "check_without_image", l, tp+"/check_script", "задание «"+tk.Title+"»: есть check, но не указан sandbox_image (и у главы нет vm_image)")
 			}
 		}
 	}
 	return out
 }
 
+func slugOK(s string) bool {
+	for i, r := range s {
+		if !(r >= 'a' && r <= 'z') && !(r >= '0' && r <= '9') && ((r != '-' && r != '_') || i == 0) {
+			return false
+		}
+	}
+	return len(s) <= 100
+}
 
 // HasErrors reports whether any issue is an "error".
 func HasErrors(issues []Issue) bool {

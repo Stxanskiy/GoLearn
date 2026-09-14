@@ -146,7 +146,7 @@ func taskTitles(tasks []model.Task) []string {
 	return out
 }
 
-// Upsert applies a course tree in one transaction keyed by slug; lessons missing from the tree are deleted, questions and tasks are matched by text and title so student answers and submissions survive.
+// Upsert applies a course tree in one transaction keyed by slug; published and owner apply only to rows it inserts; lessons missing from the tree are deleted, questions and tasks are matched by text and title so student answers and submissions survive.
 func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree) (CourseDiff, error) {
 	d, err := r.Diff(ctx, tree)
 	if err != nil {
@@ -169,10 +169,10 @@ func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree) (CourseD
 	case pgx.ErrNoRows:
 		err = tx.QueryRow(ctx,
 			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
-			   category, label, tags, cover_image, accent, est_minutes, source)
-			 VALUES ($1,$2,$3,$4,$5,$6,'[]',$7,$8,$9,$10,$11,$12,'admin') RETURNING id`,
+			   category, label, tags, cover_image, accent, est_minutes, source, published, owner_id)
+			 VALUES ($1,$2,$3,$4,$5,$6,'[]',$7,$8,$9,$10,$11,$12,'admin',$13,$14) RETURNING id`,
 			m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
-			m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes).Scan(&moduleID)
+			m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.Published, m.OwnerID).Scan(&moduleID)
 		if err != nil {
 			return d, err
 		}
@@ -201,9 +201,9 @@ func (r *CourseRepo) Upsert(ctx context.Context, tree model.CourseTree) (CourseD
 		switch err {
 		case pgx.ErrNoRows:
 			err = tx.QueryRow(ctx,
-				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source)
-				 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin') RETURNING id`,
-				moduleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&lessonID)
+				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published)
+				 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin',$12) RETURNING id`,
+				moduleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, m.Track, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published).Scan(&lessonID)
 			if err != nil {
 				return d, err
 			}

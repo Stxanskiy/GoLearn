@@ -826,49 +826,58 @@ type CourseDocument struct {
 	Category *string `json:"category,omitempty"`
 
 	// CoverImage URL or data URI.
-	CoverImage  *string `json:"cover_image,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Difficulty  *string `json:"difficulty,omitempty"`
-	EstMinutes  *int    `json:"est_minutes,omitempty"`
-	Label       *string `json:"label,omitempty"`
-	Lessons     []struct {
-		Content    *string `json:"content,omitempty"`
-		Difficulty *string `json:"difficulty,omitempty"`
-		Format     *string `json:"format,omitempty"`
-		Kind       *string `json:"kind,omitempty"`
-		Quiz       *[]struct {
-			// Correct 1-based.
-			Correct     int       `json:"correct"`
-			Explanation *string   `json:"explanation,omitempty"`
-			OptionExpl  *[]string `json:"option_expl,omitempty"`
-			Options     []string  `json:"options"`
-			Question    string    `json:"question"`
-		} `json:"quiz,omitempty"`
-		Slug  string `json:"slug"`
-		Tasks *[]struct {
-			CheckScript  *string         `json:"check_script,omitempty"`
-			Description  *string         `json:"description,omitempty"`
-			Difficulty   *string         `json:"difficulty,omitempty"`
-			Format       *string         `json:"format,omitempty"`
-			Glossary     *[]GlossaryItem `json:"glossary,omitempty"`
-			Hints        *string         `json:"hints,omitempty"`
-			Kind         *string         `json:"kind,omitempty"`
-			SandboxImage *string         `json:"sandbox_image,omitempty"`
-			SetupScript  *string         `json:"setup_script,omitempty"`
-			Solution     *string         `json:"solution,omitempty"`
-			StarterCode  *string         `json:"starter_code,omitempty"`
-			TestCases    *[]TestCase     `json:"test_cases,omitempty"`
-			Title        string          `json:"title"`
-		} `json:"tasks,omitempty"`
-		Title   string  `json:"title"`
-		VMImage *string `json:"vm_image,omitempty"`
-		VMInit  *string `json:"vm_init,omitempty"`
-	} `json:"lessons"`
-	OrderNum *int      `json:"order_num,omitempty"`
-	Slug     Slug      `json:"slug"`
-	Tags     *[]string `json:"tags,omitempty"`
-	Title    string    `json:"title"`
-	Track    *string   `json:"track,omitempty"`
+	CoverImage  *string                `json:"cover_image,omitempty"`
+	Description *string                `json:"description,omitempty"`
+	Difficulty  *string                `json:"difficulty,omitempty"`
+	EstMinutes  *int                   `json:"est_minutes,omitempty"`
+	Label       *string                `json:"label,omitempty"`
+	Lessons     []CourseDocumentLesson `json:"lessons"`
+	OrderNum    *int                   `json:"order_num,omitempty"`
+	Slug        Slug                   `json:"slug"`
+	Tags        *[]string              `json:"tags,omitempty"`
+	Title       string                 `json:"title"`
+	Track       *string                `json:"track,omitempty"`
+}
+
+// CourseDocumentLesson defines model for CourseDocumentLesson.
+type CourseDocumentLesson struct {
+	Content    *string                   `json:"content,omitempty"`
+	Difficulty *string                   `json:"difficulty,omitempty"`
+	Format     *string                   `json:"format,omitempty"`
+	Kind       *string                   `json:"kind,omitempty"`
+	Quiz       *[]CourseDocumentQuestion `json:"quiz,omitempty"`
+	Slug       string                    `json:"slug"`
+	Tasks      *[]CourseDocumentTask     `json:"tasks,omitempty"`
+	Title      string                    `json:"title"`
+	VMImage    *string                   `json:"vm_image,omitempty"`
+	VMInit     *string                   `json:"vm_init,omitempty"`
+}
+
+// CourseDocumentQuestion defines model for CourseDocumentQuestion.
+type CourseDocumentQuestion struct {
+	// Correct 1-based.
+	Correct     int       `json:"correct"`
+	Explanation *string   `json:"explanation,omitempty"`
+	OptionExpl  *[]string `json:"option_expl,omitempty"`
+	Options     []string  `json:"options"`
+	Question    string    `json:"question"`
+}
+
+// CourseDocumentTask defines model for CourseDocumentTask.
+type CourseDocumentTask struct {
+	CheckScript  *string         `json:"check_script,omitempty"`
+	Description  *string         `json:"description,omitempty"`
+	Difficulty   *string         `json:"difficulty,omitempty"`
+	Format       *string         `json:"format,omitempty"`
+	Glossary     *[]GlossaryItem `json:"glossary,omitempty"`
+	Hints        *string         `json:"hints,omitempty"`
+	Kind         *string         `json:"kind,omitempty"`
+	SandboxImage *string         `json:"sandbox_image,omitempty"`
+	SetupScript  *string         `json:"setup_script,omitempty"`
+	Solution     *string         `json:"solution,omitempty"`
+	StarterCode  *string         `json:"starter_code,omitempty"`
+	TestCases    *[]TestCase     `json:"test_cases,omitempty"`
+	Title        string          `json:"title"`
 }
 
 // CourseItem defines model for CourseItem.
@@ -970,12 +979,15 @@ type GlossaryItem struct {
 
 // ImportIssue defines model for ImportIssue.
 type ImportIssue struct {
-	// Code Examples: lesson_slug_empty, lesson_slug_duplicate, no_lessons, lesson_title_empty, unknown_kind, unknown_format, too_few_options, correct_out_of_range, check_without_image
+	// Code Examples: no_lessons, lesson_slug_empty, lesson_slug_invalid, lesson_slug_duplicate, lesson_title_empty, unknown_kind, unknown_format, too_few_options, correct_out_of_range, task_title_empty, unknown_sandbox_image, check_without_image
 	Code       string           `json:"code"`
 	LessonSlug *string          `json:"lesson_slug,omitempty"`
 	Level      ImportIssueLevel `json:"level"`
 
-	// Path JSON pointer, e.g. `/lessons/2/quiz/0`.
+	// Message Developer-facing, not localized.
+	Message string `json:"message"`
+
+	// Path JSON pointer, e.g. `/lessons/2/quiz/0/correct`.
 	Path *string `json:"path,omitempty"`
 }
 
@@ -989,13 +1001,22 @@ type ImportPreview struct {
 	Issues       []ImportIssue `json:"issues"`
 	LessonsCount int           `json:"lessons_count"`
 
-	// LostSubmissions Submissions that will be deleted because tasks are replaced.
-	LostSubmissions *int      `json:"lost_submissions,omitempty"`
+	// LostProgress Student progress rows on lessons the import deletes.
+	LostProgress int `json:"lost_progress"`
+
+	// LostSubmissions Student submissions on tasks the import deletes.
+	LostSubmissions int       `json:"lost_submissions"`
 	NewLessons      []LinkRef `json:"new_lessons"`
 	RemovedLessons  []LinkRef `json:"removed_lessons"`
 	Slug            string    `json:"slug"`
 	Title           string    `json:"title"`
 	UpdatedLessons  []LinkRef `json:"updated_lessons"`
+}
+
+// ImportResult defines model for ImportResult.
+type ImportResult struct {
+	CourseID int  `json:"course_id"`
+	Created  bool `json:"created"`
 }
 
 // Lab defines model for Lab.

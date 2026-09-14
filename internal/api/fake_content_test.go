@@ -66,6 +66,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		QuizAnswers:  fakeQuizAnswers{f},
 		QuizAttempts: fakeQuizAttempts{f},
 		Authors:      fakeAuthors{f},
+		CourseIO:     fakeCourseIO{f},
 		Sandbox:      f.sandbox,
 		Code:         f.code,
 	}

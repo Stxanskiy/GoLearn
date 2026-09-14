@@ -68,6 +68,13 @@ type lessonStore interface {
 	DeleteTask(ctx context.Context, id int) error
 }
 
+// courseIOStore exports and imports whole courses.
+type courseIOStore interface {
+	Export(ctx context.Context, moduleID int) (model.CourseTree, error)
+	Diff(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error)
+	Upsert(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error)
+}
+
 // authorStore keeps course co-authors.
 type authorStore interface {
 	IsCoauthor(ctx context.Context, moduleID, userID int) (bool, error)
@@ -151,6 +158,7 @@ type Stores struct {
 	QuizAnswers  quizAnswerStore
 	QuizAttempts quizAttemptStore
 	Authors      authorStore
+	CourseIO     courseIOStore
 	Sandbox      sandbox
 	Code         codeRunner
 }
@@ -246,6 +254,9 @@ func (a *API) Routes() chi.Router {
 			r.Post("/admin/courses/{courseId}/authors", a.adminAddCourseAuthor)
 			r.Delete("/admin/courses/{courseId}/authors/{userId}", a.adminRemoveCourseAuthor)
 			r.With(requireAdmin).Put("/admin/courses/{courseId}/owner", a.adminSetCourseOwner)
+			r.Get("/admin/courses/{courseId}/export", a.adminExportCourse)
+			r.Post("/admin/import/preview", a.adminPreviewImport)
+			r.Post("/admin/import", a.adminApplyImport)
 
 			r.Post("/admin/courses/{courseId}/lessons", a.adminCreateLesson)
 			r.Get("/admin/lessons/{lessonId}", a.adminGetLesson)

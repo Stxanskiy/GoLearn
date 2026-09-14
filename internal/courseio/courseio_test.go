@@ -1,6 +1,7 @@
 package courseio
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/backendraz/golearn/internal/model"
@@ -71,31 +72,29 @@ func TestRoundTrip(t *testing.T) {
 // TestValidate: duplicate/empty slugs are errors; odd kind/correct are warnings.
 func TestValidate(t *testing.T) {
 	c := Course{Slug: "s", Title: "t", Lessons: []Lesson{
-		{Slug: "a", Title: "A", Kind: "theory"},
-		{Slug: "a", Title: "dup"},                                                     // duplicate slug -> error
-		{Slug: "", Title: "no slug"},                                                  // empty slug -> error
-		{Slug: "b", Title: "B", Kind: "weird"},                                        // odd kind -> warn
-		{Slug: "c", Title: "C", Quiz: []Question{{Question: "q", Options: []string{"x", "y"}, Correct: 9}}}, // correct out of range -> warn
+		{Slug: "a", Title: "A", Kind: "sql"},
+		{Slug: "a", Title: "dup"},
+		{Slug: "", Title: "no slug"},
+		{Slug: "Bad", Title: "B", Kind: "weird"},
+		{Slug: "c", Title: "C", Quiz: []Question{{Question: "q", Options: []string{"x", "y"}, Correct: 9}},
+			Tasks: []Task{{Title: "t", SandboxImage: "evil/image"}, {Title: "u", CheckScript: "true"}}},
 	}}
-	iss := Validate(c)
-	if !HasErrors(iss) {
-		t.Fatalf("want errors, got %+v", iss)
+	var got []string
+	for _, is := range Validate(c) {
+		got = append(got, is.Level+":"+is.Code+"@"+is.Path)
 	}
-	var errs, warns int
-	for _, i := range iss {
-		if i.Level == "error" {
-			errs++
-		} else {
-			warns++
-		}
+	want := []string{
+		"error:lesson_slug_duplicate@/lessons/1/slug",
+		"error:lesson_slug_empty@/lessons/2/slug",
+		"error:lesson_slug_invalid@/lessons/3/slug",
+		"error:unknown_kind@/lessons/3/kind",
+		"error:correct_out_of_range@/lessons/4/quiz/0/correct",
+		"error:unknown_sandbox_image@/lessons/4/tasks/0/sandbox_image",
+		"warn:check_without_image@/lessons/4/tasks/1/check_script",
 	}
-	if errs != 2 { // dup slug + empty slug
-		t.Errorf("want 2 errors, got %d (%+v)", errs, iss)
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Errorf("issues:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
-	if warns < 2 { // weird kind + correct range
-		t.Errorf("want >=2 warns, got %d (%+v)", warns, iss)
-	}
-	// a clean course has no errors
 	if HasErrors(Validate(Course{Slug: "s", Title: "t", Lessons: []Lesson{{Slug: "ok", Title: "ok", Kind: "lab"}}})) {
 		t.Errorf("clean course should have no errors")
 	}

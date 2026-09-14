@@ -140,7 +140,12 @@ func (h *Handler) AdminImportApply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, msg, 400)
 		return
 	}
-	if _, err := h.courseRepo.Upsert(ctx, c.ToTree()); err != nil {
+	tree := c.ToTree()
+	tree.Module.Published = true
+	for i := range tree.Lessons {
+		tree.Lessons[i].Lesson.Published = true
+	}
+	if _, err := h.courseRepo.Upsert(ctx, tree); err != nil {
 		h.log.Error("admin import course", "slug", c.Slug, "error", err)
 		http.Error(w, "Ошибка импорта: "+err.Error(), 500)
 		return

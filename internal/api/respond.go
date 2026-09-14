@@ -39,6 +39,7 @@ const (
 	codeTaskNotCode        = "task_not_code"
 	codeSlugTaken          = "slug_taken"
 	codeAlreadyAuthor      = "already_author"
+	codeImportBlocked      = "import_blocked"
 )
 
 // Field-level validation codes.
@@ -83,14 +84,19 @@ func decodeOptionalJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 
 // decodeJSON reads a JSON body into dst; on failure it writes the error response and returns false.
 func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
+	return decodeJSONLimit(w, r, dst, maxJSONBody)
+}
+
+// decodeJSONLimit is decodeJSON with a custom body size limit in bytes.
+func decodeJSONLimit(w http.ResponseWriter, r *http.Request, dst any, limit int64) bool {
 	if ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || ct != "application/json" {
 		writeError(w, http.StatusUnsupportedMediaType, codeUnsupportedMedia, "expected application/json body")
 		return false
 	}
-	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxJSONBody)).Decode(dst); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, limit)).Decode(dst); err != nil {
 		var tooLarge *http.MaxBytesError
 		if errors.As(err, &tooLarge) {
-			writeError(w, http.StatusRequestEntityTooLarge, codePayloadTooLarge, "body exceeds 1 MiB")
+			writeError(w, http.StatusRequestEntityTooLarge, codePayloadTooLarge, "body exceeds the size limit")
 			return false
 		}
 		writeError(w, http.StatusBadRequest, codeMalformedJSON, err.Error())

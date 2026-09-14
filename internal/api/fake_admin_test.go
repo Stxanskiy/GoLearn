@@ -330,3 +330,76 @@ func (f fakeAuthors) SetOwner(_ context.Context, moduleID, userID, _ int) error 
 	m.OwnerID = &userID
 	return nil
 }
+
+type fakeCourseIO struct{ *fakeContent }
+
+func (f fakeCourseIO) Export(_ context.Context, moduleID int) (model.CourseTree, error) {
+	m := fakeModules{f.fakeContent}.module(moduleID)
+	if m == nil {
+		return model.CourseTree{}, pgx.ErrNoRows
+	}
+	tree := model.CourseTree{Module: *m}
+	for _, l := range f.lessons {
+		if l.ModuleID == moduleID {
+			tree.Lessons = append(tree.Lessons, model.LessonBundle{Lesson: l, Questions: f.questions[l.ID], Tasks: f.tasks[l.ID]})
+		}
+	}
+	return tree, nil
+}
+
+func (f fakeCourseIO) Diff(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error) {
+	d := repository.CourseDiff{Slug: tree.Module.Slug, Title: tree.Module.Title}
+	m, err := fakeModules{f.fakeContent}.GetBySlug(ctx, tree.Module.Slug)
+	if err == nil {
+		d.Exists, d.ModuleID = true, m.ID
+	}
+	incoming := map[string]bool{}
+	for _, lb := range tree.Lessons {
+		incoming[lb.Lesson.Slug] = true
+		ref := repository.LessonRef{Slug: lb.Lesson.Slug, Title: lb.Lesson.Title}
+		if cur, err := (fakeLessons{f.fakeContent}).GetBySlug(ctx, d.ModuleID, lb.Lesson.Slug); err == nil && d.Exists && cur != nil {
+			d.Updated = append(d.Updated, ref)
+		} else {
+			d.New = append(d.New, ref)
+		}
+	}
+	for _, l := range f.lessons {
+		if d.Exists && l.ModuleID == d.ModuleID && !incoming[l.Slug] {
+			d.Removed = append(d.Removed, repository.LessonRef{Slug: l.Slug, Title: l.Title})
+			d.LostSubmissions += len(f.tasks[l.ID])
+		}
+	}
+	return d, nil
+}
+
+func (f fakeCourseIO) Upsert(ctx context.Context, tree model.CourseTree) (repository.CourseDiff, error) {
+	d, _ := f.Diff(ctx, tree)
+	mods, lessons := fakeModules{f.fakeContent}, fakeLessons{f.fakeContent}
+	id := d.ModuleID
+	if !d.Exists {
+		id, _ = mods.Create(ctx, tree.Module)
+	} else {
+		m := mods.module(id)
+		published, owner, cover := m.Published, m.OwnerID, m.CoverImage
+		*m = tree.Module
+		m.ID, m.Published, m.OwnerID = id, published, owner
+		if m.CoverImage == "" {
+			m.CoverImage = cover
+		}
+	}
+	keep := map[string]bool{}
+	for _, lb := range tree.Lessons {
+		keep[lb.Lesson.Slug] = true
+		l := lb.Lesson
+		l.ModuleID = id
+		if cur, err := lessons.GetBySlug(ctx, id, l.Slug); err == nil {
+			l.ID, l.Published = cur.ID, cur.Published
+			_ = lessons.Update(ctx, l)
+		} else {
+			l.ID, _ = lessons.Create(ctx, l)
+		}
+		f.questions[l.ID], f.tasks[l.ID] = lb.Questions, lb.Tasks
+	}
+	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ModuleID == id && !keep[l.Slug] })
+	return d, nil
+}

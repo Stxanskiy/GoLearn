@@ -1079,6 +1079,7 @@ paths:
       tags: [admin-import]
       summary: Export course
       operationId: adminExportCourse
+      description: Needs `can_edit`.
       responses:
         '200':
           description: 'Course document (`Content-Disposition: attachment; filename="<slug>.course.json"`).'
@@ -1359,7 +1360,9 @@ paths:
       tags: [admin-import]
       summary: Preview import
       operationId: adminPreviewImport
-      description: Dry run — validates the document and diffs it against the existing course by slug.
+      description: |
+        Dry run — validates the document and diffs it against the existing course by slug.
+        A slug of a course the user cannot edit answers `409 slug_taken`. Body limit 16 MiB.
       requestBody: { $ref: '#/components/requestBodies/CourseDocument' }
       responses:
         '200':
@@ -1369,6 +1372,8 @@ paths:
               schema: { $ref: '#/components/schemas/ImportPreview' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
   /admin/import:
@@ -1377,22 +1382,23 @@ paths:
       summary: Apply import
       operationId: adminApplyImport
       description: |
-        Upserts the course in one transaction; the document is authoritative
-        (lessons missing from it are deleted, quiz and tasks are replaced).
+        Upserts the course in one transaction; the document is authoritative: lessons
+        missing from it are deleted, questions and tasks are matched by text and title
+        and updated in place, unmatched ones are deleted.
+        A new course is a draft owned by the importer. In an existing course, publish
+        state, owner and catalog order are kept; new lessons are drafts unless the user
+        has `can_publish`, and removing published lessons needs `can_publish` (`403`).
       requestBody: { $ref: '#/components/requestBodies/CourseDocument' }
       responses:
         '200':
           description: Imported.
           content:
             application/json:
-              schema:
-                type: object
-                required: [course_id, created]
-                properties:
-                  course_id: { type: integer }
-                  created: { type: boolean }
+              schema: { $ref: '#/components/schemas/ImportResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/SlugTaken' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '422':
           description: '`validation_failed` or `import_blocked` (see `details.issues`).'
           content:
@@ -2899,71 +2905,85 @@ components:
         est_minutes: { type: integer }
         lessons:
           type: array
-          items:
-            type: object
-            required: [slug, title]
-            properties:
-              slug: { type: string }
-              title: { type: string }
-              kind: { type: string }
-              format: { type: string }
-              difficulty: { type: string }
-              content: { type: string }
-              vm_image: { type: string }
-              vm_init: { type: string }
-              quiz:
-                type: array
-                items:
-                  type: object
-                  required: [question, options, correct]
-                  properties:
-                    question: { type: string }
-                    options:
-                      type: array
-                      items: { type: string }
-                    option_expl:
-                      type: array
-                      items: { type: string }
-                    correct: { type: integer, description: 1-based. }
-                    explanation: { type: string }
-              tasks:
-                type: array
-                items:
-                  type: object
-                  required: [title]
-                  properties:
-                    title: { type: string }
-                    description: { type: string }
-                    hints: { type: string }
-                    solution: { type: string }
-                    difficulty: { type: string }
-                    kind: { type: string }
-                    format: { type: string }
-                    starter_code: { type: string }
-                    sandbox_image: { type: string }
-                    setup_script: { type: string }
-                    check_script: { type: string }
-                    glossary:
-                      type: array
-                      items: { $ref: '#/components/schemas/GlossaryItem' }
-                    test_cases:
-                      type: array
-                      items: { $ref: '#/components/schemas/TestCase' }
+          items: { $ref: '#/components/schemas/CourseDocumentLesson' }
+
+    CourseDocumentLesson:
+      type: object
+      required: [slug, title]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        kind: { type: string }
+        format: { type: string }
+        difficulty: { type: string }
+        content: { type: string }
+        vm_image: { type: string }
+        vm_init: { type: string }
+        quiz:
+          type: array
+          items: { $ref: '#/components/schemas/CourseDocumentQuestion' }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/CourseDocumentTask' }
+
+    CourseDocumentQuestion:
+      type: object
+      required: [question, options, correct]
+      properties:
+        question: { type: string }
+        options:
+          type: array
+          items: { type: string }
+        option_expl:
+          type: array
+          items: { type: string }
+        correct: { type: integer, description: 1-based. }
+        explanation: { type: string }
+
+    CourseDocumentTask:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        hints: { type: string }
+        solution: { type: string }
+        difficulty: { type: string }
+        kind: { type: string }
+        format: { type: string }
+        starter_code: { type: string }
+        sandbox_image: { type: string }
+        setup_script: { type: string }
+        check_script: { type: string }
+        glossary:
+          type: array
+          items: { $ref: '#/components/schemas/GlossaryItem' }
+        test_cases:
+          type: array
+          items: { $ref: '#/components/schemas/TestCase' }
 
     ImportIssue:
       type: object
-      required: [level, code]
+      required: [level, code, message]
       properties:
         level: { type: string, enum: [error, warn] }
         code:
           type: string
-          examples: [lesson_slug_empty, lesson_slug_duplicate, no_lessons, lesson_title_empty, unknown_kind, unknown_format, too_few_options, correct_out_of_range, check_without_image]
+          examples: [no_lessons, lesson_slug_empty, lesson_slug_invalid, lesson_slug_duplicate, lesson_title_empty, unknown_kind, unknown_format, too_few_options, correct_out_of_range, task_title_empty, unknown_sandbox_image, check_without_image]
         lesson_slug: { type: string }
-        path: { type: string, description: 'JSON pointer, e.g. `/lessons/2/quiz/0`.' }
+        path: { type: string, description: 'JSON pointer, e.g. `/lessons/2/quiz/0/correct`.' }
+        message: { type: string, description: 'Developer-facing, not localized.' }
+
+    ImportResult:
+      type: object
+      required: [course_id, created]
+      properties:
+        course_id: { type: integer }
+        created: { type: boolean }
 
     ImportPreview:
       type: object
-      required: [slug, title, exists, lessons_count, new_lessons, updated_lessons, removed_lessons, issues, blocked]
+      required: [slug, title, exists, lessons_count, new_lessons, updated_lessons, removed_lessons, lost_submissions, lost_progress, issues, blocked]
       properties:
         slug: { type: string }
         title: { type: string }
@@ -2980,7 +3000,10 @@ components:
           items: { $ref: '#/components/schemas/LinkRef' }
         lost_submissions:
           type: integer
-          description: Submissions that will be deleted because tasks are replaced.
+          description: Student submissions on tasks the import deletes.
+        lost_progress:
+          type: integer
+          description: Student progress rows on lessons the import deletes.
         issues:
           type: array
           items: { $ref: '#/components/schemas/ImportIssue' }
