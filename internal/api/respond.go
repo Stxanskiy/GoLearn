@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"mime"
 	"net/http"
 
@@ -63,10 +64,17 @@ const (
 
 const maxJSONBody = 1 << 20
 
+// writeJSON encodes v before writing headers so an encoding failure becomes a 500 instead of an empty body.
 func writeJSON(w http.ResponseWriter, status int, v any) {
+	body, err := json.Marshal(v)
+	if err != nil {
+		slog.Error("encode response", "error", err)
+		status = http.StatusInternalServerError
+		body, _ = json.Marshal(apigen.Error{Error: apigen.ErrorBody{Code: codeInternal, Message: "internal error"}})
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	_, _ = w.Write(append(body, '\n'))
 }
 
 func writeError(w http.ResponseWriter, status int, code, message string) {
