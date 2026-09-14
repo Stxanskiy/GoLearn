@@ -526,7 +526,7 @@ func (h *Handler) AdminQuestionSave(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Ошибка: "+err.Error(), 500)
 			return
 		}
-		if err := h.lessonRepo.AddQuestion(ctx, quizID, q); err != nil {
+		if _, err := h.lessonRepo.AddQuestion(ctx, quizID, q); err != nil {
 			http.Error(w, "Ошибка: "+err.Error(), 500)
 			return
 		}

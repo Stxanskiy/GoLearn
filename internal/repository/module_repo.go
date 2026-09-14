@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/jackc/pgx/v5"
@@ -125,6 +126,57 @@ func (r *ModuleRepo) GetForAdmin(ctx context.Context, adminID int) ([]model.Modu
 		mods = append(mods, m)
 	}
 	return mods, rows.Err()
+}
+
+// CourseRow is a module with lesson counts for the course manager; CoverImage is "data:" for uploaded covers.
+type CourseRow struct {
+	model.Module
+	Lessons int
+	Labs    int
+}
+
+// ListManaged returns all courses when all is true, otherwise the ones the user owns or co-authors.
+func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]CourseRow, error) {
+	cols := strings.Replace(moduleCols, "cover_image", "CASE WHEN cover_image LIKE 'data:%' THEN 'data:' ELSE cover_image END", 1)
+	rows, err := r.pool.Query(ctx,
+		`SELECT `+cols+`,
+		   (SELECT count(*) FROM lessons l WHERE l.module_id = modules.id),
+		   (SELECT count(*) FROM lessons l WHERE l.module_id = modules.id AND l.kind = 'lab')
+		 FROM modules
+		 WHERE $2 OR owner_id = $1 OR EXISTS (SELECT 1 FROM course_authors ca WHERE ca.module_id = modules.id AND ca.user_id = $1)
+		 ORDER BY order_num, id`, userID, all)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []CourseRow
+	for rows.Next() {
+		var c CourseRow
+		var prereqJSON, tagsJSON []byte
+		m := &c.Module
+		if err := rows.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
+			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.Accent, &m.EstMinutes, &m.Source,
+			&m.Published, &m.OwnerID, &m.CreatedAt, &c.Lessons, &c.Labs); err != nil {
+			return nil, err
+		}
+		_ = json.Unmarshal(prereqJSON, &m.Prerequisites)
+		_ = json.Unmarshal(tagsJSON, &m.Tags)
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// NextOrder returns an order_num after every existing course.
+func (r *ModuleRepo) NextOrder(ctx context.Context) (int, error) {
+	var n int
+	err := r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num), 0) + 1 FROM modules`).Scan(&n)
+	return n, err
+}
+
+// SetCover replaces the cover (data URI, URL or empty for the generated one).
+func (r *ModuleRepo) SetCover(ctx context.Context, id int, cover string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE modules SET cover_image = $1 WHERE id = $2`, cover, id)
+	return err
 }
 
 // SetPublished toggles a module's draft/published state.

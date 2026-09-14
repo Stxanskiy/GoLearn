@@ -95,6 +95,8 @@ func SpecCoverSVG(s model.Specialization) string {
 
 // ServeCover writes an uploaded data-URI image, redirects to an external URL, or falls back to the generated SVG.
 func ServeCover(w http.ResponseWriter, r *http.Request, image, fallbackSVG string) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox")
 	if image != "" {
 		if !strings.HasPrefix(image, "data:") {
 			http.Redirect(w, r, image, http.StatusFound)

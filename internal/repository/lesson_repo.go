@@ -97,6 +97,13 @@ func (r *LessonRepo) GetBySlug(ctx context.Context, moduleID int, slug string) (
 	return &l, nil
 }
 
+// NextOrder returns an order_num after every lesson of the module.
+func (r *LessonRepo) NextOrder(ctx context.Context, moduleID int) (int, error) {
+	var n int
+	err := r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num), 0) + 1 FROM lessons WHERE module_id = $1`, moduleID).Scan(&n)
+	return n, err
+}
+
 // Create inserts an admin-authored lesson and returns its id.
 func (r *LessonRepo) Create(ctx context.Context, l model.Lesson) (int, error) {
 	var id int
@@ -328,16 +335,16 @@ func (r *LessonRepo) EnsureQuiz(ctx context.Context, lessonID int, title string)
 	return id, err
 }
 
-func (r *LessonRepo) AddQuestion(ctx context.Context, quizID int, q model.QuizQuestion) error {
+// AddQuestion appends a question to the quiz and returns its id.
+func (r *LessonRepo) AddQuestion(ctx context.Context, quizID int, q model.QuizQuestion) (int, error) {
 	opts, _ := json.Marshal(q.Options)
 	oexpl, _ := json.Marshal(q.OptionExpl)
-	var maxOrder int
-	_ = r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num),0) FROM quiz_questions WHERE quiz_id=$1`, quizID).Scan(&maxOrder)
-	_, err := r.pool.Exec(ctx,
+	var id int
+	err := r.pool.QueryRow(ctx,
 		`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-		quizID, q.Question, opts, oexpl, q.CorrectIndex, q.Explanation, maxOrder+1)
-	return err
+		 VALUES ($1,$2,$3,$4,$5,$6,(SELECT COALESCE(MAX(order_num),0)+1 FROM quiz_questions WHERE quiz_id=$1)) RETURNING id`,
+		quizID, q.Question, opts, oexpl, q.CorrectIndex, q.Explanation).Scan(&id)
+	return id, err
 }
 
 func (r *LessonRepo) UpdateQuestion(ctx context.Context, q model.QuizQuestion) error {

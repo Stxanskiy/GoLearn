@@ -60,6 +60,28 @@ func requireUser(next http.Handler) http.Handler {
 }
 
 // csrfGuard rejects cross-site mutating requests by Origin, falling back to Sec-Fetch-Site.
+// requireAuthor rejects users who cannot manage courses.
+func requireAuthor(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !userFrom(r.Context()).CanAuthor() {
+			writeError(w, http.StatusForbidden, codeForbidden, "author or admin role required")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// requireAdmin rejects non-admin users.
+func requireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !userFrom(r.Context()).IsAdmin() {
+			writeError(w, http.StatusForbidden, codeForbidden, "admin role required")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (a *API) csrfGuard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {

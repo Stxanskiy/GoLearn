@@ -26,6 +26,14 @@ printf '# My Project\n' > README.md && git add README.md && git commit -qm "Init
 echo /root/repo > /root/.gl_cwd`
 )
 
+// SandboxImages are the lab images a shell task may use.
+var SandboxImages = []string{
+	"golearn/sandbox:latest",
+	"golearn/sandbox-pg:latest",
+	"golearn/sandbox-docker:latest",
+	"golearn/sandbox-k8s:latest",
+}
+
 // LabGitRepo is the repository git labs work in.
 const LabGitRepo = "/root/project"
 

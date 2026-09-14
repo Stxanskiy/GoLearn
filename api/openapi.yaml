@@ -20,6 +20,9 @@ info:
       (`Origin` / `Sec-Fetch-Site`), otherwise `403 csrf_rejected`.
     - Request bodies are `application/json` unless stated otherwise, otherwise `415 unsupported_media_type`.
     - HTML fields (`*_html`) are rendered and sanitized server-side.
+    - Admin endpoints need role `author` or `admin`; admin-only ones say so. A course
+      the author cannot access answers `404`; a missing permission on an accessible
+      course answers `403 forbidden` (see `CourseAccess`).
 servers:
   - url: /api/v1
 
@@ -43,7 +46,7 @@ tags:
   - name: simulators
     description: Turn-based career simulators.
   - name: admin-courses
-    description: Course management.
+    description: Course management and course authors.
   - name: admin-lessons
     description: Lessons, quiz questions and tasks.
   - name: admin-content
@@ -839,7 +842,7 @@ paths:
       tags: [admin-courses]
       summary: List courses
       operationId: adminListCourses
-      description: All published courses, own drafts and system drafts.
+      description: Admins get every course; authors get the courses they own or co-author.
       responses:
         '200':
           description: Courses.
@@ -854,6 +857,7 @@ paths:
       tags: [admin-courses]
       summary: Create course
       operationId: adminCreateCourse
+      description: The creator becomes the owner. Draft unless `published` is true.
       requestBody:
         required: true
         content:
@@ -879,17 +883,10 @@ paths:
       operationId: adminGetCourse
       responses:
         '200':
-          description: Course with all lessons (drafts included).
+          description: Course with all lessons (drafts included); `404` without access.
           content:
             application/json:
-              schema:
-                type: object
-                required: [course, lessons]
-                properties:
-                  course: { $ref: '#/components/schemas/AdminCourse' }
-                  lessons:
-                    type: array
-                    items: { $ref: '#/components/schemas/AdminLessonRow' }
+              schema: { $ref: '#/components/schemas/AdminCourseDetail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -897,7 +894,7 @@ paths:
       tags: [admin-courses]
       summary: Update course
       operationId: adminUpdateCourse
-      description: Full replace of editable fields. Cover is managed via `/cover`.
+      description: Full replace of editable fields (`published` and `cover_url` are kept when omitted). Needs `can_edit`.
       requestBody:
         required: true
         content:
@@ -918,7 +915,7 @@ paths:
       tags: [admin-courses]
       summary: Delete course
       operationId: adminDeleteCourse
-      description: Hard delete; cascades to lessons, quizzes, tasks, submissions and progress.
+      description: Hard delete; cascades to lessons, quizzes, tasks, submissions and progress. Needs `can_delete`.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -932,6 +929,7 @@ paths:
       tags: [admin-courses]
       summary: Set course published
       operationId: adminSetCoursePublished
+      description: Needs `can_publish`.
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -946,7 +944,7 @@ paths:
       tags: [admin-courses]
       summary: Move course
       operationId: adminMoveCourse
-      description: Swaps order with the neighbour in the same track; no-op at the edge.
+      description: Swaps order with the neighbour in the same track; no-op at the edge. Admin only.
       requestBody: { $ref: '#/components/requestBodies/Move' }
       responses:
         '204': { description: Moved. }
@@ -961,6 +959,7 @@ paths:
       tags: [admin-courses]
       summary: Upload course cover
       operationId: adminUploadCourseCover
+      description: Needs `can_edit`.
       requestBody: { $ref: '#/components/requestBodies/CoverUpload' }
       responses:
         '204': { description: Cover replaced. }
@@ -979,6 +978,99 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/authors:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [admin-courses]
+      summary: List course authors
+      operationId: adminListCourseAuthors
+      responses:
+        '200':
+          description: Owner and co-authors.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseAuthors' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [admin-courses]
+      summary: Add co-author
+      operationId: adminAddCourseAuthor
+      description: |
+        Needs `can_manage_authors`. The user must have role `author` or `admin`;
+        otherwise `422` with `fields.email` = `not_found` or `not_author`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '201':
+          description: Added.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthorRef' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`already_author` — the user is the owner or a co-author.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/courses/{courseId}/authors/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/UserId'
+    delete:
+      tags: [admin-courses]
+      summary: Remove co-author
+      operationId: adminRemoveCourseAuthor
+      description: Needs `can_manage_authors`; a co-author may remove themselves.
+      responses:
+        '204': { description: Removed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/courses/{courseId}/owner:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      tags: [admin-courses]
+      summary: Transfer course ownership
+      operationId: adminSetCourseOwner
+      description: |
+        Admin only. The new owner must have role `author` or `admin` (`422` with
+        `fields.user_id`); they stop being a co-author and the previous owner becomes one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: integer }
+      responses:
+        '200':
+          description: Authors after the transfer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseAuthors' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
 
   /admin/courses/{courseId}/export:
     parameters:
@@ -1034,17 +1126,7 @@ paths:
           description: Lesson with its quiz questions and tasks (all fields).
           content:
             application/json:
-              schema:
-                type: object
-                required: [lesson, questions, tasks]
-                properties:
-                  lesson: { $ref: '#/components/schemas/AdminLesson' }
-                  questions:
-                    type: array
-                    items: { $ref: '#/components/schemas/AdminQuestion' }
-                  tasks:
-                    type: array
-                    items: { $ref: '#/components/schemas/AdminTask' }
+              schema: { $ref: '#/components/schemas/AdminLessonDetail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -1072,7 +1154,7 @@ paths:
       tags: [admin-lessons]
       summary: Delete lesson
       operationId: adminDeleteLesson
-      description: Cascades to quiz, tasks, submissions and progress.
+      description: Cascades to quiz, tasks, submissions and progress. Published lessons need `can_publish`, drafts `can_edit`.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1086,6 +1168,7 @@ paths:
       tags: [admin-lessons]
       summary: Set lesson published
       operationId: adminSetLessonPublished
+      description: Needs `can_publish`.
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -1246,7 +1329,7 @@ paths:
       tags: [admin-content]
       summary: Preview content
       operationId: adminPreviewContent
-      description: Renders lesson/task content exactly as students will see it.
+      description: Renders lesson/task content exactly as students will see it. Available to authors.
       requestBody:
         required: true
         content:
@@ -1322,6 +1405,7 @@ paths:
       tags: [admin-specializations]
       summary: List specializations
       operationId: adminListSpecializations
+      description: Available to authors (read-only, to pick a track); changes are admin only.
       responses:
         '200':
           description: All specializations.
@@ -1336,6 +1420,7 @@ paths:
       tags: [admin-specializations]
       summary: Create specialization
       operationId: adminCreateSpecialization
+      description: Admin only.
       requestBody:
         required: true
         content:
@@ -1365,6 +1450,7 @@ paths:
       tags: [admin-specializations]
       summary: Update specialization
       operationId: adminUpdateSpecialization
+      description: Admin only.
       requestBody:
         required: true
         content:
@@ -1384,7 +1470,7 @@ paths:
       tags: [admin-specializations]
       summary: Delete specialization
       operationId: adminDeleteSpecialization
-      description: '`409 specialization_not_empty` while courses still use it as their track.'
+      description: 'Admin only. `409 specialization_not_empty` while courses still use it as their track.'
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1403,6 +1489,7 @@ paths:
       tags: [admin-specializations]
       summary: Set specialization published
       operationId: adminSetSpecializationPublished
+      description: Admin only.
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -1417,6 +1504,7 @@ paths:
       tags: [admin-specializations]
       summary: Move specialization
       operationId: adminMoveSpecialization
+      description: Admin only.
       requestBody: { $ref: '#/components/requestBodies/Move' }
       responses:
         '204': { description: Moved. }
@@ -1431,6 +1519,7 @@ paths:
       tags: [admin-specializations]
       summary: Upload specialization cover
       operationId: adminUploadSpecializationCover
+      description: Admin only.
       requestBody: { $ref: '#/components/requestBodies/CoverUpload' }
       responses:
         '204': { description: Cover replaced. }
@@ -1443,6 +1532,7 @@ paths:
       tags: [admin-specializations]
       summary: Delete specialization cover
       operationId: adminDeleteSpecializationCover
+      description: Admin only.
       responses:
         '204': { description: Cover removed. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1455,6 +1545,7 @@ paths:
       tags: [admin-simulators]
       summary: List simulators
       operationId: adminListSimulators
+      description: Admin only.
       responses:
         '200':
           description: All simulators.
@@ -1469,6 +1560,7 @@ paths:
       tags: [admin-simulators]
       summary: Create simulator
       operationId: adminCreateSimulator
+      description: Admin only.
       requestBody:
         required: true
         content:
@@ -1492,6 +1584,7 @@ paths:
       tags: [admin-simulators]
       summary: Get simulator
       operationId: adminGetSimulator
+      description: Admin only.
       responses:
         '200':
           description: Simulator with its scenario.
@@ -1505,7 +1598,7 @@ paths:
       tags: [admin-simulators]
       summary: Update simulator
       operationId: adminUpdateSimulator
-      description: '`scenario.slug` must equal the path slug (`422 slug_immutable`).'
+      description: 'Admin only. `scenario.slug` must equal the path slug (`422 slug_immutable`).'
       requestBody:
         required: true
         content:
@@ -1525,6 +1618,7 @@ paths:
       tags: [admin-simulators]
       summary: Delete simulator
       operationId: adminDeleteSimulator
+      description: Admin only.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1538,6 +1632,7 @@ paths:
       tags: [admin-simulators]
       summary: Set simulator published
       operationId: adminSetSimulatorPublished
+      description: Admin only.
       requestBody: { $ref: '#/components/requestBodies/Published' }
       responses:
         '204': { description: Updated. }
@@ -1552,6 +1647,7 @@ paths:
       tags: [admin-simulators]
       summary: Move simulator
       operationId: adminMoveSimulator
+      description: Admin only.
       requestBody: { $ref: '#/components/requestBodies/Move' }
       responses:
         '204': { description: Moved. }
@@ -1565,6 +1661,7 @@ paths:
       tags: [admin-users]
       summary: List users
       operationId: adminListUsers
+      description: Admin only.
       parameters:
         - name: q
           in: query
@@ -1591,6 +1688,7 @@ paths:
       tags: [admin-users]
       summary: Create user
       operationId: adminCreateUser
+      description: Admin only.
       requestBody:
         required: true
         content:
@@ -1620,15 +1718,13 @@ paths:
 
   /admin/users/{userId}:
     parameters:
-      - name: userId
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/UserId'
     patch:
       tags: [admin-users]
       summary: Update user
       operationId: adminUpdateUser
       description: |
+        Admin only.
         Changes role and/or blocked flag. Blocking revokes all sessions.
         Not allowed on yourself (`409 self_modification`) or on the last admin (`409 last_admin`).
       requestBody:
@@ -1659,7 +1755,7 @@ paths:
       tags: [admin-users]
       summary: Delete user
       operationId: adminDeleteUser
-      description: Hard delete; cascades to sessions, progress and submissions.
+      description: Admin only. Hard delete; cascades to sessions, progress and submissions.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -1673,15 +1769,12 @@ paths:
 
   /admin/users/{userId}/password:
     parameters:
-      - name: userId
-        in: path
-        required: true
-        schema: { type: integer }
+      - $ref: '#/components/parameters/UserId'
     put:
       tags: [admin-users]
       summary: Set user password
       operationId: adminSetUserPassword
-      description: Sets a new password and revokes the user's sessions.
+      description: Admin only. Sets a new password and revokes the user's sessions.
       requestBody:
         required: true
         content:
@@ -1734,6 +1827,11 @@ components:
       schema: { type: integer }
     LessonId:
       name: lessonId
+      in: path
+      required: true
+      schema: { type: integer }
+    UserId:
+      name: userId
       in: path
       required: true
       schema: { type: integer }
@@ -1890,7 +1988,8 @@ components:
       maxLength: 100
     Role:
       type: string
-      enum: [student, admin]
+      enum: [student, author, admin]
+      description: '`author` manages courses they own or co-author; `admin` manages everything.'
     Difficulty:
       type: string
       enum: [beginner, intermediate, advanced, expert]
@@ -1929,7 +2028,7 @@ components:
       properties:
         code:
           type: string
-          examples: [unauthorized, not_found, validation_failed, slug_taken, sandbox_disabled]
+          examples: [unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, sandbox_disabled]
         message:
           type: string
           description: Developer-facing, not localized.
@@ -1941,7 +2040,7 @@ components:
         fields:
           type: object
           additionalProperties: { type: string }
-          description: Field name → error code (`required`, `too_short`, `too_long`, `invalid_format`).
+          description: Field name → error code (`required`, `too_short`, `too_long`, `invalid_format`, `invalid_value`, `not_found`, `not_author`).
         issues:
           type: array
           items: { $ref: '#/components/schemas/ImportIssue' }
@@ -2477,13 +2576,36 @@ components:
         result: { type: string }
 
     # ── admin ──
-    Ownership:
+    AuthorRef:
       type: object
-      required: [published, source, owner_id]
+      required: [id, name, email]
       properties:
-        published: { type: boolean }
-        source: { type: string, enum: [seed, admin] }
-        owner_id: { type: [integer, 'null'] }
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+
+    CourseAccess:
+      type: object
+      description: What the current user may do with the course.
+      required: [level, can_edit, can_publish, can_delete, can_manage_authors, can_reorder]
+      properties:
+        level: { type: string, enum: [admin, owner, coauthor] }
+        can_edit: { type: boolean, description: 'Course fields, cover, lessons, questions, tasks, draft lesson deletion.' }
+        can_publish: { type: boolean, description: 'Publish/unpublish the course and its lessons, delete published lessons. Owner and admin.' }
+        can_delete: { type: boolean, description: Owner and admin. }
+        can_manage_authors: { type: boolean, description: Add and remove co-authors. Owner and admin. }
+        can_reorder: { type: boolean, description: Move the course in the catalog; transfer ownership. Admin only. }
+
+    CourseAuthors:
+      type: object
+      required: [owner, coauthors]
+      properties:
+        owner:
+          oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]
+          description: Null for platform (seed) courses, which only admins manage.
+        coauthors:
+          type: array
+          items: { $ref: '#/components/schemas/AuthorRef' }
 
     AdminCourseInput:
       type: object
@@ -2491,31 +2613,47 @@ components:
       properties:
         slug: { $ref: '#/components/schemas/Slug' }
         title: { type: string, minLength: 1, maxLength: 200 }
-        description: { type: string }
-        track: { type: string, description: Specialization slug (or `gym`). }
+        description: { type: string, maxLength: 5000 }
+        track: { type: string, description: 'Existing specialization slug; `gym` is admin only.' }
         difficulty: { $ref: '#/components/schemas/Difficulty' }
-        category: { type: string, description: Empty → derived. }
-        label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null → derived from difficulty. }
-        accent: { type: string, description: Cover gradient key; empty → by category. }
+        category: { type: string, maxLength: 40, description: Empty → derived. }
+        label: { $ref: '#/components/schemas/CourseLabel' }
+        accent: { type: string, maxLength: 40, description: Cover gradient key; empty → by category. }
+        tags:
+          type: array
+          maxItems: 20
+          items: { type: string, maxLength: 40 }
+        est_minutes: { type: integer, minimum: 0, maximum: 100000, description: 0 → lessons × 10. }
+        cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
+        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Changing it needs `can_publish`.' }
+
+    AdminCourse:
+      type: object
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, cover_url, has_custom_cover, cover_preview_url, created_at]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        track: { type: string }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        category: { type: string, description: Stored value; empty when derived. }
+        label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null when derived. }
+        accent: { type: string }
         tags:
           type: array
           items: { type: string }
-        est_minutes: { type: integer, minimum: 0, description: 0 → lessons × 10. }
-        cover_url: { type: [string, 'null'], format: uri, description: External cover; null keeps uploaded/generated. }
-        published: { type: boolean, default: true }
-
-    AdminCourse:
-      allOf:
-        - $ref: '#/components/schemas/AdminCourseInput'
-        - $ref: '#/components/schemas/Ownership'
-        - type: object
-          required: [id, order_num, has_custom_cover, cover_preview_url, created_at]
-          properties:
-            id: { type: integer }
-            order_num: { type: integer }
-            has_custom_cover: { type: boolean }
-            cover_preview_url: { type: string }
-            created_at: { type: string, format: date-time }
+        est_minutes: { type: integer }
+        order_num: { type: integer }
+        published: { type: boolean }
+        source: { type: string, enum: [seed, admin] }
+        owner:
+          oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]
+        access: { $ref: '#/components/schemas/CourseAccess' }
+        cover_url: { type: [string, 'null'], description: External cover URL. }
+        has_custom_cover: { type: boolean, description: Uploaded or external cover is set. }
+        cover_preview_url: { type: string }
+        created_at: { type: string, format: date-time }
 
     AdminCourseRow:
       allOf:
@@ -2526,6 +2664,27 @@ components:
             lessons_count: { type: integer }
             labs_count: { type: integer }
 
+    AdminCourseDetail:
+      type: object
+      required: [course, lessons]
+      properties:
+        course: { $ref: '#/components/schemas/AdminCourse' }
+        lessons:
+          type: array
+          items: { $ref: '#/components/schemas/AdminLessonRow' }
+
+    AdminLessonDetail:
+      type: object
+      required: [lesson, questions, tasks]
+      properties:
+        lesson: { $ref: '#/components/schemas/AdminLesson' }
+        questions:
+          type: array
+          items: { $ref: '#/components/schemas/AdminQuestion' }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/AdminTask' }
+
     AdminLessonInput:
       type: object
       required: [slug, title, kind, format, difficulty]
@@ -2535,22 +2694,29 @@ components:
         kind: { $ref: '#/components/schemas/LessonKind' }
         format: { $ref: '#/components/schemas/ContentFormat' }
         difficulty: { $ref: '#/components/schemas/Difficulty' }
+        content: { type: string, maxLength: 500000 }
+        vm_image: { type: string, maxLength: 40 }
+        vm_init: { type: string }
+        published: { type: boolean, description: 'Omitted → unchanged (draft on create). Changing it needs `can_publish`.' }
+
+    AdminLesson:
+      type: object
+      required: [id, course_id, slug, title, kind, format, difficulty, content, vm_image, vm_init, published, order_num, source, created_at]
+      properties:
+        id: { type: integer }
+        course_id: { type: integer }
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/LessonKind' }
+        format: { $ref: '#/components/schemas/ContentFormat' }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
         content: { type: string }
         vm_image: { type: string }
         vm_init: { type: string }
-        published: { type: boolean, default: true }
-
-    AdminLesson:
-      allOf:
-        - $ref: '#/components/schemas/AdminLessonInput'
-        - type: object
-          required: [id, course_id, order_num, source, created_at]
-          properties:
-            id: { type: integer }
-            course_id: { type: integer }
-            order_num: { type: integer }
-            source: { type: string, enum: [seed, admin] }
-            created_at: { type: string, format: date-time }
+        published: { type: boolean }
+        order_num: { type: integer }
+        source: { type: string, enum: [seed, admin] }
+        created_at: { type: string, format: date-time }
 
     AdminLessonRow:
       type: object
@@ -2569,33 +2735,68 @@ components:
       type: object
       required: [question, options, correct_index]
       properties:
-        question: { type: string, minLength: 1, description: HTML allowed; sanitized on render. }
+        question: { type: string, minLength: 1, maxLength: 5000, description: HTML allowed; sanitized on render. }
         options:
           type: array
           minItems: 2
+          maxItems: 10
+          items: { type: string, minLength: 1, maxLength: 2000 }
+        option_explanations:
+          type: array
+          items: { type: string, maxLength: 5000 }
+          description: Empty or the same length as `options`.
+        correct_index: { type: integer, minimum: 0, description: 0-based; must be < options length. }
+        explanation: { type: string, maxLength: 5000 }
+
+    AdminQuestion:
+      type: object
+      required: [id, lesson_id, order_num, question, options, option_explanations, correct_index, explanation]
+      properties:
+        id: { type: integer }
+        lesson_id: { type: integer }
+        order_num: { type: integer }
+        question: { type: string }
+        options:
+          type: array
           items: { type: string }
         option_explanations:
           type: array
           items: { type: string }
-          description: Same length as `options` when present.
-        correct_index: { type: integer, minimum: 0, description: 0-based; must be < options length. }
+        correct_index: { type: integer }
         explanation: { type: string }
-
-    AdminQuestion:
-      allOf:
-        - $ref: '#/components/schemas/AdminQuestionInput'
-        - type: object
-          required: [id, lesson_id, order_num]
-          properties:
-            id: { type: integer }
-            lesson_id: { type: integer }
-            order_num: { type: integer }
 
     AdminTaskInput:
       type: object
       required: [title, kind, format, difficulty]
       properties:
         title: { type: string, minLength: 1, maxLength: 200 }
+        kind: { $ref: '#/components/schemas/TaskKind' }
+        format: { $ref: '#/components/schemas/ContentFormat' }
+        difficulty: { $ref: '#/components/schemas/TaskDifficulty' }
+        description: { type: string, maxLength: 100000 }
+        hints: { type: string, maxLength: 20000 }
+        solution: { type: string, maxLength: 100000 }
+        starter_code: { type: string, maxLength: 64000 }
+        sandbox_image: { type: string, description: 'Shell tasks: one of the lab images, e.g. `golearn/sandbox:latest`.' }
+        setup_script: { type: string, maxLength: 64000 }
+        check_script: { type: string, maxLength: 64000 }
+        glossary:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/GlossaryItem' }
+        test_cases:
+          type: array
+          maxItems: 100
+          items: { $ref: '#/components/schemas/TestCase' }
+
+    AdminTask:
+      type: object
+      required: [id, lesson_id, order_num, title, kind, format, difficulty, description, hints, solution, starter_code, sandbox_image, setup_script, check_script, glossary, test_cases]
+      properties:
+        id: { type: integer }
+        lesson_id: { type: integer }
+        order_num: { type: integer }
+        title: { type: string }
         kind: { $ref: '#/components/schemas/TaskKind' }
         format: { $ref: '#/components/schemas/ContentFormat' }
         difficulty: { $ref: '#/components/schemas/TaskDifficulty' }
@@ -2612,16 +2813,6 @@ components:
         test_cases:
           type: array
           items: { $ref: '#/components/schemas/TestCase' }
-
-    AdminTask:
-      allOf:
-        - $ref: '#/components/schemas/AdminTaskInput'
-        - type: object
-          required: [id, lesson_id, order_num]
-          properties:
-            id: { type: integer }
-            lesson_id: { type: integer }
-            order_num: { type: integer }
 
     AdminSpecializationInput:
       type: object

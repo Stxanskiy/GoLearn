@@ -1,0 +1,332 @@
+package api
+
+import (
+	"context"
+	"slices"
+
+	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+var errUnique = &pgconn.PgError{Code: "23505"}
+
+func (f *fakeContent) id() int {
+	f.nextID++
+	return f.nextID
+}
+
+func (f *fakeUsers) GetByID(_ context.Context, id int) (*repository.User, error) {
+	for _, u := range f.byEmail {
+		if u.ID == id {
+			cp := *u
+			return &cp, nil
+		}
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeModules) module(id int) *model.Module {
+	for i := range f.modules {
+		if f.modules[i].ID == id {
+			return &f.modules[i]
+		}
+	}
+	return nil
+}
+
+func (f fakeModules) ListManaged(_ context.Context, userID int, all bool) ([]repository.CourseRow, error) {
+	var out []repository.CourseRow
+	for _, m := range f.modules {
+		owned := m.OwnerID != nil && *m.OwnerID == userID
+		if !all && !owned && !slices.Contains(f.coauthors[m.ID], userID) {
+			continue
+		}
+		row := repository.CourseRow{Module: m}
+		for _, l := range f.lessons {
+			if l.ModuleID == m.ID {
+				row.Lessons++
+				if l.Kind == "lab" {
+					row.Labs++
+				}
+			}
+		}
+		out = append(out, row)
+	}
+	return out, nil
+}
+
+func (f fakeModules) NextOrder(_ context.Context) (int, error) {
+	n := 0
+	for _, m := range f.modules {
+		n = max(n, m.OrderNum)
+	}
+	return n + 1, nil
+}
+
+func (f fakeModules) Create(_ context.Context, m model.Module) (int, error) {
+	if _, err := f.GetBySlug(context.Background(), m.Slug); err == nil {
+		return 0, errUnique
+	}
+	m.ID, m.Source = f.id(), "admin"
+	f.modules = append(f.modules, m)
+	return m.ID, nil
+}
+
+func (f fakeModules) Update(_ context.Context, m model.Module) error {
+	for _, o := range f.modules {
+		if o.Slug == m.Slug && o.ID != m.ID {
+			return errUnique
+		}
+	}
+	if cur := f.module(m.ID); cur != nil {
+		*cur = m
+	}
+	return nil
+}
+
+func (f fakeModules) Delete(_ context.Context, id int) error {
+	f.modules = slices.DeleteFunc(f.modules, func(m model.Module) bool { return m.ID == id })
+	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ModuleID == id })
+	return nil
+}
+
+func (f fakeModules) SetPublished(_ context.Context, id int, published bool) error {
+	if m := f.module(id); m != nil {
+		m.Published = published
+	}
+	return nil
+}
+
+func (f fakeModules) Move(_ context.Context, id int, dir string) error {
+	if m := f.module(id); m != nil {
+		if dir == "up" {
+			m.OrderNum--
+		} else {
+			m.OrderNum++
+		}
+	}
+	return nil
+}
+
+func (f fakeModules) SetCover(_ context.Context, id int, cover string) error {
+	if m := f.module(id); m != nil {
+		m.CoverImage = cover
+	}
+	return nil
+}
+
+func (f fakeLessons) lesson(id int) *model.Lesson {
+	for i := range f.lessons {
+		if f.lessons[i].ID == id {
+			return &f.lessons[i]
+		}
+	}
+	return nil
+}
+
+func (f fakeLessons) GetByModuleAll(_ context.Context, moduleID int) ([]model.Lesson, error) {
+	var out []model.Lesson
+	for _, l := range f.lessons {
+		if l.ModuleID == moduleID {
+			out = append(out, l)
+		}
+	}
+	return out, nil
+}
+
+func (f fakeLessons) NextOrder(_ context.Context, moduleID int) (int, error) {
+	n := 0
+	for _, l := range f.lessons {
+		if l.ModuleID == moduleID {
+			n = max(n, l.OrderNum)
+		}
+	}
+	return n + 1, nil
+}
+
+func (f fakeLessons) slugTaken(l model.Lesson) bool {
+	for _, o := range f.lessons {
+		if o.ModuleID == l.ModuleID && o.Slug == l.Slug && o.ID != l.ID {
+			return true
+		}
+	}
+	return false
+}
+
+func (f fakeLessons) Create(_ context.Context, l model.Lesson) (int, error) {
+	if f.slugTaken(l) {
+		return 0, errUnique
+	}
+	l.ID, l.Source = f.id(), "admin"
+	f.lessons = append(f.lessons, l)
+	return l.ID, nil
+}
+
+func (f fakeLessons) Update(_ context.Context, l model.Lesson) error {
+	if f.slugTaken(l) {
+		return errUnique
+	}
+	if cur := f.lesson(l.ID); cur != nil {
+		l.Source, l.CreatedAt = cur.Source, cur.CreatedAt
+		*cur = l
+	}
+	return nil
+}
+
+func (f fakeLessons) Delete(_ context.Context, id int) error {
+	f.lessons = slices.DeleteFunc(f.lessons, func(l model.Lesson) bool { return l.ID == id })
+	delete(f.questions, id)
+	delete(f.tasks, id)
+	return nil
+}
+
+func (f fakeLessons) SetPublished(_ context.Context, id int, published bool) error {
+	if l := f.lesson(id); l != nil {
+		l.Published = published
+	}
+	return nil
+}
+
+func (f fakeLessons) MoveLesson(_ context.Context, id int, dir string) error {
+	if l := f.lesson(id); l != nil {
+		if dir == "up" {
+			l.OrderNum--
+		} else {
+			l.OrderNum++
+		}
+	}
+	return nil
+}
+
+func (f fakeLessons) DuplicateLesson(_ context.Context, id int) (int, error) {
+	l := f.lesson(id)
+	if l == nil {
+		return 0, pgx.ErrNoRows
+	}
+	cp := *l
+	cp.ID, cp.Slug, cp.Published = f.id(), l.Slug+"-copy", false
+	f.lessons = append(f.lessons, cp)
+	return cp.ID, nil
+}
+
+func (f fakeLessons) EnsureQuiz(_ context.Context, lessonID int, _ string) (int, error) {
+	if _, ok := f.questions[lessonID]; !ok {
+		f.questions[lessonID] = []model.QuizQuestion{}
+	}
+	return lessonID, nil
+}
+
+func (f fakeLessons) AddQuestion(_ context.Context, quizID int, q model.QuizQuestion) (int, error) {
+	q.ID, q.QuizID, q.OrderNum = f.id(), quizID, len(f.questions[quizID])+1
+	f.questions[quizID] = append(f.questions[quizID], q)
+	return q.ID, nil
+}
+
+func (f fakeLessons) question(id int) *model.QuizQuestion {
+	for lid := range f.questions {
+		for i := range f.questions[lid] {
+			if f.questions[lid][i].ID == id {
+				return &f.questions[lid][i]
+			}
+		}
+	}
+	return nil
+}
+
+func (f fakeLessons) UpdateQuestion(_ context.Context, q model.QuizQuestion) error {
+	if cur := f.question(q.ID); cur != nil {
+		q.QuizID, q.OrderNum = cur.QuizID, cur.OrderNum
+		*cur = q
+	}
+	return nil
+}
+
+func (f fakeLessons) DeleteQuestion(_ context.Context, id int) error {
+	for lid := range f.questions {
+		f.questions[lid] = slices.DeleteFunc(f.questions[lid], func(q model.QuizQuestion) bool { return q.ID == id })
+	}
+	return nil
+}
+
+func (f fakeLessons) GetQuestionByID(_ context.Context, id int) (*model.QuizQuestion, error) {
+	if q := f.question(id); q != nil {
+		cp := *q
+		if cp.QuizID == 0 {
+			for lid, qs := range f.questions {
+				if slices.ContainsFunc(qs, func(o model.QuizQuestion) bool { return o.ID == id }) {
+					cp.QuizID = lid
+				}
+			}
+		}
+		return &cp, nil
+	}
+	return nil, pgx.ErrNoRows
+}
+
+func (f fakeLessons) LessonIDForQuiz(_ context.Context, quizID int) (int, error) { return quizID, nil }
+
+func (f fakeLessons) CreateTask(_ context.Context, t model.Task) (int, error) {
+	t.ID, t.OrderNum = f.id(), len(f.tasks[t.LessonID])+1
+	f.tasks[t.LessonID] = append(f.tasks[t.LessonID], t)
+	return t.ID, nil
+}
+
+func (f fakeLessons) UpdateTask(_ context.Context, t model.Task) error {
+	for i, cur := range f.tasks[t.LessonID] {
+		if cur.ID == t.ID {
+			t.OrderNum = cur.OrderNum
+			f.tasks[t.LessonID][i] = t
+		}
+	}
+	return nil
+}
+
+func (f fakeLessons) DeleteTask(_ context.Context, id int) error {
+	for lid := range f.tasks {
+		f.tasks[lid] = slices.DeleteFunc(f.tasks[lid], func(t model.Task) bool { return t.ID == id })
+	}
+	return nil
+}
+
+type fakeAuthors struct{ *fakeContent }
+
+func (f fakeAuthors) IsCoauthor(_ context.Context, moduleID, userID int) (bool, error) {
+	return slices.Contains(f.coauthors[moduleID], userID), nil
+}
+
+func (f fakeAuthors) List(_ context.Context, moduleID int) ([]repository.User, error) {
+	var out []repository.User
+	for _, id := range f.coauthors[moduleID] {
+		out = append(out, repository.User{ID: id, Name: "user", Email: "u@example.com"})
+	}
+	return out, nil
+}
+
+func (f fakeAuthors) Add(_ context.Context, moduleID, userID, _ int) (bool, error) {
+	if slices.Contains(f.coauthors[moduleID], userID) {
+		return false, nil
+	}
+	f.coauthors[moduleID] = append(f.coauthors[moduleID], userID)
+	return true, nil
+}
+
+func (f fakeAuthors) Remove(_ context.Context, moduleID, userID int) (bool, error) {
+	before := len(f.coauthors[moduleID])
+	f.coauthors[moduleID] = slices.DeleteFunc(f.coauthors[moduleID], func(id int) bool { return id == userID })
+	return len(f.coauthors[moduleID]) < before, nil
+}
+
+func (f fakeAuthors) SetOwner(_ context.Context, moduleID, userID, _ int) error {
+	m := fakeModules{f.fakeContent}.module(moduleID)
+	if m == nil {
+		return pgx.ErrNoRows
+	}
+	if m.OwnerID != nil && *m.OwnerID != userID && !slices.Contains(f.coauthors[moduleID], *m.OwnerID) {
+		f.coauthors[moduleID] = append(f.coauthors[moduleID], *m.OwnerID)
+	}
+	f.coauthors[moduleID] = slices.DeleteFunc(f.coauthors[moduleID], func(id int) bool { return id == userID })
+	m.OwnerID = &userID
+	return nil
+}

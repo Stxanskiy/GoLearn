@@ -81,6 +81,27 @@ func (e ContentFormat) Valid() bool {
 	}
 }
 
+// Defines values for CourseAccessLevel.
+const (
+	CourseAccessLevelAdmin    CourseAccessLevel = "admin"
+	CourseAccessLevelCoauthor CourseAccessLevel = "coauthor"
+	CourseAccessLevelOwner    CourseAccessLevel = "owner"
+)
+
+// Valid indicates whether the value is a known member of the CourseAccessLevel enum.
+func (e CourseAccessLevel) Valid() bool {
+	switch e {
+	case CourseAccessLevelAdmin:
+		return true
+	case CourseAccessLevelCoauthor:
+		return true
+	case CourseAccessLevelOwner:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CourseLabel.
 const (
 	Challenge CourseLabel = "challenge"
@@ -234,24 +255,6 @@ func (e LessonKind) Valid() bool {
 	}
 }
 
-// Defines values for OwnershipSource.
-const (
-	OwnershipSourceAdmin OwnershipSource = "admin"
-	OwnershipSourceSeed  OwnershipSource = "seed"
-)
-
-// Valid indicates whether the value is a known member of the OwnershipSource enum.
-func (e OwnershipSource) Valid() bool {
-	switch e {
-	case OwnershipSourceAdmin:
-		return true
-	case OwnershipSourceSeed:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ProgressStatus.
 const (
 	Completed  ProgressStatus = "completed"
@@ -276,6 +279,7 @@ func (e ProgressStatus) Valid() bool {
 // Defines values for Role.
 const (
 	RoleAdmin   Role = "admin"
+	RoleAuthor  Role = "author"
 	RoleStudent Role = "student"
 )
 
@@ -283,6 +287,8 @@ const (
 func (e Role) Valid() bool {
 	switch e {
 	case RoleAdmin:
+		return true
+	case RoleAuthor:
 		return true
 	case RoleStudent:
 		return true
@@ -422,40 +428,46 @@ func (e AdminMoveSpecializationJSONBodyDirection) Valid() bool {
 
 // AdminCourse defines model for AdminCourse.
 type AdminCourse struct {
-	// Accent Cover gradient key; empty → by category.
-	Accent *string `json:"accent,omitempty"`
+	Accent string `json:"accent"`
 
-	// Category Empty → derived.
-	Category        *string `json:"category,omitempty"`
-	CoverPreviewURL string  `json:"cover_preview_url"`
+	// Access What the current user may do with the course.
+	Access CourseAccess `json:"access"`
 
-	// CoverURL External cover; null keeps uploaded/generated.
-	CoverURL    *string    `json:"cover_url,omitempty"`
+	// Category Stored value; empty when derived.
+	Category        string `json:"category"`
+	CoverPreviewURL string `json:"cover_preview_url"`
+
+	// CoverURL External cover URL.
+	CoverURL    *string    `json:"cover_url"`
 	CreatedAt   time.Time  `json:"created_at"`
-	Description *string    `json:"description,omitempty"`
+	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
+	EstMinutes  int        `json:"est_minutes"`
 
-	// EstMinutes 0 → lessons × 10.
-	EstMinutes     *int `json:"est_minutes,omitempty"`
+	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
 	ID             int  `json:"id"`
 
-	// Label Null → derived from difficulty.
-	Label     *CourseLabel      `json:"label,omitempty"`
+	// Label Null when derived.
+	Label     *CourseLabel      `json:"label"`
 	OrderNum  int               `json:"order_num"`
-	OwnerID   *int              `json:"owner_id"`
+	Owner     *AuthorRef        `json:"owner"`
 	Published bool              `json:"published"`
-	Slug      Slug              `json:"slug"`
+	Slug      string            `json:"slug"`
 	Source    AdminCourseSource `json:"source"`
-	Tags      *[]string         `json:"tags,omitempty"`
+	Tags      []string          `json:"tags"`
 	Title     string            `json:"title"`
-
-	// Track Specialization slug (or `gym`).
-	Track string `json:"track"`
+	Track     string            `json:"track"`
 }
 
 // AdminCourseSource defines model for AdminCourse.Source.
 type AdminCourseSource string
+
+// AdminCourseDetail defines model for AdminCourseDetail.
+type AdminCourseDetail struct {
+	Course  AdminCourse      `json:"course"`
+	Lessons []AdminLessonRow `json:"lessons"`
+}
 
 // AdminCourseInput defines model for AdminCourseInput.
 type AdminCourseInput struct {
@@ -465,7 +477,7 @@ type AdminCourseInput struct {
 	// Category Empty → derived.
 	Category *string `json:"category,omitempty"`
 
-	// CoverURL External cover; null keeps uploaded/generated.
+	// CoverURL External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.
 	CoverURL    *string    `json:"cover_url,omitempty"`
 	Description *string    `json:"description,omitempty"`
 	Difficulty  Difficulty `json:"difficulty"`
@@ -473,51 +485,53 @@ type AdminCourseInput struct {
 	// EstMinutes 0 → lessons × 10.
 	EstMinutes *int `json:"est_minutes,omitempty"`
 
-	// Label Null → derived from difficulty.
-	Label     *CourseLabel `json:"label,omitempty"`
-	Published *bool        `json:"published,omitempty"`
-	Slug      Slug         `json:"slug"`
-	Tags      *[]string    `json:"tags,omitempty"`
-	Title     string       `json:"title"`
+	// Label Localized on the frontend (Старт / Практика / Вызов).
+	Label *CourseLabel `json:"label,omitempty"`
 
-	// Track Specialization slug (or `gym`).
+	// Published Omitted → unchanged (draft on create). Changing it needs `can_publish`.
+	Published *bool     `json:"published,omitempty"`
+	Slug      Slug      `json:"slug"`
+	Tags      *[]string `json:"tags,omitempty"`
+	Title     string    `json:"title"`
+
+	// Track Existing specialization slug; `gym` is admin only.
 	Track string `json:"track"`
 }
 
 // AdminCourseRow defines model for AdminCourseRow.
 type AdminCourseRow struct {
-	// Accent Cover gradient key; empty → by category.
-	Accent *string `json:"accent,omitempty"`
+	Accent string `json:"accent"`
 
-	// Category Empty → derived.
-	Category        *string `json:"category,omitempty"`
-	CoverPreviewURL string  `json:"cover_preview_url"`
+	// Access What the current user may do with the course.
+	Access CourseAccess `json:"access"`
 
-	// CoverURL External cover; null keeps uploaded/generated.
-	CoverURL    *string    `json:"cover_url,omitempty"`
+	// Category Stored value; empty when derived.
+	Category        string `json:"category"`
+	CoverPreviewURL string `json:"cover_preview_url"`
+
+	// CoverURL External cover URL.
+	CoverURL    *string    `json:"cover_url"`
 	CreatedAt   time.Time  `json:"created_at"`
-	Description *string    `json:"description,omitempty"`
+	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
+	EstMinutes  int        `json:"est_minutes"`
 
-	// EstMinutes 0 → lessons × 10.
-	EstMinutes     *int `json:"est_minutes,omitempty"`
+	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
 	ID             int  `json:"id"`
 
-	// Label Null → derived from difficulty.
-	Label        *CourseLabel         `json:"label,omitempty"`
+	// Label Null when derived.
+	Label        *CourseLabel         `json:"label"`
 	LabsCount    int                  `json:"labs_count"`
 	LessonsCount int                  `json:"lessons_count"`
 	OrderNum     int                  `json:"order_num"`
-	OwnerID      *int                 `json:"owner_id"`
+	Owner        *AuthorRef           `json:"owner"`
 	Published    bool                 `json:"published"`
-	Slug         Slug                 `json:"slug"`
+	Slug         string               `json:"slug"`
 	Source       AdminCourseRowSource `json:"source"`
-	Tags         *[]string            `json:"tags,omitempty"`
+	Tags         []string             `json:"tags"`
 	Title        string               `json:"title"`
-
-	// Track Specialization slug (or `gym`).
-	Track string `json:"track"`
+	Track        string               `json:"track"`
 }
 
 // AdminCourseRowSource defines model for AdminCourseRow.Source.
@@ -525,7 +539,7 @@ type AdminCourseRowSource string
 
 // AdminLesson defines model for AdminLesson.
 type AdminLesson struct {
-	Content    *string           `json:"content,omitempty"`
+	Content    string            `json:"content"`
 	CourseID   int               `json:"course_id"`
 	CreatedAt  time.Time         `json:"created_at"`
 	Difficulty Difficulty        `json:"difficulty"`
@@ -533,16 +547,23 @@ type AdminLesson struct {
 	ID         int               `json:"id"`
 	Kind       LessonKind        `json:"kind"`
 	OrderNum   int               `json:"order_num"`
-	Published  *bool             `json:"published,omitempty"`
-	Slug       Slug              `json:"slug"`
+	Published  bool              `json:"published"`
+	Slug       string            `json:"slug"`
 	Source     AdminLessonSource `json:"source"`
 	Title      string            `json:"title"`
-	VMImage    *string           `json:"vm_image,omitempty"`
-	VMInit     *string           `json:"vm_init,omitempty"`
+	VMImage    string            `json:"vm_image"`
+	VMInit     string            `json:"vm_init"`
 }
 
 // AdminLessonSource defines model for AdminLesson.Source.
 type AdminLessonSource string
+
+// AdminLessonDetail defines model for AdminLessonDetail.
+type AdminLessonDetail struct {
+	Lesson    AdminLesson     `json:"lesson"`
+	Questions []AdminQuestion `json:"questions"`
+	Tasks     []AdminTask     `json:"tasks"`
+}
 
 // AdminLessonInput defines model for AdminLessonInput.
 type AdminLessonInput struct {
@@ -550,11 +571,13 @@ type AdminLessonInput struct {
 	Difficulty Difficulty    `json:"difficulty"`
 	Format     ContentFormat `json:"format"`
 	Kind       LessonKind    `json:"kind"`
-	Published  *bool         `json:"published,omitempty"`
-	Slug       Slug          `json:"slug"`
-	Title      string        `json:"title"`
-	VMImage    *string       `json:"vm_image,omitempty"`
-	VMInit     *string       `json:"vm_init,omitempty"`
+
+	// Published Omitted → unchanged (draft on create). Changing it needs `can_publish`.
+	Published *bool   `json:"published,omitempty"`
+	Slug      Slug    `json:"slug"`
+	Title     string  `json:"title"`
+	VMImage   *string `json:"vm_image,omitempty"`
+	VMInit    *string `json:"vm_init,omitempty"`
 }
 
 // AdminLessonRow defines model for AdminLessonRow.
@@ -571,19 +594,14 @@ type AdminLessonRow struct {
 
 // AdminQuestion defines model for AdminQuestion.
 type AdminQuestion struct {
-	// CorrectIndex 0-based; must be < options length.
-	CorrectIndex int     `json:"correct_index"`
-	Explanation  *string `json:"explanation,omitempty"`
-	ID           int     `json:"id"`
-	LessonID     int     `json:"lesson_id"`
-
-	// OptionExplanations Same length as `options` when present.
-	OptionExplanations *[]string `json:"option_explanations,omitempty"`
-	Options            []string  `json:"options"`
-	OrderNum           int       `json:"order_num"`
-
-	// Question HTML allowed; sanitized on render.
-	Question string `json:"question"`
+	CorrectIndex       int      `json:"correct_index"`
+	Explanation        string   `json:"explanation"`
+	ID                 int      `json:"id"`
+	LessonID           int      `json:"lesson_id"`
+	OptionExplanations []string `json:"option_explanations"`
+	Options            []string `json:"options"`
+	OrderNum           int      `json:"order_num"`
+	Question           string   `json:"question"`
 }
 
 // AdminQuestionInput defines model for AdminQuestionInput.
@@ -592,7 +610,7 @@ type AdminQuestionInput struct {
 	CorrectIndex int     `json:"correct_index"`
 	Explanation  *string `json:"explanation,omitempty"`
 
-	// OptionExplanations Same length as `options` when present.
+	// OptionExplanations Empty or the same length as `options`.
 	OptionExplanations *[]string `json:"option_explanations,omitempty"`
 	Options            []string  `json:"options"`
 
@@ -655,39 +673,41 @@ type AdminSpecializationInput struct {
 
 // AdminTask defines model for AdminTask.
 type AdminTask struct {
-	CheckScript  *string         `json:"check_script,omitempty"`
-	Description  *string         `json:"description,omitempty"`
-	Difficulty   TaskDifficulty  `json:"difficulty"`
-	Format       ContentFormat   `json:"format"`
-	Glossary     *[]GlossaryItem `json:"glossary,omitempty"`
-	Hints        *string         `json:"hints,omitempty"`
-	ID           int             `json:"id"`
-	Kind         TaskKind        `json:"kind"`
-	LessonID     int             `json:"lesson_id"`
-	OrderNum     int             `json:"order_num"`
-	SandboxImage *string         `json:"sandbox_image,omitempty"`
-	SetupScript  *string         `json:"setup_script,omitempty"`
-	Solution     *string         `json:"solution,omitempty"`
-	StarterCode  *string         `json:"starter_code,omitempty"`
-	TestCases    *[]TestCase     `json:"test_cases,omitempty"`
-	Title        string          `json:"title"`
+	CheckScript  string         `json:"check_script"`
+	Description  string         `json:"description"`
+	Difficulty   TaskDifficulty `json:"difficulty"`
+	Format       ContentFormat  `json:"format"`
+	Glossary     []GlossaryItem `json:"glossary"`
+	Hints        string         `json:"hints"`
+	ID           int            `json:"id"`
+	Kind         TaskKind       `json:"kind"`
+	LessonID     int            `json:"lesson_id"`
+	OrderNum     int            `json:"order_num"`
+	SandboxImage string         `json:"sandbox_image"`
+	SetupScript  string         `json:"setup_script"`
+	Solution     string         `json:"solution"`
+	StarterCode  string         `json:"starter_code"`
+	TestCases    []TestCase     `json:"test_cases"`
+	Title        string         `json:"title"`
 }
 
 // AdminTaskInput defines model for AdminTaskInput.
 type AdminTaskInput struct {
-	CheckScript  *string         `json:"check_script,omitempty"`
-	Description  *string         `json:"description,omitempty"`
-	Difficulty   TaskDifficulty  `json:"difficulty"`
-	Format       ContentFormat   `json:"format"`
-	Glossary     *[]GlossaryItem `json:"glossary,omitempty"`
-	Hints        *string         `json:"hints,omitempty"`
-	Kind         TaskKind        `json:"kind"`
-	SandboxImage *string         `json:"sandbox_image,omitempty"`
-	SetupScript  *string         `json:"setup_script,omitempty"`
-	Solution     *string         `json:"solution,omitempty"`
-	StarterCode  *string         `json:"starter_code,omitempty"`
-	TestCases    *[]TestCase     `json:"test_cases,omitempty"`
-	Title        string          `json:"title"`
+	CheckScript *string         `json:"check_script,omitempty"`
+	Description *string         `json:"description,omitempty"`
+	Difficulty  TaskDifficulty  `json:"difficulty"`
+	Format      ContentFormat   `json:"format"`
+	Glossary    *[]GlossaryItem `json:"glossary,omitempty"`
+	Hints       *string         `json:"hints,omitempty"`
+	Kind        TaskKind        `json:"kind"`
+
+	// SandboxImage Shell tasks: one of the lab images, e.g. `golearn/sandbox:latest`.
+	SandboxImage *string     `json:"sandbox_image,omitempty"`
+	SetupScript  *string     `json:"setup_script,omitempty"`
+	Solution     *string     `json:"solution,omitempty"`
+	StarterCode  *string     `json:"starter_code,omitempty"`
+	TestCases    *[]TestCase `json:"test_cases,omitempty"`
+	Title        string      `json:"title"`
 }
 
 // AdminUser defines model for AdminUser.
@@ -698,7 +718,9 @@ type AdminUser struct {
 	ID        int                 `json:"id"`
 	IsSelf    bool                `json:"is_self"`
 	Name      string              `json:"name"`
-	Role      Role                `json:"role"`
+
+	// Role `author` manages courses they own or co-author; `admin` manages everything.
+	Role Role `json:"role"`
 
 	// RolePinnedByEnv Email is in ADMIN_EMAILS.
 	RolePinnedByEnv bool `json:"role_pinned_by_env"`
@@ -707,6 +729,13 @@ type AdminUser struct {
 // AuthConfig defines model for AuthConfig.
 type AuthConfig struct {
 	RegistrationOpen bool `json:"registration_open"`
+}
+
+// AuthorRef defines model for AuthorRef.
+type AuthorRef struct {
+	Email openapi_types.Email `json:"email"`
+	ID    int                 `json:"id"`
+	Name  string              `json:"name"`
 }
 
 // Catalog defines model for Catalog.
@@ -727,6 +756,36 @@ type ContinueLesson struct {
 	Kind     LessonKind `json:"kind"`
 	Lesson   LinkRef    `json:"lesson"`
 	LessonID int        `json:"lesson_id"`
+}
+
+// CourseAccess What the current user may do with the course.
+type CourseAccess struct {
+	// CanDelete Owner and admin.
+	CanDelete bool `json:"can_delete"`
+
+	// CanEdit Course fields, cover, lessons, questions, tasks, draft lesson deletion.
+	CanEdit bool `json:"can_edit"`
+
+	// CanManageAuthors Add and remove co-authors. Owner and admin.
+	CanManageAuthors bool `json:"can_manage_authors"`
+
+	// CanPublish Publish/unpublish the course and its lessons, delete published lessons. Owner and admin.
+	CanPublish bool `json:"can_publish"`
+
+	// CanReorder Move the course in the catalog; transfer ownership. Admin only.
+	CanReorder bool              `json:"can_reorder"`
+	Level      CourseAccessLevel `json:"level"`
+}
+
+// CourseAccessLevel defines model for CourseAccess.Level.
+type CourseAccessLevel string
+
+// CourseAuthors defines model for CourseAuthors.
+type CourseAuthors struct {
+	Coauthors []AuthorRef `json:"coauthors"`
+
+	// Owner Null for platform (seed) courses, which only admins manage.
+	Owner *AuthorRef `json:"owner"`
 }
 
 // CourseCard defines model for CourseCard.
@@ -866,7 +925,7 @@ type Error struct {
 
 // ErrorBody defines model for ErrorBody.
 type ErrorBody struct {
-	// Code Examples: unauthorized, not_found, validation_failed, slug_taken, sandbox_disabled
+	// Code Examples: unauthorized, forbidden, not_found, validation_failed, slug_taken, already_author, sandbox_disabled
 	Code    string        `json:"code"`
 	Details *ErrorDetails `json:"details,omitempty"`
 
@@ -876,7 +935,7 @@ type ErrorBody struct {
 
 // ErrorDetails defines model for ErrorDetails.
 type ErrorDetails struct {
-	// Fields Field name → error code (`required`, `too_short`, `too_long`, `invalid_format`).
+	// Fields Field name → error code (`required`, `too_short`, `too_long`, `invalid_format`, `invalid_value`, `not_found`, `not_author`).
 	Fields *map[string]string `json:"fields,omitempty"`
 	Issues *[]ImportIssue     `json:"issues,omitempty"`
 }
@@ -1079,18 +1138,10 @@ type Me struct {
 	ID        int                 `json:"id"`
 	IsAdmin   bool                `json:"is_admin"`
 	Name      string              `json:"name"`
-	Role      Role                `json:"role"`
-}
 
-// Ownership defines model for Ownership.
-type Ownership struct {
-	OwnerID   *int            `json:"owner_id"`
-	Published bool            `json:"published"`
-	Source    OwnershipSource `json:"source"`
+	// Role `author` manages courses they own or co-author; `admin` manages everything.
+	Role Role `json:"role"`
 }
-
-// OwnershipSource defines model for Ownership.Source.
-type OwnershipSource string
 
 // Profile defines model for Profile.
 type Profile struct {
@@ -1153,7 +1204,7 @@ type QuizResult struct {
 	Total   int                  `json:"total"`
 }
 
-// Role defines model for Role.
+// Role `author` manages courses they own or co-author; `admin` manages everything.
 type Role string
 
 // RunRequest defines model for RunRequest.
@@ -1186,7 +1237,7 @@ type SandboxSession struct {
 	// Enabled Sandbox configured on the server.
 	Enabled bool `json:"enabled"`
 
-	// ExpiresAt Hard session limit (1 h).
+	// ExpiresAt Idle timeout (30 min) or hard limit (1 h), whichever is sooner.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Running   bool       `json:"running"`
 	StartedAt *time.Time `json:"started_at,omitempty"`
@@ -1344,6 +1395,9 @@ type TermCols = int
 // TermRows defines model for TermRows.
 type TermRows = int
 
+// UserID defines model for UserId.
+type UserID = int
+
 // Forbidden defines model for Forbidden.
 type Forbidden = Error
 
@@ -1402,6 +1456,11 @@ type AdminPreviewContentJSONBody struct {
 	Format  ContentFormat `json:"format"`
 }
 
+// AdminAddCourseAuthorJSONBody defines parameters for AdminAddCourseAuthor.
+type AdminAddCourseAuthorJSONBody struct {
+	Email openapi_types.Email `json:"email"`
+}
+
 // AdminUploadCourseCoverMultipartBody defines parameters for AdminUploadCourseCover.
 type AdminUploadCourseCoverMultipartBody struct {
 	// File PNG, JPEG, WebP or SVG, max 4 MiB.
@@ -1415,6 +1474,11 @@ type AdminMoveCourseJSONBody struct {
 
 // AdminMoveCourseJSONBodyDirection defines parameters for AdminMoveCourse.
 type AdminMoveCourseJSONBodyDirection string
+
+// AdminSetCourseOwnerJSONBody defines parameters for AdminSetCourseOwner.
+type AdminSetCourseOwnerJSONBody struct {
+	UserID int `json:"user_id"`
+}
 
 // AdminSetCoursePublishedJSONBody defines parameters for AdminSetCoursePublished.
 type AdminSetCoursePublishedJSONBody struct {
@@ -1489,13 +1553,17 @@ type AdminCreateUserJSONBody struct {
 	Email    openapi_types.Email `json:"email"`
 	Name     string              `json:"name"`
 	Password string              `json:"password"`
-	Role     Role                `json:"role"`
+
+	// Role `author` manages courses they own or co-author; `admin` manages everything.
+	Role Role `json:"role"`
 }
 
 // AdminUpdateUserJSONBody defines parameters for AdminUpdateUser.
 type AdminUpdateUserJSONBody struct {
 	Blocked *bool `json:"blocked,omitempty"`
-	Role    *Role `json:"role,omitempty"`
+
+	// Role `author` manages courses they own or co-author; `admin` manages everything.
+	Role *Role `json:"role,omitempty"`
 }
 
 // AdminSetUserPasswordJSONBody defines parameters for AdminSetUserPassword.
@@ -1565,6 +1633,9 @@ type AdminCreateCourseJSONRequestBody = AdminCourseInput
 // AdminUpdateCourseJSONRequestBody defines body for AdminUpdateCourse for application/json ContentType.
 type AdminUpdateCourseJSONRequestBody = AdminCourseInput
 
+// AdminAddCourseAuthorJSONRequestBody defines body for AdminAddCourseAuthor for application/json ContentType.
+type AdminAddCourseAuthorJSONRequestBody AdminAddCourseAuthorJSONBody
+
 // AdminUploadCourseCoverMultipartRequestBody defines body for AdminUploadCourseCover for multipart/form-data ContentType.
 type AdminUploadCourseCoverMultipartRequestBody AdminUploadCourseCoverMultipartBody
 
@@ -1573,6 +1644,9 @@ type AdminCreateLessonJSONRequestBody = AdminLessonInput
 
 // AdminMoveCourseJSONRequestBody defines body for AdminMoveCourse for application/json ContentType.
 type AdminMoveCourseJSONRequestBody AdminMoveCourseJSONBody
+
+// AdminSetCourseOwnerJSONRequestBody defines body for AdminSetCourseOwner for application/json ContentType.
+type AdminSetCourseOwnerJSONRequestBody AdminSetCourseOwnerJSONBody
 
 // AdminSetCoursePublishedJSONRequestBody defines body for AdminSetCoursePublished for application/json ContentType.
 type AdminSetCoursePublishedJSONRequestBody AdminSetCoursePublishedJSONBody

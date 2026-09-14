@@ -42,8 +42,8 @@ func (h *Handler) AdminUserCreate(w http.ResponseWriter, r *http.Request) {
 	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 	password := r.FormValue("password")
 	role := strings.TrimSpace(r.FormValue("role"))
-	if role != "admin" {
-		role = "student"
+	if role != repository.RoleAdmin && role != repository.RoleAuthor {
+		role = repository.RoleStudent
 	}
 
 	fail := func(msg string) {
@@ -96,8 +96,8 @@ func (h *Handler) AdminUserSetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	role := strings.TrimSpace(r.FormValue("role"))
-	if role != "admin" {
-		role = "student"
+	if role != repository.RoleAdmin && role != repository.RoleAuthor {
+		role = repository.RoleStudent
 	}
 	_ = h.userRepo.SetRole(r.Context(), id, role)
 	usersBack(w, r, "")

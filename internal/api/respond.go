@@ -8,6 +8,7 @@ import (
 
 	"github.com/backendraz/golearn/internal/api/apigen"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // Error codes shared with the frontend (see Error in api/openapi.yaml).
@@ -36,6 +37,8 @@ const (
 	codeTaskNotAutoChecked = "task_not_auto_checked"
 	codeTaskAutoChecked    = "task_auto_checked"
 	codeTaskNotCode        = "task_not_code"
+	codeSlugTaken          = "slug_taken"
+	codeAlreadyAuthor      = "already_author"
 )
 
 // Field-level validation codes.
@@ -44,6 +47,9 @@ const (
 	fieldTooShort      = "too_short"
 	fieldTooLong       = "too_long"
 	fieldInvalidFormat = "invalid_format"
+	fieldInvalidValue  = "invalid_value"
+	fieldNotFound      = "not_found"
+	fieldNotAuthor     = "not_author"
 )
 
 const maxJSONBody = 1 << 20
@@ -91,6 +97,12 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) bool {
 		return false
 	}
 	return true
+}
+
+// isUniqueViolation reports whether err is a unique constraint violation.
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
 
 // isNotFound reports whether a repository error means the row does not exist.

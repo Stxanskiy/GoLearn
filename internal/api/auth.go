@@ -12,7 +12,6 @@ import (
 	"github.com/backendraz/golearn/internal/auth"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -85,8 +84,7 @@ func (a *API) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := a.Users.Create(r.Context(), email, body.Password, name)
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+	if isUniqueViolation(err) {
 		writeError(w, http.StatusConflict, codeEmailTaken, "email already registered")
 		return
 	}
@@ -153,9 +151,9 @@ func (a *API) startSession(w http.ResponseWriter, r *http.Request, user *reposit
 }
 
 func toMe(u *repository.User) apigen.Me {
-	role := apigen.RoleStudent
-	if u.IsAdmin() {
-		role = apigen.RoleAdmin
+	role := apigen.Role(u.Role)
+	if !role.Valid() {
+		role = apigen.RoleStudent
 	}
 	return apigen.Me{
 		ID:        u.ID,

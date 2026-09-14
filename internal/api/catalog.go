@@ -9,6 +9,7 @@ import (
 	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 )
 
 // userProgress loads a user's raw progress and passed labs.
@@ -94,7 +95,13 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user := userFrom(ctx)
 	m, err := a.Modules.GetBySlug(ctx, chi.URLParam(r, "courseSlug"))
-	if isNotFound(err) || (err == nil && !m.Published && !user.IsAdmin()) {
+	if err == nil && !m.Published {
+		var ok bool
+		if ok, err = a.canPreview(ctx, m); err == nil && !ok {
+			err = pgx.ErrNoRows
+		}
+	}
+	if isNotFound(err) {
 		writeError(w, http.StatusNotFound, codeNotFound, "course not found")
 		return
 	}

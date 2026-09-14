@@ -20,7 +20,17 @@ type User struct {
 	CreatedAt    time.Time
 }
 
-func (u *User) IsAdmin() bool { return u != nil && u.Role == "admin" }
+// User roles.
+const (
+	RoleStudent = "student"
+	RoleAuthor  = "author"
+	RoleAdmin   = "admin"
+)
+
+func (u *User) IsAdmin() bool { return u != nil && u.Role == RoleAdmin }
+
+// CanAuthor reports whether the user may manage courses.
+func (u *User) CanAuthor() bool { return u != nil && (u.Role == RoleAuthor || u.Role == RoleAdmin) }
 
 type UserRepo struct {
 	pool *pgxpool.Pool

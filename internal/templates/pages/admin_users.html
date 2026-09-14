@@ -36,7 +36,7 @@
     <label class="field">Имя<input name="name" placeholder="Иван Иванов"></label>
     <label class="field">Email<input name="email" type="email" placeholder="user@mail.ru"></label>
     <label class="field">Пароль<input name="password" type="password" placeholder="от 6 символов"></label>
-    <label class="field">Роль<select name="role"><option value="student">student</option><option value="admin">admin</option></select></label>
+    <label class="field">Роль<select name="role"><option value="student">student</option><option value="author">author</option><option value="admin">admin</option></select></label>
     <button class="btn btn-primary" type="submit"><i class="ph ph-user-plus"></i> Создать</button>
     <span style="flex:1"></span>
     <input id="usearch" onkeyup="ufilter()" placeholder="Поиск по имени/email…" style="min-width:220px">
@@ -56,6 +56,7 @@
           <form method="POST" action="/admin/users/{{.ID}}/role" style="display:inline">
             <select class="role-sel" name="role" onchange="this.form.submit()">
               <option value="student"{{if eq .Role "student"}} selected{{end}}>student</option>
+              <option value="author"{{if eq .Role "author"}} selected{{end}}>author</option>
               <option value="admin"{{if eq .Role "admin"}} selected{{end}}>admin</option>
             </select>
           </form>{{end}}

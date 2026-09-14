@@ -58,8 +58,17 @@ func (a *API) lessonBySlug(w http.ResponseWriter, r *http.Request) (lessonRef, b
 	return a.visible(w, r, lessonRef{lesson: l, module: m})
 }
 
+// visible hides draft lessons and courses from everyone except their editors.
 func (a *API) visible(w http.ResponseWriter, r *http.Request, ref lessonRef) (lessonRef, bool) {
-	if (!ref.lesson.Published || !ref.module.Published) && !userFrom(r.Context()).IsAdmin() {
+	if ref.lesson.Published && ref.module.Published {
+		return ref, true
+	}
+	ok, err := a.canPreview(r.Context(), ref.module)
+	if err != nil {
+		a.internalError(w, "lesson: preview access", err)
+		return lessonRef{}, false
+	}
+	if !ok {
 		writeError(w, http.StatusNotFound, codeNotFound, "lesson not found")
 		return lessonRef{}, false
 	}

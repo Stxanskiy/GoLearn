@@ -20,6 +20,7 @@ type userStore interface {
 	GetUserBySession(ctx context.Context, token string) (*repository.User, error)
 	DeleteSession(ctx context.Context, token string) error
 	SetRole(ctx context.Context, userID int, role string) error
+	GetByID(ctx context.Context, id int) (*repository.User, error)
 }
 
 type moduleStore interface {
@@ -28,6 +29,14 @@ type moduleStore interface {
 	GetByID(ctx context.Context, id int) (*model.Module, error)
 	Neighbors(ctx context.Context, m model.Module, tracks []string) (prev, next *model.Module, err error)
 	Stats(ctx context.Context) (repository.PlatformStats, error)
+	ListManaged(ctx context.Context, userID int, all bool) ([]repository.CourseRow, error)
+	NextOrder(ctx context.Context) (int, error)
+	Create(ctx context.Context, m model.Module) (int, error)
+	Update(ctx context.Context, m model.Module) error
+	Delete(ctx context.Context, id int) error
+	SetPublished(ctx context.Context, id int, published bool) error
+	Move(ctx context.Context, id int, dir string) error
+	SetCover(ctx context.Context, id int, cover string) error
 }
 
 type lessonStore interface {
@@ -40,6 +49,32 @@ type lessonStore interface {
 	GetTasks(ctx context.Context, lessonID int) ([]model.Task, error)
 	GetTaskByID(ctx context.Context, taskID int) (*model.Task, error)
 	LessonSandbox(ctx context.Context, lessonID int) (image, setup string, err error)
+	GetByModuleAll(ctx context.Context, moduleID int) ([]model.Lesson, error)
+	NextOrder(ctx context.Context, moduleID int) (int, error)
+	Create(ctx context.Context, l model.Lesson) (int, error)
+	Update(ctx context.Context, l model.Lesson) error
+	Delete(ctx context.Context, id int) error
+	SetPublished(ctx context.Context, id int, published bool) error
+	MoveLesson(ctx context.Context, id int, dir string) error
+	DuplicateLesson(ctx context.Context, id int) (int, error)
+	EnsureQuiz(ctx context.Context, lessonID int, title string) (int, error)
+	AddQuestion(ctx context.Context, quizID int, q model.QuizQuestion) (int, error)
+	UpdateQuestion(ctx context.Context, q model.QuizQuestion) error
+	DeleteQuestion(ctx context.Context, id int) error
+	GetQuestionByID(ctx context.Context, id int) (*model.QuizQuestion, error)
+	LessonIDForQuiz(ctx context.Context, quizID int) (int, error)
+	CreateTask(ctx context.Context, t model.Task) (int, error)
+	UpdateTask(ctx context.Context, t model.Task) error
+	DeleteTask(ctx context.Context, id int) error
+}
+
+// authorStore keeps course co-authors.
+type authorStore interface {
+	IsCoauthor(ctx context.Context, moduleID, userID int) (bool, error)
+	List(ctx context.Context, moduleID int) ([]repository.User, error)
+	Add(ctx context.Context, moduleID, userID, addedBy int) (bool, error)
+	Remove(ctx context.Context, moduleID, userID int) (bool, error)
+	SetOwner(ctx context.Context, moduleID, userID, byID int) error
 }
 
 type progressStore interface {
@@ -115,6 +150,7 @@ type Stores struct {
 	Sims         simStore
 	QuizAnswers  quizAnswerStore
 	QuizAttempts quizAttemptStore
+	Authors      authorStore
 	Sandbox      sandbox
 	Code         codeRunner
 }
@@ -193,6 +229,38 @@ func (a *API) Routes() chi.Router {
 		r.Delete("/git-trainer/session", a.resetGitTrainer)
 		r.Get("/git-trainer/terminal", a.openGitTrainerTerminal)
 		r.Get("/git-trainer/git-graph", a.getGitTrainerGraph)
+
+		r.Group(func(r chi.Router) {
+			r.Use(requireAuthor)
+			r.Post("/admin/content/preview", a.adminPreviewContent)
+			r.Get("/admin/courses", a.adminListCourses)
+			r.Post("/admin/courses", a.adminCreateCourse)
+			r.Get("/admin/courses/{courseId}", a.adminGetCourse)
+			r.Put("/admin/courses/{courseId}", a.adminUpdateCourse)
+			r.Delete("/admin/courses/{courseId}", a.adminDeleteCourse)
+			r.Put("/admin/courses/{courseId}/published", a.adminSetCoursePublished)
+			r.With(requireAdmin).Post("/admin/courses/{courseId}/move", a.adminMoveCourse)
+			r.Put("/admin/courses/{courseId}/cover", a.adminUploadCourseCover)
+			r.Delete("/admin/courses/{courseId}/cover", a.adminDeleteCourseCover)
+			r.Get("/admin/courses/{courseId}/authors", a.adminListCourseAuthors)
+			r.Post("/admin/courses/{courseId}/authors", a.adminAddCourseAuthor)
+			r.Delete("/admin/courses/{courseId}/authors/{userId}", a.adminRemoveCourseAuthor)
+			r.With(requireAdmin).Put("/admin/courses/{courseId}/owner", a.adminSetCourseOwner)
+
+			r.Post("/admin/courses/{courseId}/lessons", a.adminCreateLesson)
+			r.Get("/admin/lessons/{lessonId}", a.adminGetLesson)
+			r.Put("/admin/lessons/{lessonId}", a.adminUpdateLesson)
+			r.Delete("/admin/lessons/{lessonId}", a.adminDeleteLesson)
+			r.Put("/admin/lessons/{lessonId}/published", a.adminSetLessonPublished)
+			r.Post("/admin/lessons/{lessonId}/move", a.adminMoveLesson)
+			r.Post("/admin/lessons/{lessonId}/duplicate", a.adminDuplicateLesson)
+			r.Post("/admin/lessons/{lessonId}/questions", a.adminCreateQuestion)
+			r.Put("/admin/questions/{questionId}", a.adminUpdateQuestion)
+			r.Delete("/admin/questions/{questionId}", a.adminDeleteQuestion)
+			r.Post("/admin/lessons/{lessonId}/tasks", a.adminCreateTask)
+			r.Put("/admin/tasks/{taskId}", a.adminUpdateTask)
+			r.Delete("/admin/tasks/{taskId}", a.adminDeleteTask)
+		})
 	})
 	return r
 }

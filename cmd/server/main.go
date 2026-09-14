@@ -123,6 +123,7 @@ func main() {
 		Sims:         simRepo,
 		QuizAnswers:  repository.NewQuizAnswerRepo(pool),
 		QuizAttempts: quizAttemptRepo,
+		Authors:      repository.NewCourseAuthorRepo(pool),
 		Sandbox:      vmRunner,
 		Code:         codeRunner,
 	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
