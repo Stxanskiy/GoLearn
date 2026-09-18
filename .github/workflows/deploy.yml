@@ -7,6 +7,12 @@ name: deploy
 on:
   push:
     branches: [main]
+    # A docs-only commit used to rebuild the image and recreate the pod. The
+    # deployment is Recreate (see below), so the site blinked for a .md edit.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
@@ -91,6 +97,9 @@ jobs:
           exec > >(tee -a /tmp/ci-release.log) 2>&1
           set -x
           set -e
+          # Without pipefail a failing `docker save` is masked by the exit code of
+          # `ctr import`, and the release marches on with no image.
+          set -o pipefail
           SHA=$(echo "${{ github.sha }}" | cut -c1-7)
 
           # There is no registry on this box, so the image is built here and
@@ -99,6 +108,14 @@ jobs:
           cd /opt/golearn
           docker build -t "golearn:$SHA" ./src
           docker save "golearn:$SHA" | sudo k3s ctr images import -
+
+          # Prove the import actually landed. imagePullPolicy is IfNotPresent and
+          # there is no registry, so a missing tag means every future pod lands in
+          # ImagePullBackOff — and the running pod hides it until it restarts.
+          if ! sudo k3s ctr images ls -q | grep -qx "docker.io/library/golearn:$SHA"; then
+            echo "!! golearn:$SHA is not in containerd - refusing to point git at it"
+            exit 1
+          fi
 
           # Declare the version in the manifests repo; ArgoCD applies it.
           rm -rf /tmp/gl-manifests
@@ -137,9 +154,23 @@ jobs:
           [ "$code" = 200 ]
 
           # Keep the last few releases importable for a quick rollback, drop older ones.
-          sudo k3s ctr images ls -q 2>/dev/null | grep '^docker.io/library/golearn:' \
-            | grep -v ':local$' | sort | head -n -5 \
-            | xargs -r -n1 sudo k3s ctr images rm >/dev/null || true
+          # Tags are commit hashes, so a plain `sort` is alphabetical, not
+          # chronological: it kept whichever hashes started with the highest hex
+          # digits and deleted the release just deployed. The cluster was then left
+          # pointing at a tag nothing could pull, which only surfaced on the next
+          # pod restart. Order by build time instead, and never drop what is live.
+          CURRENT=$(sudo k3s kubectl -n golearn get deploy golearn \
+                    -o jsonpath='{.spec.template.spec.containers[0].image}' \
+                    2>/dev/null | sed 's/^golearn://')
+          KEEP=$(printf '%s\n%s\n%s\n' \
+                 "$(sudo docker images --filter reference='golearn' \
+                    --format '{{.CreatedAt}}|{{.Tag}}' | grep -v '|local$' \
+                    | sort -r | head -5 | cut -d'|' -f2)" "$CURRENT" local)
+          for ref in $(sudo k3s ctr images ls -q 2>/dev/null \
+                       | grep '^docker.io/library/golearn:'); do
+            printf '%s\n' "$KEEP" | grep -qx "${ref##*:}" \
+              || sudo k3s ctr images rm "$ref" >/dev/null || true
+          done
 
       - name: Diagnostics on failure
         if: failure()
