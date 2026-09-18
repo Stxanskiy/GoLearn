@@ -210,6 +210,8 @@ func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: delete course", err)
 		return
 	}
+	a.dropStored(r, course.module.IconURL)
+	a.dropStored(r, course.module.CoverImage)
 	w.WriteHeader(http.StatusNoContent)
 }
 

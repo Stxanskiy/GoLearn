@@ -112,6 +112,8 @@ func (a *API) adminDeleteSpecialization(w http.ResponseWriter, r *http.Request) 
 		a.internalError(w, "admin: delete specialization", err)
 		return
 	}
+	a.dropStored(r, s.IconURL)
+	a.dropStored(r, s.CoverImage)
 	w.WriteHeader(http.StatusNoContent)
 }
 

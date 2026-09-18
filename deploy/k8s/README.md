@@ -33,3 +33,11 @@ database and recognises its own objects by that prefix when replacing or deletin
 
 Without `S3_ENDPOINT` the server still runs: icon and lesson-image uploads answer
 `503 storage_disabled`, and covers fall back to inline data URIs, as before.
+
+## Orphaned objects
+
+Replacing an image, removing it, or deleting the course or specialization it belongs to
+also removes the object. Two paths still leak: an image uploaded to a course draft that is
+then discarded, and the image a draft replaces when it is merged into the live course.
+They are a few kilobytes each, so the cleanup is a sweep — list the bucket, drop keys no
+row references — not a synchronous delete.

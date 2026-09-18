@@ -171,6 +171,23 @@ func TestContentImageUpload(t *testing.T) {
 	}
 }
 
+func TestDeletingCourseDropsItsImages(t *testing.T) {
+	h, _, images := imagesFixture(t)
+	icon := decode[apigen.UploadedImage](t, uploadTo(h, http.MethodPut, "/admin/courses/12/icon", coToken, "file", testPNG())).URL
+	if w := uploadTo(h, http.MethodPut, "/admin/courses/12/cover", coToken, "file", testPNG()); w.Code != http.StatusNoContent {
+		t.Fatalf("cover: %d", w.Code)
+	}
+	if w := do(h, http.MethodDelete, "/admin/courses/12", "", withCookie(ownerToken)); w.Code != http.StatusNoContent {
+		t.Fatalf("delete course: %d %s", w.Code, w.Body)
+	}
+	if _, ok := images.objects[icon]; ok {
+		t.Error("course icon outlived the course")
+	}
+	if len(images.objects) != 0 {
+		t.Errorf("objects left in storage: %v", images.objects)
+	}
+}
+
 func TestUploadStorageFailure(t *testing.T) {
 	h, _, images := imagesFixture(t)
 	images.putErr = errPutFailed
