@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/backendraz/golearn/internal/api/apigen"
+	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
 )
@@ -301,6 +303,204 @@ func TestSimulators(t *testing.T) {
 	} {
 		if w := do(h, http.MethodGet, "/simulators/"+tt.slug, "", withCookie(tt.token)); w.Code != tt.want {
 			t.Errorf("%s as %s: %d want %d", tt.slug, tt.token, w.Code, tt.want)
+		}
+	}
+}
+
+func TestCoursePreviewIsPublic(t *testing.T) {
+	users, content := storefront()
+	h := newTestAPIWith(t, users, content)
+
+	w := do(h, http.MethodGet, "/public/courses/linux", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	if got := w.Header().Get("Cache-Control"); got != "public, max-age=300" {
+		t.Errorf("Cache-Control = %q", got)
+	}
+	p := decode[apigen.CoursePreview](t, w)
+	if p.Title != "Linux: Старт" || p.CoverURL != "/api/v1/courses/linux/cover" {
+		t.Errorf("course = %+v", p)
+	}
+	if p.LessonsCount != 3 || p.LabsCount != 1 {
+		t.Errorf("counts: lessons %d, labs %d", p.LessonsCount, p.LabsCount)
+	}
+	if len(p.Lessons) != 3 {
+		t.Fatalf("lessons = %+v", p.Lessons)
+	}
+	for _, lesson := range p.Lessons {
+		if lesson.Slug == "draft" {
+			t.Error("draft lesson is listed in the preview")
+		}
+	}
+	if p.Lessons[0].Kind != apigen.LessonKindTheory || p.Lessons[2].Kind != apigen.LessonKindLab {
+		t.Errorf("lesson kinds = %+v", p.Lessons)
+	}
+	if p.Specialization == nil || p.Specialization.Slug != "devops" {
+		t.Errorf("specialization = %+v", p.Specialization)
+	}
+	if strings.Contains(w.Body.String(), `"tags":null`) {
+		t.Error("tags must be an array, got null")
+	}
+}
+
+func TestCoursePreviewHidesDraftsAndTracks(t *testing.T) {
+	users, content := storefront()
+	h := newTestAPIWith(t, users, content)
+
+	if w := do(h, http.MethodGet, "/public/courses/k8s-draft", ""); w.Code != http.StatusNotFound {
+		t.Errorf("draft course: %d", w.Code)
+	}
+	if w := do(h, http.MethodGet, "/public/courses/nope", ""); w.Code != http.StatusNotFound {
+		t.Errorf("missing course: %d", w.Code)
+	}
+
+	// A trainer and a course of an unpublished specialization keep the page but lose the track.
+	for _, slug := range []string{"gym-linux", "pentest"} {
+		w := do(h, http.MethodGet, "/public/courses/"+slug, "")
+		if w.Code != http.StatusOK {
+			t.Fatalf("%s: status %d", slug, w.Code)
+		}
+		if p := decode[apigen.CoursePreview](t, w); p.Specialization != nil {
+			t.Errorf("%s: specialization = %+v", slug, p.Specialization)
+		}
+	}
+}
+
+func TestPublicCatalogHasNoProgress(t *testing.T) {
+	users, content := storefront()
+	h := newTestAPIWith(t, users, content)
+
+	w := do(h, http.MethodGet, "/public/catalog", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	if got := w.Header().Get("Cache-Control"); got != "public, max-age=300" {
+		t.Errorf("Cache-Control = %q", got)
+	}
+	c := decode[apigen.Catalog](t, w)
+
+	slugs := []string{}
+	for _, spec := range c.Specializations {
+		if spec.Slug == "security" {
+			t.Error("draft specialization is public")
+		}
+		for _, course := range spec.Courses {
+			slugs = append(slugs, course.Slug)
+			if course.ProgressPct != 0 || course.LessonsCompleted != 0 {
+				t.Errorf("%s leaks progress: %+v", course.Slug, course)
+			}
+			if course.Status != apigen.ProgressStatus(catalog.StatusNotStarted) {
+				t.Errorf("%s status = %s", course.Slug, course.Status)
+			}
+		}
+	}
+	if strings.Contains(strings.Join(slugs, " "), "k8s-draft") {
+		t.Error("draft course is public")
+	}
+}
+
+func TestPublicSpecialization(t *testing.T) {
+	users, content := storefront()
+	h := newTestAPIWith(t, users, content)
+
+	w := do(h, http.MethodGet, "/public/specializations/devops", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	spec := decode[apigen.SpecializationWithCourses](t, w)
+	if spec.Name != "DevOps" || spec.CoursesDone != 0 {
+		t.Errorf("spec = %+v", spec)
+	}
+	if len(spec.Courses) != 3 {
+		t.Errorf("courses = %d", len(spec.Courses))
+	}
+
+	if w := do(h, http.MethodGet, "/public/specializations/security", ""); w.Code != http.StatusNotFound {
+		t.Errorf("draft specialization: %d", w.Code)
+	}
+	if w := do(h, http.MethodGet, "/public/specializations/nope", ""); w.Code != http.StatusNotFound {
+		t.Errorf("missing specialization: %d", w.Code)
+	}
+}
+
+// landingStorefront adds a second published track so the landing has something to sort.
+func landingStorefront() (*fakeUsers, *fakeContent) {
+	users, content := storefront()
+	content.modules = append(content.modules,
+		model.Module{ID: 40, Slug: "sql-basics", Title: "SQL", Track: "database", OrderNum: 1, Published: true},
+		model.Module{ID: 41, Slug: "sql-deep", Title: "SQL глубже", Track: "database", OrderNum: 2, Published: true},
+	)
+	content.lessons = append(content.lessons,
+		model.Lesson{ID: 400, ModuleID: 40, Slug: "select", Title: "SELECT", Kind: "theory", OrderNum: 1, Published: true},
+	)
+	return users, content
+}
+
+func trackSlugs(tracks []apigen.LandingTrack) []string {
+	slugs := make([]string, 0, len(tracks))
+	for _, track := range tracks {
+		slugs = append(slugs, track.Slug)
+	}
+	return slugs
+}
+
+func TestLandingCountsAndOrder(t *testing.T) {
+	users, content := landingStorefront()
+	h := newTestAPIWith(t, users, content)
+
+	w := do(h, http.MethodGet, "/public/landing", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	tracks := decode[apigen.Landing](t, w).Tracks
+	if got := trackSlugs(tracks); !slices.Equal(got, []string{"devops", "database"}) {
+		t.Fatalf("default order = %v", got)
+	}
+	// devops: linux, docker, helm with 5 published lessons; database: two courses with one.
+	if tracks[0].CoursesCount != 3 || tracks[0].LessonsCount != 5 {
+		t.Errorf("devops counts = %+v", tracks[0])
+	}
+	if tracks[1].CoursesCount != 2 || tracks[1].LessonsCount != 1 {
+		t.Errorf("database counts = %+v", tracks[1])
+	}
+}
+
+func TestLandingSortAndLimit(t *testing.T) {
+	users, content := landingStorefront()
+	h := newTestAPIWith(t, users, content)
+
+	cases := []struct {
+		query string
+		want  []string
+	}{
+		{"?sort=lessons", []string{"database", "devops"}},
+		{"?sort=lessons&dir=desc", []string{"devops", "database"}},
+		{"?sort=courses", []string{"database", "devops"}},
+		{"?sort=courses&dir=desc", []string{"devops", "database"}},
+		{"?dir=desc", []string{"database", "devops"}},
+		{"?sort=lessons&limit=1", []string{"database"}},
+		{"?limit=1", []string{"devops"}},
+	}
+	for _, c := range cases {
+		w := do(h, http.MethodGet, "/public/landing"+c.query, "")
+		if w.Code != http.StatusOK {
+			t.Errorf("%s: status %d", c.query, w.Code)
+			continue
+		}
+		if got := trackSlugs(decode[apigen.Landing](t, w).Tracks); !slices.Equal(got, c.want) {
+			t.Errorf("%s: tracks = %v, want %v", c.query, got, c.want)
+		}
+	}
+}
+
+func TestLandingRejectsBadQuery(t *testing.T) {
+	users, content := landingStorefront()
+	h := newTestAPIWith(t, users, content)
+
+	for _, query := range []string{"?sort=price", "?dir=sideways", "?limit=0", "?limit=51", "?limit=many"} {
+		if w := do(h, http.MethodGet, "/public/landing"+query, ""); w.Code != http.StatusUnprocessableEntity {
+			t.Errorf("%s: status %d", query, w.Code)
 		}
 	}
 }

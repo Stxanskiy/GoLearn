@@ -248,6 +248,9 @@ func (a *API) Routes() chi.Router {
 	r.Post("/auth/logout", a.logout)
 
 	r.Get("/public/landing", a.getLanding)
+	r.Get("/public/catalog", a.getPublicCatalog)
+	r.Get("/public/specializations/{specSlug}", a.getPublicSpecialization)
+	r.Get("/public/courses/{courseSlug}", a.getCoursePreview)
 	r.Get("/courses/{courseSlug}/cover", a.getCourseCover)
 	r.Get("/specializations/{specSlug}/cover", a.getSpecializationCover)
 

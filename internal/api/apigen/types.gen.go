@@ -360,6 +360,24 @@ func (e Role) Valid() bool {
 	}
 }
 
+// Defines values for SortDirection.
+const (
+	Asc  SortDirection = "asc"
+	Desc SortDirection = "desc"
+)
+
+// Valid indicates whether the value is a known member of the SortDirection enum.
+func (e SortDirection) Valid() bool {
+	switch e {
+	case Asc:
+		return true
+	case Desc:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TaskDifficulty.
 const (
 	Easy   TaskDifficulty = "easy"
@@ -393,6 +411,27 @@ func (e TaskKind) Valid() bool {
 	case TaskKindGo:
 		return true
 	case TaskKindShell:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TrackSort.
+const (
+	Courses TrackSort = "courses"
+	Lessons TrackSort = "lessons"
+	Order   TrackSort = "order"
+)
+
+// Valid indicates whether the value is a known member of the TrackSort enum.
+func (e TrackSort) Valid() bool {
+	switch e {
+	case Courses:
+		return true
+	case Lessons:
+		return true
+	case Order:
 		return true
 	default:
 		return false
@@ -1019,6 +1058,33 @@ type CourseItem struct {
 // CourseLabel Localized on the frontend (Старт / Практика / Вызов).
 type CourseLabel string
 
+// CoursePreview Public course page for anonymous visitors.
+type CoursePreview struct {
+	// Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
+	Category    Category   `json:"category"`
+	CoverURL    string     `json:"cover_url"`
+	Description string     `json:"description"`
+	Difficulty  Difficulty `json:"difficulty"`
+	EstMinutes  int        `json:"est_minutes"`
+
+	// IconURL Uploaded course icon; empty when none.
+	IconURL string `json:"icon_url"`
+
+	// Label Localized on the frontend (Старт / Практика / Вызов).
+	Label     CourseLabel `json:"label"`
+	LabsCount int         `json:"labs_count"`
+
+	// Lessons Published lessons in course order.
+	Lessons      []LessonLink `json:"lessons"`
+	LessonsCount int          `json:"lessons_count"`
+	Slug         string       `json:"slug"`
+
+	// Specialization Track the course belongs to; null for trainers and unpublished specializations.
+	Specialization *Specialization `json:"specialization"`
+	Tags           []string        `json:"tags"`
+	Title          string          `json:"title"`
+}
+
 // Dashboard defines model for Dashboard.
 type Dashboard struct {
 	// Activity `YYYY-MM-DD` → activity count, last 365 days.
@@ -1235,8 +1301,11 @@ type LandingTrack struct {
 	// Icon Emoji fallback used when `icon_url` is empty.
 	Icon    string `json:"icon"`
 	IconURL string `json:"icon_url"`
-	Name    string `json:"name"`
-	Slug    string `json:"slug"`
+
+	// LessonsCount Published lessons across the courses of the track.
+	LessonsCount int    `json:"lessons_count"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
 }
 
 // LessonChange defines model for LessonChange.
@@ -1506,6 +1575,9 @@ type SimulatorSummary struct {
 // Slug defines model for Slug.
 type Slug = string
 
+// SortDirection defines model for SortDirection.
+type SortDirection string
+
 // Specialization defines model for Specialization.
 type Specialization struct {
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`.
@@ -1583,6 +1655,9 @@ type TestCase struct {
 	ExpectedOutput string `json:"expected_output"`
 	Input          string `json:"input"`
 }
+
+// TrackSort `order` keeps the order set in the admin; the others sort by the track counters.
+type TrackSort string
 
 // UploadedImage defines model for UploadedImage.
 type UploadedImage struct {
@@ -1897,6 +1972,18 @@ type SaveLessonNotesJSONBody struct {
 // SubmitQuizJSONBody defines parameters for SubmitQuiz.
 type SubmitQuizJSONBody struct {
 	Answers *[]QuizAnswerInput `json:"answers,omitempty"`
+}
+
+// GetLandingParams defines parameters for GetLanding.
+type GetLandingParams struct {
+	// Sort Track order; `order` keeps the order set in the admin.
+	Sort *TrackSort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// Dir Sort direction; ignored for `order` beyond reversing it.
+	Dir *SortDirection `form:"dir,omitempty" json:"dir,omitempty"`
+
+	// Limit How many tracks to return; omitted returns all of them.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // AdminPreviewContentJSONRequestBody defines body for AdminPreviewContent for application/json ContentType.

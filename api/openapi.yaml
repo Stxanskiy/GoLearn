@@ -212,6 +212,19 @@ paths:
 
   # ───────────────────────────── public ─────────────────────────────
   /public/landing:
+    parameters:
+      - name: sort
+        in: query
+        description: Track order; `order` keeps the order set in the admin.
+        schema: { $ref: '#/components/schemas/TrackSort' }
+      - name: dir
+        in: query
+        description: Sort direction; ignored for `order` beyond reversing it.
+        schema: { $ref: '#/components/schemas/SortDirection' }
+      - name: limit
+        in: query
+        description: How many tracks to return; omitted returns all of them.
+        schema: { type: integer, minimum: 1, maximum: 50 }
     get:
       tags: [public]
       summary: Get landing
@@ -226,6 +239,61 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Landing' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /public/catalog:
+    get:
+      tags: [public]
+      summary: Get public catalog
+      operationId: getPublicCatalog
+      security: []
+      description: Published specializations and courses for anonymous visitors; progress fields are always zero.
+      responses:
+        '200':
+          description: Catalog.
+          headers:
+            Cache-Control: { schema: { type: string, example: 'public, max-age=300' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Catalog' }
+
+  /public/specializations/{specSlug}:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    get:
+      tags: [public]
+      summary: Get public specialization
+      operationId: getPublicSpecialization
+      security: []
+      description: Published specialization with its published courses; progress fields are always zero. Draft specializations are `404`.
+      responses:
+        '200':
+          description: Specialization with its courses.
+          headers:
+            Cache-Control: { schema: { type: string, example: 'public, max-age=300' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SpecializationWithCourses' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /public/courses/{courseSlug}:
+    parameters:
+      - $ref: '#/components/parameters/CourseSlug'
+    get:
+      tags: [public]
+      summary: Get course preview
+      operationId: getCoursePreview
+      security: []
+      description: 'Published course for anonymous visitors: specialization and lesson list, no progress and no lesson content. Draft courses are `404`.'
+      responses:
+        '200':
+          description: Course preview.
+          headers:
+            Cache-Control: { schema: { type: string, example: 'public, max-age=300' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoursePreview' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   # ───────────────────────────── catalog ─────────────────────────────
   /catalog:
@@ -2466,9 +2534,18 @@ components:
         labs: { type: integer }
         auto_checked_tasks: { type: integer }
 
+    TrackSort:
+      type: string
+      enum: [order, courses, lessons]
+      description: '`order` keeps the order set in the admin; the others sort by the track counters.'
+      default: order
+    SortDirection:
+      type: string
+      enum: [asc, desc]
+      default: asc
     LandingTrack:
       type: object
-      required: [slug, name, icon, icon_url, description, courses_count]
+      required: [slug, name, icon, icon_url, description, courses_count, lessons_count]
       properties:
         slug: { type: string }
         name: { type: string }
@@ -2476,6 +2553,7 @@ components:
         icon_url: { type: string }
         description: { type: string }
         courses_count: { type: integer }
+        lessons_count: { type: integer, description: Published lessons across the courses of the track. }
 
     # ── catalog ──
     Specialization:
@@ -2534,6 +2612,32 @@ components:
           type: array
           items: { $ref: '#/components/schemas/CourseCard' }
 
+    CoursePreview:
+      type: object
+      description: Public course page for anonymous visitors.
+      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        category: { $ref: '#/components/schemas/Category' }
+        label: { $ref: '#/components/schemas/CourseLabel' }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        tags:
+          type: array
+          items: { type: string }
+        cover_url: { type: string }
+        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        est_minutes: { type: integer }
+        lessons_count: { type: integer }
+        labs_count: { type: integer }
+        specialization:
+          oneOf: [{ $ref: '#/components/schemas/Specialization' }, { type: 'null' }]
+          description: Track the course belongs to; null for trainers and unpublished specializations.
+        lessons:
+          type: array
+          items: { $ref: '#/components/schemas/LessonLink' }
+          description: Published lessons in course order.
     CourseItem:
       type: object
       required: [lesson_id, slug, title, kind, status, is_next]
