@@ -270,7 +270,7 @@ func TestCourseCover(t *testing.T) {
 	}{
 		{"text file", "file", []byte("hello"), http.StatusUnsupportedMediaType},
 		{"missing file part", "other", png, http.StatusUnprocessableEntity},
-		{"too large", "file", append(png, make([]byte, maxCoverBytes)...), http.StatusRequestEntityTooLarge},
+		{"too large", "file", append(png, make([]byte, maxImageBytes)...), http.StatusRequestEntityTooLarge},
 	}
 	for _, tt := range tests {
 		if w := upload(coToken, tt.field, tt.data); w.Code != tt.want {

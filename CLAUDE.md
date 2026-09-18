@@ -25,16 +25,23 @@ docker build -t golearn/sandbox-docker:latest -f deploy/sandbox-docker/Dockerfil
 bash deploy/sandbox-k8s/prepare.sh        # k3s/helm binaries + airgap images
 docker build -t golearn/sandbox-k8s:latest    -f deploy/sandbox-k8s/Dockerfile    deploy/sandbox-k8s
 
-# 2. Start database
+# 2. Start database and object storage (MinIO on :9010, console :9011)
 docker compose up -d
 
 # 3. Seed course content (applies pending migrations too)
 go run ./cmd/seed
 
 # 4. Start server (also applies migrations, creates the first admin)
-go run ./cmd/server
+S3_ENDPOINT=localhost:9010 S3_BUCKET=golearn \
+  S3_ACCESS_KEY=golearn S3_SECRET_KEY=golearn123 \
+  S3_PUBLIC_URL=http://localhost:9010/golearn \
+  go run ./cmd/server
 # Open http://localhost:8080 — login: ADMIN_EMAIL / ADMIN_PASSWORD from .env
 ```
+
+Uploaded images (course and specialization icons, covers, lesson pictures) go to the
+S3 bucket; the database keeps their URLs. Without `S3_ENDPOINT` the server runs anyway —
+icon uploads answer `503 storage_disabled` and covers fall back to inline data URIs.
 
 Migrations run automatically on startup (`internal/migrate`, tracked in the
 `schema_migrations` table) — no manual psql step.

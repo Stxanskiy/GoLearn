@@ -120,6 +120,13 @@ func (f fakeModules) SetCover(_ context.Context, id int, cover string) error {
 	return nil
 }
 
+func (f fakeModules) SetIcon(_ context.Context, id int, iconURL string) error {
+	if m := f.module(id); m != nil {
+		m.IconURL = iconURL
+	}
+	return nil
+}
+
 func (f fakeLessons) lesson(id int) *model.Lesson {
 	for i := range f.lessons {
 		if f.lessons[i].ID == id {
@@ -488,6 +495,13 @@ func (f fakeSpecs) Move(_ context.Context, slug, dir string) error {
 func (f fakeSpecs) SetCover(_ context.Context, slug, cover string) error {
 	if s := f.spec(slug); s != nil {
 		s.CoverImage = cover
+	}
+	return nil
+}
+
+func (f fakeSpecs) SetIcon(_ context.Context, slug, iconURL string) error {
+	if s := f.spec(slug); s != nil {
+		s.IconURL = iconURL
 	}
 	return nil
 }

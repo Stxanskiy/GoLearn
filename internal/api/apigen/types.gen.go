@@ -515,7 +515,10 @@ type AdminCourse struct {
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
-	ID             int  `json:"id"`
+
+	// IconURL Uploaded course icon; empty when none.
+	IconURL string `json:"icon_url"`
+	ID      int    `json:"id"`
 
 	// Label Null when derived.
 	Label    *CourseLabel `json:"label"`
@@ -599,7 +602,10 @@ type AdminCourseRow struct {
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
-	ID             int  `json:"id"`
+
+	// IconURL Uploaded course icon; empty when none.
+	IconURL string `json:"icon_url"`
+	ID      int    `json:"id"`
 
 	// Label Null when derived.
 	Label        *CourseLabel `json:"label"`
@@ -746,6 +752,7 @@ type AdminSpecialization struct {
 	Description    string  `json:"description"`
 	HasCustomCover bool    `json:"has_custom_cover"`
 	Icon           string  `json:"icon"`
+	IconURL        string  `json:"icon_url"`
 	Name           string  `json:"name"`
 	OrderNum       int     `json:"order_num"`
 	OwnerID        *int    `json:"owner_id"`
@@ -911,7 +918,10 @@ type CourseCard struct {
 	Description *string    `json:"description,omitempty"`
 	Difficulty  Difficulty `json:"difficulty"`
 	EstMinutes  int        `json:"est_minutes"`
-	ID          int        `json:"id"`
+
+	// IconURL Uploaded course icon; empty when none.
+	IconURL string `json:"icon_url"`
+	ID      int    `json:"id"`
 
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label            CourseLabel    `json:"label"`
@@ -1221,9 +1231,12 @@ type LandingStats struct {
 type LandingTrack struct {
 	CoursesCount int    `json:"courses_count"`
 	Description  string `json:"description"`
-	Icon         string `json:"icon"`
-	Name         string `json:"name"`
-	Slug         string `json:"slug"`
+
+	// Icon Emoji fallback used when `icon_url` is empty.
+	Icon    string `json:"icon"`
+	IconURL string `json:"icon_url"`
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
 }
 
 // LessonChange defines model for LessonChange.
@@ -1498,9 +1511,14 @@ type Specialization struct {
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
-	Icon        string `json:"icon"`
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
+
+	// Icon Emoji fallback used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded icon in object storage; empty when none.
+	IconURL string `json:"icon_url"`
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
 }
 
 // SpecializationWithCourses defines model for SpecializationWithCourses.
@@ -1511,9 +1529,14 @@ type SpecializationWithCourses struct {
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
-	Icon        string `json:"icon"`
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
+
+	// Icon Emoji fallback used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded icon in object storage; empty when none.
+	IconURL string `json:"icon_url"`
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
 }
 
 // SQLColumn defines model for SqlColumn.
@@ -1559,6 +1582,12 @@ type TaskKind string
 type TestCase struct {
 	ExpectedOutput string `json:"expected_output"`
 	Input          string `json:"input"`
+}
+
+// UploadedImage defines model for UploadedImage.
+type UploadedImage struct {
+	// URL Public URL of the stored image.
+	URL string `json:"url"`
 }
 
 // CourseID defines model for CourseId.
@@ -1639,6 +1668,9 @@ type SandboxNotRunning = Error
 // SlugTaken defines model for SlugTaken.
 type SlugTaken = Error
 
+// StorageDisabled defines model for StorageDisabled.
+type StorageDisabled = Error
+
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = Error
 
@@ -1675,6 +1707,12 @@ type AdminAddCourseAuthorJSONBody struct {
 // AdminUploadCourseCoverMultipartBody defines parameters for AdminUploadCourseCover.
 type AdminUploadCourseCoverMultipartBody struct {
 	// File PNG, JPEG, WebP or SVG, max 4 MiB.
+	File openapi_types.File `json:"file"`
+}
+
+// AdminUploadCourseIconMultipartBody defines parameters for AdminUploadCourseIcon.
+type AdminUploadCourseIconMultipartBody struct {
+	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
 	File openapi_types.File `json:"file"`
 }
 
@@ -1752,6 +1790,12 @@ type AdminUploadSpecializationCoverMultipartBody struct {
 	File openapi_types.File `json:"file"`
 }
 
+// AdminUploadSpecIconMultipartBody defines parameters for AdminUploadSpecIcon.
+type AdminUploadSpecIconMultipartBody struct {
+	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+	File openapi_types.File `json:"file"`
+}
+
 // AdminMoveSpecializationJSONBody defines parameters for AdminMoveSpecialization.
 type AdminMoveSpecializationJSONBody struct {
 	Direction AdminMoveSpecializationJSONBodyDirection `json:"direction"`
@@ -1763,6 +1807,12 @@ type AdminMoveSpecializationJSONBodyDirection string
 // AdminSetSpecializationPublishedJSONBody defines parameters for AdminSetSpecializationPublished.
 type AdminSetSpecializationPublishedJSONBody struct {
 	Published bool `json:"published"`
+}
+
+// AdminUploadImageMultipartBody defines parameters for AdminUploadImage.
+type AdminUploadImageMultipartBody struct {
+	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+	File openapi_types.File `json:"file"`
 }
 
 // AdminListUsersParams defines parameters for AdminListUsers.
@@ -1864,6 +1914,9 @@ type AdminAddCourseAuthorJSONRequestBody AdminAddCourseAuthorJSONBody
 // AdminUploadCourseCoverMultipartRequestBody defines body for AdminUploadCourseCover for multipart/form-data ContentType.
 type AdminUploadCourseCoverMultipartRequestBody AdminUploadCourseCoverMultipartBody
 
+// AdminUploadCourseIconMultipartRequestBody defines body for AdminUploadCourseIcon for multipart/form-data ContentType.
+type AdminUploadCourseIconMultipartRequestBody AdminUploadCourseIconMultipartBody
+
 // AdminCreateLessonJSONRequestBody defines body for AdminCreateLesson for application/json ContentType.
 type AdminCreateLessonJSONRequestBody = AdminLessonInput
 
@@ -1930,6 +1983,9 @@ type AdminUpdateSpecializationJSONRequestBody = AdminSpecializationInput
 // AdminUploadSpecializationCoverMultipartRequestBody defines body for AdminUploadSpecializationCover for multipart/form-data ContentType.
 type AdminUploadSpecializationCoverMultipartRequestBody AdminUploadSpecializationCoverMultipartBody
 
+// AdminUploadSpecIconMultipartRequestBody defines body for AdminUploadSpecIcon for multipart/form-data ContentType.
+type AdminUploadSpecIconMultipartRequestBody AdminUploadSpecIconMultipartBody
+
 // AdminMoveSpecializationJSONRequestBody defines body for AdminMoveSpecialization for application/json ContentType.
 type AdminMoveSpecializationJSONRequestBody AdminMoveSpecializationJSONBody
 
@@ -1938,6 +1994,9 @@ type AdminSetSpecializationPublishedJSONRequestBody AdminSetSpecializationPublis
 
 // AdminUpdateTaskJSONRequestBody defines body for AdminUpdateTask for application/json ContentType.
 type AdminUpdateTaskJSONRequestBody = AdminTaskInput
+
+// AdminUploadImageMultipartRequestBody defines body for AdminUploadImage for multipart/form-data ContentType.
+type AdminUploadImageMultipartRequestBody AdminUploadImageMultipartBody
 
 // AdminCreateUserJSONRequestBody defines body for AdminCreateUser for application/json ContentType.
 type AdminCreateUserJSONRequestBody AdminCreateUserJSONBody

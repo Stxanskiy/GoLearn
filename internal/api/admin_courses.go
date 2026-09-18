@@ -1,12 +1,7 @@
 package api
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"errors"
-	"io"
-	"mime"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -20,8 +15,6 @@ import (
 	"github.com/backendraz/golearn/internal/repository"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
-
-const maxCoverBytes = 4 << 20
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
 
@@ -261,10 +254,11 @@ func (a *API) adminUploadCourseCover(w http.ResponseWriter, r *http.Request) {
 	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
-	cover, ok := readCoverUpload(w, r)
+	cover, ok := a.storeCover(w, r)
 	if !ok {
 		return
 	}
+	a.dropStored(r, course.module.CoverImage)
 	if err := a.Modules.SetCover(r.Context(), course.module.ID, cover); err != nil {
 		a.internalError(w, "admin: upload course cover", err)
 		return
@@ -277,6 +271,7 @@ func (a *API) adminDeleteCourseCover(w http.ResponseWriter, r *http.Request) {
 	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
+	a.dropStored(r, course.module.CoverImage)
 	if err := a.Modules.SetCover(r.Context(), course.module.ID, ""); err != nil {
 		a.internalError(w, "admin: delete course cover", err)
 		return
@@ -490,7 +485,7 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
 		ID: m.ID, Slug: live.Slug, PreviewSlug: m.Slug, DraftOf: m.DraftOf, Title: m.Title, Description: m.Description, Track: m.Track,
-		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
+		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent, IconURL: m.IconURL,
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",
@@ -619,69 +614,4 @@ func decodeMove(w http.ResponseWriter, r *http.Request) (string, bool) {
 		return "", false
 	}
 	return string(body.Direction), true
-}
-
-// readCoverUpload reads the multipart "file" part as a data URI, writing the error response itself when it returns false.
-func readCoverUpload(w http.ResponseWriter, r *http.Request) (string, bool) {
-	if ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || ct != "multipart/form-data" {
-		writeError(w, http.StatusUnsupportedMediaType, codeUnsupportedMedia, "expected multipart/form-data body")
-		return "", false
-	}
-	r.Body = http.MaxBytesReader(w, r.Body, maxCoverBytes+64<<10)
-	mr, err := r.MultipartReader()
-	if err != nil {
-		writeValidation(w, map[string]string{"file": fieldRequired})
-		return "", false
-	}
-	for {
-		part, err := mr.NextPart()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return "", coverReadError(w, err)
-		}
-		if part.FormName() != "file" {
-			continue
-		}
-		data, err := io.ReadAll(io.LimitReader(part, maxCoverBytes+1))
-		if err != nil {
-			return "", coverReadError(w, err)
-		}
-		if len(data) > maxCoverBytes {
-			writeError(w, http.StatusRequestEntityTooLarge, codePayloadTooLarge, "cover exceeds 4 MiB")
-			return "", false
-		}
-		mimeType, ok := coverMIME(data)
-		if !ok {
-			writeError(w, http.StatusUnsupportedMediaType, codeUnsupportedMedia, "cover must be PNG, JPEG, WebP or SVG")
-			return "", false
-		}
-		return "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(data), true
-	}
-	writeValidation(w, map[string]string{"file": fieldRequired})
-	return "", false
-}
-
-func coverReadError(w http.ResponseWriter, err error) bool {
-	var tooLarge *http.MaxBytesError
-	if errors.As(err, &tooLarge) {
-		writeError(w, http.StatusRequestEntityTooLarge, codePayloadTooLarge, "cover exceeds 4 MiB")
-		return false
-	}
-	writeValidation(w, map[string]string{"file": fieldInvalidFormat})
-	return false
-}
-
-// coverMIME detects a supported cover image type from its bytes.
-func coverMIME(data []byte) (string, bool) {
-	switch ct := http.DetectContentType(data); ct {
-	case "image/png", "image/jpeg", "image/webp":
-		return ct, true
-	}
-	head := bytes.ToLower(data[:min(len(data), 1024)])
-	if bytes.Contains(head, []byte("<svg")) {
-		return "image/svg+xml", true
-	}
-	return "", false
 }

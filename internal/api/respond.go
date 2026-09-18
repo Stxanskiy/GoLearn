@@ -31,6 +31,7 @@ const (
 	codeEmailTaken         = "email_taken"
 	codeCompletionDerived  = "completion_derived"
 	codeSandboxDisabled    = "sandbox_disabled"
+	codeStorageDisabled    = "storage_disabled"
 	codeSandboxNotRunning  = "sandbox_not_running"
 	codeSandboxError       = "sandbox_error"
 	codePathOutsideJail    = "path_outside_jail"

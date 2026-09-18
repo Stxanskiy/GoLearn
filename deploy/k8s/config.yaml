@@ -14,3 +14,6 @@ metadata:
 type: Opaque
 stringData:
   db-password: "golearn"
+  S3_ENDPOINT: "minio:9000"
+  S3_BUCKET: "golearn"
+  S3_PUBLIC_URL: "https://learn.prod-factory.ru/media/golearn"

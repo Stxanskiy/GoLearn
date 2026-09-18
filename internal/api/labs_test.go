@@ -107,7 +107,9 @@ func TestLabSessionAndRetry(t *testing.T) {
 func TestCheckAndDone(t *testing.T) {
 	h, c := labFixture(t)
 	sb := c.sandbox
-	post := func(path string) *httptest.ResponseRecorder { return do(h, http.MethodPost, path, "", withCookie(studentToken)) }
+	post := func(path string) *httptest.ResponseRecorder {
+		return do(h, http.MethodPost, path, "", withCookie(studentToken))
+	}
 
 	sb.checkPass = false
 	r := decode[apigen.TaskCheckResult](t, post("/tasks/900/check"))
@@ -158,7 +160,9 @@ func TestCheckAndDone(t *testing.T) {
 func TestLabFiles(t *testing.T) {
 	h, c := labFixture(t)
 	sb := c.sandbox
-	get := func(path string) *httptest.ResponseRecorder { return do(h, http.MethodGet, path, "", withCookie(studentToken)) }
+	get := func(path string) *httptest.ResponseRecorder {
+		return do(h, http.MethodGet, path, "", withCookie(studentToken))
+	}
 
 	if w := get("/lessons/102/lab/fs/entries?path=/root"); w.Code != http.StatusConflict || errorCode(t, w) != codeSandboxNotRunning {
 		t.Fatalf("not running: %d %s", w.Code, w.Body)
@@ -204,7 +208,9 @@ func TestLabFiles(t *testing.T) {
 func TestLabPreviewAndGitGraph(t *testing.T) {
 	h, c := labFixture(t)
 	sb := c.sandbox
-	get := func(path string) *httptest.ResponseRecorder { return do(h, http.MethodGet, path, "", withCookie(studentToken)) }
+	get := func(path string) *httptest.ResponseRecorder {
+		return do(h, http.MethodGet, path, "", withCookie(studentToken))
+	}
 
 	w := get("/lessons/102/lab/preview/8080/index.html")
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "127.0.0.1:8080") || len(sb.ensures) != 0 {

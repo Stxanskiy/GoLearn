@@ -33,9 +33,9 @@ func (r *DraftRepo) Create(ctx context.Context, liveID int) (int, error) {
 	var draftID int
 	err = tx.QueryRow(ctx, `
 		INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites, category, label,
-		  tags, cover_image, accent, est_minutes, source, published, owner_id, draft_of)
+		  tags, cover_image, icon_url, accent, est_minutes, source, published, owner_id, draft_of)
 		SELECT '~draft-' || id, title, description, order_num, track, difficulty, prerequisites, category, label,
-		  tags, cover_image, accent, est_minutes, 'admin', FALSE, owner_id, id
+		  tags, cover_image, icon_url, accent, est_minutes, 'admin', FALSE, owner_id, id
 		FROM modules WHERE id = $1 AND draft_of IS NULL RETURNING id`, liveID).Scan(&draftID)
 	if err != nil {
 		return 0, err
@@ -100,7 +100,8 @@ func mergeDraft(ctx context.Context, tx pgx.Tx, liveID int) error {
 	}
 	steps := []step{
 		{`UPDATE modules l SET title = d.title, description = d.description, track = d.track, difficulty = d.difficulty,
-		   category = d.category, label = d.label, tags = d.tags, cover_image = d.cover_image, accent = d.accent, est_minutes = d.est_minutes
+		   category = d.category, label = d.label, tags = d.tags, cover_image = d.cover_image, icon_url = d.icon_url,
+		   accent = d.accent, est_minutes = d.est_minutes
 		 FROM modules d WHERE l.id = $1 AND d.id = $2`, []any{liveID, draftID}},
 		{`UPDATE lessons SET slug = '~' || id WHERE module_id = $1`, []any{liveID}},
 		{`UPDATE lessons l SET slug = d.slug, title = d.title, content = d.content, order_num = d.order_num, difficulty = d.difficulty,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
+	"github.com/backendraz/golearn/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -113,7 +115,7 @@ func main() {
 		staticHandler.ServeHTTP(w, req)
 	}))
 
-	apiV1 := api.New(api.Stores{
+	stores := api.Stores{
 		Users:        userRepo,
 		Modules:      moduleRepo,
 		Lessons:      lessonRepo,
@@ -129,7 +131,17 @@ func main() {
 		Drafts:       repository.NewDraftRepo(pool),
 		Sandbox:      vmRunner,
 		Code:         codeRunner,
-	}, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
+	}
+
+	// Without object storage uploads stay inline data URIs, so the server still runs.
+	switch store, err := storage.New(context.Background(), storage.LoadConfig()); {
+	case err == nil:
+		stores.Images = store
+	case !errors.Is(err, storage.ErrDisabled):
+		log.Error("object storage unavailable", "error", err)
+	}
+
+	apiV1 := api.New(stores, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
 	r.Mount("/api/v1", apiV1.Routes())
 	h.RegisterRoutes(r)
 

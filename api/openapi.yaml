@@ -992,6 +992,41 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+  /admin/courses/{courseId}/icon:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    put:
+      tags: [admin-courses]
+      summary: Upload course icon
+      operationId: adminUploadCourseIcon
+      description: Needs `can_edit`. The image goes to object storage and the course keeps its public URL.
+      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      responses:
+        '200':
+          description: Icon replaced.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadedImage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '503': { $ref: '#/components/responses/StorageDisabled' }
+
+    delete:
+      tags: [admin-courses]
+      summary: Delete course icon
+      operationId: adminDeleteCourseIcon
+      description: Falls back to the icon derived from the category.
+      responses:
+        '204': { description: Icon removed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ReviewConflict' }
+
   /admin/courses/{courseId}/authors:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1529,6 +1564,25 @@ paths:
         '409': { $ref: '#/components/responses/ReviewConflict' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+  /admin/uploads/images:
+    post:
+      tags: [admin-content]
+      summary: Upload content image
+      operationId: adminUploadImage
+      description: Stores an image for lesson content and returns its public URL. Needs role `author` or `admin`.
+      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      responses:
+        '201':
+          description: Image stored.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadedImage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '503': { $ref: '#/components/responses/StorageDisabled' }
+
   /admin/content/preview:
     post:
       tags: [admin-content]
@@ -1692,6 +1746,39 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+
+  /admin/specializations/{specSlug}/icon:
+    parameters:
+      - $ref: '#/components/parameters/SpecSlug'
+    put:
+      tags: [admin-catalog]
+      summary: Upload specialization icon
+      operationId: adminUploadSpecIcon
+      description: Admin only. The image goes to object storage.
+      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      responses:
+        '200':
+          description: Icon replaced.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadedImage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '503': { $ref: '#/components/responses/StorageDisabled' }
+
+    delete:
+      tags: [admin-catalog]
+      summary: Delete specialization icon
+      operationId: adminDeleteSpecIcon
+      description: Falls back to the emoji glyph.
+      responses:
+        '204': { description: Icon removed. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /admin/specializations/{specSlug}/published:
     parameters:
@@ -2091,6 +2178,18 @@ components:
             required: [direction]
             properties:
               direction: { type: string, enum: [up, down] }
+    ImageUpload:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file:
+                type: string
+                format: binary
+                description: PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
     CoverUpload:
       required: true
       content:
@@ -2169,6 +2268,11 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     PathOutsideJail:
       description: '`path_outside_jail`.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    StorageDisabled:
+      description: '`storage_disabled` — object storage is not configured.'
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -2265,6 +2369,12 @@ components:
           type: array
           items: { $ref: '#/components/schemas/ImportIssue' }
 
+    UploadedImage:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, description: Public URL of the stored image. }
+
     LinkRef:
       type: object
       required: [slug, title]
@@ -2358,28 +2468,30 @@ components:
 
     LandingTrack:
       type: object
-      required: [slug, name, icon, description, courses_count]
+      required: [slug, name, icon, icon_url, description, courses_count]
       properties:
         slug: { type: string }
         name: { type: string }
-        icon: { type: string }
+        icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
+        icon_url: { type: string }
         description: { type: string }
         courses_count: { type: integer }
 
     # ── catalog ──
     Specialization:
       type: object
-      required: [slug, name, icon, description, cover_url]
+      required: [slug, name, icon, icon_url, description, cover_url]
       properties:
         slug: { type: string }
         name: { type: string }
-        icon: { type: string }
+        icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded icon in object storage; empty when none.' }
         description: { type: string }
         cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`.' }
 
     CourseCard:
       type: object
-      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, lessons_count, lessons_completed, progress_pct, est_minutes, status]
+      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2393,6 +2505,7 @@ components:
           type: array
           items: { type: string }
         cover_url: { type: string }
+        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
         lessons_count: { type: integer }
         lessons_completed: { type: integer }
         progress_pct: { type: integer, minimum: 0, maximum: 100 }
@@ -2921,7 +3034,7 @@ components:
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2932,6 +3045,7 @@ components:
         category: { type: string, description: Stored value; empty when derived. }
         label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null when derived. }
         accent: { type: string }
+        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
         tags:
           type: array
           items: { type: string }
@@ -3124,11 +3238,12 @@ components:
 
     AdminSpecialization:
       type: object
-      required: [slug, name, icon, description, published, order_num, owner_id, courses_count, cover_url, has_custom_cover, cover_preview_url]
+      required: [slug, name, icon, icon_url, description, published, order_num, owner_id, courses_count, cover_url, has_custom_cover, cover_preview_url]
       properties:
         slug: { type: string }
         name: { type: string }
         icon: { type: string }
+        icon_url: { type: string }
         description: { type: string }
         published: { type: boolean }
         order_num: { type: integer }

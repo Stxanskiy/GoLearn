@@ -17,5 +17,23 @@ services:
       timeout: 5s
       retries: 5
 
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: golearn
+      MINIO_ROOT_PASSWORD: golearn123
+    ports:
+      - "9010:9000"
+      - "9011:9001"
+    volumes:
+      - golearn_objects:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   golearn_data:
+  golearn_objects:

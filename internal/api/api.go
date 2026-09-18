@@ -9,6 +9,7 @@ import (
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
+	"github.com/backendraz/golearn/internal/storage"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -46,6 +47,7 @@ type moduleStore interface {
 	SetPublished(ctx context.Context, id int, published bool) error
 	Move(ctx context.Context, id int, dir string) error
 	SetCover(ctx context.Context, id int, cover string) error
+	SetIcon(ctx context.Context, id int, iconURL string) error
 }
 
 type lessonStore interface {
@@ -173,6 +175,7 @@ type specStore interface {
 	SetPublished(ctx context.Context, slug string, published bool) error
 	Move(ctx context.Context, slug, dir string) error
 	SetCover(ctx context.Context, slug, cover string) error
+	SetIcon(ctx context.Context, slug, iconURL string) error
 }
 
 type simStore interface {
@@ -203,6 +206,13 @@ type Stores struct {
 	Drafts       draftStore
 	Sandbox      sandbox
 	Code         codeRunner
+	Images       imageStore
+}
+
+// imageStore puts uploaded images into object storage; nil when it is not configured.
+type imageStore interface {
+	Put(ctx context.Context, kind storage.Kind, img storage.Image) (string, error)
+	Delete(ctx context.Context, publicURL string) error
 }
 
 // Config holds API settings.
@@ -283,6 +293,7 @@ func (a *API) Routes() chi.Router {
 		r.Group(func(r chi.Router) {
 			r.Use(requireAuthor)
 			r.Post("/admin/content/preview", a.adminPreviewContent)
+			r.Post("/admin/uploads/images", a.adminUploadImage)
 			r.Get("/admin/courses", a.adminListCourses)
 			r.Post("/admin/courses", a.adminCreateCourse)
 			r.Get("/admin/courses/{courseId}", a.adminGetCourse)
@@ -292,6 +303,8 @@ func (a *API) Routes() chi.Router {
 			r.With(requireAdmin).Post("/admin/courses/{courseId}/move", a.adminMoveCourse)
 			r.Put("/admin/courses/{courseId}/cover", a.adminUploadCourseCover)
 			r.Delete("/admin/courses/{courseId}/cover", a.adminDeleteCourseCover)
+			r.Put("/admin/courses/{courseId}/icon", a.adminUploadCourseIcon)
+			r.Delete("/admin/courses/{courseId}/icon", a.adminDeleteCourseIcon)
 			r.Get("/admin/courses/{courseId}/authors", a.adminListCourseAuthors)
 			r.Post("/admin/courses/{courseId}/authors", a.adminAddCourseAuthor)
 			r.Delete("/admin/courses/{courseId}/authors/{userId}", a.adminRemoveCourseAuthor)
@@ -318,6 +331,8 @@ func (a *API) Routes() chi.Router {
 				r.Post("/admin/specializations/{specSlug}/move", a.adminMoveSpecialization)
 				r.Put("/admin/specializations/{specSlug}/cover", a.adminUploadSpecializationCover)
 				r.Delete("/admin/specializations/{specSlug}/cover", a.adminDeleteSpecializationCover)
+				r.Put("/admin/specializations/{specSlug}/icon", a.adminUploadSpecIcon)
+				r.Delete("/admin/specializations/{specSlug}/icon", a.adminDeleteSpecIcon)
 
 				r.Get("/admin/simulators", a.adminListSimulators)
 				r.Post("/admin/simulators", a.adminCreateSimulator)

@@ -32,7 +32,7 @@ func (a *API) getLanding(w http.ResponseWriter, r *http.Request) {
 	tracks := []apigen.LandingTrack{}
 	for _, s := range specs {
 		if n := perSpec[s.Slug]; n > 0 && s.Slug != catalog.GymSpec {
-			tracks = append(tracks, apigen.LandingTrack{Slug: s.Slug, Name: s.Name, Icon: s.Icon, Description: s.Description, CoursesCount: n})
+			tracks = append(tracks, apigen.LandingTrack{Slug: s.Slug, Name: s.Name, Icon: s.Icon, IconURL: s.IconURL, Description: s.Description, CoursesCount: n})
 		}
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")

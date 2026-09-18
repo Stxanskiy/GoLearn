@@ -30,6 +30,7 @@ type fakeContent struct {
 	attempts  []fakeAttempt
 	sandbox   *fakeSandbox
 	code      *fakeCode
+	images    *fakeImages
 	coauthors map[int][]int // module id → co-author user ids
 	reviews   []repository.Review
 	origins   map[int]int // draft row id → live row id
@@ -57,7 +58,7 @@ func newFakeContent() *fakeContent {
 }
 
 func (f *fakeContent) stores(users *fakeUsers) Stores {
-	return Stores{
+	s := Stores{
 		Users:        users,
 		Modules:      fakeModules{f},
 		Lessons:      fakeLessons{f},
@@ -74,6 +75,11 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Sandbox:      f.sandbox,
 		Code:         f.code,
 	}
+	// A typed nil in the interface would look configured, so only set it when present.
+	if f.images != nil {
+		s.Images = f.images
+	}
+	return s
 }
 
 type fakeModules struct{ *fakeContent }

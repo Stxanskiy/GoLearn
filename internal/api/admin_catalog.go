@@ -152,10 +152,11 @@ func (a *API) adminUploadSpecializationCover(w http.ResponseWriter, r *http.Requ
 	if !ok {
 		return
 	}
-	cover, ok := readCoverUpload(w, r)
+	cover, ok := a.storeCover(w, r)
 	if !ok {
 		return
 	}
+	a.dropStored(r, s.CoverImage)
 	if err := a.Specs.SetCover(r.Context(), s.Slug, cover); err != nil {
 		a.internalError(w, "admin: upload specialization cover", err)
 		return
@@ -168,6 +169,7 @@ func (a *API) adminDeleteSpecializationCover(w http.ResponseWriter, r *http.Requ
 	if !ok {
 		return
 	}
+	a.dropStored(r, s.CoverImage)
 	if err := a.Specs.SetCover(r.Context(), s.Slug, ""); err != nil {
 		a.internalError(w, "admin: delete specialization cover", err)
 		return
@@ -425,7 +427,7 @@ func simFromInput(sc apigen.Scenario) (model.Simulator, map[string]string) {
 
 func toAdminSpecialization(s model.Specialization, courses int) apigen.AdminSpecialization {
 	out := apigen.AdminSpecialization{
-		Slug: s.Slug, Name: s.Name, Icon: s.Icon, Description: s.Description, Published: s.Published,
+		Slug: s.Slug, Name: s.Name, Icon: s.Icon, IconURL: s.IconURL, Description: s.Description, Published: s.Published,
 		OrderNum: s.OrderNum, OwnerID: s.OwnerID, CoursesCount: courses,
 		HasCustomCover:  s.CoverImage != "",
 		CoverPreviewURL: "/api/v1/specializations/" + s.Slug + "/cover",

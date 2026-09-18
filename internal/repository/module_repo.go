@@ -19,13 +19,13 @@ func NewModuleRepo(pool *pgxpool.Pool) *ModuleRepo {
 }
 
 const moduleCols = `id, slug, title, description, order_num, track, difficulty, prerequisites,
-	category, label, tags, cover_image, accent, est_minutes, source, published, owner_id, created_at, draft_of`
+	category, label, tags, cover_image, icon_url, accent, est_minutes, source, published, owner_id, created_at, draft_of`
 
 func scanModule(row pgx.Row) (model.Module, error) {
 	var m model.Module
 	var prereqJSON, tagsJSON []byte
 	err := row.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
-		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.Accent, &m.EstMinutes, &m.Source,
+		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
 		&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf)
 	if err != nil {
 		return m, err
@@ -156,7 +156,7 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 		var prereqJSON, tagsJSON []byte
 		m := &c.Module
 		if err := rows.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
-			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.Accent, &m.EstMinutes, &m.Source,
+			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
 			&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &c.Lessons, &c.Labs); err != nil {
 			return nil, err
 		}
@@ -218,6 +218,12 @@ func (r *ModuleRepo) NextOrder(ctx context.Context) (int, error) {
 	var n int
 	err := r.pool.QueryRow(ctx, `SELECT COALESCE(MAX(order_num), 0) + 1 FROM modules`).Scan(&n)
 	return n, err
+}
+
+// SetIcon replaces the course icon URL; empty falls back to the derived icon.
+func (r *ModuleRepo) SetIcon(ctx context.Context, id int, iconURL string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE modules SET icon_url = $1 WHERE id = $2`, iconURL, id)
+	return err
 }
 
 // SetCover replaces the cover (data URI, URL or empty for the generated one).

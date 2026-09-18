@@ -16,11 +16,11 @@ func NewSpecRepo(pool *pgxpool.Pool) *SpecRepo {
 	return &SpecRepo{pool: pool}
 }
 
-const specCols = `slug, name, icon, description, order_num, cover_image, published, owner_id`
+const specCols = `slug, name, icon, icon_url, description, order_num, cover_image, published, owner_id`
 
 func scanSpec(row pgx.Row) (model.Specialization, error) {
 	var s model.Specialization
-	err := row.Scan(&s.Slug, &s.Name, &s.Icon, &s.Description, &s.OrderNum, &s.CoverImage, &s.Published, &s.OwnerID)
+	err := row.Scan(&s.Slug, &s.Name, &s.Icon, &s.IconURL, &s.Description, &s.OrderNum, &s.CoverImage, &s.Published, &s.OwnerID)
 	return s, err
 }
 
@@ -63,13 +63,14 @@ func (r *SpecRepo) Get(ctx context.Context, slug string) (*model.Specialization,
 // keeps its original owner); published state and the visible fields are updated.
 func (r *SpecRepo) Upsert(ctx context.Context, s model.Specialization) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO specializations (slug, name, icon, description, order_num, cover_image, published, owner_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		`INSERT INTO specializations (slug, name, icon, icon_url, description, order_num, cover_image, published, owner_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		 ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, icon=EXCLUDED.icon,
+		   icon_url=COALESCE(NULLIF(EXCLUDED.icon_url,''), specializations.icon_url),
 		   description=EXCLUDED.description, order_num=EXCLUDED.order_num,
 		   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), specializations.cover_image),
 		   published=EXCLUDED.published`,
-		s.Slug, s.Name, s.Icon, s.Description, s.OrderNum, s.CoverImage, s.Published, s.OwnerID)
+		s.Slug, s.Name, s.Icon, s.IconURL, s.Description, s.OrderNum, s.CoverImage, s.Published, s.OwnerID)
 	return err
 }
 
@@ -83,6 +84,12 @@ func (r *SpecRepo) NextOrder(ctx context.Context) (int, error) {
 // SetCover replaces the section cover (data URI, URL or empty for the generated one).
 func (r *SpecRepo) SetCover(ctx context.Context, slug, cover string) error {
 	_, err := r.pool.Exec(ctx, `UPDATE specializations SET cover_image = $1 WHERE slug = $2`, cover, slug)
+	return err
+}
+
+// SetIcon replaces the section icon URL; empty falls back to the Icon glyph.
+func (r *SpecRepo) SetIcon(ctx context.Context, slug, iconURL string) error {
+	_, err := r.pool.Exec(ctx, `UPDATE specializations SET icon_url = $1 WHERE slug = $2`, iconURL, slug)
 	return err
 }
 
