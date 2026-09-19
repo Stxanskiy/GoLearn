@@ -1796,13 +1796,13 @@ type AdminAddCourseAuthorJSONBody struct {
 
 // AdminUploadCourseCoverMultipartBody defines parameters for AdminUploadCourseCover.
 type AdminUploadCourseCoverMultipartBody struct {
-	// File PNG, JPEG, WebP or SVG, max 4 MiB.
+	// File Cover: PNG, JPEG, WebP or SVG, 16:9 (tolerance 2%), at least 960x540, max 4 MiB.
 	File openapi_types.File `json:"file"`
 }
 
 // AdminUploadCourseIconMultipartBody defines parameters for AdminUploadCourseIcon.
 type AdminUploadCourseIconMultipartBody struct {
-	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+	// File Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.
 	File openapi_types.File `json:"file"`
 }
 
@@ -1876,13 +1876,13 @@ type AdminCreateSpecializationJSONBody struct {
 
 // AdminUploadSpecializationCoverMultipartBody defines parameters for AdminUploadSpecializationCover.
 type AdminUploadSpecializationCoverMultipartBody struct {
-	// File PNG, JPEG, WebP or SVG, max 4 MiB.
+	// File Cover: PNG, JPEG, WebP or SVG, 16:9 (tolerance 2%), at least 960x540, max 4 MiB.
 	File openapi_types.File `json:"file"`
 }
 
 // AdminUploadSpecIconMultipartBody defines parameters for AdminUploadSpecIcon.
 type AdminUploadSpecIconMultipartBody struct {
-	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+	// File Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.
 	File openapi_types.File `json:"file"`
 }
 
@@ -1901,7 +1901,7 @@ type AdminSetSpecializationPublishedJSONBody struct {
 
 // AdminUploadImageMultipartBody defines parameters for AdminUploadImage.
 type AdminUploadImageMultipartBody struct {
-	// File PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+	// File Lesson image: PNG, JPEG, WebP, GIF or SVG, max 4 MiB, any proportions.
 	File openapi_types.File `json:"file"`
 }
 
