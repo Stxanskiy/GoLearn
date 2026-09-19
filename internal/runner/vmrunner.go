@@ -429,7 +429,9 @@ done
 [ "${UP:-0}" = 1 ] || { echo "GLVMERR boot-timeout"; tail -5 "$WORK/fc.log" 2>/dev/null; exit 0; }
 # apply lesson setup once
 if [ -n "%[14]s" ]; then
-  ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' >/dev/null 2>&1 || true
+  if ! setup_out=$(ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' 2>&1); then
+    echo "GLVMERR setup"; echo "$setup_out" | tail -5; exit 0
+  fi
 fi
 %[15]s
 echo "GLVMOK %[13]s"
@@ -783,7 +785,9 @@ func (v *VMRunner) applySetup(ctx context.Context, s *vmSession, setup string) e
 	defer cancel()
 	b64 := base64.StdEncoding.EncodeToString([]byte(setup))
 	script := fmt.Sprintf(
-		`ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[3]s 'echo %[4]s | base64 -d | bash' >/dev/null 2>&1 || true; echo GLVMOK`,
+		`out=$(ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `+
+			`-o ConnectTimeout=5 -o LogLevel=ERROR root@%[3]s 'echo %[4]s | base64 -d | bash' 2>&1) `+
+			`&& echo GLVMOK || { echo "GLVMERR setup"; echo "$out" | tail -5; }`,
 		v.dir, v.vmkey, s.ip, b64)
 	out, _, err := v.runHost(ctx, script)
 	if err != nil {
