@@ -101,17 +101,18 @@ func TestCatalog(t *testing.T) {
 	}
 
 	devops := cat.Specializations[0]
-	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "linux" || devops.Courses[1].Slug != "docker" || devops.Courses[2].Slug != "helm" {
+	// Cards come back in progress order: started, then untouched, then completed.
+	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "docker" || devops.Courses[1].Slug != "helm" || devops.Courses[2].Slug != "linux" {
 		t.Fatalf("devops courses = %+v", devops.Courses)
 	}
-	linux := devops.Courses[0]
+	linux := devops.Courses[2]
 	if linux.Status != "completed" || linux.LessonsCount != 3 || linux.LessonsCompleted != 3 || linux.ProgressPct != 100 {
 		t.Errorf("linux card (quiz by score, lab by passed tasks, draft lesson excluded) = %+v", linux)
 	}
 	if devops.CoursesDone != 1 {
 		t.Errorf("courses_done = %d", devops.CoursesDone)
 	}
-	docker := devops.Courses[1]
+	docker := devops.Courses[0]
 	if docker.Status != "in_progress" || docker.LessonsCompleted != 0 || docker.Label != "practice" || docker.Category != "Docker" || docker.EstMinutes != 20 {
 		t.Errorf("docker card = %+v", docker)
 	}

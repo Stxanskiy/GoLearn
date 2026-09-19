@@ -555,7 +555,10 @@ type AdminCourse struct {
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
 
-	// IconURL Uploaded course icon; empty when none.
+	// Icon Emoji fallback of the category, used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded square course icon; empty when none.
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
 
@@ -648,7 +651,10 @@ type AdminCourseRow struct {
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
 
-	// IconURL Uploaded course icon; empty when none.
+	// Icon Emoji fallback of the category, used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded square course icon; empty when none.
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
 
@@ -898,7 +904,9 @@ type AuthorRef struct {
 // Catalog defines model for Catalog.
 type Catalog struct {
 	Specializations []SpecializationWithCourses `json:"specializations"`
-	Trainers        []CourseCard                `json:"trainers"`
+
+	// Trainers Ordered by progress, same rule as a specialization's courses.
+	Trainers []CourseCard `json:"trainers"`
 }
 
 // Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
@@ -961,13 +969,18 @@ type CourseAuthors struct {
 // CourseCard defines model for CourseCard.
 type CourseCard struct {
 	// Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
-	Category    Category   `json:"category"`
+	Category Category `json:"category"`
+
+	// CoverURL Always `/api/v1/courses/{slug}/cover`; 16:9.
 	CoverURL    string     `json:"cover_url"`
 	Description *string    `json:"description,omitempty"`
 	Difficulty  Difficulty `json:"difficulty"`
 	EstMinutes  int        `json:"est_minutes"`
 
-	// IconURL Uploaded course icon; empty when none.
+	// Icon Emoji fallback of the category, used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded square course icon; empty when none.
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
 
@@ -975,7 +988,10 @@ type CourseCard struct {
 	IsTrainer bool `json:"is_trainer"`
 
 	// Label Localized on the frontend (Старт / Практика / Вызов).
-	Label            CourseLabel    `json:"label"`
+	Label CourseLabel `json:"label"`
+
+	// LastActivity Newest lesson activity of the current user in this course; null when untouched.
+	LastActivity     *time.Time     `json:"last_activity"`
 	LessonsCompleted int            `json:"lessons_completed"`
 	LessonsCount     int            `json:"lessons_count"`
 	ProgressPct      int            `json:"progress_pct"`
@@ -1073,13 +1089,18 @@ type CourseLabel string
 // CoursePreview Public course page for anonymous visitors.
 type CoursePreview struct {
 	// Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
-	Category    Category   `json:"category"`
+	Category Category `json:"category"`
+
+	// CoverURL Always `/api/v1/courses/{slug}/cover`; 16:9.
 	CoverURL    string     `json:"cover_url"`
 	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
 	EstMinutes  int        `json:"est_minutes"`
 
-	// IconURL Uploaded course icon; empty when none.
+	// Icon Emoji fallback of the category, used when `icon_url` is empty.
+	Icon string `json:"icon"`
+
+	// IconURL Uploaded square course icon; empty when none.
 	IconURL string `json:"icon_url"`
 
 	// Label Localized on the frontend (Старт / Практика / Вызов).
@@ -1595,7 +1616,7 @@ type SortDirection string
 
 // Specialization defines model for Specialization.
 type Specialization struct {
-	// CoverURL Always `/api/v1/specializations/{slug}/cover`.
+	// CoverURL Always `/api/v1/specializations/{slug}/cover`; 16:9.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
 
@@ -1610,10 +1631,13 @@ type Specialization struct {
 
 // SpecializationWithCourses defines model for SpecializationWithCourses.
 type SpecializationWithCourses struct {
-	Courses     []CourseCard `json:"courses"`
-	CoursesDone int          `json:"courses_done"`
+	// Courses Ordered by progress: `in_progress` first (newest activity first), then `not_started`, then `completed`. Courses of the same status keep the curriculum order. Narrowed by the catalog query parameters.
+	Courses []CourseCard `json:"courses"`
 
-	// CoverURL Always `/api/v1/specializations/{slug}/cover`.
+	// CoursesDone Completed courses of the whole specialization
+	CoursesDone int `json:"courses_done"`
+
+	// CoverURL Always `/api/v1/specializations/{slug}/cover`; 16:9.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
 
@@ -1679,6 +1703,18 @@ type UploadedImage struct {
 	// URL Public URL of the stored image.
 	URL string `json:"url"`
 }
+
+// CatalogDifficulty defines model for CatalogDifficulty.
+type CatalogDifficulty = Difficulty
+
+// CatalogQuery defines model for CatalogQuery.
+type CatalogQuery = string
+
+// CatalogSpec defines model for CatalogSpec.
+type CatalogSpec = string
+
+// CatalogStatus defines model for CatalogStatus.
+type CatalogStatus = ProgressStatus
 
 // CourseID defines model for CourseId.
 type CourseID = int
@@ -1949,6 +1985,19 @@ type RegisterJSONBody struct {
 	Password string `json:"password"`
 }
 
+// GetCatalogParams defines parameters for GetCatalog.
+type GetCatalogParams struct {
+	// Spec Specialization slug; the others come back with an empty course list.
+	Spec       *CatalogSpec       `form:"spec,omitempty" json:"spec,omitempty"`
+	Difficulty *CatalogDifficulty `form:"difficulty,omitempty" json:"difficulty,omitempty"`
+
+	// Status Progress of the current user; on the public catalog only `not_started` matches anything.
+	Status *CatalogStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Q Case-insensitive substring of the title, description, category or a tag.
+	Q *CatalogQuery `form:"q,omitempty" json:"q,omitempty"`
+}
+
 // OpenGitTrainerTerminalParams defines parameters for OpenGitTrainerTerminal.
 type OpenGitTrainerTerminalParams struct {
 	Cols *TermCols `form:"cols,omitempty" json:"cols,omitempty"`
@@ -1987,6 +2036,19 @@ type SaveLessonNotesJSONBody struct {
 // SubmitQuizJSONBody defines parameters for SubmitQuiz.
 type SubmitQuizJSONBody struct {
 	Answers *[]QuizAnswerInput `json:"answers,omitempty"`
+}
+
+// GetPublicCatalogParams defines parameters for GetPublicCatalog.
+type GetPublicCatalogParams struct {
+	// Spec Specialization slug; the others come back with an empty course list.
+	Spec       *CatalogSpec       `form:"spec,omitempty" json:"spec,omitempty"`
+	Difficulty *CatalogDifficulty `form:"difficulty,omitempty" json:"difficulty,omitempty"`
+
+	// Status Progress of the current user; on the public catalog only `not_started` matches anything.
+	Status *CatalogStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Q Case-insensitive substring of the title, description, category or a tag.
+	Q *CatalogQuery `form:"q,omitempty" json:"q,omitempty"`
 }
 
 // GetLandingParams defines parameters for GetLanding.

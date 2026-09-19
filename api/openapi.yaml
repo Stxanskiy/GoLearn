@@ -248,6 +248,11 @@ paths:
       operationId: getPublicCatalog
       security: []
       description: Published specializations and courses for anonymous visitors; progress fields are always zero.
+      parameters:
+        - $ref: '#/components/parameters/CatalogSpec'
+        - $ref: '#/components/parameters/CatalogDifficulty'
+        - $ref: '#/components/parameters/CatalogStatus'
+        - $ref: '#/components/parameters/CatalogQuery'
       responses:
         '200':
           description: Catalog.
@@ -305,6 +310,13 @@ paths:
         Published specializations with their published courses and the user's progress.
         Feeds the courses page, roadmap, dashboard course grid and trainers list.
         Trainer courses (`is_trainer`) are returned separately in `trainers`.
+        Query parameters narrow `courses` and `trainers`; every published specialization is
+        still listed, so the filter controls keep their full set of options.
+      parameters:
+        - $ref: '#/components/parameters/CatalogSpec'
+        - $ref: '#/components/parameters/CatalogDifficulty'
+        - $ref: '#/components/parameters/CatalogStatus'
+        - $ref: '#/components/parameters/CatalogQuery'
       responses:
         '200':
           description: Catalog.
@@ -2160,6 +2172,29 @@ components:
       description: HttpOnly session cookie set by `POST /auth/login`.
 
   parameters:
+    CatalogSpec:
+      name: spec
+      in: query
+      required: false
+      description: Specialization slug; the others come back with an empty course list.
+      schema: { type: string, maxLength: 80 }
+    CatalogDifficulty:
+      name: difficulty
+      in: query
+      required: false
+      schema: { $ref: '#/components/schemas/Difficulty' }
+    CatalogStatus:
+      name: status
+      in: query
+      required: false
+      description: Progress of the current user; on the public catalog only `not_started` matches anything.
+      schema: { $ref: '#/components/schemas/ProgressStatus' }
+    CatalogQuery:
+      name: q
+      in: query
+      required: false
+      description: Case-insensitive substring of the title, description, category or a tag.
+      schema: { type: string, maxLength: 100 }
     CourseSlug:
       name: courseSlug
       in: path
@@ -2577,11 +2612,11 @@ components:
         icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
         icon_url: { type: string, description: 'Uploaded icon in object storage; empty when none.' }
         description: { type: string }
-        cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`.' }
+        cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`; 16:9.' }
 
     CourseCard:
       type: object
-      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status, is_trainer]
+      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status, last_activity, is_trainer]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2594,13 +2629,18 @@ components:
         tags:
           type: array
           items: { type: string }
-        cover_url: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         lessons_count: { type: integer }
         lessons_completed: { type: integer }
         progress_pct: { type: integer, minimum: 0, maximum: 100 }
         est_minutes: { type: integer }
         status: { $ref: '#/components/schemas/ProgressStatus' }
+        last_activity:
+          type: [string, 'null']
+          format: date-time
+          description: Newest lesson activity of the current user in this course; null when untouched.
         is_trainer: { type: boolean, description: Practice-only course; listed under trainers instead of the catalog. }
 
     SpecializationWithCourses:
@@ -2610,9 +2650,13 @@ components:
           required: [courses, courses_done]
           properties:
             courses:
+              description: >-
+                Ordered by progress: `in_progress` first (newest activity first), then
+                `not_started`, then `completed`. Courses of the same status keep the
+                curriculum order. Narrowed by the catalog query parameters.
               type: array
               items: { $ref: '#/components/schemas/CourseCard' }
-            courses_done: { type: integer }
+            courses_done: { type: integer, description: Completed courses of the whole specialization, never narrowed by the filter. }
 
     Catalog:
       type: object
@@ -2622,13 +2666,14 @@ components:
           type: array
           items: { $ref: '#/components/schemas/SpecializationWithCourses' }
         trainers:
+          description: Ordered by progress, same rule as a specialization's courses.
           type: array
           items: { $ref: '#/components/schemas/CourseCard' }
 
     CoursePreview:
       type: object
       description: Public course page for anonymous visitors.
-      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
+      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
       properties:
         slug: { type: string }
         title: { type: string }
@@ -2639,8 +2684,9 @@ components:
         tags:
           type: array
           items: { type: string }
-        cover_url: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         est_minutes: { type: integer }
         lessons_count: { type: integer }
         labs_count: { type: integer }
@@ -3153,7 +3199,7 @@ components:
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon, icon_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -3164,7 +3210,8 @@ components:
         category: { type: string, description: Stored value; empty when derived. }
         label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null when derived. }
         accent: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         tags:
           type: array
           items: { type: string }

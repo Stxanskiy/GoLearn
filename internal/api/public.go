@@ -159,15 +159,12 @@ func (a *API) getPublicCatalog(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "public catalog", err)
 		return
 	}
-	out := apigen.Catalog{
-		Specializations: make([]apigen.SpecializationWithCourses, 0, len(specs)),
-		Trainers:        trainerCards(courses),
-	}
-	for _, s := range specs {
-		out.Specializations = append(out.Specializations, specWithCourses(s, courses))
+	filter, ok := catalogFilterFrom(w, r)
+	if !ok {
+		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	writeJSON(w, http.StatusOK, out)
+	writeJSON(w, http.StatusOK, buildCatalog(specs, courses, filter))
 }
 
 // getPublicSpecialization serves one specialization with its courses, without progress.
@@ -191,7 +188,7 @@ func (a *API) getPublicSpecialization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", "public, max-age=300")
-	writeJSON(w, http.StatusOK, specWithCourses(*spec, courses))
+	writeJSON(w, http.StatusOK, specWithCourses(*spec, courses, courses))
 }
 
 // publicCatalog builds every published course without progress, plus the published specializations.
@@ -252,6 +249,7 @@ func (a *API) getCoursePreview(w http.ResponseWriter, r *http.Request) {
 		Difficulty:     apigen.Difficulty(m.Difficulty),
 		Tags:           tags,
 		CoverURL:       "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
+		Icon:           catalog.CategoryIcon(c.Category),
 		IconURL:        m.IconURL,
 		EstMinutes:     c.EstMinutes,
 		LessonsCount:   len(lessons),

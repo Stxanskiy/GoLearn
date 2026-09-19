@@ -487,7 +487,8 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
 		ID: m.ID, Slug: live.Slug, PreviewSlug: m.Slug, DraftOf: m.DraftOf, Title: m.Title, Description: m.Description, Track: m.Track,
-		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent, IconURL: m.IconURL,
+		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
+		Icon: catalog.CategoryIcon(catalog.Category(m)), IconURL: m.IconURL,
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published, IsTrainer: m.IsTrainer,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",

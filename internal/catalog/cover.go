@@ -50,11 +50,27 @@ func DecodeDataURI(uri string) (mime string, data []byte, ok bool) {
 	return uri[len("data:"):i], raw, true
 }
 
-const svgGrid = `<pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/></pattern>`
+// Generated covers keep the 16:9 contract of the cover slot.
+const (
+	coverWidth  = 1280
+	coverHeight = 720
+)
+
+const svgGrid = `<pattern id="grid" width="72" height="72" patternUnits="userSpaceOnUse"><path d="M72 0H0V72" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/></pattern>`
 
 func svgOpen(b *strings.Builder, from, to string) {
-	b.WriteString(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340" role="img"><defs>`)
+	fmt.Fprintf(b, `<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" role="img"><defs>`,
+		coverWidth, coverHeight, coverWidth, coverHeight)
 	fmt.Fprintf(b, `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s"/></linearGradient>`, from, to)
+}
+
+// svgBackdrop paints the gradient, the grid and any extra overlay fills.
+func svgBackdrop(b *strings.Builder, overlays ...string) {
+	fmt.Fprintf(b, `<rect width="%d" height="%d" fill="url(#g)"/>`, coverWidth, coverHeight)
+	fmt.Fprintf(b, `<rect width="%d" height="%d" fill="url(#grid)"/>`, coverWidth, coverHeight)
+	for _, id := range overlays {
+		fmt.Fprintf(b, `<rect width="%d" height="%d" fill="url(#%s)"/>`, coverWidth, coverHeight, id)
+	}
 }
 
 // CourseCoverSVG renders the generated course banner: gradient, grid, glow, icon and category chip.
@@ -69,10 +85,10 @@ func CourseCoverSVG(m model.Module) string {
 	svgOpen(&b, from, to)
 	b.WriteString(`<radialGradient id="glow" cx="78%" cy="22%" r="65%"><stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>`)
 	b.WriteString(svgGrid + `</defs>`)
-	b.WriteString(`<rect width="600" height="340" fill="url(#g)"/><rect width="600" height="340" fill="url(#grid)"/><rect width="600" height="340" fill="url(#glow)"/>`)
-	fmt.Fprintf(&b, `<text x="300" y="186" font-size="150" text-anchor="middle" dominant-baseline="middle">%s</text>`, CategoryIcon(cat))
-	fmt.Fprintf(&b, `<rect x="30" y="28" width="%d" height="38" rx="19" fill="#000000" fill-opacity="0.30"/>`, 30+len([]rune(cat))*14)
-	fmt.Fprintf(&b, `<text x="48" y="53" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="19" font-weight="700" fill="#ffffff">%s</text>`, html.EscapeString(cat))
+	svgBackdrop(&b, "glow")
+	fmt.Fprintf(&b, `<text x="640" y="394" font-size="320" text-anchor="middle" dominant-baseline="middle">%s</text>`, CategoryIcon(cat))
+	fmt.Fprintf(&b, `<rect x="64" y="60" width="%d" height="80" rx="40" fill="#000000" fill-opacity="0.30"/>`, 64+len([]rune(cat))*30)
+	fmt.Fprintf(&b, `<text x="102" y="113" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="40" font-weight="700" fill="#ffffff">%s</text>`, html.EscapeString(cat))
 	b.WriteString(`</svg>`)
 	return b.String()
 }
@@ -88,8 +104,8 @@ func SpecCoverSVG(s model.Specialization) string {
 	var b strings.Builder
 	svgOpen(&b, from, to)
 	b.WriteString(svgGrid + `</defs>`)
-	b.WriteString(`<rect width="600" height="340" fill="url(#g)"/><rect width="600" height="340" fill="url(#grid)"/>`)
-	fmt.Fprintf(&b, `<text x="300" y="186" font-size="150" text-anchor="middle" dominant-baseline="middle">%s</text></svg>`, html.EscapeString(icon))
+	svgBackdrop(&b)
+	fmt.Fprintf(&b, `<text x="640" y="394" font-size="320" text-anchor="middle" dominant-baseline="middle">%s</text></svg>`, html.EscapeString(icon))
 	return b.String()
 }
 
