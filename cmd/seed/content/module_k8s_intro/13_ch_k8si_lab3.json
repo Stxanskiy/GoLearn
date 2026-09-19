@@ -125,10 +125,10 @@
       "type": "check",
       "title": "Посмотреть все сервисы",
       "taskid": "k8si_lab3_t9_all_svc",
-      "hint": "<p>Используй <code>kubectl get services -o wide</code> или короткую форму <code>kubectl get svc</code>. В списке должны быть <code>web-svc</code> и <code>web-nodeport</code>.</p>",
-      "question_html": "<p>Посмотри все сервисы — убедись, что оба (<code>web-svc</code> и <code>web-nodeport</code>) есть в списке.</p>",
+      "hint": "<p><code>kubectl get svc &gt; /root/services.txt</code></p>",
+      "question_html": "<p>Сохрани список всех сервисов в файл — в нём должны быть оба: <code>web-svc</code> и <code>web-nodeport</code>.</p><p>Файл результата: <code>/root/services.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Посмотри все сервисы — убедись, что оба (<code>web-svc</code> и <code>web-nodeport</code>) есть в списке.</p>"
+      "raw_description": "<p>Сохрани список всех сервисов в файл — в нём должны быть оба: <code>web-svc</code> и <code>web-nodeport</code>.</p><p>Файл результата: <code>/root/services.txt</code>.</p>"
     },
     {
       "type": "check",

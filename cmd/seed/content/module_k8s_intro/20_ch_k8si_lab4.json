@@ -38,10 +38,10 @@
       "type": "check",
       "title": "Проверить переменные из ConfigMap в Pod'е",
       "taskid": "k8si_lab4_t4_env_cm",
-      "hint": "<p>В логах <code>cm-pod</code> должно быть значение <code>production</code>.</p>",
-      "question_html": "<p>Проверь, что переменная <code>APP_ENV</code> попала в Pod <code>cm-pod</code> с label <code>run=cm-pod</code> из ConfigMap <code>app-config</code>.</p>\n<pre><code>kubectl logs cm-pod</code></pre>",
+      "hint": "<p><code>kubectl logs cm-pod &gt; /root/cm_env.txt</code></p>",
+      "question_html": "<p>Сохрани вывод Pod'а <code>cm-pod</code> в файл — в нём должна быть строка <code>APP_ENV=production</code>, пришедшая из ConfigMap.</p><p>Файл результата: <code>/root/cm_env.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь, что переменная <code>APP_ENV</code> попала в Pod <code>cm-pod</code> с label <code>run=cm-pod</code> из ConfigMap <code>app-config</code>.</p>\n<pre><code>kubectl logs cm-pod</code></pre>"
+      "raw_description": "<p>Сохрани вывод Pod'а <code>cm-pod</code> в файл — в нём должна быть строка <code>APP_ENV=production</code>, пришедшая из ConfigMap.</p><p>Файл результата: <code>/root/cm_env.txt</code>.</p>"
     },
     {
       "type": "check",
@@ -65,10 +65,10 @@
       "type": "check",
       "title": "Декодировать Secret",
       "taskid": "k8si_lab4_t7_decode",
-      "hint": "<p>После декодирования должно получиться <code>supersecret123</code>.</p>",
-      "question_html": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и проверь открытое значение.</p>\n<pre><code>kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d</code></pre>",
+      "hint": "<p><code>kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d &gt; /root/db_password.txt</code></p>",
+      "question_html": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и сохрани открытое значение в файл.</p><p>Значения в Secret хранятся в base64 — это кодирование, а не шифрование.</p><p>Файл результата: <code>/root/db_password.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и проверь открытое значение.</p>\n<pre><code>kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d</code></pre>"
+      "raw_description": "<p>Декодируй ключ <code>DB_PASSWORD</code> из Secret <code>db-secret</code> и сохрани открытое значение в файл.</p><p>Значения в Secret хранятся в base64 — это кодирование, а не шифрование.</p><p>Файл результата: <code>/root/db_password.txt</code>.</p>"
     },
     {
       "type": "quiz",

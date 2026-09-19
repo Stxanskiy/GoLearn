@@ -7,11 +7,18 @@ package main
 // deploy and brings up an offline registry mirror, so the cluster works without
 // any network.
 
-// k8sBoot waits for the cluster at the beginning of every lesson setup. In the
-// Firecracker k8s golden, k3s auto-starts via systemd (k3s.service) and KUBECONFIG
-// is exported globally, so the setup only has to wait until the API is ready.
+// k8sBoot brings the cluster up at the beginning of every lesson setup.
+//
+// In the Firecracker k8s golden, k3s auto-starts via systemd (k3s.service) and
+// KUBECONFIG is exported globally, so waiting for the API used to be enough. The
+// container sandbox (golearn/sandbox-k8s) has no systemd and nothing starts k3s
+// there, so the wait timed out and every check reported the cluster as still
+// coming up — which is what local development and the regression harness saw.
+//
+// k8s-start is idempotent: it returns at once when the API already answers.
 const k8sBoot = `set -e
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+kubectl get --raw=/readyz >/dev/null 2>&1 || k8s-start >/dev/null 2>&1 || true
 for i in $(seq 1 60); do kubectl get --raw=/readyz >/dev/null 2>&1 && break; sleep 1; done`
 
 // kcheck fails with a clear message while the cluster is still coming up.
@@ -80,9 +87,12 @@ kubectl delete deployment nginx-deploy --ignore-not-found >/dev/null 2>&1`,
 				`[ "$(kubectl get deploy nginx-deploy -o jsonpath='{.status.readyReplicas}' 2>/dev/null)" -ge 1 ]`,
 				"откат выполнен",
 				"kubectl rollout undo deployment/nginx-deploy && kubectl rollout status deployment/nginx-deploy"),
+			// Grouped for the same reason as the Ingress check below: with a bare
+			// `;` the exit status came from the pod probe alone, so "Deployment
+			// deleted" was never actually asserted.
 			7: kcheck(`! kubectl get deploy nginx-deploy >/dev/null 2>&1 && `+
-				`for i in $(seq 1 15); do [ -z "$(kubectl get pods -l app=nginx-deploy --no-headers 2>/dev/null)" ] && break; sleep 1; done; `+
-				`[ -z "$(kubectl get pods -l app=nginx-deploy --no-headers 2>/dev/null)" ]`,
+				`{ for i in $(seq 1 15); do [ -z "$(kubectl get pods -l app=nginx-deploy --no-headers 2>/dev/null)" ] && break; sleep 1; done; `+
+				`[ -z "$(kubectl get pods -l app=nginx-deploy --no-headers 2>/dev/null)" ]; }`,
 				"Deployment и его Pod'ы удалены",
 				"kubectl delete deployment nginx-deploy"),
 		},
@@ -238,9 +248,10 @@ rm -f /root/web-nodeport.yaml`,
 				`grep -q 'NodePort' /root/web-nodeport.yaml 2>/dev/null`,
 				"Service типа NodePort создан и сохранён в файл",
 				"kubectl expose deployment web-app --name=web-nodeport --type=NodePort --port=80 --target-port=80 -o yaml --dry-run=client > /root/web-nodeport.yaml, затем примени файл"),
-			4: kcheck(`kubectl get svc web-svc >/dev/null 2>&1 && kubectl get svc web-nodeport >/dev/null 2>&1`,
-				"оба сервиса на месте",
-				"kubectl get svc — в списке должны быть web-svc и web-nodeport"),
+			4: kcheck(`grep -q 'web-svc' /root/services.txt 2>/dev/null && grep -q 'web-nodeport' /root/services.txt && `+
+				`kubectl get svc web-svc >/dev/null 2>&1 && kubectl get svc web-nodeport >/dev/null 2>&1`,
+				"список сервисов сохранён в /root/services.txt: оба на месте",
+				"kubectl get svc > /root/services.txt — в файле должны быть web-svc и web-nodeport"),
 			5: kcheck(`! kubectl get svc web-svc >/dev/null 2>&1 && ! kubectl get svc web-nodeport >/dev/null 2>&1`,
 				"оба сервиса удалены",
 				"kubectl delete svc web-svc web-nodeport"),
@@ -457,16 +468,18 @@ YEOF`,
 			2: kcheck(`grep -q 'envFrom' /root/cm-pod.yaml && grep -q 'app-config' /root/cm-pod.yaml && kubectl get pod cm-pod >/dev/null 2>&1`,
 				"Pod подключает ConfigMap через envFrom",
 				"Добавь контейнеру в /root/cm-pod.yaml: envFrom: - configMapRef: name: app-config — затем kubectl apply -f /root/cm-pod.yaml"),
-			3: kcheck(`kubectl logs cm-pod 2>/dev/null | grep -q 'APP_ENV=production'`,
-				"переменная из ConfigMap попала в Pod",
-				"kubectl logs cm-pod — в выводе должно быть APP_ENV=production"),
+			3: kcheck(`grep -q 'APP_ENV=production' /root/cm_env.txt 2>/dev/null && `+
+				`kubectl logs cm-pod 2>/dev/null | grep -q 'APP_ENV=production'`,
+				"вывод Pod'а сохранён в /root/cm_env.txt: APP_ENV=production на месте",
+				"kubectl logs cm-pod > /root/cm_env.txt"),
 			4: kcheck(`[ "$(kubectl get secret db-secret -o jsonpath='{.data.DB_USER}' 2>/dev/null | base64 -d)" = admin ] && `+
 				`[ "$(kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' 2>/dev/null | base64 -d)" = supersecret123 ]`,
 				"Secret db-secret создан",
 				"kubectl create secret generic db-secret --from-literal=DB_USER=admin --from-literal=DB_PASSWORD=supersecret123"),
-			5: kcheck(`[ "$(kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' 2>/dev/null | base64 -d)" = supersecret123 ]`,
-				"значение Secret декодируется",
-				"kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d"),
+			5: kcheck(`[ "$(tr -d ' \n' < /root/db_password.txt 2>/dev/null)" = supersecret123 ] && `+
+				`[ "$(kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' 2>/dev/null | base64 -d)" = supersecret123 ]`,
+				"расшифрованный пароль сохранён в /root/db_password.txt",
+				"kubectl get secret db-secret -o jsonpath='{.data.DB_PASSWORD}' | base64 -d > /root/db_password.txt"),
 			6: kcheck(`grep -q 'server.port=8080' /root/app.conf 2>/dev/null && grep -q 'log.level=debug' /root/app.conf && grep -q 'db.pool.size=10' /root/app.conf && `+
 				`kubectl get configmap file-config -o jsonpath='{.data.app\.conf}' 2>/dev/null | grep -q 'server.port=8080'`,
 				"ConfigMap создан из файла",
@@ -777,9 +790,13 @@ curl http://10.55.0.2/cart</code></pre>
 				`kubectl get ingress store-ingress -o jsonpath='{.spec.rules[0].http.paths[*].backend.service.name}' 2>/dev/null | grep -q 'catalog-svc'`,
 				"Ingress создан с маршрутами",
 				`kubectl create ingress store-ingress --rule="/*=frontend-svc:80" --rule="/catalog*=catalog-svc:80" --rule="/cart*=cart-svc:80"`),
+			// The retry loop and the final probe are grouped: with a bare `;` the
+			// exit status came from the last curl alone, so the saved-response
+			// requirement was ignored and the check passed as soon as task 2 had
+			// created the Ingress.
 			3: kcheck(`grep -q 'store frontend' /root/ingress_root.txt 2>/dev/null && `+
-				`for i in $(seq 1 20); do curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service' && break; sleep 2; done; `+
-				`curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service'`,
+				`{ for i in $(seq 1 20); do curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service' && break; sleep 2; done; `+
+				`curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service'; }`,
 				"маршрутизация через Ingress работает",
 				"curl http://10.55.0.2/ > /root/ingress_root.txt и проверь curl http://10.55.0.2/catalog"),
 			4: kcheck(`! kubectl get ingress store-ingress >/dev/null 2>&1 && ! kubectl get deploy frontend >/dev/null 2>&1 && `+

@@ -39,7 +39,7 @@ sol_ch_k8si_lab7_4='kubectl delete pod web-prod web-staging db-prod --wait >/dev
 sol_ch_k8si_lab3_1='kubectl create deployment web-app --image=nginx:alpine --replicas=2 >/dev/null && kubectl rollout status deployment/web-app --timeout=180s >/dev/null'
 sol_ch_k8si_lab3_2='kubectl expose deployment web-app --name=web-svc --port=80 --target-port=80 >/dev/null'
 sol_ch_k8si_lab3_3='kubectl expose deployment web-app --name=web-nodeport --type=NodePort --port=80 --target-port=80 --dry-run=client -o yaml > /root/web-nodeport.yaml && kubectl apply -f /root/web-nodeport.yaml >/dev/null'
-sol_ch_k8si_lab3_4='kubectl get svc >/dev/null'
+sol_ch_k8si_lab3_4='kubectl get svc > /root/services.txt'
 sol_ch_k8si_lab3_5='kubectl delete svc web-svc web-nodeport --wait >/dev/null'
 
 sol_ch_k8si_lab8_service_manifests_1='kubectl apply -f /root/service-manifests/deployment.yaml -f /root/service-manifests/service.yaml >/dev/null && kubectl rollout status deployment/store-web --timeout=180s >/dev/null'
@@ -66,9 +66,9 @@ s=s.replace("""      command: ["sh", "-c", "echo APP_ENV=\$APP_ENV; sleep 3600"]
 open(p,"w").write(s)
 PYEOF
 kubectl apply -f /root/cm-pod.yaml >/dev/null && kubectl wait --for=condition=Ready pod/cm-pod --timeout=180s >/dev/null 2>&1'
-sol_ch_k8si_lab4_3='kubectl logs cm-pod >/dev/null 2>&1'
+sol_ch_k8si_lab4_3='kubectl logs cm-pod > /root/cm_env.txt'
 sol_ch_k8si_lab4_4='kubectl create secret generic db-secret --from-literal=DB_USER=admin --from-literal=DB_PASSWORD=supersecret123 >/dev/null'
-sol_ch_k8si_lab4_5='kubectl get secret db-secret -o jsonpath="{.data.DB_PASSWORD}" | base64 -d >/dev/null'
+sol_ch_k8si_lab4_5='kubectl get secret db-secret -o jsonpath="{.data.DB_PASSWORD}" | base64 -d > /root/db_password.txt'
 sol_ch_k8si_lab4_6='printf "server.port=8080\nlog.level=debug\ndb.pool.size=10\n" > /root/app.conf && kubectl create configmap file-config --from-file=/root/app.conf >/dev/null'
 sol_ch_k8si_lab4_7='kubectl delete configmap app-config file-config --wait >/dev/null; kubectl delete secret db-secret --wait >/dev/null; kubectl delete pod cm-pod --wait >/dev/null'
 
