@@ -38,10 +38,10 @@
       "type": "check",
       "title": "Проверить количество экземпляров",
       "taskid": "dkc_lab7_t4_check_scale",
-      "hint": "<p>Используй <code>docker compose up</code> с масштабированием сервиса: задай нужное число реплик и затем проверь статус проекта из каталога с compose-файлом.</p>",
-      "question_html": "<p>Проверь, что после масштабирования запущено 3 экземпляра сервиса <code>worker</code> в текущем Compose-проекте.</p>",
+      "hint": "<p><code>cd /root/scaleapp &amp;&amp; docker compose ps --status running --format '{{.Service}}' &gt; /root/worker_status.txt</code></p>",
+      "question_html": "<p>Сохрани список запущенных сервисов Compose-проекта в файл — в нём должно быть ровно три строки <code>worker</code>.</p><p>Файл результата: <code>/root/worker_status.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь, что после масштабирования запущено 3 экземпляра сервиса <code>worker</code> в текущем Compose-проекте.</p>"
+      "raw_description": "<p>Сохрани список запущенных сервисов Compose-проекта в файл — в нём должно быть ровно три строки <code>worker</code>.</p><p>Файл результата: <code>/root/worker_status.txt</code>.</p>"
     },
     {
       "type": "check",

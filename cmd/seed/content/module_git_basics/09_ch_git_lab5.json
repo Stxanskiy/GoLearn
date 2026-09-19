@@ -38,19 +38,19 @@
       "type": "check",
       "title": "проверить push в bare repo",
       "taskid": "git_lab5_t4_verify",
-      "hint": "<p>Используй <code>git push</code>, затем проверь результат через историю bare-репозитория.</p>",
-      "question_html": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p>",
+      "hint": "<p>К bare-репозиторию обращаются через <code>--git-dir</code>: <code>git --git-dir=/srv/git/project.git log --oneline --stat -1 &gt; /root/bare_log.txt</code>.</p>",
+      "question_html": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p><p>Сохрани вывод лога удалённого репозитория в файл.</p><p>Файл результата: <code>/root/bare_log.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p>"
+      "raw_description": "<p>Проверь, что коммит <code>add feature</code> попал в bare repo.</p><p>Сохрани вывод лога удалённого репозитория в файл.</p><p>Файл результата: <code>/root/bare_log.txt</code>.</p>"
     },
     {
       "type": "check",
       "title": "git fetch: получить изменения",
       "taskid": "git_lab5_t5_fetch",
-      "hint": "<p><code>git remote -v</code> показывает адреса remote и после fetch обычно выглядит так же. После <code>git fetch</code> используй команду, которая показывает ветки вида <code>remotes/origin/...</code>.</p>",
-      "question_html": "<p>Выполни <code>git fetch origin</code>, затем проверь список локальных и remote-tracking веток. В выводе должен быть префикс <code>remotes/origin</code>.</p>",
+      "hint": "<p>Все ветки вместе с remote-tracking показывает <code>git branch -a</code>. Сначала <code>git fetch origin</code>, потом перенаправь вывод в <code>/root/branches.txt</code>.</p>",
+      "question_html": "<p>Выполни <code>git fetch origin</code>, затем сохрани список локальных и remote-tracking веток в файл.</p><p>В нём должен быть префикс <code>remotes/origin</code>.</p><p>Файл результата: <code>/root/branches.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Выполни <code>git fetch origin</code>, затем проверь список локальных и remote-tracking веток. В выводе должен быть префикс <code>remotes/origin</code>.</p>"
+      "raw_description": "<p>Выполни <code>git fetch origin</code>, затем сохрани список локальных и remote-tracking веток в файл.</p><p>В нём должен быть префикс <code>remotes/origin</code>.</p><p>Файл результата: <code>/root/branches.txt</code>.</p>"
     },
     {
       "type": "quiz",

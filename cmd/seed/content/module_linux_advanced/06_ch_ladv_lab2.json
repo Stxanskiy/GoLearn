@@ -50,10 +50,10 @@
       "type": "check",
       "title": "проверить права на ключ",
       "taskid": "ladv_lab2_t3_perms",
-      "hint": "<p>Используй <code>chmod</code> и после изменения проверь результат через просмотр атрибутов файла.</p>",
-      "question_html": "<p>Убедись что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> (иначе SSH откажет).</p>",
+      "hint": "<p>Числовые права печатает <code>stat -c '%a' /root/.ssh/mykey</code>. Перенаправь вывод в <code>/root/key_perms.txt</code>. Если там не 600 — сначала <code>chmod 600 /root/.ssh/mykey</code>.</p>",
+      "question_html": "<p>Убедись, что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> — при более свободных правах SSH откажется его использовать.</p><p>Сохрани числовые права ключа в файл.</p><p>Файл результата: <code>/root/key_perms.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Убедись что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> (иначе SSH откажет).</p>"
+      "raw_description": "<p>Убедись, что приватный ключ <code>/root/.ssh/mykey</code> имеет права <code>600</code> — при более свободных правах SSH откажется его использовать.</p><p>Сохрани числовые права ключа в файл.</p><p>Файл результата: <code>/root/key_perms.txt</code>.</p>"
     },
     {
       "type": "check",

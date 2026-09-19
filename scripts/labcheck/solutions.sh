@@ -115,7 +115,7 @@ sol_ch_ladv_lab1_1='curl -s -o /dev/null -w "%{http_code}" http://localhost/ > /
 sol_ch_ladv_lab1_2='curl -s http://localhost/ > /root/page.html'
 
 sol_ch_ladv_lab2_1="ssh-keygen -t ed25519 -f /root/.ssh/mykey -N '' -q"
-sol_ch_ladv_lab2_2='chmod 600 /root/.ssh/mykey'
+sol_ch_ladv_lab2_2='chmod 600 /root/.ssh/mykey && stat -c "%a" /root/.ssh/mykey > /root/key_perms.txt'
 sol_ch_ladv_lab2_3='cat /root/.ssh/mykey.pub >> /root/.ssh/authorized_keys'
 sol_ch_ladv_lab2_4='ssh-keygen -lf /root/.ssh/mykey.pub > /root/key_info.txt'
 sol_ch_ladv_lab2_5='printf "Host myserver\n  HostName 127.0.0.1\n  User root\n  IdentityFile ~/.ssh/mykey\n" > /root/.ssh/config'
@@ -162,7 +162,7 @@ sol_ch_git_lab1_1='git init -q /root/project && git -C /root/project config user
 sol_ch_git_lab1_2='echo "# My Project" > /root/project/README.md && git -C /root/project add README.md'
 sol_ch_git_lab1_3='git -C /root/project commit -qm init'
 sol_ch_git_lab1_4='printf "print(\"hello\")\n" > /root/project/app.py && git -C /root/project add app.py && git -C /root/project commit -qm "add app"'
-sol_ch_git_lab1_5='git -C /root/project add -A && git -C /root/project commit -qm wip 2>/dev/null; true'
+sol_ch_git_lab1_5='git -C /root/project status --short > /root/status.txt'
 
 sol_ch_git_lab2_1='echo "version = \"1.0\"" >> /root/project/app.py'
 sol_ch_git_lab2_2='git -C /root/project restore app.py'
@@ -182,19 +182,19 @@ sol_ch_git_lab4_1='git -C /root/project merge branch-b >/dev/null 2>&1; git -C /
 sol_ch_git_lab4_2='echo "Resolved version" > /root/project/app.txt'
 sol_ch_git_lab4_3='git -C /root/project add app.txt'
 sol_ch_git_lab4_4='git -C /root/project commit -qm "resolve conflict"'
-sol_ch_git_lab4_5='git -C /root/project log --oneline --graph | head -3'
+sol_ch_git_lab4_5='git -C /root/project log --oneline --graph -5 > /root/merge_log.txt'
 
 sol_ch_git_lab5_1='git clone -q /srv/git/project.git /root/project'
 sol_ch_git_lab5_2='cd /root/project && echo feature > feature.txt && git add feature.txt && git commit -qm "add feature" && git push -q origin main'
-sol_ch_git_lab5_3='git --git-dir=/srv/git/project.git log --oneline -1'
-sol_ch_git_lab5_4='git -C /root/project fetch -q origin && git -C /root/project branch -a'
+sol_ch_git_lab5_3='git --git-dir=/srv/git/project.git log --oneline --stat -1 > /root/bare_log.txt'
+sol_ch_git_lab5_4='git -C /root/project fetch -q origin && git -C /root/project branch -a > /root/branches.txt'
 sol_ch_git_lab5_5='cd /root/project && git switch -qc dev && echo dev > dev.txt && git add dev.txt && git commit -qm "add dev" && git push -q origin dev'
 
 sol_ch_git_lab6_1='git -C /root/project tag -a v1.0.0 -m "First release"'
 sol_ch_git_lab6_2='git -C /root/project stash -q'
 sol_ch_git_lab6_3='git -C /root/project stash pop -q'
 sol_ch_git_lab6_4='H=$(git -C /root/project log --oneline | grep "bad commit" | head -1 | cut -d" " -f1); git -C /root/project revert --no-edit $H >/dev/null 2>&1; true'
-sol_ch_git_lab6_5='git -C /root/project log --oneline | head -5'
+sol_ch_git_lab6_5='git -C /root/project log --oneline > /root/revert_log.txt'
 
 sol_ch_git_lab7_1='git -C /root/project log --author=student --oneline > /root/student_commits.txt'
 sol_ch_git_lab7_2='git -C /root/project log --oneline -- README.md > /root/readme_history.txt'
@@ -294,3 +294,19 @@ sol_processes_and_signals_2='pgrep -af sleep > /root/pid1.txt'
 sol_users_groups_sudo_1='echo "$(id -un):$(id -u)" > /root/me.txt'
 sol_users_groups_sudo_2='useradd alice'
 sol_users_groups_sudo_3='touch /root/report.txt && chgrp daemon /root/report.txt'
+
+# ── Git: rebase, reset/reflog, bisect ──
+# Lab 8 squashes interactively in the lesson; the non-interactive equivalent is a
+# soft reset plus one commit, which lands the same tree and history.
+sol_ch_git_lab8_1='git -C /root/project reset --soft HEAD~3 && git -C /root/project commit -qm "Add login"'
+sol_ch_git_lab8_2='git -C /root/project commit --amend -qm "Add login feature"'
+sol_ch_git_lab8_3='git -C /root/project status --short > /root/status.txt'
+
+sol_ch_git_lab9_1='git -C /root/project reset --soft HEAD~1'
+sol_ch_git_lab9_2='git -C /root/project reset --hard HEAD~1'
+# The lesson reads the hash off `git reflog` by eye; here it is looked up by the
+# reflog subject so the harness does not depend on a fixed HEAD@{n} position.
+sol_ch_git_lab9_3='h=$(git -C /root/project reflog --format="%h %gs" | grep -m1 "commit: add a.txt" | cut -d" " -f1) && git -C /root/project reset --hard "$h"'
+
+sol_ch_git_lab10_1='cd /root/project && git bisect start HEAD good-start >/dev/null 2>&1 && git bisect run ./test.sh >/dev/null 2>&1; true'
+sol_ch_git_lab10_2='git -C /root/project bisect reset'

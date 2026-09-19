@@ -79,6 +79,7 @@ rm -f /root/nginx_conf.txt /root/redis_ping.txt`,
 		Image: sandboxImageDocker,
 		Setup: dockerBoot + `
 ` + composeDown + `
+rm -f /root/scale_status.txt
 rm -rf /root/webapp && mkdir -p /root/webapp
 cat > /root/webapp/app.py <<'PYEOF'
 ` + composeApp + `PYEOF
@@ -139,9 +140,10 @@ rm -f /root/app_dns_ip.txt /root/app_response.txt /root/compose_network.txt`,
 			5: dcheck(`[ "$(cd /root/webapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^app$')" = 2 ]`,
 				"запущено 2 экземпляра app",
 				"cd /root/webapp && docker compose up -d --scale app=2"),
-			6: dcheck(`[ "$(cd /root/webapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^app$')" = 2 ]`,
-				"масштабирование подтверждено",
-				"cd /root/webapp && docker compose ps — должно быть два контейнера сервиса app"),
+			6: dcheck(`[ "$(grep -c '^app$' /root/scale_status.txt 2>/dev/null)" = 2 ] && `+
+				`[ "$(cd /root/webapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^app$')" = 2 ]`,
+				"статус масштабирования сохранён в /root/scale_status.txt: два экземпляра app",
+				"cd /root/webapp && docker compose ps --status running --format '{{.Service}}' > /root/scale_status.txt"),
 			7: dcheck(`[ "$(cd /root/webapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^app$')" = 1 ] && `+
 				`[ "$(docker inspect -f '{{.State.Running}}' webapp-web-1 2>/dev/null)" = true ]`,
 				"вернулся один экземпляр app, web перезапущен",
@@ -314,6 +316,7 @@ rm -f /root/override/docker-compose.override.yml`,
 		Image: sandboxImageDocker,
 		Setup: dockerBoot + `
 ` + composeDown + `
+rm -f /root/health_status.txt
 rm -rf /root/healthapp && mkdir -p /root/healthapp
 cat > /root/healthapp/app.py <<'PYEOF'
 ` + composeApp + `PYEOF
@@ -342,9 +345,10 @@ YEOF`,
 			2: dcheck(`[ "$(docker inspect -f '{{.State.Running}}' healthapp-app-1 2>/dev/null)" = true ]`,
 				"стек запущен",
 				"cd /root/healthapp && docker compose up -d"),
-			3: dcheck(`[ "$(docker inspect -f '{{.State.Health.Status}}' healthapp-db-1 2>/dev/null)" = healthy ]`,
-				"база в статусе healthy",
-				"Подожди несколько секунд: docker compose ps покажет (healthy) у db"),
+			3: dcheck(`grep -q healthy /root/health_status.txt 2>/dev/null && `+
+				`[ "$(docker inspect -f '{{.State.Health.Status}}' healthapp-db-1 2>/dev/null)" = healthy ]`,
+				"статус healthcheck сохранён в /root/health_status.txt",
+				"Дождись healthy и запиши статус: docker inspect -f '{{.State.Health.Status}}' healthapp-db-1 > /root/health_status.txt"),
 			4: dcheck(`grep -q 'wget -qO- http://localhost/' /root/healthapp/docker-compose.yml`,
 				"healthcheck для web описан",
 				"У сервиса web добавь healthcheck: test: [\"CMD-SHELL\", \"wget -qO- http://localhost/ || exit 1\"], interval: 5s"),
@@ -363,6 +367,7 @@ YEOF`,
 		Image: sandboxImageDocker,
 		Setup: dockerBoot + `
 ` + composeDown + `
+rm -f /root/worker_status.txt
 rm -rf /root/scaleapp && mkdir -p /root/scaleapp
 cat > /root/scaleapp/docker-compose.yml <<'YEOF'
 services:
@@ -377,9 +382,10 @@ YEOF`,
 			2: dcheck(`[ "$(cd /root/scaleapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^worker$')" = 3 ]`,
 				"три экземпляра worker запущены",
 				"cd /root/scaleapp && docker compose up -d --scale worker=3"),
-			3: dcheck(`[ "$(cd /root/scaleapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^worker$')" = 3 ]`,
-				"масштабирование подтверждено",
-				"cd /root/scaleapp && docker compose ps — должно быть ровно 3 контейнера worker"),
+			3: dcheck(`[ "$(grep -c '^worker$' /root/worker_status.txt 2>/dev/null)" = 3 ] && `+
+				`[ "$(cd /root/scaleapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^worker$')" = 3 ]`,
+				"статус масштабирования сохранён в /root/worker_status.txt: три экземпляра worker",
+				"cd /root/scaleapp && docker compose ps --status running --format '{{.Service}}' > /root/worker_status.txt"),
 			4: dcheck(`grep -q 'replicas' /root/scaleapp/docker-compose.yml && `+
 				`[ "$(cd /root/scaleapp && docker compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -c '^worker$')" = 2 ]`,
 				"replicas: 2 описано и применено",

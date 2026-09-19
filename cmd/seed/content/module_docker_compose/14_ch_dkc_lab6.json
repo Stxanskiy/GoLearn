@@ -47,10 +47,10 @@
       "type": "check",
       "title": "Проверить статус healthcheck",
       "taskid": "dkc_lab6_t5_health_status",
-      "hint": "<p>Используй <code>docker compose ps</code> из каталога проекта. Для состояния сервисов нужен Compose-статус, а не общий список всех контейнеров Docker.</p>",
-      "question_html": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно.</p><p>Проверь, что Compose-сервис <code>db</code> имеет health status <code>healthy</code>; сохранять статус в файл не нужно.</p>",
+      "hint": "<p><code>docker inspect -f '{{.State.Health.Status}}' healthapp-db-1 &gt; /root/health_status.txt</code> — подожди несколько секунд, пока статус станет <code>healthy</code>.</p>",
+      "question_html": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно, и сохрани его статус в файл.</p><p>В файле должно быть <code>healthy</code>.</p><p>Файл результата: <code>/root/health_status.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно.</p><p>Проверь, что Compose-сервис <code>db</code> имеет health status <code>healthy</code>; сохранять статус в файл не нужно.</p>"
+      "raw_description": "<p>Дождись, пока healthcheck контейнера базы данных завершится успешно, и сохрани его статус в файл.</p><p>В файле должно быть <code>healthy</code>.</p><p>Файл результата: <code>/root/health_status.txt</code>.</p>"
     },
     {
       "type": "self",

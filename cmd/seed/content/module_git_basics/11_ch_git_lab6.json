@@ -86,10 +86,10 @@
       "type": "check",
       "title": "История после revert",
       "taskid": "git_lab6_t7",
-      "hint": "<p>Используй <code>git revert</code>: он создаёт новый commit, который отменяет выбранный старый commit. Сначала найди commit в истории, затем проверь новый <code>git log</code>.</p>",
-      "question_html": "<p>Проверь историю коммитов репозитория <code>/root/project</code>.</p>\n<p>Обрати внимание: git revert добавляет коммит с \"Revert\" в сообщении — история не переписывается.</p>",
+      "hint": "<p><code>git -C /root/project log --oneline &gt; /root/revert_log.txt</code>. В файле должны быть видны обе строки — <code>bad commit</code> и <code>Revert ...</code>.</p>",
+      "question_html": "<p>Проверь историю коммитов репозитория <code>/root/project</code> и сохрани её в файл.</p><p>Обрати внимание: git revert добавляет коммит с «Revert» в сообщении — история не переписывается, в ней остаются обе записи: и плохой коммит, и его отмена.</p><p>Файл результата: <code>/root/revert_log.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь историю коммитов репозитория <code>/root/project</code>.</p>\n<p>Обрати внимание: git revert добавляет коммит с \"Revert\" в сообщении — история не переписывается.</p>"
+      "raw_description": "<p>Проверь историю коммитов репозитория <code>/root/project</code> и сохрани её в файл.</p><p>Обрати внимание: git revert добавляет коммит с «Revert» в сообщении — история не переписывается, в ней остаются обе записи: и плохой коммит, и его отмена.</p><p>Файл результата: <code>/root/revert_log.txt</code>.</p>"
     },
     {
       "type": "quiz",

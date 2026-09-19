@@ -77,10 +77,10 @@
       "type": "check",
       "title": "проверить историю merge",
       "taskid": "git_lab4_t6_log",
-      "hint": "<p>После разрешения конфликта используй <code>git add</code> и заверши merge-коммит с сообщением из условия.</p>",
-      "question_html": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p>",
+      "hint": "<p><code>git log --oneline --graph -5</code> показывает слияние как расходящиеся линии. Перенаправь вывод в <code>/root/merge_log.txt</code>.</p>",
+      "question_html": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p><p>Сохрани вывод графа истории в файл.</p><p>Файл результата: <code>/root/merge_log.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p>"
+      "raw_description": "<p>Проверь историю и убедись, что в ней появился merge commit с сообщением <code>resolve conflict</code>.</p><p>Сохрани вывод графа истории в файл.</p><p>Файл результата: <code>/root/merge_log.txt</code>.</p>"
     }
   ],
   "vm_image": "base",

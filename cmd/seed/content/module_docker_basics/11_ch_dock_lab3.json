@@ -38,10 +38,10 @@
       "type": "check",
       "title": "Проверить работу приложения",
       "taskid": "dock_lab3_t4_curl",
-      "hint": "<p>Используй <code>docker run</code> для публикации порта и <code>docker ps</code>/<code>docker port</code> для проверки. Сравни порт на хосте и порт внутри контейнера.</p>\n<p>Приложение слушает на порту 5000. Используй <code>curl http://localhost:5000</code>, чтобы обратиться к нему и увидеть <code>Hello Docker</code>.</p>",
-      "question_html": "<p>Отправь HTTP-запрос к запущенному приложению на <code>http://localhost:5000</code>. Корректный ответ должен содержать текст <code>Hello Docker</code>.</p>",
+      "hint": "<p><code>curl -s http://localhost:5000/ &gt; /root/app_response.txt</code>. Если файл пуст — контейнер не отвечает, смотри <code>docker logs myapp</code>.</p>",
+      "question_html": "<p>Отправь HTTP-запрос к запущенному приложению на <code>http://localhost:5000</code> и сохрани ответ в файл.</p><p>Корректный ответ должен содержать <code>Hello Docker</code>.</p><p>Файл результата: <code>/root/app_response.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Отправь HTTP-запрос к запущенному приложению на <code>http://localhost:5000</code>. Корректный ответ должен содержать текст <code>Hello Docker</code>.</p>"
+      "raw_description": "<p>Отправь HTTP-запрос к запущенному приложению на <code>http://localhost:5000</code> и сохрани ответ в файл.</p><p>Корректный ответ должен содержать <code>Hello Docker</code>.</p><p>Файл результата: <code>/root/app_response.txt</code>.</p>"
     },
     {
       "type": "quiz",

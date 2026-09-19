@@ -108,6 +108,7 @@ docker rmi -f redis:alpine >/dev/null 2>&1 || true`,
 		Setup: dockerBoot + `
 docker rm -f myapp myapp2 >/dev/null 2>&1 || true
 docker rmi -f myapp:v1 myapp:v2 >/dev/null 2>&1 || true
+rm -f /root/app_response.txt
 rm -rf /root/myapp && mkdir -p /root/myapp
 cat > /root/myapp/app.py <<'PYEOF'
 ` + appPy + `PYEOF
@@ -125,9 +126,9 @@ DEOF`,
 			2: dcheck(`[ "$(docker inspect -f '{{.State.Running}}' myapp 2>/dev/null)" = true ] && docker port myapp 2>/dev/null | grep -q 5000`,
 				"контейнер myapp работает с проброшенным портом",
 				"docker run -d --name myapp -p 5000:5000 myapp:v1"),
-			3: dcheck(`curl -s --max-time 5 http://localhost:5000/ | grep -q 'Hello Docker'`,
-				"приложение отвечает",
-				"curl http://localhost:5000 — если ответа нет, проверь docker logs myapp"),
+			3: dcheck(`grep -q 'Hello Docker' /root/app_response.txt 2>/dev/null && curl -s --max-time 5 http://localhost:5000/ | grep -q 'Hello Docker'`,
+				"ответ приложения сохранён в /root/app_response.txt",
+				"curl -s http://localhost:5000/ > /root/app_response.txt — если ответа нет, смотри docker logs myapp"),
 			4: dcheck(`! docker inspect myapp >/dev/null 2>&1 && docker image inspect myapp:v2 >/dev/null 2>&1 && `+
 				`[ "$(docker image inspect -f '{{index .Config.Labels "version"}}' myapp:v2 2>/dev/null)" = 2.0 ] && `+
 				`docker image inspect -f '{{range .Config.Env}}{{println .}}{{end}}' myapp:v2 | grep -q '^APP_VERSION=2.0$'`,
@@ -148,6 +149,7 @@ DEOF`,
 		Setup: dockerBoot + `
 docker rm -f goapp >/dev/null 2>&1 || true
 docker rmi -f goapp:multi goapp:nocache >/dev/null 2>&1 || true
+rm -f /root/go_response.txt /root/lab4_result.txt
 rm -rf /root/goapp && mkdir -p /root/goapp
 cat > /root/goapp/main.go <<'GOEOF'
 ` + goMain + `GOEOF
@@ -173,18 +175,19 @@ DEOF`,
 			2: dcheck(`[ "$(docker inspect -f '{{.State.Running}}' goapp 2>/dev/null)" = true ] && docker port goapp 2>/dev/null | grep -q 8080`,
 				"контейнер goapp работает с портом 8080",
 				"docker run -d --name goapp -p 8080:8080 goapp:multi"),
-			3: dcheck(`curl -s --max-time 5 http://localhost:8080/ | grep -q 'Hello from Go'`,
-				"Go-сервер отвечает",
-				"curl http://localhost:8080 — если пусто, смотри docker logs goapp"),
+			3: dcheck(`grep -q 'Hello from Go' /root/go_response.txt 2>/dev/null && curl -s --max-time 5 http://localhost:8080/ | grep -q 'Hello from Go'`,
+				"ответ Go-сервера сохранён в /root/go_response.txt",
+				"curl -s http://localhost:8080/ > /root/go_response.txt — если пусто, смотри docker logs goapp"),
 			4: dcheck(`docker image inspect goapp:nocache >/dev/null 2>&1`,
 				"образ goapp:nocache собран",
 				"cd /root/goapp && docker build --no-cache -f Dockerfile.multistage -t goapp:nocache ."),
 			5: dcheck(`! docker inspect goapp >/dev/null 2>&1`,
 				"контейнер goapp удалён",
 				"docker rm -f goapp"),
-			6: dcheck(`! docker inspect goapp >/dev/null 2>&1 && docker image inspect goapp:nocache >/dev/null 2>&1`,
-				"контейнера нет, образ остался",
-				"Контейнер и образ — разные сущности: docker ps -a покажет контейнеры, docker images — образы"),
+			6: dcheck(`grep -q 'goapp:nocache' /root/lab4_result.txt 2>/dev/null && ! grep -qx 'goapp' /root/lab4_result.txt && `+
+				`! docker inspect goapp >/dev/null 2>&1 && docker image inspect goapp:nocache >/dev/null 2>&1`,
+				"итог записан в /root/lab4_result.txt: образ есть, контейнера нет",
+				"Контейнер и образ — разные сущности. Собери итог одной командой: { docker ps -a --format '{{.Names}}'; docker images --format '{{.Repository}}:{{.Tag}}'; } > /root/lab4_result.txt"),
 		},
 	},
 
@@ -260,14 +263,16 @@ rm -f /root/mydata_mountpoint.txt`,
 		Image: sandboxImageDocker,
 		Setup: dockerBoot + `
 docker rmi -f registry.company.local/devops/mynginx:v1 registry.company.local/devops/myredis:prod >/dev/null 2>&1 || true
+rm -f /root/images.txt
 docker rmi -f redis:7-alpine >/dev/null 2>&1 || true`,
 		Checks: map[int]string{
 			1: dcheck(`docker image inspect registry.company.local/devops/mynginx:v1 >/dev/null 2>&1`,
 				"registry-тег для nginx создан",
 				"docker tag nginx:alpine registry.company.local/devops/mynginx:v1"),
-			2: dcheck(`docker images registry.company.local/devops/mynginx --format '{{.Tag}}' | grep -qx v1`,
-				"тег виден в списке образов",
-				"docker images registry.company.local/devops/mynginx"),
+			2: dcheck(`grep -q 'registry.company.local/devops/mynginx' /root/images.txt 2>/dev/null && grep -q 'v1' /root/images.txt && `+
+				`docker images registry.company.local/devops/mynginx --format '{{.Tag}}' | grep -qx v1`,
+				"список образов с registry-тегом сохранён в /root/images.txt",
+				"docker images registry.company.local/devops/mynginx > /root/images.txt"),
 			3: dcheck(`docker image inspect redis:7-alpine >/dev/null 2>&1`,
 				"образ redis:7-alpine загружен",
 				"docker pull redis:7-alpine"),

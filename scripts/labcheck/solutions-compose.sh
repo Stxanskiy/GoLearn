@@ -12,7 +12,7 @@ sol_ch_dkc_lab2_2='cd /root/webapp && docker compose exec -T web getent hosts ap
 sol_ch_dkc_lab2_3='curl -s http://localhost/ > /root/app_response.txt'
 sol_ch_dkc_lab2_4='docker network ls --format "{{.Name}}" | grep webapp > /root/compose_network.txt'
 sol_ch_dkc_lab2_5='cd /root/webapp && docker compose up -d --scale app=2 >/dev/null 2>&1; sleep 3'
-sol_ch_dkc_lab2_6='true'
+sol_ch_dkc_lab2_6='cd /root/webapp && docker compose ps --status running --format "{{.Service}}" > /root/scale_status.txt'
 sol_ch_dkc_lab2_7='cd /root/webapp && docker compose up -d --scale app=1 >/dev/null 2>&1 && docker compose restart web >/dev/null 2>&1; sleep 3'
 sol_ch_dkc_lab2_8='cd /root/webapp && docker compose down >/dev/null 2>&1'
 
@@ -62,7 +62,7 @@ s=s.replace("""    depends_on:
 open(p,"w").write(s)
 PYEOF'
 sol_ch_dkc_lab6_2='cd /root/healthapp && docker compose up -d >/dev/null 2>&1; sleep 5'
-sol_ch_dkc_lab6_3='for i in $(seq 1 30); do [ "$(docker inspect -f "{{.State.Health.Status}}" healthapp-db-1 2>/dev/null)" = healthy ] && break; sleep 1; done'
+sol_ch_dkc_lab6_3='for i in $(seq 1 30); do [ "$(docker inspect -f "{{.State.Health.Status}}" healthapp-db-1 2>/dev/null)" = healthy ] && break; sleep 1; done; docker inspect -f "{{.State.Health.Status}}" healthapp-db-1 > /root/health_status.txt'
 sol_ch_dkc_lab6_4='python3 - <<PYEOF
 p="/root/healthapp/docker-compose.yml"
 s=open(p).read()
@@ -81,7 +81,7 @@ sol_ch_dkc_lab6_6='cd /root/healthapp && docker compose down >/dev/null 2>&1'
 
 sol_ch_dkc_lab7_1='cd /root/scaleapp && docker compose up -d >/dev/null 2>&1; sleep 2'
 sol_ch_dkc_lab7_2='cd /root/scaleapp && docker compose up -d --scale worker=3 >/dev/null 2>&1; sleep 2'
-sol_ch_dkc_lab7_3='true'
+sol_ch_dkc_lab7_3='cd /root/scaleapp && docker compose ps --status running --format "{{.Service}}" > /root/worker_status.txt'
 sol_ch_dkc_lab7_4='cd /root/scaleapp && printf "    deploy:\n      replicas: 2\n" >> docker-compose.yml && docker compose up -d >/dev/null 2>&1; sleep 3'
 sol_ch_dkc_lab7_5='cd /root/scaleapp && docker compose up -d --scale worker=1 >/dev/null 2>&1; sleep 2'
 sol_ch_dkc_lab7_6='cd /root/scaleapp && docker compose down >/dev/null 2>&1'

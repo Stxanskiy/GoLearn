@@ -38,10 +38,10 @@
       "type": "check",
       "title": "Проверить ответ Go-сервера",
       "taskid": "dock_lab4_t4_curl",
-      "hint": "<p>Используй <code>docker run</code> для публикации порта и <code>docker ps</code>/<code>docker port</code> для проверки. Сравни порт на хосте и порт внутри контейнера.</p>\n<p>Проверь ответ командой <code>curl http://localhost:8080</code>.</p>",
-      "question_html": "<p>Отправь запрос к Go-серверу на порту <code>8080</code>. Корректный ответ должен содержать текст <code>Hello from Go</code>.</p>",
+      "hint": "<p><code>curl -s http://localhost:8080/ &gt; /root/go_response.txt</code>. Если пусто — смотри <code>docker logs goapp</code>.</p>",
+      "question_html": "<p>Отправь запрос к Go-серверу на порту <code>8080</code> и сохрани ответ в файл.</p><p>Корректный ответ должен содержать текст <code>Hello from Go</code>.</p><p>Файл результата: <code>/root/go_response.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Отправь запрос к Go-серверу на порту <code>8080</code>. Корректный ответ должен содержать текст <code>Hello from Go</code>.</p>"
+      "raw_description": "<p>Отправь запрос к Go-серверу на порту <code>8080</code> и сохрани ответ в файл.</p><p>Корректный ответ должен содержать текст <code>Hello from Go</code>.</p><p>Файл результата: <code>/root/go_response.txt</code>.</p>"
     },
     {
       "type": "quiz",
@@ -155,10 +155,10 @@
       "type": "check",
       "title": "Проверить итог лабораторной",
       "taskid": "dock_lab4_t10_done",
-      "hint": "<p>Проверь контейнеры через <code>docker ps -a</code>, а образы через <code>docker images</code>. Контейнер должен исчезнуть, образ с новым тегом — остаться.</p>",
-      "question_html": "<p>Проверь итог: контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально.</p>",
+      "hint": "<p>Обе команды в один файл: <code>{ docker ps -a --format \"{{.Names}}\"; docker images --format \"{{.Repository}}:{{.Tag}}\"; } &gt; /root/lab4_result.txt</code>.</p>",
+      "question_html": "<p>Собери итог лабораторной в один файл: список контейнеров и список образов.</p><p>В нём должно быть видно, что контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально — контейнер и образ это разные сущности.</p><p>Файл результата: <code>/root/lab4_result.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь итог: контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально.</p>"
+      "raw_description": "<p>Собери итог лабораторной в один файл: список контейнеров и список образов.</p><p>В нём должно быть видно, что контейнер <code>goapp</code> удалён, а образ <code>goapp:nocache</code> остался локально — контейнер и образ это разные сущности.</p><p>Файл результата: <code>/root/lab4_result.txt</code>.</p>"
     }
   ],
   "vm_image": "docker",

@@ -65,10 +65,10 @@
       "type": "check",
       "title": "Посмотреть статус масштабированных сервисов",
       "taskid": "dkc_lab2_t7_ps_scale",
-      "hint": "<p>Используй <code>docker compose ps</code> из каталога проекта. Для состояния сервисов нужен Compose-статус, а не общий список всех контейнеров Docker.</p>",
-      "question_html": "<p>Проверь, что после масштабирования запущено 2 экземпляра сервиса <code>app</code>. Считай именно контейнеры сервиса <code>app</code> в текущем Compose-проекте, а не все контейнеры Docker на VM.</p>",
+      "hint": "<p><code>cd /root/webapp &amp;&amp; docker compose ps --status running --format '{{.Service}}' &gt; /root/scale_status.txt</code></p>",
+      "question_html": "<p>Сохрани список запущенных сервисов Compose-проекта в файл — в нём должно быть ровно две строки <code>app</code>.</p><p>Считай именно контейнеры сервиса <code>app</code>, а не все контейнеры проекта.</p><p>Файл результата: <code>/root/scale_status.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь, что после масштабирования запущено 2 экземпляра сервиса <code>app</code>. Считай именно контейнеры сервиса <code>app</code> в текущем Compose-проекте, а не все контейнеры Docker на VM.</p>"
+      "raw_description": "<p>Сохрани список запущенных сервисов Compose-проекта в файл — в нём должно быть ровно две строки <code>app</code>.</p><p>Считай именно контейнеры сервиса <code>app</code>, а не все контейнеры проекта.</p><p>Файл результата: <code>/root/scale_status.txt</code>.</p>"
     },
     {
       "type": "check",

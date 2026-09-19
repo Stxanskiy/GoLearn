@@ -29,10 +29,10 @@
       "type": "check",
       "title": "Проверить список образов",
       "taskid": "dock_lab7_t3_list",
-      "hint": "<p>Имя должно содержать registry, namespace, repository и tag: <code>registry.company.local/devops/mynginx:v1</code>.</p>",
-      "question_html": "<p>Проверь, что после тега из предыдущей задачи локально появился полный registry-тег <code>registry.company.local/devops/mynginx:v1</code>.</p>\n<pre><code>docker images registry.company.local/devops/mynginx</code></pre>",
+      "hint": "<p><code>docker images registry.company.local/devops/mynginx &gt; /root/images.txt</code>.</p>",
+      "question_html": "<p>Сохрани список образов с полным registry-тегом <code>registry.company.local/devops/mynginx</code> в файл.</p><p>В выводе должен быть тег <code>v1</code>, созданный в предыдущей задаче.</p><p>Файл результата: <code>/root/images.txt</code>.</p>",
       "options": [],
-      "raw_description": "<p>Проверь, что после тега из предыдущей задачи локально появился полный registry-тег <code>registry.company.local/devops/mynginx:v1</code>.</p>\n<pre><code>docker images registry.company.local/devops/mynginx</code></pre>"
+      "raw_description": "<p>Сохрани список образов с полным registry-тегом <code>registry.company.local/devops/mynginx</code> в файл.</p><p>В выводе должен быть тег <code>v1</code>, созданный в предыдущей задаче.</p><p>Файл результата: <code>/root/images.txt</code>.</p>"
     },
     {
       "type": "quiz",

@@ -26,9 +26,10 @@
     {
       "type": "check",
       "title": "Убедиться, что дерево чистое",
-      "hint": "git status должен показывать 'nothing to commit, working tree clean'. Если есть незакоммиченное — закоммить или отмени.",
-      "question_html": "<p>После переписывания истории рабочее дерево должно быть чистым, без незакоммиченных изменений.</p><pre>git status</pre>",
-      "options": []
+      "hint": "<p>Короткий вывод даёт <code>git status --short</code>. Перенаправь его в файл: <code>git -C /root/project status --short &gt; /root/status.txt</code>.</p>",
+      "question_html": "<p>Убедись, что после rebase не осталось незакоммиченных изменений.</p><p>Сохрани короткий вывод <code>git status</code> в файл — у чистого дерева он пустой.</p><p>Файл результата: <code>/root/status.txt</code>.</p>",
+      "options": [],
+      "raw_description": "<p>Убедись, что после rebase не осталось незакоммиченных изменений.</p><p>Сохрани короткий вывод <code>git status</code> в файл — у чистого дерева он пустой.</p><p>Файл результата: <code>/root/status.txt</code>.</p>"
     }
   ]
 }

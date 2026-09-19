@@ -30,14 +30,14 @@ rm -f /root/http_code.txt /root/page.html`,
 		Setup: `set -e
 rm -rf /root/.ssh
 mkdir -p /root/.ssh && chmod 700 /root/.ssh
-rm -f /root/key_info.txt`,
+rm -f /root/key_info.txt /root/key_perms.txt`,
 		Checks: map[int]string{
 			1: check(`[ -f /root/.ssh/mykey ] && [ -f /root/.ssh/mykey.pub ] && grep -q 'ssh-ed25519' /root/.ssh/mykey.pub`,
 				"пара ключей ed25519 создана",
 				"ssh-keygen -t ed25519 -f /root/.ssh/mykey -N '' (флаг -N '' — без пароля)"),
-			2: check(`[ "$(stat -c '%a' /root/.ssh/mykey 2>/dev/null)" = 600 ]`,
-				"права на приватный ключ — 600",
-				"chmod 600 /root/.ssh/mykey — сейчас $(stat -c '%a' /root/.ssh/mykey 2>/dev/null)"),
+			2: check(`[ "$(tr -d ' \n' < /root/key_perms.txt 2>/dev/null)" = 600 ] && [ "$(stat -c '%a' /root/.ssh/mykey 2>/dev/null)" = 600 ]`,
+				"права ключа записаны в /root/key_perms.txt и равны 600",
+				"stat -c '%a' /root/.ssh/mykey > /root/key_perms.txt (если там не 600 — сначала chmod 600)"),
 			3: check(`[ -f /root/.ssh/authorized_keys ] && grep -q "$(cut -d' ' -f2 /root/.ssh/mykey.pub)" /root/.ssh/authorized_keys`,
 				"публичный ключ добавлен в authorized_keys",
 				"cat /root/.ssh/mykey.pub >> /root/.ssh/authorized_keys"),
