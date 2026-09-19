@@ -129,15 +129,21 @@ func main() {
 		CourseIO:     courseRepo,
 		Reviews:      repository.NewReviewRepo(pool),
 		Drafts:       repository.NewDraftRepo(pool),
-		Sandbox:      vmRunner,
+		Sandbox:      sandbox,
 		Code:         codeRunner,
 	}
 
 	// Without object storage uploads stay inline data URIs, so the server still runs.
-	switch store, err := storage.New(context.Background(), storage.LoadConfig()); {
+	switch store, err := storage.New(storage.LoadConfig()); {
 	case err == nil:
 		stores.Images = store
-	case !errors.Is(err, storage.ErrDisabled):
+		// The bucket is prepared again on the first upload, so a warm-up failure is not fatal.
+		if err := store.Warm(context.Background()); err != nil {
+			log.Warn("object storage not ready yet", "error", err)
+		}
+	case errors.Is(err, storage.ErrDisabled):
+		log.Warn("object storage disabled: set S3_ENDPOINT to enable image uploads")
+	default:
 		log.Error("object storage unavailable", "error", err)
 	}
 

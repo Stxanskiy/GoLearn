@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: minio-pvc
+  name: rustfs-pvc
   namespace: golearn
 spec:
   accessModes: [ReadWriteOnce]
@@ -12,35 +12,39 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: minio
+  name: rustfs
   namespace: golearn
 spec:
-  serviceName: minio
+  serviceName: rustfs
   replicas: 1
   selector:
     matchLabels:
-      app: minio
+      app: rustfs
   template:
     metadata:
       labels:
-        app: minio
+        app: rustfs
     spec:
+      # The image runs as uid 10001; fsGroup hands it the PVC.
+      securityContext:
+        fsGroup: 10001
       containers:
-      - name: minio
-        image: minio/minio:latest
-        args: ["server", "/data", "--console-address", ":9001"]
+      - name: rustfs
+        image: rustfs/rustfs:1.0.0@sha256:8cc9801755448b71a786705ce76692c77e14936cccd87cf2fc31842e58f4d1ff
         ports:
         - containerPort: 9000
           name: s3
         - containerPort: 9001
           name: console
         env:
-        - name: MINIO_ROOT_USER
+        - name: RUSTFS_VOLUMES
+          value: /data
+        - name: RUSTFS_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: golearn-secrets
               key: S3_ACCESS_KEY
-        - name: MINIO_ROOT_PASSWORD
+        - name: RUSTFS_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: golearn-secrets
@@ -48,15 +52,15 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+        # RustFS has no health endpoint — an unsigned request answers 403, which an
+        # httpGet probe counts as a failure — so the probes check the S3 port instead.
         readinessProbe:
-          httpGet:
-            path: /minio/health/ready
+          tcpSocket:
             port: 9000
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
-          httpGet:
-            path: /minio/health/live
+          tcpSocket:
             port: 9000
           initialDelaySeconds: 10
           periodSeconds: 30
@@ -70,16 +74,16 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: minio-pvc
+          claimName: rustfs-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: minio
+  name: rustfs
   namespace: golearn
 spec:
   selector:
-    app: minio
+    app: rustfs
   ports:
   - name: s3
     port: 9000
