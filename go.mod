@@ -14,6 +14,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/creack/pty v1.1.24
+
 require (
 	github.com/alecthomas/chroma/v2 v2.24.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

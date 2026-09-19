@@ -50,6 +50,18 @@ Migrations run automatically on startup (`internal/migrate`, tracked in the
 `schema_migrations` table) — no manual psql step.
 
 ## Lab sandboxes
+Two interchangeable backends behind `runner.Engine`, picked by `runner.Dispatcher`:
+
+| Backend | When | Where |
+|---|---|---|
+| `VMRunner` | `FC_ENABLED=1` + an FC host (`FC_SSH_*`) — production | one Firecracker micro-VM per lesson, reached over SSH (`internal/runner/vmrunner.go`) |
+| `ShellRunner` | otherwise; `SANDBOX_LOCAL=1` runs it on this machine's Docker | one container per lesson (`internal/runner/shell.go`) |
+
+The FC host (golden rootfs, guest kernel, `gl-tap`, the `glvm` account) is set up by
+hand and is **not** reproducible from this repo, so local development uses
+`SANDBOX_LOCAL=1` and the images below. `SANDBOX_PRIVILEGED=1` additionally unlocks
+the Docker and Kubernetes courses.
+
 Shell labs run one container **per lesson** (`gl-s-u<user>-l<lesson>`), always
 with `--network none`. Four images, picked per lesson via `tasks.sandbox_image`:
 

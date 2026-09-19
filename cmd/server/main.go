@@ -65,7 +65,9 @@ func main() {
 	simRepo := repository.NewSimRepo(pool)
 	quizAttemptRepo := repository.NewQuizAttemptRepo(pool)
 	codeRunner := runner.New()
-	vmRunner := runner.NewVMRunner()
+	// Two lab backends: Firecracker micro-VMs when an FC host is configured, plain
+	// containers otherwise (SANDBOX_LOCAL runs them on this machine's Docker).
+	sandbox := runner.NewDispatcher(runner.NewShellRunner(), runner.NewVMRunner())
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -78,7 +80,7 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, vmRunner, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, sandbox, log)
 
 	// Seed the built-in simulator scenarios into the DB once so they are editable.
 	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)
