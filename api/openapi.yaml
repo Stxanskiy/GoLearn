@@ -1366,6 +1366,34 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+  /admin/lessons/{lessonId}/draft:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Open the course draft on this lesson
+      operationId: adminOpenLessonDraft
+      description: |
+        Opens the draft of the lesson's course, creating it when there is none, and answers with
+        this lesson's copy inside the draft. Lets the studio keep the author on the lesson they
+        were editing instead of sending them to the course screen. Needs `can_edit`.
+        A lesson that is already editable (draft course, or an unpublished one) answers with itself.
+        `404` when the lesson has no copy in the draft, because it was deleted there.
+      responses:
+        '200':
+          description: Draft already existed, or the lesson needs no draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLessonRef' }
+        '201':
+          description: Draft created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLessonRef' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /admin/lessons/{lessonId}/move:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -2489,6 +2517,14 @@ components:
       required: [url]
       properties:
         url: { type: string, description: Public URL of the stored image. }
+
+    DraftLessonRef:
+      type: object
+      description: Where to continue editing after the course draft has been opened.
+      required: [course_id, lesson_id]
+      properties:
+        course_id: { type: integer }
+        lesson_id: { type: integer }
 
     LinkRef:
       type: object

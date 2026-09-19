@@ -221,6 +221,20 @@ func (f fakeLessons) DuplicateLesson(_ context.Context, id int) (int, error) {
 	return cp.ID, nil
 }
 
+// DraftCopyOf mirrors the real copy, which keeps the slug of the lesson it was made from.
+func (f fakeLessons) DraftCopyOf(_ context.Context, draftModuleID, originID int) (int, error) {
+	origin := f.lesson(originID)
+	if origin == nil {
+		return 0, pgx.ErrNoRows
+	}
+	for _, l := range f.lessons {
+		if l.ModuleID == draftModuleID && l.Slug == origin.Slug {
+			return l.ID, nil
+		}
+	}
+	return 0, pgx.ErrNoRows
+}
+
 func (f fakeLessons) EnsureQuiz(_ context.Context, lessonID int, _ string) (int, error) {
 	if _, ok := f.questions[lessonID]; !ok {
 		f.questions[lessonID] = []model.QuizQuestion{}

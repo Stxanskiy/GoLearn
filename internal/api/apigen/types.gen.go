@@ -1160,6 +1160,12 @@ type DraftChanges struct {
 	Lessons []LessonChange `json:"lessons"`
 }
 
+// DraftLessonRef Where to continue editing after the course draft has been opened.
+type DraftLessonRef struct {
+	CourseID int `json:"course_id"`
+	LessonID int `json:"lesson_id"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	Error ErrorBody `json:"error"`

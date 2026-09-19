@@ -87,3 +87,44 @@ func (a *API) discardDraft(w http.ResponseWriter, r *http.Request, course course
 func itemChanges(c repository.ItemChanges) apigen.ItemChanges {
 	return apigen.ItemChanges{Added: c.Added, Removed: c.Removed, Modified: c.Modified}
 }
+
+// adminOpenLessonDraft opens the course draft (creating it when needed) and answers with this
+// lesson's copy inside it, so the studio can keep the author on the same lesson.
+func (a *API) adminOpenLessonDraft(w http.ResponseWriter, r *http.Request) {
+	lesson, course, ok := a.managedLesson(w, r, needEdit)
+	if !ok {
+		return
+	}
+	// A draft lesson, or a lesson of an unpublished course, is already editable.
+	if course.module.DraftOf != nil || !course.module.Published {
+		writeJSON(w, http.StatusOK, apigen.DraftLessonRef{CourseID: course.module.ID, LessonID: lesson.ID})
+		return
+	}
+	ctx := r.Context()
+	draft, err := a.Modules.DraftFor(ctx, course.module.ID)
+	status := http.StatusOK
+	if isNotFound(err) {
+		var id int
+		id, err = a.Drafts.Create(ctx, course.module.ID)
+		if isUniqueViolation(err) {
+			draft, err = a.Modules.DraftFor(ctx, course.module.ID)
+		} else if err == nil {
+			status = http.StatusCreated
+			draft, err = a.Modules.GetByID(ctx, id)
+		}
+	}
+	if err != nil {
+		a.internalError(w, "admin: open lesson draft", err)
+		return
+	}
+	copyID, err := a.Lessons.DraftCopyOf(ctx, draft.ID, lesson.ID)
+	if isNotFound(err) {
+		writeError(w, http.StatusNotFound, codeNotFound, "lesson is not part of the draft")
+		return
+	}
+	if err != nil {
+		a.internalError(w, "admin: draft lesson copy", err)
+		return
+	}
+	writeJSON(w, status, apigen.DraftLessonRef{CourseID: draft.ID, LessonID: copyID})
+}
