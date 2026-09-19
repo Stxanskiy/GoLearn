@@ -176,6 +176,10 @@ func (a *API) planImport(w http.ResponseWriter, r *http.Request) (importPlan, bo
 		Slug: doc.Slug, Title: doc.Title, Track: doc.Track, Difficulty: apigen.Difficulty(doc.Difficulty),
 		Description: &doc.Description, Category: &doc.Category, Accent: &doc.Accent, EstMinutes: &doc.EstMinutes, Tags: &doc.Tags,
 	}
+	// The document omits the flag when it is false, so only a true one is carried over.
+	if doc.IsTrainer {
+		input.IsTrainer = &doc.IsTrainer
+	}
 	if code := importLabel(doc.Label); code != "" {
 		label := apigen.CourseLabel(code)
 		input.Label = &label

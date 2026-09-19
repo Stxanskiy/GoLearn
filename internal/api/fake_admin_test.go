@@ -440,6 +440,16 @@ func (f fakeModules) Drafts(_ context.Context) (map[int]int, error) {
 func (f fakeModules) TrackCounts(_ context.Context) (map[string]int, error) {
 	out := map[string]int{}
 	for _, m := range f.modules {
+		if !m.IsTrainer {
+			out[m.Track]++
+		}
+	}
+	return out, nil
+}
+
+func (f fakeModules) TrackUsage(_ context.Context) (map[string]int, error) {
+	out := map[string]int{}
+	for _, m := range f.modules {
 		out[m.Track]++
 	}
 	return out, nil

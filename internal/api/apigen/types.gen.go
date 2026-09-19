@@ -559,6 +559,9 @@ type AdminCourse struct {
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
 
+	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
+	IsTrainer bool `json:"is_trainer"`
+
 	// Label Null when derived.
 	Label    *CourseLabel `json:"label"`
 	OrderNum int          `json:"order_num"`
@@ -602,6 +605,9 @@ type AdminCourseInput struct {
 	// EstMinutes 0 → lessons × 10.
 	EstMinutes *int `json:"est_minutes,omitempty"`
 
+	// IsTrainer Practice-only course. Admin only; omitted → unchanged.
+	IsTrainer *bool `json:"is_trainer,omitempty"`
+
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label *CourseLabel `json:"label,omitempty"`
 
@@ -611,7 +617,7 @@ type AdminCourseInput struct {
 	Tags      *[]string `json:"tags,omitempty"`
 	Title     string    `json:"title"`
 
-	// Track Existing specialization slug; `gym` is admin only.
+	// Track Existing specialization slug.
 	Track string `json:"track"`
 }
 
@@ -645,6 +651,9 @@ type AdminCourseRow struct {
 	// IconURL Uploaded course icon; empty when none.
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
+
+	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
+	IsTrainer bool `json:"is_trainer"`
 
 	// Label Null when derived.
 	Label        *CourseLabel `json:"label"`
@@ -962,6 +971,9 @@ type CourseCard struct {
 	IconURL string `json:"icon_url"`
 	ID      int    `json:"id"`
 
+	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
+	IsTrainer bool `json:"is_trainer"`
+
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label            CourseLabel    `json:"label"`
 	LessonsCompleted int            `json:"lessons_completed"`
@@ -1110,7 +1122,7 @@ type DashboardOverview struct {
 	TasksSolved     int `json:"tasks_solved"`
 	TestsPassed     int `json:"tests_passed"`
 
-	// TrainersDone Completed trainer (gym) courses.
+	// TrainersDone Completed trainer courses.
 	TrainersDone  int `json:"trainers_done"`
 	TrainersTotal int `json:"trainers_total"`
 }
@@ -1349,9 +1361,12 @@ type LessonLink struct {
 
 // LessonNav defines model for LessonNav.
 type LessonNav struct {
-	Course            LinkRef     `json:"course"`
-	CourseProgressPct int         `json:"course_progress_pct"`
-	Next              *LessonLink `json:"next,omitempty"`
+	Course            LinkRef `json:"course"`
+	CourseProgressPct int     `json:"course_progress_pct"`
+
+	// IsTrainer The lesson belongs to a practice-only course.
+	IsTrainer bool        `json:"is_trainer"`
+	Next      *LessonLink `json:"next,omitempty"`
 
 	// Position 1-based among published lessons.
 	Position int         `json:"position"`

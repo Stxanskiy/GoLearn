@@ -132,14 +132,17 @@ func TestAdminCreateCourse(t *testing.T) {
 	if w := post(otherToken, `{"slug":"ansible","title":"Dup","track":"devops","difficulty":"beginner"}`); w.Code != http.StatusConflict || errorCode(t, w) != codeSlugTaken {
 		t.Errorf("duplicate slug: %d %s", w.Code, w.Body)
 	}
-	if w := post(otherToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner","published":true}`); w.Code != http.StatusUnprocessableEntity {
-		t.Errorf("author gym track: %d %s", w.Code, w.Body)
+	if w := post(otherToken, `{"slug":"gymx","title":"Gym","track":"devops","difficulty":"beginner","is_trainer":true}`); w.Code != http.StatusUnprocessableEntity {
+		t.Errorf("author marks a course as a trainer: %d %s", w.Code, w.Body)
 	}
-	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner","published":true}`); w.Code != http.StatusForbidden || errorCode(t, w) != codeReviewRequired {
+	if w := post(otherToken, `{"slug":"gymx","title":"Gym","track":"nope","difficulty":"beginner"}`); w.Code != http.StatusUnprocessableEntity {
+		t.Errorf("unknown track: %d %s", w.Code, w.Body)
+	}
+	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"devops","difficulty":"beginner","published":true}`); w.Code != http.StatusForbidden || errorCode(t, w) != codeReviewRequired {
 		t.Errorf("admin creates published course: %d %s", w.Code, w.Body)
 	}
-	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"gym","difficulty":"beginner"}`); w.Code != http.StatusCreated || decode[apigen.AdminCourse](t, w).Published {
-		t.Errorf("admin gym track: %d %s", w.Code, w.Body)
+	if w := post(adminToken, `{"slug":"gymx","title":"Gym","track":"devops","difficulty":"beginner","is_trainer":true}`); w.Code != http.StatusCreated || !decode[apigen.AdminCourse](t, w).IsTrainer {
+		t.Errorf("admin marks a course as a trainer: %d %s", w.Code, w.Body)
 	}
 
 	w = post(otherToken, `{"slug":"Bad Slug","title":"","track":"nope","difficulty":"easy","label":"hard","est_minutes":-1,"cover_url":"javascript:alert(1)"}`)
@@ -309,5 +312,25 @@ func withBody(data []byte, contentType string) reqOpt {
 		r.Body = io.NopCloser(bytes.NewReader(data))
 		r.ContentLength = int64(len(data))
 		r.Header.Set("Content-Type", contentType)
+	}
+}
+
+func TestAuthorKeepsTheTrainerFlagOfAnOwnedCourse(t *testing.T) {
+	h, c := authorsFixture(t)
+	other := 5
+	c.modules[5].Published = false
+	c.modules[5].OwnerID = &other
+
+	body := `{"slug":"gym-linux","title":"Linux тренажёр","track":"devops","difficulty":"beginner"`
+	w := do(h, http.MethodPut, "/admin/courses/30", body+`}`, withCookie(otherToken))
+	if got := decode[apigen.AdminCourse](t, w); w.Code != http.StatusOK || !got.IsTrainer {
+		t.Errorf("owner saves a trainer unchanged: %d %s", w.Code, w.Body)
+	}
+	w = do(h, http.MethodPut, "/admin/courses/30", body+`,"is_trainer":false}`, withCookie(otherToken))
+	if w.Code != http.StatusUnprocessableEntity {
+		t.Errorf("owner clears the trainer flag: %d %s", w.Code, w.Body)
+	}
+	if got := decode[apigen.AdminCourse](t, do(h, http.MethodPut, "/admin/courses/30", body+`,"is_trainer":false}`, withCookie(adminToken))); got.IsTrainer {
+		t.Errorf("admin clears the trainer flag: %+v", got)
 	}
 }

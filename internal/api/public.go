@@ -97,18 +97,23 @@ func (a *API) landingTracks(ctx context.Context) ([]apigen.LandingTrack, error) 
 	specOfModule := make(map[int]string, len(modules))
 	courses := make(map[string]int)
 	for _, m := range modules {
+		if m.IsTrainer {
+			continue
+		}
 		spec := catalog.SpecForTrack(m.Track)
 		specOfModule[m.ID] = spec
 		courses[spec]++
 	}
 	lessonCount := make(map[string]int)
 	for _, l := range lessons {
-		lessonCount[specOfModule[l.ModuleID]]++
+		if spec, ok := specOfModule[l.ModuleID]; ok {
+			lessonCount[spec]++
+		}
 	}
 
 	tracks := []apigen.LandingTrack{}
 	for _, s := range specs {
-		if courses[s.Slug] == 0 || s.Slug == catalog.GymSpec {
+		if courses[s.Slug] == 0 {
 			continue
 		}
 		tracks = append(tracks, apigen.LandingTrack{
@@ -156,7 +161,7 @@ func (a *API) getPublicCatalog(w http.ResponseWriter, r *http.Request) {
 	}
 	out := apigen.Catalog{
 		Specializations: make([]apigen.SpecializationWithCourses, 0, len(specs)),
-		Trainers:        courseCards(courses, catalog.GymSpec),
+		Trainers:        trainerCards(courses),
 	}
 	for _, s := range specs {
 		out.Specializations = append(out.Specializations, specWithCourses(s, courses))
@@ -256,11 +261,8 @@ func (a *API) getCoursePreview(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// previewSpec returns the course specialization, or nil when it is a trainer or hidden.
+// previewSpec returns the course specialization, or nil when it is hidden.
 func (a *API) previewSpec(ctx context.Context, spec string) *apigen.Specialization {
-	if spec == catalog.GymSpec {
-		return nil
-	}
 	s, err := a.Specs.Get(ctx, spec)
 	if err != nil || !s.Published {
 		return nil

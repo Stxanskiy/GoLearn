@@ -64,7 +64,7 @@ func (a *API) getCatalog(w http.ResponseWriter, r *http.Request) {
 	}
 	out := apigen.Catalog{
 		Specializations: make([]apigen.SpecializationWithCourses, 0, len(specs)),
-		Trainers:        courseCards(courses, catalog.GymSpec),
+		Trainers:        trainerCards(courses),
 	}
 	for _, s := range specs {
 		out.Specializations = append(out.Specializations, specWithCourses(s, courses))
@@ -119,10 +119,13 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "course: progress", err)
 		return
 	}
-	prev, next, err := a.Modules.Neighbors(ctx, *m, catalog.SpecTracks(catalog.SpecForTrack(m.Track)))
-	if err != nil {
-		a.internalError(w, "course: neighbors", err)
-		return
+	// A trainer stands on its own, so it gets no place in the course path.
+	var prev, next *model.Module
+	if !m.IsTrainer {
+		if prev, next, err = a.Modules.Neighbors(ctx, *m, catalog.SpecTracks(catalog.SpecForTrack(m.Track))); err != nil {
+			a.internalError(w, "course: neighbors", err)
+			return
+		}
 	}
 
 	c := catalog.BuildCourse(*m, lessons, up)
@@ -170,11 +173,22 @@ func specWithCourses(s model.Specialization, courses []catalog.Course) apigen.Sp
 	}
 }
 
-// courseCards returns cards of the courses that belong to spec.
+// courseCards returns cards of the regular courses that belong to spec; trainers have their own list.
 func courseCards(courses []catalog.Course, spec string) []apigen.CourseCard {
 	cards := []apigen.CourseCard{}
 	for _, c := range courses {
-		if c.Spec == spec {
+		if c.Spec == spec && !c.Module.IsTrainer {
+			cards = append(cards, courseCard(c))
+		}
+	}
+	return cards
+}
+
+// trainerCards returns cards of the practice-only courses, whatever specialization they belong to.
+func trainerCards(courses []catalog.Course) []apigen.CourseCard {
+	cards := []apigen.CourseCard{}
+	for _, c := range courses {
+		if c.Module.IsTrainer {
 			cards = append(cards, courseCard(c))
 		}
 	}
@@ -194,6 +208,7 @@ func courseCard(c catalog.Course) apigen.CourseCard {
 		Category:         c.Category,
 		Label:            apigen.CourseLabel(c.Label),
 		Difficulty:       apigen.Difficulty(c.Module.Difficulty),
+		IsTrainer:        c.Module.IsTrainer,
 		Tags:             tags,
 		CoverURL:         "/api/v1/courses/" + url.PathEscape(c.Module.Slug) + "/cover",
 		IconURL:          c.Module.IconURL,

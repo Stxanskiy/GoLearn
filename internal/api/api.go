@@ -38,6 +38,7 @@ type moduleStore interface {
 	Stats(ctx context.Context) (repository.PlatformStats, error)
 	ListManaged(ctx context.Context, userID int, all bool) ([]repository.CourseRow, error)
 	TrackCounts(ctx context.Context) (map[string]int, error)
+	TrackUsage(ctx context.Context) (map[string]int, error)
 	DraftFor(ctx context.Context, liveID int) (*model.Module, error)
 	Drafts(ctx context.Context) (map[int]int, error)
 	NextOrder(ctx context.Context) (int, error)

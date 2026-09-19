@@ -18,7 +18,7 @@ func (h *Handler) TrainersPage(w http.ResponseWriter, r *http.Request) {
 	}
 	var gyms []CourseCard
 	for _, m := range modules {
-		if m.Track == "gym" {
+		if m.IsTrainer {
 			gyms = append(gyms, h.buildCard(ctx, m, pmap))
 		}
 	}

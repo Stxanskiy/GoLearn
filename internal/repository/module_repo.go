@@ -19,14 +19,14 @@ func NewModuleRepo(pool *pgxpool.Pool) *ModuleRepo {
 }
 
 const moduleCols = `id, slug, title, description, order_num, track, difficulty, prerequisites,
-	category, label, tags, cover_image, icon_url, accent, est_minutes, source, published, owner_id, created_at, draft_of`
+	category, label, tags, cover_image, icon_url, accent, est_minutes, is_trainer, source, published, owner_id, created_at, draft_of`
 
 func scanModule(row pgx.Row) (model.Module, error) {
 	var m model.Module
 	var prereqJSON, tagsJSON []byte
 	err := row.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
-		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
-		&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf)
+		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes,
+		&m.IsTrainer, &m.Source, &m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf)
 	if err != nil {
 		return m, err
 	}
@@ -88,10 +88,10 @@ func (r *ModuleRepo) Create(ctx context.Context, m model.Module) (int, error) {
 	var id int
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
-		   category, label, tags, cover_image, accent, est_minutes, source, published, owner_id)
-		 VALUES ($1,$2,$3,$4,$5,$6,'[]',$7,$8,$9,$10,$11,$12,'admin',$13,$14) RETURNING id`,
+		   category, label, tags, cover_image, accent, est_minutes, is_trainer, source, published, owner_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,'[]',$7,$8,$9,$10,$11,$12,$13,'admin',$14,$15) RETURNING id`,
 		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
-		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.Published, m.OwnerID).Scan(&id)
+		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published, m.OwnerID).Scan(&id)
 	return id, err
 }
 
@@ -100,9 +100,10 @@ func (r *ModuleRepo) Update(ctx context.Context, m model.Module) error {
 	tags, _ := json.Marshal(m.Tags)
 	_, err := r.pool.Exec(ctx,
 		`UPDATE modules SET slug=$1, title=$2, description=$3, order_num=$4, track=$5, difficulty=$6,
-		   category=$7, label=$8, tags=$9, cover_image=$10, accent=$11, est_minutes=$12, published=$13 WHERE id=$14`,
+		   category=$7, label=$8, tags=$9, cover_image=$10, accent=$11, est_minutes=$12, is_trainer=$13,
+		   published=$14 WHERE id=$15`,
 		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
-		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.Published, m.ID)
+		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published, m.ID)
 	return err
 }
 
@@ -156,8 +157,8 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 		var prereqJSON, tagsJSON []byte
 		m := &c.Module
 		if err := rows.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
-			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
-			&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &c.Lessons, &c.Labs); err != nil {
+			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes,
+			&m.IsTrainer, &m.Source, &m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &c.Lessons, &c.Labs); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal(prereqJSON, &m.Prerequisites)
@@ -167,9 +168,19 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 	return out, rows.Err()
 }
 
-// TrackCounts returns the number of courses per track.
+// TrackCounts returns the number of courses per track; trainers are not courses.
 func (r *ModuleRepo) TrackCounts(ctx context.Context) (map[string]int, error) {
-	rows, err := r.pool.Query(ctx, `SELECT track, count(*) FROM modules WHERE draft_of IS NULL GROUP BY track`)
+	return r.trackCounts(ctx, `AND NOT is_trainer`)
+}
+
+// TrackUsage returns the number of modules per track, trainers included; it answers
+// whether anything still references the track.
+func (r *ModuleRepo) TrackUsage(ctx context.Context) (map[string]int, error) {
+	return r.trackCounts(ctx, "")
+}
+
+func (r *ModuleRepo) trackCounts(ctx context.Context, filter string) (map[string]int, error) {
+	rows, err := r.pool.Query(ctx, `SELECT track, count(*) FROM modules WHERE draft_of IS NULL `+filter+` GROUP BY track`)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +250,7 @@ func (r *ModuleRepo) SetPublished(ctx context.Context, id int, published bool) e
 }
 
 // Move swaps a module's order_num with its neighbour (dir "up"/"down") within the
-// same track — this is the course order in the catalogue and the roadmap.
+// same track and kind — this is the course order in the catalogue and the roadmap.
 func (r *ModuleRepo) Move(ctx context.Context, id int, dir string) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -248,15 +259,18 @@ func (r *ModuleRepo) Move(ctx context.Context, id int, dir string) error {
 	defer tx.Rollback(ctx)
 	var track string
 	var ord int
-	if err := tx.QueryRow(ctx, `SELECT track, order_num FROM modules WHERE id=$1`, id).Scan(&track, &ord); err != nil {
+	var trainer bool
+	if err := tx.QueryRow(ctx, `SELECT track, order_num, is_trainer FROM modules WHERE id=$1`, id).Scan(&track, &ord, &trainer); err != nil {
 		return err
 	}
-	q := `SELECT id, order_num FROM modules WHERE track=$1 AND draft_of IS NULL AND order_num > $2 ORDER BY order_num ASC LIMIT 1`
+	q := `SELECT id, order_num FROM modules
+	      WHERE track=$1 AND draft_of IS NULL AND is_trainer=$3 AND order_num > $2 ORDER BY order_num ASC LIMIT 1`
 	if dir == "up" {
-		q = `SELECT id, order_num FROM modules WHERE track=$1 AND draft_of IS NULL AND order_num < $2 ORDER BY order_num DESC LIMIT 1`
+		q = `SELECT id, order_num FROM modules
+		     WHERE track=$1 AND draft_of IS NULL AND is_trainer=$3 AND order_num < $2 ORDER BY order_num DESC LIMIT 1`
 	}
 	var nid, nord int
-	if err := tx.QueryRow(ctx, q, track, ord).Scan(&nid, &nord); err != nil {
+	if err := tx.QueryRow(ctx, q, track, ord, trainer).Scan(&nid, &nord); err != nil {
 		if err == pgx.ErrNoRows {
 			return tx.Commit(ctx)
 		}
@@ -290,7 +304,7 @@ func (r *ModuleRepo) GetByID(ctx context.Context, id int) (*model.Module, error)
 func (r *ModuleRepo) Neighbors(ctx context.Context, m model.Module, tracks []string) (prev, next *model.Module, err error) {
 	p, err := scanModule(r.pool.QueryRow(ctx,
 		`SELECT `+moduleCols+` FROM modules
-		 WHERE track = ANY($1) AND published AND order_num < $2
+		 WHERE track = ANY($1) AND published AND NOT is_trainer AND order_num < $2
 		 ORDER BY order_num DESC LIMIT 1`, tracks, m.OrderNum))
 	if err == nil {
 		prev = &p
@@ -300,7 +314,7 @@ func (r *ModuleRepo) Neighbors(ctx context.Context, m model.Module, tracks []str
 
 	n, err := scanModule(r.pool.QueryRow(ctx,
 		`SELECT `+moduleCols+` FROM modules
-		 WHERE track = ANY($1) AND published AND order_num > $2
+		 WHERE track = ANY($1) AND published AND NOT is_trainer AND order_num > $2
 		 ORDER BY order_num ASC LIMIT 1`, tracks, m.OrderNum))
 	if err == nil {
 		next = &n
@@ -318,7 +332,7 @@ type PlatformStats struct {
 	AutoChecked int
 }
 
-// Stats counts published content; trainer (gym) modules are not counted as courses.
+// Stats counts published content; trainers are not counted as courses.
 func (r *ModuleRepo) Stats(ctx context.Context) (PlatformStats, error) {
 	var s PlatformStats
 	err := r.pool.QueryRow(ctx, `
@@ -326,7 +340,7 @@ func (r *ModuleRepo) Stats(ctx context.Context) (PlatformStats, error) {
 			SELECT l.id, l.kind FROM lessons l JOIN modules m ON m.id = l.module_id
 			WHERE l.published AND m.published
 		)
-		SELECT (SELECT count(*) FROM modules WHERE published AND track <> 'gym'),
+		SELECT (SELECT count(*) FROM modules WHERE published AND NOT is_trainer),
 		       (SELECT count(*) FROM pub),
 		       (SELECT count(*) FROM pub WHERE kind = 'lab'),
 		       (SELECT count(*) FROM tasks t JOIN pub ON pub.id = t.lesson_id WHERE t.check_script <> '')`).
