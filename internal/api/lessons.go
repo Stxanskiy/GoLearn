@@ -92,6 +92,10 @@ func (a *API) getLesson(w http.ResponseWriter, r *http.Request) {
 	uid := userFrom(ctx).ID
 	l, m := ref.lesson, ref.module
 
+	if !a.requireCourseAccess(w, r, m.AccessTier) {
+		return
+	}
+
 	siblings, err := a.Lessons.GetByModule(ctx, m.ID)
 	if err != nil {
 		a.internalError(w, "lesson: siblings", err)

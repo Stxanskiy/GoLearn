@@ -207,6 +207,7 @@ type Stores struct {
 	Sandbox      sandbox
 	Code         codeRunner
 	Images       imageStore
+	Billing      billingStore
 }
 
 // imageStore puts uploaded images into object storage; nil when it is not configured.
@@ -258,6 +259,11 @@ func (a *API) Routes() chi.Router {
 		r.Use(requireUser)
 		r.Get("/me", a.getMe)
 		r.Get("/me/profile", a.getProfile)
+		r.Get("/me/subscription", a.getSubscription)
+		r.Post("/billing/checkout", a.startCheckout)
+		// Stands in for a provider webhook until one exists. Kept behind auth so
+		// the stub cannot be poked from outside; a real webhook would not be.
+		r.Post("/billing/confirm", a.confirmCheckout)
 		r.Get("/me/dashboard", a.getDashboard)
 		r.Get("/catalog", a.getCatalog)
 		r.Get("/specializations/{specSlug}", a.getSpecialization)
@@ -304,6 +310,8 @@ func (a *API) Routes() chi.Router {
 			r.Delete("/admin/courses/{courseId}", a.adminDeleteCourse)
 			r.Put("/admin/courses/{courseId}/published", a.adminSetCoursePublished)
 			r.With(requireAdmin).Post("/admin/courses/{courseId}/move", a.adminMoveCourse)
+			// What the subscription is worth is an admin decision, not an author's.
+			r.With(requireAdmin).Patch("/admin/courses/{courseId}/access-tier", a.setCourseAccessTier)
 			r.Put("/admin/courses/{courseId}/cover", a.adminUploadCourseCover)
 			r.Delete("/admin/courses/{courseId}/cover", a.adminDeleteCourseCover)
 			r.Put("/admin/courses/{courseId}/icon", a.adminUploadCourseIcon)

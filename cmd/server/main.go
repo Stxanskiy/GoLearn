@@ -131,6 +131,7 @@ func main() {
 		Drafts:       repository.NewDraftRepo(pool),
 		Sandbox:      vmRunner,
 		Code:         codeRunner,
+		Billing:      repository.NewBillingRepo(pool),
 	}
 
 	// Without object storage uploads stay inline data URIs, so the server still runs.

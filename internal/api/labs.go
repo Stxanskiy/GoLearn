@@ -87,6 +87,10 @@ func (a *API) getLab(w http.ResponseWriter, r *http.Request) {
 	uid := userFrom(ctx).ID
 	l, m := ref.lesson, ref.module
 
+	if !a.requireCourseAccess(w, r, m.AccessTier) {
+		return
+	}
+
 	passed, err := a.Submissions.PassedTaskIDs(ctx, uid, l.ID)
 	if err != nil {
 		a.internalError(w, "lab: passed tasks", err)

@@ -19,14 +19,14 @@ func NewModuleRepo(pool *pgxpool.Pool) *ModuleRepo {
 }
 
 const moduleCols = `id, slug, title, description, order_num, track, difficulty, prerequisites,
-	category, label, tags, cover_image, icon_url, accent, est_minutes, source, published, owner_id, created_at, draft_of`
+	category, label, tags, cover_image, icon_url, accent, est_minutes, source, published, owner_id, created_at, draft_of, access_tier`
 
 func scanModule(row pgx.Row) (model.Module, error) {
 	var m model.Module
 	var prereqJSON, tagsJSON []byte
 	err := row.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
 		&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
-		&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf)
+		&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &m.AccessTier)
 	if err != nil {
 		return m, err
 	}
@@ -157,7 +157,7 @@ func (r *ModuleRepo) ListManaged(ctx context.Context, userID int, all bool) ([]C
 		m := &c.Module
 		if err := rows.Scan(&m.ID, &m.Slug, &m.Title, &m.Description, &m.OrderNum, &m.Track, &m.Difficulty,
 			&prereqJSON, &m.Category, &m.Label, &tagsJSON, &m.CoverImage, &m.IconURL, &m.Accent, &m.EstMinutes, &m.Source,
-			&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &c.Lessons, &c.Labs); err != nil {
+			&m.Published, &m.OwnerID, &m.CreatedAt, &m.DraftOf, &m.AccessTier, &c.Lessons, &c.Labs); err != nil {
 			return nil, err
 		}
 		_ = json.Unmarshal(prereqJSON, &m.Prerequisites)
