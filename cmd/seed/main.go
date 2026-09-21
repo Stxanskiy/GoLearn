@@ -73,16 +73,17 @@ func main() {
 		var moduleID int
 		err := pool.QueryRow(ctx,
 			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
-			   category, label, tags, cover_image, accent, est_minutes, source)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'seed')
+			   category, label, tags, cover_image, accent, est_minutes, is_trainer, source)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'seed')
 			 ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description,
 			   track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
 			   prerequisites=EXCLUDED.prerequisites, category=EXCLUDED.category, label=EXCLUDED.label,
 			   tags=EXCLUDED.tags, accent=EXCLUDED.accent, est_minutes=EXCLUDED.est_minutes,
+			   is_trainer=EXCLUDED.is_trainer,
 			   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), modules.cover_image)
 			 RETURNING id`,
 			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON,
-			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes).Scan(&moduleID)
+			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes, mod.Trainer).Scan(&moduleID)
 		if err != nil {
 			log.Fatalf("upsert module %s: %v", mod.Slug, err)
 		}
@@ -177,6 +178,7 @@ type M struct {
 	CoverImage               string   // real photo URL/path; empty -> generated SVG
 	Accent                   string   // gradient key; empty -> by category
 	EstMinutes               int      // 0 -> derived from lesson count
+	Trainer                  bool     // practice-only course, listed under trainers
 	Lessons                  []L
 }
 type L struct {

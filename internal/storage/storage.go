@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -40,6 +41,9 @@ type Store struct {
 	client    *minio.Client
 	bucket    string
 	publicURL string
+
+	mu    sync.Mutex
+	ready bool // the bucket exists and is publicly readable
 }
 
 // LoadConfig reads the S3 settings; an empty endpoint means storage is disabled.
@@ -54,8 +58,10 @@ func LoadConfig() Config {
 	}
 }
 
-// New connects to the bucket and makes sure it exists and is publicly readable.
-func New(ctx context.Context, cfg Config) (*Store, error) {
+// New builds the client for the configured bucket. It does not reach the server:
+// the bucket is prepared on the first upload, so storage that starts after the
+// server still works (Warm reports whether it is up already).
+func New(cfg Config) (*Store, error) {
 	if cfg.Endpoint == "" {
 		return nil, ErrDisabled
 	}
@@ -76,11 +82,24 @@ func New(ctx context.Context, cfg Config) (*Store, error) {
 		public = fmt.Sprintf("%s://%s/%s", scheme, cfg.Endpoint, cfg.Bucket)
 	}
 
-	s := &Store{client: client, bucket: cfg.Bucket, publicURL: public}
-	if err := s.ensureBucket(ctx); err != nil {
-		return nil, err
+	return &Store{client: client, bucket: cfg.Bucket, publicURL: public}, nil
+}
+
+// Warm prepares the bucket ahead of the first upload; the caller only logs its error.
+func (s *Store) Warm(ctx context.Context) error { return s.ensureReady(ctx) }
+
+// ensureReady creates the bucket and its policy once, retrying on every call until it succeeds.
+func (s *Store) ensureReady(ctx context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.ready {
+		return nil
 	}
-	return s, nil
+	if err := s.ensureBucket(ctx); err != nil {
+		return err
+	}
+	s.ready = true
+	return nil
 }
 
 func (s *Store) ensureBucket(ctx context.Context) error {
@@ -104,6 +123,9 @@ func publicReadPolicy(bucket string) string {
 // Put stores the image under a fresh key and returns its public URL. Keys are
 // random, not content-addressed, so deleting one owner's image never breaks another's.
 func (s *Store) Put(ctx context.Context, kind Kind, img Image) (string, error) {
+	if err := s.ensureReady(ctx); err != nil {
+		return "", err
+	}
 	name, err := randomName()
 	if err != nil {
 		return "", err
@@ -130,6 +152,9 @@ func (s *Store) Delete(ctx context.Context, publicURL string) error {
 	key, ok := s.keyOf(publicURL)
 	if !ok {
 		return nil
+	}
+	if err := s.ensureReady(ctx); err != nil {
+		return err
 	}
 	return s.client.RemoveObject(ctx, s.bucket, key, minio.RemoveObjectOptions{})
 }

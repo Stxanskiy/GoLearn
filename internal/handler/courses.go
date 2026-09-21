@@ -121,10 +121,10 @@ func (h *Handler) CoursesPage(w http.ResponseWriter, r *http.Request) {
 	done := make(map[string]int)
 	total, doneCourses := 0, 0
 	for _, m := range modules {
-		sp := catalog.SpecForTrack(m.Track)
-		if sp == "gym" {
+		if m.IsTrainer {
 			continue // trainers live on /trainers, not in the catalog
 		}
+		sp := catalog.SpecForTrack(m.Track)
 		count[sp]++
 		total++
 		c := h.buildCard(ctx, m, pmap)

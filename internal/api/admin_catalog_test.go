@@ -22,7 +22,7 @@ func TestAdminSpecializations(t *testing.T) {
 	for _, s := range specs {
 		counts[s.Slug] = s.CoursesCount
 	}
-	if w.Code != http.StatusOK || counts["devops"] != 4 || counts["security"] != 1 || counts["gym"] != 1 || counts["database"] != 0 {
+	if w.Code != http.StatusOK || counts["devops"] != 4 || counts["security"] != 1 || counts["database"] != 0 {
 		t.Errorf("course counts = %v", counts)
 	}
 	for _, tt := range []struct{ method, path, body string }{
@@ -39,7 +39,7 @@ func TestAdminSpecializations(t *testing.T) {
 	if code, body := req(adminToken, http.MethodPost, "/admin/specializations", `{"slug":"frontend","name":"Frontend","icon":"🖥","published":true}`); code != http.StatusCreated {
 		t.Fatalf("create: %d %s", code, body)
 	}
-	if s := c.specs[len(c.specs)-1]; s.Slug != "frontend" || !s.Published || s.OwnerID == nil || *s.OwnerID != 2 || s.OrderNum != 5 {
+	if s := c.specs[len(c.specs)-1]; s.Slug != "frontend" || !s.Published || s.OwnerID == nil || *s.OwnerID != 2 || s.OrderNum != 4 {
 		t.Errorf("created = %+v", s)
 	}
 	if code, _ := req(adminToken, http.MethodPost, "/admin/specializations", `{"slug":"frontend","name":"Dup"}`); code != http.StatusConflict {
@@ -52,7 +52,7 @@ func TestAdminSpecializations(t *testing.T) {
 
 	c.specs[len(c.specs)-1].CoverImage = "data:image/png;base64,AAAA"
 	code, body = req(adminToken, http.MethodPut, "/admin/specializations/frontend", `{"name":"Front","description":"UI"}`)
-	if s := c.specs[len(c.specs)-1]; code != http.StatusOK || s.Name != "Front" || !s.Published || s.CoverImage == "" || s.OrderNum != 5 {
+	if s := c.specs[len(c.specs)-1]; code != http.StatusOK || s.Name != "Front" || !s.Published || s.CoverImage == "" || s.OrderNum != 4 {
 		t.Errorf("update: %d %s stored %+v", code, body, s)
 	}
 
@@ -62,6 +62,11 @@ func TestAdminSpecializations(t *testing.T) {
 	if code, body = req(adminToken, http.MethodDelete, "/admin/specializations/frontend", ""); code != http.StatusConflict || !strings.Contains(body, codeSpecNotEmpty) {
 		t.Errorf("delete non-empty: %d %s", code, body)
 	}
+	c.modules[len(c.modules)-1].IsTrainer = true
+	if code, body = req(adminToken, http.MethodDelete, "/admin/specializations/frontend", ""); code != http.StatusConflict || !strings.Contains(body, codeSpecNotEmpty) {
+		t.Errorf("delete with trainers only: %d %s", code, body)
+	}
+	c.modules[len(c.modules)-1].IsTrainer = false
 	if code, _ = req(adminToken, http.MethodDelete, "/admin/specializations/database", ""); code != http.StatusNoContent || (fakeSpecs{c}).spec("database") != nil {
 		t.Errorf("delete empty: %d", code)
 	}

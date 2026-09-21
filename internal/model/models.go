@@ -19,6 +19,7 @@ type Module struct {
 	IconURL       string    `json:"icon_url" db:"icon_url"`           // uploaded course icon; empty -> derived from category
 	Accent        string    `json:"accent" db:"accent"`               // gradient key; empty -> by category
 	EstMinutes    int       `json:"est_minutes" db:"est_minutes"`     // 0 -> derived from lesson count
+	IsTrainer     bool      `json:"is_trainer" db:"is_trainer"`       // practice-only course, listed under trainers
 	Source        string    `json:"source" db:"source"`               // seed | admin
 	Published     bool      `json:"published" db:"published"`         // false -> draft, hidden from students
 	OwnerID       *int      `json:"owner_id" db:"owner_id"`           // admin who owns it; nil -> system/shared

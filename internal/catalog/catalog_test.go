@@ -32,7 +32,7 @@ func TestCategorize(t *testing.T) {
 
 func TestSpecForTrack(t *testing.T) {
 	cases := map[string]string{
-		"devops": "devops", "database": "database", "gym": "gym",
+		"devops": "devops", "database": "database",
 		"security": "security", "security-offense": "security", "backend": "devops", "": "devops", "frontend": "frontend",
 	}
 	for in, want := range cases {

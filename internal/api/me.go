@@ -72,7 +72,7 @@ func (a *API) getDashboard(w http.ResponseWriter, r *http.Request) {
 		Activity: recentActivity(ov.Activity, time.Now()),
 	}
 	for _, c := range courses {
-		if c.Spec != catalog.GymSpec {
+		if !c.Module.IsTrainer {
 			continue
 		}
 		out.Overview.TrainersTotal++

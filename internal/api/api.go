@@ -38,6 +38,7 @@ type moduleStore interface {
 	Stats(ctx context.Context) (repository.PlatformStats, error)
 	ListManaged(ctx context.Context, userID int, all bool) ([]repository.CourseRow, error)
 	TrackCounts(ctx context.Context) (map[string]int, error)
+	TrackUsage(ctx context.Context) (map[string]int, error)
 	DraftFor(ctx context.Context, liveID int) (*model.Module, error)
 	Drafts(ctx context.Context) (map[int]int, error)
 	NextOrder(ctx context.Context) (int, error)
@@ -68,6 +69,7 @@ type lessonStore interface {
 	SetPublished(ctx context.Context, id int, published bool) error
 	MoveLesson(ctx context.Context, id int, dir string) error
 	DuplicateLesson(ctx context.Context, id int) (int, error)
+	DraftCopyOf(ctx context.Context, draftModuleID, originID int) (int, error)
 	EnsureQuiz(ctx context.Context, lessonID int, title string) (int, error)
 	AddQuestion(ctx context.Context, quizID int, q model.QuizQuestion) (int, error)
 	UpdateQuestion(ctx context.Context, q model.QuizQuestion) error
@@ -365,6 +367,7 @@ func (a *API) Routes() chi.Router {
 			r.Put("/admin/lessons/{lessonId}", a.adminUpdateLesson)
 			r.Delete("/admin/lessons/{lessonId}", a.adminDeleteLesson)
 			r.Put("/admin/lessons/{lessonId}/published", a.adminSetLessonPublished)
+			r.Post("/admin/lessons/{lessonId}/draft", a.adminOpenLessonDraft)
 			r.Post("/admin/lessons/{lessonId}/move", a.adminMoveLesson)
 			r.Post("/admin/lessons/{lessonId}/duplicate", a.adminDuplicateLesson)
 			r.Post("/admin/lessons/{lessonId}/questions", a.adminCreateQuestion)

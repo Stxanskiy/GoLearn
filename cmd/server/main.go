@@ -65,7 +65,9 @@ func main() {
 	simRepo := repository.NewSimRepo(pool)
 	quizAttemptRepo := repository.NewQuizAttemptRepo(pool)
 	codeRunner := runner.New()
-	vmRunner := runner.NewVMRunner()
+	// Two lab backends: Firecracker micro-VMs when an FC host is configured, plain
+	// containers otherwise (SANDBOX_LOCAL runs them on this machine's Docker).
+	sandbox := runner.NewDispatcher(runner.NewShellRunner(), runner.NewVMRunner())
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -78,7 +80,7 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, vmRunner, log)
+	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, sandbox, log)
 
 	// Seed the built-in simulator scenarios into the DB once so they are editable.
 	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -129,16 +131,22 @@ func main() {
 		CourseIO:     courseRepo,
 		Reviews:      repository.NewReviewRepo(pool),
 		Drafts:       repository.NewDraftRepo(pool),
-		Sandbox:      vmRunner,
+		Sandbox:      sandbox,
 		Code:         codeRunner,
 		Billing:      repository.NewBillingRepo(pool),
 	}
 
 	// Without object storage uploads stay inline data URIs, so the server still runs.
-	switch store, err := storage.New(context.Background(), storage.LoadConfig()); {
+	switch store, err := storage.New(storage.LoadConfig()); {
 	case err == nil:
 		stores.Images = store
-	case !errors.Is(err, storage.ErrDisabled):
+		// The bucket is prepared again on the first upload, so a warm-up failure is not fatal.
+		if err := store.Warm(context.Background()); err != nil {
+			log.Warn("object storage not ready yet", "error", err)
+		}
+	case errors.Is(err, storage.ErrDisabled):
+		log.Warn("object storage disabled: set S3_ENDPOINT to enable image uploads")
+	default:
 		log.Error("object storage unavailable", "error", err)
 	}
 

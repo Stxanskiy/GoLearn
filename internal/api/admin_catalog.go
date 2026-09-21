@@ -99,7 +99,7 @@ func (a *API) adminDeleteSpecialization(w http.ResponseWriter, r *http.Request) 
 	if !ok {
 		return
 	}
-	counts, err := a.specCourseCounts(r)
+	counts, err := a.specTrackUsage(r)
 	if err != nil {
 		a.internalError(w, "admin: specialization courses", err)
 		return
@@ -331,17 +331,32 @@ func (a *API) simBySlug(w http.ResponseWriter, r *http.Request) (*model.Simulato
 	return s, true
 }
 
-// specCourseCounts returns the number of courses per specialization slug.
+// specCourseCounts returns the number of courses per specialization slug; trainers are not courses.
 func (a *API) specCourseCounts(r *http.Request) (map[string]int, error) {
 	tracks, err := a.Modules.TrackCounts(r.Context())
 	if err != nil {
 		return nil, err
 	}
+	return bySpec(tracks), nil
+}
+
+// specTrackUsage returns the number of modules per specialization slug, trainers included;
+// it guards the deletion of a specialization against leaving them orphaned.
+func (a *API) specTrackUsage(r *http.Request) (map[string]int, error) {
+	tracks, err := a.Modules.TrackUsage(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	return bySpec(tracks), nil
+}
+
+// bySpec folds per-track counts onto their specialization slug.
+func bySpec(tracks map[string]int) map[string]int {
 	out := map[string]int{}
 	for track, n := range tracks {
 		out[catalog.SpecForTrack(track)] += n
 	}
-	return out, nil
+	return out
 }
 
 func (a *API) writeAdminSpecialization(w http.ResponseWriter, r *http.Request, status int, slug string) {

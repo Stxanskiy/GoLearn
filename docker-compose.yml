@@ -17,19 +17,21 @@ services:
       timeout: 5s
       retries: 5
 
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
+  rustfs:
+    image: rustfs/rustfs:1.0.0@sha256:8cc9801755448b71a786705ce76692c77e14936cccd87cf2fc31842e58f4d1ff
     environment:
-      MINIO_ROOT_USER: golearn
-      MINIO_ROOT_PASSWORD: golearn123
+      RUSTFS_ACCESS_KEY: golearn
+      RUSTFS_SECRET_KEY: golearn123
+      RUSTFS_VOLUMES: /data
     ports:
       - "9010:9000"
       - "9011:9001"
     volumes:
       - golearn_objects:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      # No dedicated health endpoint: an unsigned request answers 403, which already proves
+      # the S3 router is up, so the check only requires an HTTP answer.
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:9000/"]
       interval: 5s
       timeout: 5s
       retries: 5

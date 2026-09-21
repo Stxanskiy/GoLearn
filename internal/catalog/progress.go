@@ -1,6 +1,11 @@
 package catalog
 
-import "github.com/backendraz/golearn/internal/model"
+import (
+	"sort"
+	"time"
+
+	"github.com/backendraz/golearn/internal/model"
+)
 
 // Progress statuses.
 const (
@@ -70,6 +75,8 @@ type Course struct {
 	Completed  int
 	Pct        int
 	Status     string
+	// LastActivity is the newest lesson progress timestamp; zero when untouched.
+	LastActivity time.Time
 }
 
 // BuildCourse derives course progress from its published lessons (in order).
@@ -93,6 +100,9 @@ func BuildCourse(m model.Module, lessons []model.Lesson, up UserProgress) Course
 		if s != StatusNotStarted {
 			started = true
 		}
+		if p, ok := up.Lessons[l.ID]; ok && p.UpdatedAt.After(c.LastActivity) {
+			c.LastActivity = p.UpdatedAt
+		}
 	}
 	if len(lessons) > 0 {
 		c.Pct = c.Completed * 100 / len(lessons)
@@ -114,4 +124,31 @@ func (c Course) NextLesson() int {
 		}
 	}
 	return -1
+}
+
+// statusRank orders the catalogue: what is being learned now, then what is left, then what is done.
+func statusRank(status string) int {
+	switch status {
+	case StatusInProgress:
+		return 0
+	case StatusCompleted:
+		return 2
+	default:
+		return 1
+	}
+}
+
+// SortByProgress puts started courses first (newest activity first), then untouched, then completed.
+// Courses of the same rank keep their curriculum order.
+func SortByProgress(courses []Course) {
+	sort.SliceStable(courses, func(i, j int) bool {
+		a, b := courses[i], courses[j]
+		if ra, rb := statusRank(a.Status), statusRank(b.Status); ra != rb {
+			return ra < rb
+		}
+		if a.Status == StatusInProgress && !a.LastActivity.Equal(b.LastActivity) {
+			return a.LastActivity.After(b.LastActivity)
+		}
+		return false
+	})
 }

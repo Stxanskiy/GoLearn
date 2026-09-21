@@ -59,10 +59,10 @@ func (h *Handler) RoadmapPage(w http.ResponseWriter, r *http.Request) {
 	// Group by specialization; modules already arrive in curriculum order.
 	byspec := make(map[string][]RoadmapModule)
 	for _, mod := range modules {
-		spec := catalog.SpecForTrack(mod.Track)
-		if spec == "gym" {
+		if mod.IsTrainer {
 			continue // trainers are drills, not a course path
 		}
+		spec := catalog.SpecForTrack(mod.Track)
 		lessons, _ := h.lessonRepo.GetByModule(ctx, mod.ID)
 		completed := 0
 		for _, l := range lessons {

@@ -25,28 +25,43 @@ docker build -t golearn/sandbox-docker:latest -f deploy/sandbox-docker/Dockerfil
 bash deploy/sandbox-k8s/prepare.sh        # k3s/helm binaries + airgap images
 docker build -t golearn/sandbox-k8s:latest    -f deploy/sandbox-k8s/Dockerfile    deploy/sandbox-k8s
 
-# 2. Start database and object storage (MinIO on :9010, console :9011)
+# 2. Local settings (database, first admin, object storage)
+cp .env.example .env
+
+# 3. Start database and object storage (RustFS on :9010, console :9011)
 docker compose up -d
 
-# 3. Seed course content (applies pending migrations too)
+# 4. Seed course content (applies pending migrations too)
 go run ./cmd/seed
 
-# 4. Start server (also applies migrations, creates the first admin)
-S3_ENDPOINT=localhost:9010 S3_BUCKET=golearn \
-  S3_ACCESS_KEY=golearn S3_SECRET_KEY=golearn123 \
-  S3_PUBLIC_URL=http://localhost:9010/golearn \
-  go run ./cmd/server
+# 5. Start server (also applies migrations, creates the first admin)
+go run ./cmd/server
 # Open http://localhost:8080 — login: ADMIN_EMAIL / ADMIN_PASSWORD from .env
 ```
 
 Uploaded images (course and specialization icons, covers, lesson pictures) go to the
-S3 bucket; the database keeps their URLs. Without `S3_ENDPOINT` the server runs anyway —
-icon uploads answer `503 storage_disabled` and covers fall back to inline data URIs.
+S3 bucket; the database keeps their URLs. The settings come from `.env` (`S3_ENDPOINT`,
+`S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_PUBLIC_URL`); without `S3_ENDPOINT` the
+server runs anyway — icon uploads answer `503 storage_disabled` and covers fall back to
+inline data URIs. The bucket is prepared on the first upload, so storage that starts after
+the server needs no restart.
 
 Migrations run automatically on startup (`internal/migrate`, tracked in the
 `schema_migrations` table) — no manual psql step.
 
 ## Lab sandboxes
+Two interchangeable backends behind `runner.Engine`, picked by `runner.Dispatcher`:
+
+| Backend | When | Where |
+|---|---|---|
+| `VMRunner` | `FC_ENABLED=1` + an FC host (`FC_SSH_*`) — production | one Firecracker micro-VM per lesson, reached over SSH (`internal/runner/vmrunner.go`) |
+| `ShellRunner` | otherwise; `SANDBOX_LOCAL=1` runs it on this machine's Docker | one container per lesson (`internal/runner/shell.go`) |
+
+The FC host (golden rootfs, guest kernel, `gl-tap`, the `glvm` account) is set up by
+hand and is **not** reproducible from this repo, so local development uses
+`SANDBOX_LOCAL=1` and the images below. `SANDBOX_PRIVILEGED=1` additionally unlocks
+the Docker and Kubernetes courses.
+
 Shell labs run one container **per lesson** (`gl-s-u<user>-l<lesson>`), always
 with `--network none`. Four images, picked per lesson via `tasks.sandbox_image`:
 

@@ -161,7 +161,7 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, mod := range modules {
-		if mod.Track == "gym" {
+		if mod.IsTrainer {
 			continue // trainers are shown on /trainers, not the dashboard
 		}
 		lessons, err := h.lessonRepo.GetByModule(ctx, mod.ID)
@@ -194,8 +194,6 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 			data.DatabaseModules = append(data.DatabaseModules, mwp)
 		case "security", "security-offense", "security-defense":
 			data.SecurityModules = append(data.SecurityModules, mwp)
-		case "gym":
-			// trainers have their own page
 		default:
 			data.DevopsModules = append(data.DevopsModules, mwp)
 		}
