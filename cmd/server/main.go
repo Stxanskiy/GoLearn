@@ -117,6 +117,12 @@ func main() {
 		staticHandler.ServeHTTP(w, req)
 	}))
 
+	billingRepo := repository.NewBillingRepo(pool)
+	// Access is decided by the expiry, so a stale 'active' row grants nothing;
+	// this only keeps the stored status honest for anything reading the table
+	// directly, and frees the active-subscription index for a returning customer.
+	go sweepSubscriptions(billingRepo, log)
+
 	stores := api.Stores{
 		Users:        userRepo,
 		Modules:      moduleRepo,
@@ -133,7 +139,7 @@ func main() {
 		Drafts:       repository.NewDraftRepo(pool),
 		Sandbox:      sandbox,
 		Code:         codeRunner,
-		Billing:      repository.NewBillingRepo(pool),
+		Billing:      billingRepo,
 	}
 
 	// Without object storage uploads stay inline data URIs, so the server still runs.
@@ -190,6 +196,32 @@ func main() {
 // on inline scripts/styles + a couple of CDNs (Google Fonts, unpkg icons) and the
 // WebSocket terminal, so the CSP allows those explicitly rather than being maximally
 // strict. HSTS is only advertised when the request arrived over HTTPS.
+// sweepSubscriptions marks lapsed subscriptions, hourly and on boot.
+//
+// Hourly rather than at every request: nothing reads the status to decide
+// access, so the only cost of being an hour late is a report being an hour
+// stale.
+func sweepSubscriptions(repo *repository.BillingRepo, log *slog.Logger) {
+	run := func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		n, err := repo.SweepExpired(ctx)
+		if err != nil {
+			log.Error("sweep expired subscriptions", "error", err)
+			return
+		}
+		if n > 0 {
+			log.Info("subscriptions expired", "count", n)
+		}
+	}
+	run()
+	t := time.NewTicker(time.Hour)
+	defer t.Stop()
+	for range t.C {
+		run()
+	}
+}
+
 func securityHeaders(next http.Handler) http.Handler {
 	const csp = "default-src 'self'; " +
 		"img-src 'self' data: blob:; " +

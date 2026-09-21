@@ -159,6 +159,25 @@ func (r *BillingRepo) Confirm(ctx context.Context, provider, ref string) (*Subsc
 	return &s, tx.Commit(ctx)
 }
 
+// SweepExpired marks subscriptions whose period has run out.
+//
+// Access never depended on this: HasAccess checks the expiry, not the status, so
+// a row left 'active' past its date already grants nothing. What it fixes is the
+// stored status, which anything reading the table directly — a report, a support
+// query, a future dunning job — would otherwise read as a lie.
+//
+// It also frees the partial unique index on active subscriptions, so a returning
+// customer opens a fresh row instead of extending a dead one.
+func (r *BillingRepo) SweepExpired(ctx context.Context) (int64, error) {
+	ct, err := r.pool.Exec(ctx, `
+		UPDATE subscriptions SET status = 'expired', updated_at = now()
+		 WHERE status = 'active' AND expires_at <= now()`)
+	if err != nil {
+		return 0, err
+	}
+	return ct.RowsAffected(), nil
+}
+
 // SetCourseTier moves a course between free and subscription-only.
 func (r *BillingRepo) SetCourseTier(ctx context.Context, moduleID int, tier string) error {
 	if tier != "free" && tier != "subscription" {

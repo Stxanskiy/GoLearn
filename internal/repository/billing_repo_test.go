@@ -127,6 +127,39 @@ func TestExpiredSubscriptionGrantsNothing(t *testing.T) {
 	}
 }
 
+func TestSweepExpiredMarksOnlyLapsed(t *testing.T) {
+	pool := billingPool(t)
+	repo := NewBillingRepo(pool)
+	ctx := context.Background()
+	lapsed := testUser(t, pool)
+	current := testUser(t, pool)
+
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO subscriptions (user_id, status, started_at, expires_at)
+		VALUES ($1, 'active', now() - interval '2 months', now() - interval '1 day'),
+		       ($2, 'active', now(), now() + interval '1 month')`, lapsed, current); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	if _, err := repo.SweepExpired(ctx); err != nil {
+		t.Fatalf("sweep: %v", err)
+	}
+
+	gone, err := repo.Current(ctx, lapsed)
+	if err != nil || gone.Status != "expired" {
+		t.Fatalf("lapsed subscription is %v (err %v), want expired", gone, err)
+	}
+	// The sweep must not touch a subscription that is still running: doing so
+	// would lock out a paying customer.
+	live, err := repo.Current(ctx, current)
+	if err != nil {
+		t.Fatalf("current: %v", err)
+	}
+	if !live.IsActive() {
+		t.Fatalf("sweep expired a live subscription: %+v", live)
+	}
+}
+
 func TestSetCourseTierRejectsUnknown(t *testing.T) {
 	repo := NewBillingRepo(nil)
 	if err := repo.SetCourseTier(context.Background(), 1, "premium"); err != ErrBadTier {
