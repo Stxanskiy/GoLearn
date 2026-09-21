@@ -26,6 +26,7 @@ type Course struct {
 	Accent      string   `json:"accent,omitempty"`
 	OrderNum    int      `json:"order_num,omitempty"`
 	EstMinutes  int      `json:"est_minutes,omitempty"`
+	IsTrainer   bool     `json:"is_trainer,omitempty"` // practice-only course; absent on import leaves the flag unchanged
 	CoverImage  string   `json:"cover_image,omitempty"`
 	Lessons     []Lesson `json:"lessons"`
 }
@@ -77,7 +78,7 @@ func FromTree(t model.CourseTree) Course {
 	c := Course{
 		Slug: m.Slug, Title: m.Title, Description: m.Description, Track: m.Track,
 		Difficulty: m.Difficulty, Category: m.Category, Label: m.Label, Tags: m.Tags,
-		Accent: m.Accent, OrderNum: m.OrderNum, EstMinutes: m.EstMinutes, CoverImage: m.CoverImage,
+		Accent: m.Accent, OrderNum: m.OrderNum, EstMinutes: m.EstMinutes, IsTrainer: m.IsTrainer, CoverImage: m.CoverImage,
 	}
 	for _, lb := range t.Lessons {
 		l := Lesson{
@@ -110,7 +111,7 @@ func (c Course) ToTree() model.CourseTree {
 	m := model.Module{
 		Slug: c.Slug, Title: c.Title, Description: c.Description, Track: c.Track,
 		Difficulty: c.Difficulty, Category: c.Category, Label: c.Label, Tags: c.Tags,
-		Accent: c.Accent, OrderNum: c.OrderNum, EstMinutes: c.EstMinutes, CoverImage: c.CoverImage,
+		Accent: c.Accent, OrderNum: c.OrderNum, EstMinutes: c.EstMinutes, IsTrainer: c.IsTrainer, CoverImage: c.CoverImage,
 	}
 	t := model.CourseTree{Module: m}
 	for li, l := range c.Lessons {

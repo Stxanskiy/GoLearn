@@ -248,6 +248,11 @@ paths:
       operationId: getPublicCatalog
       security: []
       description: Published specializations and courses for anonymous visitors; progress fields are always zero.
+      parameters:
+        - $ref: '#/components/parameters/CatalogSpec'
+        - $ref: '#/components/parameters/CatalogDifficulty'
+        - $ref: '#/components/parameters/CatalogStatus'
+        - $ref: '#/components/parameters/CatalogQuery'
       responses:
         '200':
           description: Catalog.
@@ -304,7 +309,14 @@ paths:
       description: |
         Published specializations with their published courses and the user's progress.
         Feeds the courses page, roadmap, dashboard course grid and trainers list.
-        Gym courses (`track=gym`) are returned separately in `trainers`.
+        Trainer courses (`is_trainer`) are returned separately in `trainers`.
+        Query parameters narrow `courses` and `trainers`; every published specialization is
+        still listed, so the filter controls keep their full set of options.
+      parameters:
+        - $ref: '#/components/parameters/CatalogSpec'
+        - $ref: '#/components/parameters/CatalogDifficulty'
+        - $ref: '#/components/parameters/CatalogStatus'
+        - $ref: '#/components/parameters/CatalogQuery'
       responses:
         '200':
           description: Catalog.
@@ -1068,7 +1080,7 @@ paths:
       summary: Upload course icon
       operationId: adminUploadCourseIcon
       description: Needs `can_edit`. The image goes to object storage and the course keeps its public URL.
-      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      requestBody: { $ref: '#/components/requestBodies/IconUpload' }
       responses:
         '200':
           description: Icon replaced.
@@ -1354,6 +1366,34 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+  /admin/lessons/{lessonId}/draft:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    post:
+      tags: [admin-lessons]
+      summary: Open the course draft on this lesson
+      operationId: adminOpenLessonDraft
+      description: |
+        Opens the draft of the lesson's course, creating it when there is none, and answers with
+        this lesson's copy inside the draft. Lets the studio keep the author on the lesson they
+        were editing instead of sending them to the course screen. Needs `can_edit`.
+        A lesson that is already editable (draft course, or an unpublished one) answers with itself.
+        `404` when the lesson has no copy in the draft, because it was deleted there.
+      responses:
+        '200':
+          description: Draft already existed, or the lesson needs no draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLessonRef' }
+        '201':
+          description: Draft created.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLessonRef' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /admin/lessons/{lessonId}/move:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1638,7 +1678,7 @@ paths:
       summary: Upload content image
       operationId: adminUploadImage
       description: Stores an image for lesson content and returns its public URL. Needs role `author` or `admin`.
-      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      requestBody: { $ref: '#/components/requestBodies/ContentImageUpload' }
       responses:
         '201':
           description: Image stored.
@@ -1823,7 +1863,7 @@ paths:
       summary: Upload specialization icon
       operationId: adminUploadSpecIcon
       description: Admin only. The image goes to object storage.
-      requestBody: { $ref: '#/components/requestBodies/ImageUpload' }
+      requestBody: { $ref: '#/components/requestBodies/IconUpload' }
       responses:
         '200':
           description: Icon replaced.
@@ -2160,6 +2200,29 @@ components:
       description: HttpOnly session cookie set by `POST /auth/login`.
 
   parameters:
+    CatalogSpec:
+      name: spec
+      in: query
+      required: false
+      description: Specialization slug; the others come back with an empty course list.
+      schema: { type: string, maxLength: 80 }
+    CatalogDifficulty:
+      name: difficulty
+      in: query
+      required: false
+      schema: { $ref: '#/components/schemas/Difficulty' }
+    CatalogStatus:
+      name: status
+      in: query
+      required: false
+      description: Progress of the current user; on the public catalog only `not_started` matches anything.
+      schema: { $ref: '#/components/schemas/ProgressStatus' }
+    CatalogQuery:
+      name: q
+      in: query
+      required: false
+      description: Case-insensitive substring of the title, description, category or a tag.
+      schema: { type: string, maxLength: 100 }
     CourseSlug:
       name: courseSlug
       in: path
@@ -2246,7 +2309,7 @@ components:
             required: [direction]
             properties:
               direction: { type: string, enum: [up, down] }
-    ImageUpload:
+    IconUpload:
       required: true
       content:
         multipart/form-data:
@@ -2257,7 +2320,7 @@ components:
               file:
                 type: string
                 format: binary
-                description: PNG, JPEG, WebP, GIF or SVG, max 4 MiB.
+                description: 'Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.'
     CoverUpload:
       required: true
       content:
@@ -2269,7 +2332,19 @@ components:
               file:
                 type: string
                 format: binary
-                description: PNG, JPEG, WebP or SVG, max 4 MiB.
+                description: 'Cover: PNG, JPEG, WebP or SVG, 16:9 (tolerance 2%), at least 960x540, max 4 MiB.'
+    ContentImageUpload:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file:
+                type: string
+                format: binary
+                description: 'Lesson image: PNG, JPEG, WebP, GIF or SVG, max 4 MiB, any proportions.'
     CourseDocument:
       required: true
       content:
@@ -2443,6 +2518,14 @@ components:
       properties:
         url: { type: string, description: Public URL of the stored image. }
 
+    DraftLessonRef:
+      type: object
+      description: Where to continue editing after the course draft has been opened.
+      required: [course_id, lesson_id]
+      properties:
+        course_id: { type: integer }
+        lesson_id: { type: integer }
+
     LinkRef:
       type: object
       required: [slug, title]
@@ -2512,7 +2595,7 @@ components:
         tests_passed: { type: integer }
         simulators_done: { type: integer, description: Not tracked yet — always 0. }
         simulators_total: { type: integer }
-        trainers_done: { type: integer, description: Completed trainer (gym) courses. }
+        trainers_done: { type: integer, description: Completed trainer courses. }
         trainers_total: { type: integer }
 
     # ── public ──
@@ -2565,11 +2648,11 @@ components:
         icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
         icon_url: { type: string, description: 'Uploaded icon in object storage; empty when none.' }
         description: { type: string }
-        cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`.' }
+        cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`; 16:9.' }
 
     CourseCard:
       type: object
-      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status]
+      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status, last_activity, is_trainer]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2582,13 +2665,19 @@ components:
         tags:
           type: array
           items: { type: string }
-        cover_url: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         lessons_count: { type: integer }
         lessons_completed: { type: integer }
         progress_pct: { type: integer, minimum: 0, maximum: 100 }
         est_minutes: { type: integer }
         status: { $ref: '#/components/schemas/ProgressStatus' }
+        last_activity:
+          type: [string, 'null']
+          format: date-time
+          description: Newest lesson activity of the current user in this course; null when untouched.
+        is_trainer: { type: boolean, description: Practice-only course; listed under trainers instead of the catalog. }
 
     SpecializationWithCourses:
       allOf:
@@ -2597,9 +2686,13 @@ components:
           required: [courses, courses_done]
           properties:
             courses:
+              description: >-
+                Ordered by progress: `in_progress` first (newest activity first), then
+                `not_started`, then `completed`. Courses of the same status keep the
+                curriculum order. Narrowed by the catalog query parameters.
               type: array
               items: { $ref: '#/components/schemas/CourseCard' }
-            courses_done: { type: integer }
+            courses_done: { type: integer, description: Completed courses of the whole specialization, never narrowed by the filter. }
 
     Catalog:
       type: object
@@ -2609,13 +2702,14 @@ components:
           type: array
           items: { $ref: '#/components/schemas/SpecializationWithCourses' }
         trainers:
+          description: Ordered by progress, same rule as a specialization's courses.
           type: array
           items: { $ref: '#/components/schemas/CourseCard' }
 
     CoursePreview:
       type: object
       description: Public course page for anonymous visitors.
-      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
+      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
       properties:
         slug: { type: string }
         title: { type: string }
@@ -2626,8 +2720,9 @@ components:
         tags:
           type: array
           items: { type: string }
-        cover_url: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         est_minutes: { type: integer }
         lessons_count: { type: integer }
         labs_count: { type: integer }
@@ -2676,9 +2771,10 @@ components:
 
     LessonNav:
       type: object
-      required: [course, position, total, course_progress_pct]
+      required: [course, is_trainer, position, total, course_progress_pct]
       properties:
         course: { $ref: '#/components/schemas/LinkRef' }
+        is_trainer: { type: boolean, description: The lesson belongs to a practice-only course. }
         position: { type: integer, description: 1-based among published lessons. }
         total: { type: integer }
         course_progress_pct: { type: integer }
@@ -3123,7 +3219,7 @@ components:
         slug: { $ref: '#/components/schemas/Slug' }
         title: { type: string, minLength: 1, maxLength: 200 }
         description: { type: string, maxLength: 5000 }
-        track: { type: string, description: 'Existing specialization slug; `gym` is admin only.' }
+        track: { type: string, description: Existing specialization slug. }
         difficulty: { $ref: '#/components/schemas/Difficulty' }
         category: { type: string, maxLength: 40, description: Empty → derived. }
         label: { $ref: '#/components/schemas/CourseLabel' }
@@ -3133,12 +3229,13 @@ components:
           maxItems: 20
           items: { type: string, maxLength: 40 }
         est_minutes: { type: integer, minimum: 0, maximum: 100000, description: 0 → lessons × 10. }
+        is_trainer: { type: boolean, description: 'Practice-only course. Admin only; omitted → unchanged.' }
         cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
         published: { type: boolean, description: 'Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.' }
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon, icon_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -3149,13 +3246,15 @@ components:
         category: { type: string, description: Stored value; empty when derived. }
         label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null when derived. }
         accent: { type: string }
-        icon_url: { type: string, description: 'Uploaded course icon; empty when none.' }
+        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
+        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         tags:
           type: array
           items: { type: string }
         est_minutes: { type: integer }
         order_num: { type: integer }
         published: { type: boolean }
+        is_trainer: { type: boolean, description: Practice-only course; listed under trainers instead of the catalog. }
         source: { type: string, enum: [seed, admin] }
         owner:
           oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]

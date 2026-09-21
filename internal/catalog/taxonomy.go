@@ -7,9 +7,6 @@ import (
 	"github.com/backendraz/golearn/internal/model"
 )
 
-// GymSpec is the pseudo-specialization of trainer courses (not shown in the catalog).
-const GymSpec = "gym"
-
 // Course label codes; display text is localized by the client.
 const (
 	LabelStart     = "start"

@@ -119,7 +119,7 @@ func (f fakeModules) Neighbors(ctx context.Context, m model.Module, tracks []str
 	all, _ := f.GetAll(ctx)
 	for i := range all {
 		c := all[i]
-		if !slices.Contains(tracks, c.Track) || c.ID == m.ID {
+		if !slices.Contains(tracks, c.Track) || c.ID == m.ID || c.IsTrainer {
 			continue
 		}
 		if c.OrderNum < m.OrderNum {

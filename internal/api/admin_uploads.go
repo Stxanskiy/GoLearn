@@ -18,7 +18,7 @@ func (a *API) adminUploadCourseIcon(w http.ResponseWriter, r *http.Request) {
 	if !ok || !a.checkEditable(w, r, course) {
 		return
 	}
-	url, ok := a.storeUpload(w, r, storage.KindIcon)
+	url, ok := a.storeUpload(w, r, storage.KindIcon, storage.IconProfile)
 	if !ok {
 		return
 	}
@@ -48,7 +48,7 @@ func (a *API) adminUploadSpecIcon(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	url, ok := a.storeUpload(w, r, storage.KindIcon)
+	url, ok := a.storeUpload(w, r, storage.KindIcon, storage.IconProfile)
 	if !ok {
 		return
 	}
@@ -74,7 +74,7 @@ func (a *API) adminDeleteSpecIcon(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) adminUploadImage(w http.ResponseWriter, r *http.Request) {
-	url, ok := a.storeUpload(w, r, storage.KindLesson)
+	url, ok := a.storeUpload(w, r, storage.KindLesson, storage.ContentProfile)
 	if !ok {
 		return
 	}
@@ -82,12 +82,12 @@ func (a *API) adminUploadImage(w http.ResponseWriter, r *http.Request) {
 }
 
 // storeUpload reads the multipart image and puts it into object storage.
-func (a *API) storeUpload(w http.ResponseWriter, r *http.Request, kind storage.Kind) (string, bool) {
+func (a *API) storeUpload(w http.ResponseWriter, r *http.Request, kind storage.Kind, profile storage.Profile) (string, bool) {
 	if a.Images == nil {
 		writeError(w, http.StatusServiceUnavailable, codeStorageDisabled, "object storage is not configured")
 		return "", false
 	}
-	img, ok := readImageUpload(w, r)
+	img, ok := readImageUpload(w, r, profile)
 	if !ok {
 		return "", false
 	}
@@ -110,17 +110,31 @@ func (a *API) dropStored(r *http.Request, url string) {
 }
 
 // readImageUpload reads the multipart "file" part, writing the error response itself when it returns false.
-func readImageUpload(w http.ResponseWriter, r *http.Request) (storage.Image, bool) {
+func readImageUpload(w http.ResponseWriter, r *http.Request, profile storage.Profile) (storage.Image, bool) {
 	data, ok := readUploadBytes(w, r)
 	if !ok {
 		return storage.Image{}, false
 	}
-	img, err := storage.DecodeImage(data)
+	img, err := storage.DecodeImage(data, profile)
 	if err != nil {
-		writeError(w, http.StatusUnsupportedMediaType, codeUnsupportedMedia, "image must be PNG, JPEG, WebP, GIF or SVG")
+		writeImageContractError(w, err, profile)
+		return storage.Image{}, false
+	}
+	img, err = storage.Normalize(img, profile)
+	if err != nil {
+		writeImageContractError(w, err, profile)
 		return storage.Image{}, false
 	}
 	return img, true
+}
+
+// writeImageContractError reports a rejected upload with the slot contract as the message.
+func writeImageContractError(w http.ResponseWriter, err error, profile storage.Profile) {
+	if errors.Is(err, storage.ErrImageTooLarge) {
+		writeError(w, http.StatusRequestEntityTooLarge, codePayloadTooLarge, profile.Hint)
+		return
+	}
+	writeError(w, http.StatusUnsupportedMediaType, codeUnsupportedMedia, profile.Hint)
 }
 
 // readUploadBytes returns the raw bytes of the multipart "file" part.
@@ -172,7 +186,7 @@ func uploadReadError(w http.ResponseWriter, err error) bool {
 
 // storeCover puts the cover into object storage, falling back to an inline data URI.
 func (a *API) storeCover(w http.ResponseWriter, r *http.Request) (string, bool) {
-	img, ok := readImageUpload(w, r)
+	img, ok := readImageUpload(w, r, storage.CoverProfile)
 	if !ok {
 		return "", false
 	}

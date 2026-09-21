@@ -51,8 +51,8 @@ func TestImportCourse(t *testing.T) {
 	if code != http.StatusUnprocessableEntity || !strings.Contains(body, codeImportBlocked) || !strings.Contains(body, "unknown_sandbox_image") || !strings.Contains(body, "/lessons/1/tasks/0/sandbox_image") {
 		t.Errorf("blocked import: %d %s", code, body)
 	}
-	if code, body = post(otherToken, "/admin/import", strings.Replace(doc, `"track":"devops"`, `"track":"gym"`, 1)); code != http.StatusUnprocessableEntity || !strings.Contains(body, `"track":"invalid_value"`) {
-		t.Errorf("author imports into gym: %d %s", code, body)
+	if code, body = post(otherToken, "/admin/import", strings.Replace(doc, `"track":"devops"`, `"track":"nope"`, 1)); code != http.StatusUnprocessableEntity || !strings.Contains(body, `"track":"not_found"`) {
+		t.Errorf("author imports into an unknown track: %d %s", code, body)
 	}
 	if code, body = post(otherToken, "/admin/import", strings.Replace(doc, `"label":"Старт"`, `"cover_image":"javascript:alert(1)"`, 1)); code != http.StatusUnprocessableEntity || !strings.Contains(body, "cover_image") {
 		t.Errorf("bad cover: %d %s", code, body)

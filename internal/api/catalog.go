@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/backendraz/golearn/internal/api/apigen"
 	"github.com/backendraz/golearn/internal/catalog"
@@ -62,14 +63,25 @@ func (a *API) getCatalog(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "catalog: specs", err)
 		return
 	}
+	filter, ok := catalogFilterFrom(w, r)
+	if !ok {
+		return
+	}
+	writeJSON(w, http.StatusOK, buildCatalog(specs, courses, filter))
+}
+
+// buildCatalog assembles the response: every published specialization is listed so the
+// filter chips stay complete, while its courses and the trainers are narrowed by the filter.
+func buildCatalog(specs []model.Specialization, courses []catalog.Course, filter catalogFilter) apigen.Catalog {
+	shown := filter.keep(courses)
 	out := apigen.Catalog{
 		Specializations: make([]apigen.SpecializationWithCourses, 0, len(specs)),
-		Trainers:        courseCards(courses, catalog.GymSpec),
+		Trainers:        trainerCards(shown),
 	}
 	for _, s := range specs {
-		out.Specializations = append(out.Specializations, specWithCourses(s, courses))
+		out.Specializations = append(out.Specializations, specWithCourses(s, courses, shown))
 	}
-	writeJSON(w, http.StatusOK, out)
+	return out
 }
 
 func (a *API) getSpecialization(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +100,7 @@ func (a *API) getSpecialization(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "specialization: courses", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, specWithCourses(*spec, courses))
+	writeJSON(w, http.StatusOK, specWithCourses(*spec, courses, courses))
 }
 
 func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
@@ -119,10 +131,13 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "course: progress", err)
 		return
 	}
-	prev, next, err := a.Modules.Neighbors(ctx, *m, catalog.SpecTracks(catalog.SpecForTrack(m.Track)))
-	if err != nil {
-		a.internalError(w, "course: neighbors", err)
-		return
+	// A trainer stands on its own, so it gets no place in the course path.
+	var prev, next *model.Module
+	if !m.IsTrainer {
+		if prev, next, err = a.Modules.Neighbors(ctx, *m, catalog.SpecTracks(catalog.SpecForTrack(m.Track))); err != nil {
+			a.internalError(w, "course: neighbors", err)
+			return
+		}
 	}
 
 	c := catalog.BuildCourse(*m, lessons, up)
@@ -150,11 +165,12 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func specWithCourses(s model.Specialization, courses []catalog.Course) apigen.SpecializationWithCourses {
-	cards := courseCards(courses, s.Slug)
+// specWithCourses lists the courses of shown, while courses_done always counts the whole specialization.
+func specWithCourses(s model.Specialization, all, shown []catalog.Course) apigen.SpecializationWithCourses {
+	cards := courseCards(shown, s.Slug)
 	done := 0
-	for _, c := range cards {
-		if c.Status == apigen.ProgressStatus(catalog.StatusCompleted) {
+	for _, c := range all {
+		if c.Spec == s.Slug && !c.Module.IsTrainer && c.Status == catalog.StatusCompleted {
 			done++
 		}
 	}
@@ -170,13 +186,31 @@ func specWithCourses(s model.Specialization, courses []catalog.Course) apigen.Sp
 	}
 }
 
-// courseCards returns cards of the courses that belong to spec.
+// courseCards returns cards of the regular courses that belong to spec; trainers have their own list.
 func courseCards(courses []catalog.Course, spec string) []apigen.CourseCard {
-	cards := []apigen.CourseCard{}
+	return progressOrderedCards(courses, func(c catalog.Course) bool {
+		return c.Spec == spec && !c.Module.IsTrainer
+	})
+}
+
+// trainerCards returns cards of the practice-only courses, whatever specialization they belong to.
+func trainerCards(courses []catalog.Course) []apigen.CourseCard {
+	return progressOrderedCards(courses, func(c catalog.Course) bool { return c.Module.IsTrainer })
+}
+
+// progressOrderedCards selects courses and returns them in the catalogue order: started, untouched, completed.
+func progressOrderedCards(courses []catalog.Course, keep func(catalog.Course) bool) []apigen.CourseCard {
+	picked := []catalog.Course{}
 	for _, c := range courses {
-		if c.Spec == spec {
-			cards = append(cards, courseCard(c))
+		if keep(c) {
+			picked = append(picked, c)
 		}
+	}
+	catalog.SortByProgress(picked)
+
+	cards := make([]apigen.CourseCard, 0, len(picked))
+	for _, c := range picked {
+		cards = append(cards, courseCard(c))
 	}
 	return cards
 }
@@ -194,15 +228,26 @@ func courseCard(c catalog.Course) apigen.CourseCard {
 		Category:         c.Category,
 		Label:            apigen.CourseLabel(c.Label),
 		Difficulty:       apigen.Difficulty(c.Module.Difficulty),
+		IsTrainer:        c.Module.IsTrainer,
 		Tags:             tags,
 		CoverURL:         "/api/v1/courses/" + url.PathEscape(c.Module.Slug) + "/cover",
+		Icon:             catalog.CategoryIcon(c.Category),
 		IconURL:          c.Module.IconURL,
 		LessonsCount:     len(c.Lessons),
 		LessonsCompleted: c.Completed,
 		ProgressPct:      c.Pct,
 		EstMinutes:       c.EstMinutes,
 		Status:           apigen.ProgressStatus(c.Status),
+		LastActivity:     nilTime(c.LastActivity),
 	}
+}
+
+// nilTime maps the zero activity timestamp of an untouched course to JSON null.
+func nilTime(t time.Time) *time.Time {
+	if t.IsZero() {
+		return nil
+	}
+	return &t
 }
 
 func lessonKind(kind string) apigen.LessonKind {

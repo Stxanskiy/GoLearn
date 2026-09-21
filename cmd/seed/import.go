@@ -94,6 +94,7 @@ type importSpec struct {
 	Track      string
 	Difficulty string
 	Category   string
+	Trainer    bool   // practice-only course, listed under trainers
 	Image      string // force this sandbox image on all shell tasks (empty = auto)
 }
 
@@ -117,9 +118,9 @@ func importedModules() []M {
 		// ── Database section ──
 		{Dir: "module_postgres_sql", Slug: "sql-express", Track: "database", Difficulty: "beginner", Category: "Database"},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
-		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "gym", Difficulty: "beginner", Category: "Linux"},
-		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "gym", Difficulty: "intermediate", Category: "Linux"},
-		{Dir: "gym_git", Slug: "gym-git", Track: "gym", Difficulty: "beginner", Category: "Git"},
+		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
+		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "devops", Trainer: true, Difficulty: "intermediate", Category: "Linux"},
+		{Dir: "gym_git", Slug: "gym-git", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Git"},
 	}
 	var mods []M
 	for _, s := range specs {
@@ -193,6 +194,7 @@ func buildModule(s importSpec) (M, error) {
 		Track:       s.Track,
 		Difficulty:  s.Difficulty,
 		Category:    s.Category,
+		Trainer:     s.Trainer,
 		// CoverImage intentionally empty: covers are SVG placeholders until the
 		// admin sets real ones (user request).
 	}

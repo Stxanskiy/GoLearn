@@ -217,6 +217,7 @@ func lessonNav(m model.Module, l model.Lesson, siblings []model.Lesson, up catal
 	c := catalog.BuildCourse(m, siblings, up)
 	nav := apigen.LessonNav{
 		Course:            apigen.LinkRef{Slug: m.Slug, Title: m.Title},
+		IsTrainer:         m.IsTrainer,
 		Total:             len(siblings),
 		CourseProgressPct: c.Pct,
 	}

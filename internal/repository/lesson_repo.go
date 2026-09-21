@@ -426,3 +426,11 @@ func (r *LessonRepo) GetTaskByID(ctx context.Context, taskID int) (*model.Task, 
 	_ = json.Unmarshal(testCasesJSON, &t.TestCases)
 	return &t, nil
 }
+
+// DraftCopyOf returns the id of the lesson inside draftModuleID that was copied from originID.
+func (r *LessonRepo) DraftCopyOf(ctx context.Context, draftModuleID, originID int) (int, error) {
+	var id int
+	err := r.pool.QueryRow(ctx,
+		`SELECT id FROM lessons WHERE module_id = $1 AND origin_id = $2`, draftModuleID, originID).Scan(&id)
+	return id, err
+}

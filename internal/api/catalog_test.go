@@ -32,7 +32,6 @@ func storefront() (*fakeUsers, *fakeContent) {
 		{Slug: "devops", Name: "DevOps", Icon: "♾️", Published: true},
 		{Slug: "database", Name: "Базы данных", Published: true},
 		{Slug: "security", Name: "Security", Published: false},
-		{Slug: "gym", Name: "Тренажёры", Published: true},
 	}
 	c.modules = []model.Module{
 		{ID: 10, Slug: "linux", Title: "Linux: Старт", Track: "devops", OrderNum: 1, Published: true, Difficulty: "beginner", Tags: []string{"bash"}},
@@ -40,7 +39,7 @@ func storefront() (*fakeUsers, *fakeContent) {
 		{ID: 12, Slug: "k8s-draft", Title: "Kubernetes", Track: "devops", OrderNum: 3, Published: false},
 		{ID: 13, Slug: "helm", Title: "Helm", Track: "devops", OrderNum: 4, Published: true},
 		{ID: 20, Slug: "pentest", Title: "Пентест", Track: "security-offense", OrderNum: 1, Published: true},
-		{ID: 30, Slug: "gym-linux", Title: "Linux тренажёр", Track: "gym", OrderNum: 1, Published: true},
+		{ID: 30, Slug: "gym-linux", Title: "Linux тренажёр", Track: "devops", IsTrainer: true, OrderNum: 1, Published: true},
 	}
 	c.lessons = []model.Lesson{
 		{ID: 100, ModuleID: 10, Slug: "intro", Title: "Intro", Kind: "theory", OrderNum: 1, Published: true},
@@ -97,22 +96,23 @@ func TestCatalog(t *testing.T) {
 	for _, s := range cat.Specializations {
 		slugs = append(slugs, s.Slug)
 	}
-	if strings.Join(slugs, ",") != "devops,database,gym" {
+	if strings.Join(slugs, ",") != "devops,database" {
 		t.Fatalf("specializations = %v (draft security must be hidden)", slugs)
 	}
 
 	devops := cat.Specializations[0]
-	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "linux" || devops.Courses[1].Slug != "docker" || devops.Courses[2].Slug != "helm" {
+	// Cards come back in progress order: started, then untouched, then completed.
+	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "docker" || devops.Courses[1].Slug != "helm" || devops.Courses[2].Slug != "linux" {
 		t.Fatalf("devops courses = %+v", devops.Courses)
 	}
-	linux := devops.Courses[0]
+	linux := devops.Courses[2]
 	if linux.Status != "completed" || linux.LessonsCount != 3 || linux.LessonsCompleted != 3 || linux.ProgressPct != 100 {
 		t.Errorf("linux card (quiz by score, lab by passed tasks, draft lesson excluded) = %+v", linux)
 	}
 	if devops.CoursesDone != 1 {
 		t.Errorf("courses_done = %d", devops.CoursesDone)
 	}
-	docker := devops.Courses[1]
+	docker := devops.Courses[0]
 	if docker.Status != "in_progress" || docker.LessonsCompleted != 0 || docker.Label != "practice" || docker.Category != "Docker" || docker.EstMinutes != 20 {
 		t.Errorf("docker card = %+v", docker)
 	}
@@ -355,15 +355,15 @@ func TestCoursePreviewHidesDraftsAndTracks(t *testing.T) {
 		t.Errorf("missing course: %d", w.Code)
 	}
 
-	// A trainer and a course of an unpublished specialization keep the page but lose the track.
-	for _, slug := range []string{"gym-linux", "pentest"} {
-		w := do(h, http.MethodGet, "/public/courses/"+slug, "")
-		if w.Code != http.StatusOK {
-			t.Fatalf("%s: status %d", slug, w.Code)
-		}
-		if p := decode[apigen.CoursePreview](t, w); p.Specialization != nil {
-			t.Errorf("%s: specialization = %+v", slug, p.Specialization)
-		}
+	// A trainer keeps its specialization; a course of an unpublished one loses it.
+	w := do(h, http.MethodGet, "/public/courses/gym-linux", "")
+	if p := decode[apigen.CoursePreview](t, w); w.Code != http.StatusOK || p.Specialization == nil ||
+		p.Specialization.Slug != "devops" {
+		t.Errorf("trainer: %d specialization = %+v", w.Code, p.Specialization)
+	}
+	w = do(h, http.MethodGet, "/public/courses/pentest", "")
+	if p := decode[apigen.CoursePreview](t, w); w.Code != http.StatusOK || p.Specialization != nil {
+		t.Errorf("hidden specialization: %d %+v", w.Code, p.Specialization)
 	}
 }
 
@@ -501,6 +501,32 @@ func TestLandingRejectsBadQuery(t *testing.T) {
 	for _, query := range []string{"?sort=price", "?dir=sideways", "?limit=0", "?limit=51", "?limit=many"} {
 		if w := do(h, http.MethodGet, "/public/landing"+query, ""); w.Code != http.StatusUnprocessableEntity {
 			t.Errorf("%s: status %d", query, w.Code)
+		}
+	}
+}
+
+func TestTrainerStandsOutsideTheCoursePath(t *testing.T) {
+	users, content := storefront()
+	h := newTestAPIWith(t, users, content)
+
+	w := do(h, http.MethodGet, "/courses/gym-linux", "", withCookie(studentToken))
+	if w.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", w.Code, w.Body)
+	}
+	trainer := decode[apigen.CourseDetail](t, w)
+	if !trainer.Course.IsTrainer || trainer.PrevCourse != nil || trainer.NextCourse != nil {
+		t.Errorf("trainer = %+v, prev %+v, next %+v", trainer.Course.IsTrainer, trainer.PrevCourse, trainer.NextCourse)
+	}
+	if len(trainer.Items) != 1 || trainer.Items[0].Status != "completed" {
+		t.Errorf("trainer keeps its lessons and progress: %+v", trainer.Items)
+	}
+
+	// A regular course never points at a trainer as its neighbour.
+	w = do(h, http.MethodGet, "/courses/docker", "", withCookie(studentToken))
+	course := decode[apigen.CourseDetail](t, w)
+	for _, ref := range []*apigen.LinkRef{course.PrevCourse, course.NextCourse} {
+		if ref != nil && ref.Slug == "gym-linux" {
+			t.Errorf("neighbour is a trainer: %+v", ref)
 		}
 	}
 }

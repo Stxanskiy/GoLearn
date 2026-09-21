@@ -42,8 +42,8 @@ var curriculum = map[string][]string{
 	},
 }
 
-// specBand is the order_num range reserved for each specialization; the bands
-// also fix the order the specializations themselves appear in.
+// specBand is the order_num range reserved for each curriculum group; `gym` is
+// the shared band of the trainers, whatever specialization they belong to.
 var specBand = map[string]int{
 	"devops":   100,
 	"database": 300,
@@ -51,15 +51,13 @@ var specBand = map[string]int{
 	"gym":      500,
 }
 
-// specForTrack maps a module track onto its catalog specialization.
+// specForTrack maps a module track onto its curriculum group; trainers use their own band.
 func specForTrack(track string) string {
 	switch track {
 	case "devops":
 		return "devops"
 	case "database":
 		return "database"
-	case "gym":
-		return "gym"
 	case "security", "security-offense", "security-defense":
 		return "security"
 	default:
@@ -86,6 +84,9 @@ func assignOrder(mods []M) error {
 	unlisted := make(map[string]int)
 	for i := range mods {
 		spec := specForTrack(mods[i].Track)
+		if mods[i].Trainer {
+			spec = "gym"
+		}
 		band, ok := specBand[spec]
 		if !ok {
 			band = 900

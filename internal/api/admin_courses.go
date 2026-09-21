@@ -487,8 +487,9 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
 		ID: m.ID, Slug: live.Slug, PreviewSlug: m.Slug, DraftOf: m.DraftOf, Title: m.Title, Description: m.Description, Track: m.Track,
-		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent, IconURL: m.IconURL,
-		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published,
+		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
+		Icon: catalog.CategoryIcon(catalog.Category(m)), IconURL: m.IconURL,
+		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published, IsTrainer: m.IsTrainer,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",
 		CoverPreviewURL: "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
@@ -520,6 +521,10 @@ func (a *API) courseFromInput(ctx context.Context, in apigen.AdminCourseInput, c
 		Accent:      strings.TrimSpace(deref(in.Accent)),
 		EstMinutes:  deref(in.EstMinutes),
 		Tags:        []string{},
+	}
+	m.IsTrainer = cur != nil && cur.IsTrainer
+	if in.IsTrainer != nil {
+		m.IsTrainer = *in.IsTrainer
 	}
 	checkSlug(fields, "slug", m.Slug)
 	checkText(fields, "title", m.Title, 200, true)
@@ -558,16 +563,15 @@ func (a *API) courseFromInput(ctx context.Context, in apigen.AdminCourseInput, c
 	case m.Track == "":
 		fields["track"] = fieldRequired
 	case cur != nil && cur.Track == m.Track:
-	case m.Track == catalog.GymSpec:
-		if !userFrom(ctx).IsAdmin() {
-			fields["track"] = fieldInvalidValue
-		}
 	default:
 		if _, err := a.Specs.Get(ctx, m.Track); isNotFound(err) {
 			fields["track"] = fieldNotFound
 		} else if err != nil {
 			return m, nil, err
 		}
+	}
+	if m.IsTrainer != (cur != nil && cur.IsTrainer) && !userFrom(ctx).IsAdmin() {
+		fields["is_trainer"] = fieldInvalidValue
 	}
 	return m, fields, nil
 }
