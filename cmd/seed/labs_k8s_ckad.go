@@ -266,7 +266,7 @@ spec:
   selector: {app: checkout, color: blue}
   ports: [{port: 80, targetPort: 80}]
 YAML
-kubectl run strategy-debug --image=busybox:1.36 --restart=Never --command -- sleep 3600 >/dev/null 2>&1 || true`,
+kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600 >/dev/null 2>&1 || true`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy shop-v1", "{.spec.replicas}", "3")+` && kubectl get svc shop-svc >/dev/null 2>&1`,
 				"stable-версия shop-v1 (3 реплики) и Service shop-svc запущены",
@@ -326,7 +326,7 @@ metadata: {name: worker-api, labels: {app: worker-api}}
 spec:
   containers:
   - name: app
-    image: busybox:1.36
+    image: busybox:1.28
     command: ["sh","-c","if [ -z \"$DATABASE_URL\" ]; then echo 'FATAL: DATABASE_URL is required' >&2; exit 1; fi; echo worker started; sleep 3600"]
 YAML
 cat > /root/debug-workloads/app-c.yaml <<'YAML'
@@ -343,14 +343,14 @@ metadata: {name: billing-api, labels: {app: billing-api}}
 spec:
   initContainers:
   - name: prepare-config
-    image: busybox:1.36
+    image: busybox:1.28
     command: ["sh","-c","cp /config/billing.conf /shared/billing.conf && echo copied"]
     volumeMounts:
     - {name: cfg, mountPath: /etc/wrong}
     - {name: shared, mountPath: /shared}
   containers:
   - name: app
-    image: busybox:1.36
+    image: busybox:1.28
     command: ["sh","-c","test -f /shared/billing.conf && echo billing ready && sleep 3600"]
     volumeMounts:
     - {name: shared, mountPath: /shared}
@@ -381,19 +381,19 @@ spec:
           periodSeconds: 3
 YAML`,
 		Checks: map[int]string{
-			2: kcheck(jp("get pod frontend-api", "{.status.containerStatuses[0].ready}", "true"),
+			1: kcheck(jp("get pod frontend-api", "{.status.containerStatuses[0].ready}", "true"),
 				"frontend-api исправлен и в состоянии Ready",
 				"причина в теге образа: в app-a.yaml image: nginx:alpne -> nginx:alpine; пересоздай Pod"),
-			4: kcheck(jp("get pod worker-api", "{.status.containerStatuses[0].ready}", "true"),
+			2: kcheck(jp("get pod worker-api", "{.status.containerStatuses[0].ready}", "true"),
 				"worker-api больше не падает и в состоянии Ready",
 				"процесс требует переменную DATABASE_URL: добавь в app-b.yaml env: [{name: DATABASE_URL, value: \"postgres://db:5432/app\"}]"),
-			6: kcheck(jp("get pod billing-api", "{.status.containerStatuses[0].ready}", "true"),
+			3: kcheck(jp("get pod billing-api", "{.status.containerStatuses[0].ready}", "true"),
 				"billing-api: init container отработал, Pod Ready",
 				"init читает /config/billing.conf, а том смонтирован в /etc/wrong: поменяй mountPath тома cfg на /config"),
-			8: kcheck(jp("get deploy catalog-api", "{.status.readyReplicas}", "1"),
+			4: kcheck(jp("get deploy catalog-api", "{.status.readyReplicas}", "1"),
 				"catalog-api: rollout завершён, реплика Ready",
 				"readinessProbe стучится в /readyz, а приложение отдаёт /healthz: поменяй httpGet.path на /healthz"),
-			10: kcheck(`! kubectl get pod frontend-api >/dev/null 2>&1 && ! kubectl get pod worker-api >/dev/null 2>&1 && ! kubectl get pod billing-api >/dev/null 2>&1 && ! kubectl get deploy catalog-api >/dev/null 2>&1 && ! kubectl get configmap billing-config >/dev/null 2>&1`,
+			5: kcheck(`! kubectl get pod frontend-api >/dev/null 2>&1 && ! kubectl get pod worker-api >/dev/null 2>&1 && ! kubectl get pod billing-api >/dev/null 2>&1 && ! kubectl get deploy catalog-api >/dev/null 2>&1 && ! kubectl get configmap billing-config >/dev/null 2>&1`,
 				"все debug-ресурсы удалены",
 				"kubectl delete pod frontend-api worker-api billing-api; kubectl delete deploy catalog-api; kubectl delete configmap billing-config"),
 		},
@@ -493,21 +493,28 @@ spec:
   ports: [{port: 80, targetPort: 80}]
 YAML`,
 		Checks: map[int]string{
-			2: kcheck(`[ -n "$(kubectl get endpoints orders-svc -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null)" ]`,
+			1: kcheck(`[ -n "$(kubectl get endpoints orders-svc -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null)" ]`,
 				"orders-svc: селектор исправлен, endpoints не пустые",
 				"селектор Service не совпадает с labels Pod'ов: поменяй selector orders-svc на app: orders-api"),
-			4: kcheck(jp("get deploy orders-api", "{.status.readyReplicas}", "1")+` && `+
+			2: kcheck(jp("get deploy orders-api", "{.status.readyReplicas}", "1")+` && `+
 				jp("get deploy orders-api", "{.spec.template.spec.containers[0].env[0].valueFrom.configMapKeyRef.key}", "app_mode"),
 				"orders-api: ключ конфигурации исправлен (app_mode), rollout завершён",
 				"configMapKeyRef.key указывает на mode, а в ConfigMap ключ app_mode: поменяй key на app_mode"),
-			7: kcheck(jp("get svc reports-svc", "{.spec.ports[0].targetPort}", "80"),
+			// Задание 3 наблюдательное: состояние создаёт уже задание 2, поэтому
+			// проверка проходит до действий студента — это ожидаемо и помечено
+			// в scripts/labcheck/observational.sh. Она даёт студенту сквозное
+			// подтверждение, что Service и конфигурация починены вместе.
+			3: kcheck(`kubectl exec deploy/orders-api -- wget -qO- http://orders-svc 2>/dev/null | grep -q 'mode=production'`,
+				"orders-svc отвечает и приложение отдаёт mode=production",
+				"после починки селектора и ключа конфигурации: kubectl exec deploy/orders-api -- wget -qO- http://orders-svc"),
+			4: kcheck(jp("get svc reports-svc", "{.spec.ports[0].targetPort}", "80"),
 				"reports-svc: targetPort совпадает с портом контейнера (80)",
 				"targetPort 8080 не совпадает с портом контейнера 80: поменяй targetPort у reports-svc на 80"),
-			9: kcheck(`kubectl get configmap profile-config >/dev/null 2>&1 && `+
+			5: kcheck(`kubectl get configmap profile-config >/dev/null 2>&1 && `+
 				jp("get deploy profile-api", "{.status.readyReplicas}", "1"),
 				"profile-config создан, profile-api стал Ready",
 				"Deployment ждёт ConfigMap profile-config: kubectl create configmap profile-config --from-literal=app_env=prod"),
-			12: kcheck(`! kubectl get deploy orders-api >/dev/null 2>&1 && ! kubectl get deploy reports-api >/dev/null 2>&1 && ! kubectl get deploy profile-api >/dev/null 2>&1 && ! kubectl get svc orders-svc >/dev/null 2>&1 && ! kubectl get svc reports-svc >/dev/null 2>&1 && ! kubectl get svc profile-svc >/dev/null 2>&1 && ! kubectl get pod debug-client >/dev/null 2>&1`,
+			6: kcheck(`! kubectl get deploy orders-api >/dev/null 2>&1 && ! kubectl get deploy reports-api >/dev/null 2>&1 && ! kubectl get deploy profile-api >/dev/null 2>&1 && ! kubectl get svc orders-svc >/dev/null 2>&1 && ! kubectl get svc reports-svc >/dev/null 2>&1 && ! kubectl get svc profile-svc >/dev/null 2>&1 && ! kubectl get pod debug-client >/dev/null 2>&1`,
 				"все ресурсы лабораторной удалены",
 				"kubectl delete deploy orders-api reports-api profile-api; kubectl delete svc orders-svc reports-svc profile-svc; kubectl delete configmap orders-config profile-config; kubectl delete pod debug-client"),
 		},

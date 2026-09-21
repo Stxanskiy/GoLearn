@@ -28,3 +28,4 @@ deploy/sandbox-docker/registry/
 deploy/sandbox-docker/certs/
 deploy/sandbox-k8s/bin/
 deploy/sandbox-k8s/registry/
+deploy/sandbox-k8s/helm-mirror/
