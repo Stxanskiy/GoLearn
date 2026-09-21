@@ -28,10 +28,17 @@ cat > inventory.ini <<'INI'
 localhost ansible_connection=local
 INI`
 
-// ansibleIdempotent runs the given playbook and passes only if the recap shows
-// changed=0 (nothing left to do on a second run).
-func ansibleIdempotent(playbook string) string {
-	return `cd /root/ansible-lab && ansible-playbook ` + playbook +
+// ansibleIdempotent checks a saved recap rather than running the playbook
+// itself.
+//
+// Running it here made the task pass before the student did anything: the
+// previous task had already left the playbook idempotent, so a fresh run
+// reported changed=0 on its own. Asking for the recap in a file makes the
+// second run something the student actually performs — and the check still
+// re-runs the playbook, so the file alone is not enough.
+func ansibleIdempotent(playbook, recap string) string {
+	return `grep -qE 'changed=0.*unreachable=0' ` + recap + ` 2>/dev/null && ` +
+		`cd /root/ansible-lab && ansible-playbook ` + playbook +
 		` 2>/dev/null | grep -qE 'changed=0.*unreachable=0'`
 }
 
@@ -49,9 +56,9 @@ var ansibleLabs = map[string]labSpec{
 			3: check(`[ -d /root/ansible-lab/data ]`,
 				"каталог data создан задачей file",
 				"добавь в site.yml задачу file со state: directory для /root/ansible-lab/data"),
-			4: check(ansibleIdempotent("site.yml"),
-				"playbook идемпотентен (повторный прогон: changed=0)",
-				"второй ansible-playbook site.yml должен дать changed=0 — используй модули file/copy, не command"),
+			4: check(ansibleIdempotent("site.yml", "/root/ansible-lab/recap.txt"),
+				"повторный прогон сохранён в recap.txt и показывает changed=0",
+				"ansible-playbook site.yml > /root/ansible-lab/recap.txt — в recap должно быть changed=0 (модули file/copy, не command)"),
 		},
 	},
 
@@ -133,9 +140,9 @@ touch /root/ansible-lab/old.txt`,
 			2: check(`[ -f /root/ansible-lab/webapp/index.html ]`,
 				"роль создала /root/ansible-lab/webapp/index.html",
 				"в roles/webapp/tasks/main.yml — file(directory) + copy(index.html); site.yml с roles: [webapp]; ansible-playbook site.yml"),
-			3: check(ansibleIdempotent("site.yml"),
-				"роль идемпотентна (повторный прогон: changed=0)",
-				"второй ansible-playbook site.yml должен дать changed=0 (не используй command/shell без creates)"),
+			3: check(ansibleIdempotent("site.yml", "/root/ansible-lab/role_recap.txt"),
+				"повторный прогон роли сохранён в role_recap.txt и показывает changed=0",
+				"ansible-playbook site.yml > /root/ansible-lab/role_recap.txt — changed=0 (не используй command/shell без creates)"),
 			4: check(`head -1 /root/ansible-lab/secrets.yml 2>/dev/null | grep -q 'ANSIBLE_VAULT'`,
 				"secrets.yml зашифрован через ansible-vault",
 				"создай secrets.yml и: ansible-vault encrypt secrets.yml"),

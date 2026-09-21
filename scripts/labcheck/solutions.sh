@@ -310,3 +310,193 @@ sol_ch_git_lab9_3='h=$(git -C /root/project reflog --format="%h %gs" | grep -m1 
 
 sol_ch_git_lab10_1='cd /root/project && git bisect start HEAD good-start >/dev/null 2>&1 && git bisect run ./test.sh >/dev/null 2>&1; true'
 sol_ch_git_lab10_2='git -C /root/project bisect reset'
+
+# ── Ansible ──
+# Every lab runs against localhost with connection: local, so the playbooks here
+# are the real thing rather than a stand-in. Each solution writes the whole
+# playbook it needs and runs it: the tasks build on each other, and rewriting the
+# file keeps a solution readable on its own.
+sol_ch_ansible_lab1_1='cd /root/ansible-lab && ansible localhost -c local -m file -a "path=/root/ansible-lab/hello.txt state=touch" >/dev/null'
+sol_ch_ansible_lab1_2='cd /root/ansible-lab && cat > site.yml <<YML
+- hosts: local
+  tasks:
+    - name: managed file
+      copy:
+        content: "Managed by Ansible\n"
+        dest: /root/ansible-lab/managed.txt
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab1_3='cd /root/ansible-lab && cat > site.yml <<YML
+- hosts: local
+  tasks:
+    - name: managed file
+      copy:
+        content: "Managed by Ansible\n"
+        dest: /root/ansible-lab/managed.txt
+    - name: data dir
+      file:
+        path: /root/ansible-lab/data
+        state: directory
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab1_4='cd /root/ansible-lab && ansible-playbook site.yml > /root/ansible-lab/recap.txt 2>&1'
+
+sol_ch_ansible_lab2_1='cd /root/ansible-lab && cat > files.yml <<YML
+- hosts: local
+  tasks:
+    - name: app dir
+      file:
+        path: /root/ansible-lab/app
+        state: directory
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_2='cd /root/ansible-lab && cat > files.yml <<YML
+- hosts: local
+  tasks:
+    - name: app dir
+      file:
+        path: /root/ansible-lab/app
+        state: directory
+    - name: app conf
+      copy:
+        content: "port=8080\n"
+        dest: /root/ansible-lab/app/app.conf
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_3='cd /root/ansible-lab && cat >> files.yml <<YML
+    - name: debug line
+      lineinfile:
+        path: /root/ansible-lab/app/app.conf
+        line: "debug=true"
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_4='cd /root/ansible-lab && cat >> files.yml <<YML
+    - name: drop old file
+      file:
+        path: /root/ansible-lab/old.txt
+        state: absent
+YML
+ansible-playbook files.yml >/dev/null'
+
+sol_ch_ansible_lab3_1='cd /root/ansible-lab && cat > vars.yml <<YML
+- hosts: local
+  vars:
+    greeting: "hello ansible"
+  tasks:
+    - name: greeting file
+      copy:
+        content: "{{ greeting }}\n"
+        dest: /root/ansible-lab/greeting.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+sol_ch_ansible_lab3_2='cd /root/ansible-lab && cat >> vars.yml <<YML
+    - name: distribution fact
+      copy:
+        content: "{{ ansible_facts[\"distribution\"] }}\n"
+        dest: /root/ansible-lab/os.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+sol_ch_ansible_lab3_3='cd /root/ansible-lab && cat >> vars.yml <<YML
+    - name: read hostname
+      command: cat /etc/hostname
+      register: host_out
+      changed_when: false
+    - name: store hostname
+      copy:
+        content: "{{ host_out.stdout }}\n"
+        dest: /root/ansible-lab/host.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+
+sol_ch_ansible_lab4_1='cd /root/ansible-lab && cat > templates/service.conf.j2 <<J2
+port = {{ svc_port }}
+J2
+cat > tpl.yml <<YML
+- hosts: local
+  vars:
+    svc_port: 9090
+    enable_debug: false
+  tasks:
+    - name: render service conf
+      template:
+        src: templates/service.conf.j2
+        dest: /root/ansible-lab/service.conf
+YML
+ansible-playbook tpl.yml >/dev/null'
+sol_ch_ansible_lab4_2='cd /root/ansible-lab && cat > templates/service.conf.j2 <<J2
+port = {{ svc_port }}
+{% if enable_debug %}debug = on{% endif %}
+J2
+sed -i "s/enable_debug: false/enable_debug: true/" tpl.yml
+ansible-playbook tpl.yml >/dev/null'
+# The handler only fires on a change, so the port moves to 9091 in the same run.
+sol_ch_ansible_lab4_3='cd /root/ansible-lab && cat > tpl.yml <<YML
+- hosts: local
+  vars:
+    svc_port: 9091
+    enable_debug: true
+  tasks:
+    - name: render service conf
+      template:
+        src: templates/service.conf.j2
+        dest: /root/ansible-lab/service.conf
+      notify: reload service
+  handlers:
+    - name: reload service
+      file:
+        path: /root/ansible-lab/reloaded.marker
+        state: touch
+YML
+ansible-playbook tpl.yml >/dev/null'
+
+sol_ch_ansible_lab5_1='cd /root/ansible-lab && cat > loops.yml <<YML
+- hosts: local
+  tasks:
+    - name: dirs
+      file:
+        path: /root/ansible-lab/{{ item }}
+        state: directory
+      loop: [logs, data, cache]
+YML
+ansible-playbook loops.yml >/dev/null'
+sol_ch_ansible_lab5_2='cd /root/ansible-lab && cat >> loops.yml <<YML
+    - name: flags except beta
+      file:
+        path: /root/ansible-lab/{{ item }}.flag
+        state: touch
+      loop: [alpha, beta, gamma]
+      when: item != "beta"
+YML
+ansible-playbook loops.yml >/dev/null'
+sol_ch_ansible_lab5_3='cd /root/ansible-lab && cat > cond.yml <<YML
+- hosts: local
+  vars:
+    make_prod: true
+  tasks:
+    - name: prod marker
+      file:
+        path: /root/ansible-lab/prod.marker
+        state: touch
+      when: make_prod | bool
+YML
+ansible-playbook cond.yml >/dev/null'
+
+sol_ch_ansible_lab6_1='cd /root/ansible-lab && ansible-galaxy init roles/webapp >/dev/null'
+sol_ch_ansible_lab6_2='cd /root/ansible-lab && cat > roles/webapp/tasks/main.yml <<YML
+- name: webapp dir
+  file:
+    path: /root/ansible-lab/webapp
+    state: directory
+- name: index page
+  copy:
+    content: "<h1>webapp</h1>\n"
+    dest: /root/ansible-lab/webapp/index.html
+YML
+cat > site.yml <<YML
+- hosts: local
+  roles:
+    - webapp
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab6_3='cd /root/ansible-lab && ansible-playbook site.yml > /root/ansible-lab/role_recap.txt 2>&1'
+sol_ch_ansible_lab6_4='cd /root/ansible-lab && printf "db_password: s3cret\n" > secrets.yml && printf "vaultpw\n" > .vaultpw && ansible-vault encrypt --vault-password-file .vaultpw secrets.yml >/dev/null'
