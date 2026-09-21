@@ -2,7 +2,7 @@
 
 ## What This Is
 An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm, SQL — theory,
-quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
+quizzes and hands-on labs in a real terminal. Deployed at `tot.prod-factory.ru`
 (see `deploy/berg/README.md`).
 
 The Go courses were removed (migration `013`); their content still lives in
@@ -10,9 +10,10 @@ The Go courses were removed (migration `013`); their content still lives in
 
 ## Stack
 - **Backend:** Go 1.22+, chi router, pgx (PostgreSQL)
-- **Frontend:** Server-side HTML templates (Go html/template)
+- **Frontend:** separate repo (`space-symbol/frontend-tot`, Next.js). This service
+  renders no pages — it is a JSON API, and `api/openapi.yaml` is the contract
+  between the two, served at `/docs`.
 - **Database:** PostgreSQL 16 (via docker-compose, port 5433)
-- **No external CSS frameworks** — custom CSS in templates
 
 ## How to Run
 ```bash
@@ -80,13 +81,12 @@ cmd/seed/       — Database seeder with all course content
 api/            — OpenAPI contract for the JSON API (openapi.yaml)
 internal/
   api/          — JSON API /api/v1 for the Next.js frontend; after editing the spec run `go generate ./internal/api/apigen`
-  auth/         — Session cookie, rate limits, ADMIN_EMAILS rules shared by handler/ and api/
+  auth/         — Session cookie, rate limits, ADMIN_EMAILS rules
   config/       — Environment config
-  handler/      — HTTP handlers (dashboard, lesson, quiz, tasks, progress)
   model/        — Data models
   repository/   — PostgreSQL queries
-  templates/    — HTML templates (layouts/, pages/, components/)
-  static/       — CSS/JS/images
+  apidocs/      — serves api/openapi.yaml and a Swagger UI for it at /docs
+  simulators/   — built-in simulator scenarios and their one-time seeding
 migrations/     — SQL migrations
 ```
 
