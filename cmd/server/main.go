@@ -11,11 +11,12 @@ import (
 	"time"
 
 	"github.com/backendraz/golearn/internal/api"
+	"github.com/backendraz/golearn/internal/apidocs"
 	"github.com/backendraz/golearn/internal/config"
-	"github.com/backendraz/golearn/internal/handler"
 	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
+	"github.com/backendraz/golearn/internal/simulators"
 	"github.com/backendraz/golearn/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -80,11 +81,9 @@ func main() {
 	}
 	bootCancel()
 
-	h := handler.New(moduleRepo, lessonRepo, progressRepo, submissionRepo, userRepo, specRepo, courseRepo, simRepo, quizAttemptRepo, codeRunner, sandbox, log)
-
 	// Seed the built-in simulator scenarios into the DB once so they are editable.
 	simCtx, simCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	if err := h.EnsureSimulators(simCtx); err != nil {
+	if err := simulators.Ensure(simCtx, simRepo); err != nil {
 		log.Error("ensure simulators", "error", err)
 	}
 	simCancel()
@@ -106,16 +105,6 @@ func main() {
 		}
 		w.Write([]byte("ready"))
 	})
-
-	// Serve static files. Assets are linked with a ?v=<version> query that
-	// changes when they change, so the browser refetches after a redesign;
-	// must-revalidate keeps a cached copy honest even without the query.
-	fs := http.FileServer(http.Dir("internal/static"))
-	staticHandler := http.StripPrefix("/static/", fs)
-	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Cache-Control", "public, max-age=300, must-revalidate")
-		staticHandler.ServeHTTP(w, req)
-	}))
 
 	stores := api.Stores{
 		Users:        userRepo,
@@ -151,7 +140,12 @@ func main() {
 
 	apiV1 := api.New(stores, api.Config{AllowedOrigins: cfg.AppOrigins}, log)
 	r.Mount("/api/v1", apiV1.Routes())
-	h.RegisterRoutes(r)
+
+	// The contract is the only description of this service now that it renders
+	// no pages, so it ships with the code it describes.
+	docs := apidocs.New(os.Getenv("OPENAPI_SPEC"))
+	r.Get("/openapi.yaml", docs.Spec)
+	r.Get("/docs", docs.UI)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
@@ -190,13 +184,10 @@ func main() {
 // WebSocket terminal, so the CSP allows those explicitly rather than being maximally
 // strict. HSTS is only advertised when the request arrived over HTTPS.
 func securityHeaders(next http.Handler) http.Handler {
-	const csp = "default-src 'self'; " +
-		"img-src 'self' data: blob:; " +
-		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; " +
-		"script-src 'self' 'unsafe-inline'; " +
-		"font-src 'self' data: https://fonts.gstatic.com https://unpkg.com; " +
-		"connect-src 'self' ws: wss:; " +
-		"frame-src 'self'; frame-ancestors 'self'; base-uri 'self'"
+	// A JSON API needs to load nothing at all. The permissive policy this
+	// replaces existed for the server-rendered pages, which are gone; /docs
+	// sets its own, narrower exception for the viewer it loads.
+	const csp = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 		h.Set("X-Content-Type-Options", "nosniff")
