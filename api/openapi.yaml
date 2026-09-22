@@ -194,6 +194,63 @@ paths:
               schema: { $ref: '#/components/schemas/Profile' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /me/subscription:
+    get:
+      tags: [billing]
+      summary: Get my subscription
+      description: |
+        Access to paid content is a platform-wide subscription, not a per-course
+        purchase. `none` and `expired` are reported separately: a user who never
+        subscribed and one whose subscription lapsed need different prompts.
+      operationId: getSubscription
+      responses:
+        '200':
+          description: Subscription state of the current user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/checkout:
+    post:
+      tags: [billing]
+      summary: Start a checkout
+      description: |
+        Opens a payment and returns the reference that confirms it. No provider is
+        wired in yet, so `confirm_url` points back at this API and the whole flow
+        is exercisable before any money moves.
+      operationId: startCheckout
+      responses:
+        '201':
+          description: A pending payment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Checkout' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/confirm:
+    post:
+      tags: [billing]
+      summary: Confirm a payment
+      description: |
+        Stands in for the provider's webhook. Idempotent on the payment reference:
+        providers replay webhooks, and a replay must not buy another month.
+      operationId: confirmCheckout
+      parameters:
+        - name: ref
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Subscription after the payment.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /me/dashboard:
     get:
       tags: [me]
@@ -1026,6 +1083,32 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
+
+  /admin/courses/{courseId}/access-tier:
+    patch:
+      tags: [admin, billing]
+      summary: Set what the subscription covers
+      description: |
+        Moves a course between free and subscription-only. Admin only: what the
+        subscription is worth is not an author's decision.
+      operationId: setCourseAccessTier
+      parameters:
+        - { name: courseId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccessTier' }
+      responses:
+        '200':
+          description: The tier now in force.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccessTier' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /admin/courses/{courseId}/move:
     parameters:
@@ -2539,6 +2622,35 @@ components:
       required: [registration_open]
       properties:
         registration_open: { type: boolean }
+
+    Subscription:
+      type: object
+      required: [active, status]
+      description: |
+        `active` is status and expiry together: a row left `active` past its
+        expiry is what a missed sweep leaves behind and must not grant access.
+      properties:
+        active: { type: boolean }
+        status: { type: string, enum: [none, active, expired, canceled] }
+        expires_at: { type: string, format: date-time }
+        provider: { type: string }
+
+    Checkout:
+      type: object
+      required: [payment_id, provider_ref, amount_minor, currency, months, confirm_url]
+      properties:
+        payment_id: { type: integer }
+        provider_ref: { type: string }
+        amount_minor: { type: integer, format: int64, description: Minor units, never a float. }
+        currency: { type: string }
+        months: { type: integer }
+        confirm_url: { type: string }
+
+    AccessTier:
+      type: object
+      required: [access_tier]
+      properties:
+        access_tier: { type: string, enum: [free, subscription] }
 
     Me:
       type: object

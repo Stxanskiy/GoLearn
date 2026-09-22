@@ -9,6 +9,24 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AccessTierAccessTier.
+const (
+	AccessTierAccessTierFree         AccessTierAccessTier = "free"
+	AccessTierAccessTierSubscription AccessTierAccessTier = "subscription"
+)
+
+// Valid indicates whether the value is a known member of the AccessTierAccessTier enum.
+func (e AccessTierAccessTier) Valid() bool {
+	switch e {
+	case AccessTierAccessTierFree:
+		return true
+	case AccessTierAccessTierSubscription:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminCourseSource.
 const (
 	AdminCourseSourceAdmin AdminCourseSource = "admin"
@@ -378,6 +396,30 @@ func (e SortDirection) Valid() bool {
 	}
 }
 
+// Defines values for SubscriptionStatus.
+const (
+	Active   SubscriptionStatus = "active"
+	Canceled SubscriptionStatus = "canceled"
+	Expired  SubscriptionStatus = "expired"
+	None     SubscriptionStatus = "none"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionStatus enum.
+func (e SubscriptionStatus) Valid() bool {
+	switch e {
+	case Active:
+		return true
+	case Canceled:
+		return true
+	case Expired:
+		return true
+	case None:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TaskDifficulty.
 const (
 	Easy   TaskDifficulty = "easy"
@@ -527,6 +569,14 @@ func (e AdminMoveSpecializationJSONBodyDirection) Valid() bool {
 		return false
 	}
 }
+
+// AccessTier defines model for AccessTier.
+type AccessTier struct {
+	AccessTier AccessTierAccessTier `json:"access_tier"`
+}
+
+// AccessTierAccessTier defines model for AccessTier.AccessTier.
+type AccessTierAccessTier string
 
 // AdminCourse defines model for AdminCourse.
 type AdminCourse struct {
@@ -911,6 +961,17 @@ type Catalog struct {
 
 // Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
 type Category = string
+
+// Checkout defines model for Checkout.
+type Checkout struct {
+	// AmountMinor Minor units
+	AmountMinor int64  `json:"amount_minor"`
+	ConfirmURL  string `json:"confirm_url"`
+	Currency    string `json:"currency"`
+	Months      int    `json:"months"`
+	PaymentID   int    `json:"payment_id"`
+	ProviderRef string `json:"provider_ref"`
+}
 
 // ContentFormat defines model for ContentFormat.
 type ContentFormat string
@@ -1679,6 +1740,18 @@ type SQLTable struct {
 	ID      string      `json:"id"`
 }
 
+// Subscription `active` is status and expiry together: a row left `active` past its
+// expiry is what a missed sweep leaves behind and must not grant access.
+type Subscription struct {
+	Active    bool               `json:"active"`
+	ExpiresAt *time.Time         `json:"expires_at,omitempty"`
+	Provider  *string            `json:"provider,omitempty"`
+	Status    SubscriptionStatus `json:"status"`
+}
+
+// SubscriptionStatus defines model for Subscription.Status.
+type SubscriptionStatus string
+
 // TaskCheckResult defines model for TaskCheckResult.
 type TaskCheckResult struct {
 	LessonStatus ProgressStatus `json:"lesson_status"`
@@ -1991,6 +2064,11 @@ type RegisterJSONBody struct {
 	Password string `json:"password"`
 }
 
+// ConfirmCheckoutParams defines parameters for ConfirmCheckout.
+type ConfirmCheckoutParams struct {
+	Ref string `form:"ref" json:"ref"`
+}
+
 // GetCatalogParams defines parameters for GetCatalog.
 type GetCatalogParams struct {
 	// Spec Specialization slug; the others come back with an empty course list.
@@ -2077,6 +2155,9 @@ type AdminCreateCourseJSONRequestBody = AdminCourseInput
 
 // AdminUpdateCourseJSONRequestBody defines body for AdminUpdateCourse for application/json ContentType.
 type AdminUpdateCourseJSONRequestBody = AdminCourseInput
+
+// SetCourseAccessTierJSONRequestBody defines body for SetCourseAccessTier for application/json ContentType.
+type SetCourseAccessTierJSONRequestBody = AccessTier
 
 // AdminAddCourseAuthorJSONRequestBody defines body for AdminAddCourseAuthor for application/json ContentType.
 type AdminAddCourseAuthorJSONRequestBody AdminAddCourseAuthorJSONBody

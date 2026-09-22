@@ -24,6 +24,7 @@ type Module struct {
 	Published     bool      `json:"published" db:"published"`         // false -> draft, hidden from students
 	OwnerID       *int      `json:"owner_id" db:"owner_id"`           // admin who owns it; nil -> system/shared
 	DraftOf       *int      `json:"draft_of" db:"draft_of"`           // live course id when this is its unpublished draft copy
+	AccessTier    string    `json:"access_tier" db:"access_tier"`     // free | subscription; admin decides what the subscription covers
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 }
 

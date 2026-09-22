@@ -24,6 +24,7 @@ const (
 	codeUnsupportedMedia   = "unsupported_media_type"
 	codePayloadTooLarge    = "payload_too_large"
 	codeRateLimited        = "rate_limited"
+	codeSubscriptionNeeded = "subscription_required"
 	codeInternal           = "internal_error"
 	codeInvalidCredentials = "invalid_credentials"
 	codeAccountBlocked     = "account_blocked"
