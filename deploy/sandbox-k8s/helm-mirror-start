@@ -1,0 +1,18 @@
+#!/bin/sh
+# Serves the vendored offline Helm repository on 127.0.0.1:8879 so that
+# `helm repo add bitnami http://localhost:8879` works without network.
+# Idempotent: does nothing if the mirror already answers.
+set -e
+ROOT=/var/lib/glhelmrepo
+if wget -q -O /dev/null http://localhost:8879/index.yaml 2>/dev/null; then
+    exit 0
+fi
+[ -d "$ROOT" ] || { echo "offline helm repo missing at $ROOT" >&2; exit 1; }
+cd "$ROOT"
+nohup python3 -m http.server 8879 --bind 127.0.0.1 >/var/log/glhelmrepo.log 2>&1 &
+for i in $(seq 1 30); do
+    wget -q -O /dev/null http://localhost:8879/index.yaml 2>/dev/null && exit 0
+    sleep 1
+done
+echo "offline helm repo did not come up on :8879" >&2
+exit 1

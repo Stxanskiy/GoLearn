@@ -310,3 +310,441 @@ sol_ch_git_lab9_3='h=$(git -C /root/project reflog --format="%h %gs" | grep -m1 
 
 sol_ch_git_lab10_1='cd /root/project && git bisect start HEAD good-start >/dev/null 2>&1 && git bisect run ./test.sh >/dev/null 2>&1; true'
 sol_ch_git_lab10_2='git -C /root/project bisect reset'
+
+# ── Ansible ──
+# Every lab runs against localhost with connection: local, so the playbooks here
+# are the real thing rather than a stand-in. Each solution writes the whole
+# playbook it needs and runs it: the tasks build on each other, and rewriting the
+# file keeps a solution readable on its own.
+sol_ch_ansible_lab1_1='cd /root/ansible-lab && ansible localhost -c local -m file -a "path=/root/ansible-lab/hello.txt state=touch" >/dev/null'
+sol_ch_ansible_lab1_2='cd /root/ansible-lab && cat > site.yml <<YML
+- hosts: local
+  tasks:
+    - name: managed file
+      copy:
+        content: "Managed by Ansible\n"
+        dest: /root/ansible-lab/managed.txt
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab1_3='cd /root/ansible-lab && cat > site.yml <<YML
+- hosts: local
+  tasks:
+    - name: managed file
+      copy:
+        content: "Managed by Ansible\n"
+        dest: /root/ansible-lab/managed.txt
+    - name: data dir
+      file:
+        path: /root/ansible-lab/data
+        state: directory
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab1_4='cd /root/ansible-lab && ansible-playbook site.yml > /root/ansible-lab/recap.txt 2>&1'
+
+sol_ch_ansible_lab2_1='cd /root/ansible-lab && cat > files.yml <<YML
+- hosts: local
+  tasks:
+    - name: app dir
+      file:
+        path: /root/ansible-lab/app
+        state: directory
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_2='cd /root/ansible-lab && cat > files.yml <<YML
+- hosts: local
+  tasks:
+    - name: app dir
+      file:
+        path: /root/ansible-lab/app
+        state: directory
+    - name: app conf
+      copy:
+        content: "port=8080\n"
+        dest: /root/ansible-lab/app/app.conf
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_3='cd /root/ansible-lab && cat >> files.yml <<YML
+    - name: debug line
+      lineinfile:
+        path: /root/ansible-lab/app/app.conf
+        line: "debug=true"
+YML
+ansible-playbook files.yml >/dev/null'
+sol_ch_ansible_lab2_4='cd /root/ansible-lab && cat >> files.yml <<YML
+    - name: drop old file
+      file:
+        path: /root/ansible-lab/old.txt
+        state: absent
+YML
+ansible-playbook files.yml >/dev/null'
+
+sol_ch_ansible_lab3_1='cd /root/ansible-lab && cat > vars.yml <<YML
+- hosts: local
+  vars:
+    greeting: "hello ansible"
+  tasks:
+    - name: greeting file
+      copy:
+        content: "{{ greeting }}\n"
+        dest: /root/ansible-lab/greeting.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+sol_ch_ansible_lab3_2='cd /root/ansible-lab && cat >> vars.yml <<YML
+    - name: distribution fact
+      copy:
+        content: "{{ ansible_facts[\"distribution\"] }}\n"
+        dest: /root/ansible-lab/os.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+sol_ch_ansible_lab3_3='cd /root/ansible-lab && cat >> vars.yml <<YML
+    - name: read hostname
+      command: cat /etc/hostname
+      register: host_out
+      changed_when: false
+    - name: store hostname
+      copy:
+        content: "{{ host_out.stdout }}\n"
+        dest: /root/ansible-lab/host.txt
+YML
+ansible-playbook vars.yml >/dev/null'
+
+sol_ch_ansible_lab4_1='cd /root/ansible-lab && cat > templates/service.conf.j2 <<J2
+port = {{ svc_port }}
+J2
+cat > tpl.yml <<YML
+- hosts: local
+  vars:
+    svc_port: 9090
+    enable_debug: false
+  tasks:
+    - name: render service conf
+      template:
+        src: templates/service.conf.j2
+        dest: /root/ansible-lab/service.conf
+YML
+ansible-playbook tpl.yml >/dev/null'
+sol_ch_ansible_lab4_2='cd /root/ansible-lab && cat > templates/service.conf.j2 <<J2
+port = {{ svc_port }}
+{% if enable_debug %}debug = on{% endif %}
+J2
+sed -i "s/enable_debug: false/enable_debug: true/" tpl.yml
+ansible-playbook tpl.yml >/dev/null'
+# The handler only fires on a change, so the port moves to 9091 in the same run.
+sol_ch_ansible_lab4_3='cd /root/ansible-lab && cat > tpl.yml <<YML
+- hosts: local
+  vars:
+    svc_port: 9091
+    enable_debug: true
+  tasks:
+    - name: render service conf
+      template:
+        src: templates/service.conf.j2
+        dest: /root/ansible-lab/service.conf
+      notify: reload service
+  handlers:
+    - name: reload service
+      file:
+        path: /root/ansible-lab/reloaded.marker
+        state: touch
+YML
+ansible-playbook tpl.yml >/dev/null'
+
+sol_ch_ansible_lab5_1='cd /root/ansible-lab && cat > loops.yml <<YML
+- hosts: local
+  tasks:
+    - name: dirs
+      file:
+        path: /root/ansible-lab/{{ item }}
+        state: directory
+      loop: [logs, data, cache]
+YML
+ansible-playbook loops.yml >/dev/null'
+sol_ch_ansible_lab5_2='cd /root/ansible-lab && cat >> loops.yml <<YML
+    - name: flags except beta
+      file:
+        path: /root/ansible-lab/{{ item }}.flag
+        state: touch
+      loop: [alpha, beta, gamma]
+      when: item != "beta"
+YML
+ansible-playbook loops.yml >/dev/null'
+sol_ch_ansible_lab5_3='cd /root/ansible-lab && cat > cond.yml <<YML
+- hosts: local
+  vars:
+    make_prod: true
+  tasks:
+    - name: prod marker
+      file:
+        path: /root/ansible-lab/prod.marker
+        state: touch
+      when: make_prod | bool
+YML
+ansible-playbook cond.yml >/dev/null'
+
+sol_ch_ansible_lab6_1='cd /root/ansible-lab && ansible-galaxy init roles/webapp >/dev/null'
+sol_ch_ansible_lab6_2='cd /root/ansible-lab && cat > roles/webapp/tasks/main.yml <<YML
+- name: webapp dir
+  file:
+    path: /root/ansible-lab/webapp
+    state: directory
+- name: index page
+  copy:
+    content: "<h1>webapp</h1>\n"
+    dest: /root/ansible-lab/webapp/index.html
+YML
+cat > site.yml <<YML
+- hosts: local
+  roles:
+    - webapp
+YML
+ansible-playbook site.yml >/dev/null'
+sol_ch_ansible_lab6_3='cd /root/ansible-lab && ansible-playbook site.yml > /root/ansible-lab/role_recap.txt 2>&1'
+sol_ch_ansible_lab6_4='cd /root/ansible-lab && printf "db_password: s3cret\n" > secrets.yml && printf "vaultpw\n" > .vaultpw && ansible-vault encrypt --vault-password-file .vaultpw secrets.yml >/dev/null'
+
+# ── GitLab CI ──
+# There is no GitLab in the sandbox: these labs are about authoring
+# .gitlab-ci.yml, and the checks read the file. Each solution rewrites the whole
+# file rather than patching it in place — the jobs accumulate, and a full file is
+# both what a student would end up with and readable without the earlier steps.
+sol_ch_gitlab_ci_lab1_1='cat > /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+hello:
+  script:
+    - echo "Hello, CI"
+YML'
+sol_ch_gitlab_ci_lab1_2='cd /root/gitlab-ci-lab && git add .gitlab-ci.yml && git commit -qm "Add pipeline"'
+sol_ch_gitlab_ci_lab1_3='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+shell-basics:
+  script:
+    - echo "step 1"
+    - date
+    - ls -la
+YML'
+sol_ch_gitlab_ci_lab1_4='cat > /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+hello:
+  script:
+    - echo "Hello, CI"
+
+shell-basics:
+  script:
+    - |
+      echo "start"
+      for i in 1 2 3; do echo "step \$i"; done
+      echo "end"
+YML'
+
+sol_ch_gitlab_ci_lab2_1='cd /root/gitlab-ci-lab && sed -i "/^  APP_NAME: ci-demo/a\  APP_ENV: lab\n  PACKAGE_NAME: ci-demo-package" .gitlab-ci.yml'
+sol_ch_gitlab_ci_lab2_2='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("build-package:\n  stage: build\n  script:\n    - echo \"building\"\n",
+            "build-package:\n  stage: build\n  script:\n    - echo \"building\"\n  artifacts:\n    paths:\n      - dist/\n    expire_in: 1 hour\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab2_3='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("test-package:\n  stage: test\n",
+            "test-package:\n  stage: test\n  needs:\n    - build-package\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab2_4='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+test-scripts:
+  stage: validate
+  script:
+    - ./scripts/test.sh
+YML'
+sol_ch_gitlab_ci_lab2_5='cd /root/gitlab-ci-lab && sed -i "/^  APP_NAME: ci-demo/a\  CI_DEBUG: \"true\"" .gitlab-ci.yml'
+sol_ch_gitlab_ci_lab2_6='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("test-package:\n  stage: test\n",
+            "test-package:\n  stage: test\n  artifacts:\n    paths:\n      - test-results/\n")
+io.open(p,"w").write(s)
+PY'
+
+sol_ch_gitlab_ci_lab3_1='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+manual-deploy:
+  stage: deploy
+  when: manual
+  script:
+    - echo "deploying by hand"
+YML'
+sol_ch_gitlab_ci_lab3_2='cd /root/gitlab-ci-lab && git add -A && git commit -qm "manual deploy job" >/dev/null 2>&1; git tag -a v0.1.0 -m "first release"'
+sol_ch_gitlab_ci_lab3_3='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+release-note:
+  stage: deploy
+  script:
+    - echo "release \$CI_COMMIT_TAG"
+YML'
+sol_ch_gitlab_ci_lab3_4='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("release-note:\n  stage: deploy\n",
+            "release-note:\n  stage: deploy\n  rules:\n    - if: \$CI_COMMIT_TAG\n")
+io.open(p,"w").write(s)
+PY'
+
+sol_ch_gitlab_ci_lab4_1='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+build-image:
+  stage: build
+  script:
+    - docker build -t \$CI_REGISTRY_IMAGE:\$CI_COMMIT_SHA .
+YML'
+sol_ch_gitlab_ci_lab4_2='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+deploy-compose:
+  stage: deploy
+  script:
+    - docker compose up -d
+YML'
+sol_ch_gitlab_ci_lab4_3='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("deploy-compose:\n  stage: deploy\n",
+            "deploy-compose:\n  stage: deploy\n  environment:\n    name: production\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab4_4='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("  script:\n    - docker compose up -d\n",
+            "  rules:\n    - if: \$CI_COMMIT_TAG\n  script:\n    - docker compose up -d\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab4_5='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+    - echo "pipeline \$CI_PIPELINE_ID"
+YML'
+
+sol_ch_gitlab_ci_lab5_1='cd /root/gitlab-ci-lab && echo "change" >> README.md && git commit -qam "trigger"'
+sol_ch_gitlab_ci_lab5_2='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+full-tests:
+  stage: test
+  rules:
+    - if: \$RUN_FULL_TESTS == "true"
+  script:
+    - echo "full suite"
+YML'
+sol_ch_gitlab_ci_lab5_3='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+io.open(p,"w").write("spec:\n  inputs:\n    deploy_target:\n      default: staging\n---\n" + s)
+PY'
+sol_ch_gitlab_ci_lab5_4='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+show-target:
+  stage: test
+  script:
+    - echo "target \$[[ inputs.deploy_target ]]"
+YML'
+sol_ch_gitlab_ci_lab5_5='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+deploy-urls:
+  stage: deploy
+  variables:
+    DEPLOY_STAGE_URL: "https://staging.example"
+    DEPLOY_PROD_URL: "https://example"
+  script:
+    - echo "urls set"
+YML'
+sol_ch_gitlab_ci_lab5_6='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("    DEPLOY_PROD_URL: \"https://example\"\n",
+            "    DEPLOY_PROD_URL: \"https://example\"\n    DEPLOY_NOTE: \"scoped to this job\"\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab5_7='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+deploy-prod:
+  stage: deploy
+  environment:
+    name: production
+  script:
+    - echo "to prod"
+YML'
+sol_ch_gitlab_ci_lab5_8='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+deploy-stage:
+  stage: deploy
+  environment:
+    name: staging
+  script:
+    - echo "to staging"
+YML'
+
+sol_ch_gitlab_ci_lab6_1='mkdir -p /root/gitlab-ci-lab/ci && cat > /root/gitlab-ci-lab/ci/security.yml <<YML
+secret-scan:
+  stage: test
+  script:
+    - echo "scanning secrets"
+YML
+cd /root/gitlab-ci-lab && sed -i "/- local: ci\/templates.yml/a\  - local: ci/security.yml" .gitlab-ci.yml'
+sol_ch_gitlab_ci_lab6_2='cd /root/gitlab-ci-lab && git add -A && git commit -qm "Add reusable security include" >/dev/null 2>&1 || true'
+sol_ch_gitlab_ci_lab6_3='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+.lint-template:
+  script:
+    - echo "lint"
+
+lint:
+  extends: .lint-template
+  stage: test
+YML'
+sol_ch_gitlab_ci_lab6_4='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+compat-test:
+  stage: test
+  image: alpine:\$ALPINE_VERSION
+  parallel:
+    matrix:
+      - ALPINE_VERSION: ["3.19", "3.20"]
+  script:
+    - cat /etc/alpine-release
+YML'
+
+sol_ch_gitlab_ci_lab7_1='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+unit-report:
+  stage: test
+  script:
+    - echo "tests"
+  artifacts:
+    reports:
+      junit: report.xml
+YML'
+sol_ch_gitlab_ci_lab7_2='cd /root/gitlab-ci-lab && git add -A && git commit -qm "Add junit report" >/dev/null 2>&1 || true'
+sol_ch_gitlab_ci_lab7_3='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("unit-report:\n  stage: test\n",
+            "unit-report:\n  stage: test\n  retry: 1\n  timeout: 5 minutes\n")
+io.open(p,"w").write(s)
+PY'
+sol_ch_gitlab_ci_lab7_4='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+deploy-production:
+  stage: deploy
+  resource_group: production
+  script:
+    - echo "one at a time"
+YML'
+sol_ch_gitlab_ci_lab7_5='cat >> /root/gitlab-ci-lab/.gitlab-ci.yml <<YML
+
+optional-lint:
+  stage: test
+  script:
+    - echo "lint"
+YML'
+sol_ch_gitlab_ci_lab7_6='cd /root/gitlab-ci-lab && python3 - <<PY
+import io
+p=".gitlab-ci.yml"; s=io.open(p).read()
+s=s.replace("optional-lint:\n  stage: test\n",
+            "optional-lint:\n  stage: test\n  allow_failure: true\n")
+io.open(p,"w").write(s)
+PY'

@@ -162,7 +162,7 @@ var helmLabs = map[string]labSpec{
 	"ch-helm-lab1": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-helm uninstall my-nginx >/dev/null 2>&1` + helmNginxChart,
+helm uninstall my-nginx >/dev/null 2>&1 || true` + helmNginxChart,
 		Checks: map[int]string{
 			1: kcheck(hdeployed("my-nginx"),
 				"release my-nginx установлен (deployed)",
@@ -183,7 +183,7 @@ helm uninstall my-nginx >/dev/null 2>&1` + helmNginxChart,
 	"ch-helm-lab2": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-helm uninstall scaled-nginx prod-nginx >/dev/null 2>&1
+helm uninstall scaled-nginx prod-nginx >/dev/null 2>&1 || true
 rm -f /root/prod-values.yaml` + helmNginxChart,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy scaled-nginx-nginx", "{.spec.replicas}", "2"),
@@ -214,7 +214,7 @@ rm -f /root/prod-values.yaml` + helmNginxChart,
 	"ch-helm-lab3": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-helm uninstall my-custom-app from-package >/dev/null 2>&1
+helm uninstall my-custom-app from-package >/dev/null 2>&1 || true
 rm -rf /root/myapp-chart /root/myapp-chart-*.tgz`,
 		Checks: map[int]string{
 			1: kcheck(`[ -f /root/myapp-chart/Chart.yaml ] && [ -d /root/myapp-chart/templates ]`,
@@ -226,9 +226,16 @@ rm -rf /root/myapp-chart /root/myapp-chart-*.tgz`,
 			3: kcheck(`grep -qE 'replicaCount:\s*2' /root/myapp-chart/values.yaml && grep -qE 'tag:\s*"?alpine"?' /root/myapp-chart/values.yaml`,
 				"values.yaml настроен (replicaCount 2, tag alpine)",
 				"в /root/myapp-chart/values.yaml: replicaCount: 2, image.tag: alpine"),
-			4: kcheck(`helm lint /root/myapp-chart >/dev/null 2>&1`,
-				"helm lint chart без ошибок",
-				"helm lint /root/myapp-chart"),
+			// Задание просит упростить сгенерированный helm create template, поэтому
+			// одного lint мало — он проходит и на нетронутом чарте. Проверяем, что
+			// boilerplate-пробы убраны, chart по-прежнему рендерит Deployment и
+			// берёт replicas из values (задание 3).
+			4: kcheck(`helm lint /root/myapp-chart >/dev/null 2>&1 && `+
+				`! grep -q 'livenessProbe' /root/myapp-chart/templates/deployment.yaml && `+
+				`helm template t /root/myapp-chart 2>/dev/null | grep -q 'kind: Deployment' && `+
+				`helm template t /root/myapp-chart 2>/dev/null | grep -qE '^[[:space:]]*replicas: 2$'`,
+				"template упрощён (без сгенерированных проб), chart проходит lint и рендерит Deployment с replicas из values",
+				"убери из templates/deployment.yaml сгенерированные livenessProbe/readinessProbe и прочий boilerplate, оставь metadata, selector, template с одним контейнером; затем helm lint /root/myapp-chart"),
 			5: kcheck(hdeployed("my-custom-app"),
 				"свой chart установлен (deployed)",
 				"helm install my-custom-app /root/myapp-chart"),
@@ -251,7 +258,7 @@ rm -rf /root/myapp-chart /root/myapp-chart-*.tgz`,
 	"ch-helm-lab4": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-helm uninstall webapp new-webapp >/dev/null 2>&1` + helmNginxChart,
+helm uninstall webapp new-webapp >/dev/null 2>&1 || true` + helmNginxChart,
 		Checks: map[int]string{
 			1: kcheck(hdeployed("webapp")+` && `+jp("get deploy webapp-nginx", "{.spec.template.spec.containers[0].image}", "nginx:1.25-alpine"),
 				"webapp установлен с образом nginx:1.25-alpine",
@@ -295,22 +302,22 @@ helm uninstall webapp new-webapp >/dev/null 2>&1` + helmNginxChart,
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + webChart,
 		Checks: map[int]string{
-			3: kcheck(htpl+` 2>/dev/null | grep -qE '^[[:space:]]*name: demo-webchart$'`,
+			1: kcheck(htpl+` 2>/dev/null | grep -qE '^[[:space:]]*name: demo-webchart$'`,
 				"metadata.name Deployment рендерится через include \"webchart.fullname\"",
 				`в deployment.yaml: metadata.name: {{ include "webchart.fullname" . }}, labels: {{ include "webchart.labels" . | nindent 4 }}`),
-			4: kcheck(htpl+` 2>/dev/null | grep -q 'containerPort: 9090'`,
+			2: kcheck(htpl+` 2>/dev/null | grep -q 'containerPort: 9090'`,
 				"порты контейнера рендерятся через range (http:80 + metrics:9090)",
 				"добавь containerPorts в values.yaml и замени статичный ports на {{- range .Values.containerPorts }}"),
-			5: kcheck(htpl+` 2>/dev/null | grep -q '128Mi'`,
+			3: kcheck(htpl+` 2>/dev/null | grep -q '128Mi'`,
 				"resources вставлены через toYaml (limits/requests 200m/128Mi)",
 				"добавь resources в values.yaml и вставь через {{ toYaml .Values.resources | nindent 12 }}"),
-			6: kcheck(htpl+` --set replicaCount=3 2>/dev/null | grep -qE '^[[:space:]]*replicas: 3$'`,
+			4: kcheck(htpl+` --set replicaCount=3 2>/dev/null | grep -qE '^[[:space:]]*replicas: 3$'`,
 				"replicas берутся из .Values.replicaCount | default 1 (override работает)",
 				"замени replicas на {{ .Values.replicaCount | default 1 }}"),
-			7: kcheck(htpl+` 2>/dev/null | grep -q 'kind: ServiceAccount' && ! `+htpl+` --set serviceAccount.enabled=false 2>/dev/null | grep -q 'kind: ServiceAccount'`,
+			5: kcheck(htpl+` 2>/dev/null | grep -q 'kind: ServiceAccount' && ! `+htpl+` --set serviceAccount.enabled=false 2>/dev/null | grep -q 'kind: ServiceAccount'`,
 				"ServiceAccount условный: есть при enabled=true, исчезает при false",
 				"добавь serviceAccount.enabled: true и templates/serviceaccount.yaml в {{- if .Values.serviceAccount.enabled }}"),
-			8: kcheck(htpl+` --set image.repository= 2>&1 | grep -qi 'image.repository is required'`,
+			6: kcheck(htpl+` --set image.repository= 2>&1 | grep -qi 'image.repository is required'`,
 				"image.repository обязателен через required",
 				`image: "{{ required \"image.repository is required\" .Values.image.repository }}:..."`),
 		},
@@ -322,28 +329,39 @@ helm uninstall webapp new-webapp >/dev/null 2>&1` + helmNginxChart,
 	"ch-helm-lab5": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-helm uninstall hooked-app >/dev/null 2>&1
-kubectl delete job -l app.kubernetes.io/managed-by=Helm >/dev/null 2>&1` + hooksChart,
+helm uninstall hooked-app >/dev/null 2>&1 || true
+kubectl delete job -l app.kubernetes.io/managed-by=Helm >/dev/null 2>&1 || true` + hooksChart,
 		Checks: map[int]string{
-			3: kcheck(hdeployed("hooked-app")+` && helm get hooks hooked-app 2>/dev/null | grep -qi pre-install`,
+			1: kcheck(`[ -f /root/hooks-chart/templates/pre-install-job.yaml ] && `+
+				`grep -q 'helm.sh/hook' /root/hooks-chart/templates/pre-install-job.yaml && `+
+				`grep -q 'pre-install' /root/hooks-chart/templates/pre-install-job.yaml`,
+				"manifest pre-install hook создан с аннотацией helm.sh/hook: pre-install",
+				"создай /root/hooks-chart/templates/pre-install-job.yaml — Job с annotations: helm.sh/hook: pre-install"),
+			2: kcheck(hdeployed("hooked-app")+` && helm get hooks hooked-app 2>/dev/null | grep -qi pre-install`,
 				"release установлен, pre-install hook отработал",
 				"helm install hooked-app /root/hooks-chart (после создания pre-install-job.yaml)"),
-			6: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi post-upgrade`,
+			3: kcheck(`[ -f /root/hooks-chart/templates/post-upgrade-job.yaml ] && `+
+				`grep -q 'helm.sh/hook' /root/hooks-chart/templates/post-upgrade-job.yaml && `+
+				`grep -q 'post-upgrade' /root/hooks-chart/templates/post-upgrade-job.yaml`,
+				"manifest post-upgrade hook создан с аннотацией helm.sh/hook: post-upgrade",
+				"создай /root/hooks-chart/templates/post-upgrade-job.yaml — Job с annotations: helm.sh/hook: post-upgrade"),
+			4: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi post-upgrade`,
 				"post-upgrade hook описан в релизе",
 				"добавь post-upgrade-job.yaml и helm upgrade hooked-app /root/hooks-chart"),
-			7: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-early && helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-late`,
+			5: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-early && helm get hooks hooked-app 2>/dev/null | grep -qi pre-upgrade-late`,
 				"оба pre-upgrade hook (early/late) с weight добавлены",
 				"создай pre-upgrade-early-job.yaml (weight -10) и pre-upgrade-late-job.yaml (weight 10), затем helm upgrade"),
-			9: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-delete`,
+			6: kcheck(`helm get hooks hooked-app 2>/dev/null | grep -qi pre-delete`,
 				"pre-delete hook записан в ревизию релиза",
 				"добавь pre-delete-job.yaml и helm upgrade hooked-app /root/hooks-chart"),
-			10: kcheck(`kubectl get jobs -o name 2>/dev/null | grep -qi pre-delete && ! helm status hooked-app >/dev/null 2>&1`,
+			7: kcheck(`kubectl get jobs -o name 2>/dev/null | grep -qi pre-delete && ! helm status hooked-app >/dev/null 2>&1`,
 				"release удалён, pre-delete hook выполнился",
 				"helm uninstall hooked-app (pre-delete Job остаётся, т.к. без hook-succeeded)"),
 		},
 	},
 
-	// ── Lab 8: Helmfile ── the helmfile binary is baked into the k8s golden; the Setup
+	// ── Lab 8: Helmfile ── the helmfile binary is baked into the k8s image
+	// (deploy/sandbox-k8s/prepare.sh downloads it); the Setup
 	// drops the local chart ./charts/webapp the helmfile references. The student writes
 	// values/{dev,staging}.yaml + helmfile.yaml.gotmpl, then renders/syncs/destroys.
 	// Checks cover the sync (release deployed + replicas) and the destroy.
@@ -351,8 +369,9 @@ kubectl delete job -l app.kubernetes.io/managed-by=Helm >/dev/null 2>&1` + hooks
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
 export PATH=$PATH:/usr/local/bin
-helmfile -f /root/helmfile-lab/helmfile.yaml.gotmpl -e dev destroy >/dev/null 2>&1
-helm uninstall web-dev web-staging >/dev/null 2>&1
+helmfile -f /root/helmfile-lab/helmfile.yaml.gotmpl -e dev destroy >/dev/null 2>&1 || true
+helmfile -f /root/helmfile-lab/helmfile.yaml.gotmpl -e staging destroy >/dev/null 2>&1 || true
+helm uninstall web-dev web-staging >/dev/null 2>&1 || true
 mkdir -p /root/helmfile-lab/charts/webapp/templates /root/helmfile-lab/values
 cat > /root/helmfile-lab/charts/webapp/Chart.yaml <<'EOF'
 apiVersion: v2
@@ -407,45 +426,64 @@ spec:
   - {port: {{ .Values.service.port }}, targetPort: {{ .Values.service.targetPort }}}
 EOF`,
 		Checks: map[int]string{
-			6: kcheck(hdeployed("web-dev")+` && kubectl get deploy web-dev-webapp >/dev/null 2>&1`,
+			1: kcheck(`[ -f /root/helmfile-lab/values/dev.yaml ] && [ -f /root/helmfile-lab/values/staging.yaml ] && `+
+				`grep -q 'replicaCount' /root/helmfile-lab/values/dev.yaml && grep -q 'environment' /root/helmfile-lab/values/dev.yaml && `+
+				`grep -q 'replicaCount' /root/helmfile-lab/values/staging.yaml && grep -q 'environment' /root/helmfile-lab/values/staging.yaml`,
+				"values/dev.yaml и values/staging.yaml созданы в формате chart (replicaCount, environment, image, service)",
+				"создай /root/helmfile-lab/values/dev.yaml и values/staging.yaml с ключами replicaCount, environment, image.repository, image.tag, service.*"),
+			2: kcheck(`[ -f /root/helmfile-lab/helmfile.yaml.gotmpl ] && `+
+				`grep -q 'environments' /root/helmfile-lab/helmfile.yaml.gotmpl && `+
+				`grep -q 'dev' /root/helmfile-lab/helmfile.yaml.gotmpl && grep -q 'staging' /root/helmfile-lab/helmfile.yaml.gotmpl && `+
+				`grep -q './charts/webapp' /root/helmfile-lab/helmfile.yaml.gotmpl`,
+				"helmfile.yaml.gotmpl описывает environments dev/staging и release на ./charts/webapp",
+				"в helmfile.yaml.gotmpl: блок environments с dev и staging, затем --- и releases с chart: ./charts/webapp"),
+			3: kcheck(hdeployed("web-dev")+` && kubectl get deploy web-dev-webapp >/dev/null 2>&1`,
 				"web-dev синхронизирован (helmfile sync -e dev), release deployed",
 				"cd /root/helmfile-lab && helmfile -f helmfile.yaml.gotmpl -e dev sync"),
-			7: kcheck(hdeployed("web-staging")+` && `+jp("get deploy web-staging-webapp", "{.spec.replicas}", "2"),
+			4: kcheck(hdeployed("web-staging")+` && `+jp("get deploy web-staging-webapp", "{.spec.replicas}", "2"),
 				"web-staging синхронизирован с 2 репликами",
 				"в values/staging.yaml задай replicaCount: 2, затем helmfile -e staging sync"),
-			8: kcheck(jp("get deploy web-dev-webapp", "{.spec.replicas}", "2"),
+			5: kcheck(jp("get deploy web-dev-webapp", "{.spec.replicas}", "2"),
 				"web-dev пересобран с replicaCount: 2",
 				"поменяй replicaCount на 2 в values/dev.yaml и helmfile -e dev sync"),
-			10: kcheck(`! helm status web-dev >/dev/null 2>&1 && ! helm status web-staging >/dev/null 2>&1`,
+			6: kcheck(`! helm status web-dev >/dev/null 2>&1 && ! helm status web-staging >/dev/null 2>&1`,
 				"оба окружения удалены через helmfile destroy",
 				"helmfile -f helmfile.yaml.gotmpl -e dev destroy; helmfile ... -e staging destroy"),
 		},
 	},
 
-	// ── Lab 2: Bitnami charts через (локальный) mirror ── the golden runs an offline
-	// Bitnami helm mirror on 127.0.0.1:8879 (baked systemd unit serving a vendored
-	// nginx chart); the Setup registers it as the `bitnami` repo. The student updates
+	// ── Lab 2: Bitnami charts через (локальный) mirror ── the image ships a vendored
+	// nginx chart as an offline helm repo (/var/lib/glhelmrepo, see
+	// deploy/sandbox-k8s/prepare.sh); `helm-mirror-start` serves it on
+	// 127.0.0.1:8879 and the Setup registers it as the `bitnami` repo. The student updates
 	// the index, searches, shows, pulls/unpacks the chart and builds a dependency.
 	// Checks verify the downloaded/unpacked artefacts (install/show tasks stay manual).
 	"ch-helm-lab-repos": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
 export PATH=$PATH:/usr/local/bin
+helm-mirror-start
+helm uninstall bitnami-nginx >/dev/null 2>&1 || true
 rm -rf /root/bitnami-charts /root/bitnami-unpacked /root/bitnami-parent
-for i in $(seq 1 20); do helm repo add bitnami http://localhost:8879 >/dev/null 2>&1 && break; sleep 1; done`,
+for i in $(seq 1 20); do helm repo add bitnami http://localhost:8879 >/dev/null 2>&1 && break; sleep 1; done
+# helm repo add уже скачивает индекс — убираем его из кэша, иначе задание
+# «обновить индекс» проходило бы ещё до действий студента.
+rm -f /root/.cache/helm/repository/bitnami-index.yaml`,
 		Checks: map[int]string{
-			2: kcheck(`[ -f /root/.cache/helm/repository/bitnami-index.yaml ]`,
+			1: kcheck(`[ -f /root/.cache/helm/repository/bitnami-index.yaml ]`,
 				"индекс bitnami repo обновлён (bitnami-index.yaml в кэше)",
 				"helm repo update bitnami"),
-			6: kcheck(`ls /root/bitnami-charts/nginx-*.tgz >/dev/null 2>&1`,
+			2: kcheck(`ls /root/bitnami-charts/nginx-*.tgz >/dev/null 2>&1`,
 				"chart bitnami/nginx скачан архивом в /root/bitnami-charts/",
 				"helm pull bitnami/nginx --destination /root/bitnami-charts"),
-			7: kcheck(`[ -f /root/bitnami-unpacked/nginx/Chart.yaml ]`,
+			3: kcheck(`[ -f /root/bitnami-unpacked/nginx/Chart.yaml ]`,
 				"chart скачан и распакован в /root/bitnami-unpacked/nginx/",
 				"helm pull bitnami/nginx --untar --untardir /root/bitnami-unpacked"),
-			9: kcheck(`ls /root/bitnami-parent/charts/nginx-*.tgz >/dev/null 2>&1`,
-				"dependency bitnami/nginx собран в charts/ parent-чарта",
-				"в /root/bitnami-parent Chart.yaml с dependencies -> helm dependency build /root/bitnami-parent"),
+			// Заданию «Создать chart dependency» в исходнике проставлен type: self,
+			// поэтому в tasks оно не импортируется — проверку для него вешать некуда.
+			4: kcheck(hdeployed("bitnami-nginx")+` && kubectl get deploy bitnami-nginx -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null | grep -q 'nginx:alpine'`,
+				"release bitnami-nginx установлен из repo, image переопределён на nginx:alpine",
+				"helm install bitnami-nginx bitnami/nginx --set image.registry=docker.io --set image.repository=nginx --set image.tag=alpine --set containerSecurityContext.readOnlyRootFilesystem=false --wait"),
 		},
 	},
 }

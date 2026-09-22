@@ -27,9 +27,14 @@ COPY bin/app-images.tar /var/lib/glk8s/app-images.tar
 # image is already on disk.
 COPY bin/registry /usr/local/bin/registry
 COPY registry /var/lib/glregistry
+COPY bin/helmfile /usr/local/bin/helmfile
 COPY k8s-start /usr/local/bin/k8s-start
+# Offline Helm repository (the `bitnami` repo of the repos lab) plus the script
+# that serves it on localhost:8879 — there is no network at runtime.
+COPY helm-mirror /var/lib/glhelmrepo
+COPY helm-mirror-start /usr/local/bin/helm-mirror-start
 
-RUN chmod +x /usr/local/bin/k3s /usr/local/bin/helm /usr/local/bin/k8s-start /usr/local/bin/registry \
+RUN chmod +x /usr/local/bin/k3s /usr/local/bin/helm /usr/local/bin/helmfile /usr/local/bin/k8s-start /usr/local/bin/registry /usr/local/bin/helm-mirror-start \
  && ln -s /usr/local/bin/k3s /usr/local/bin/kubectl \
  && ln -s /usr/local/bin/k3s /usr/local/bin/crictl \
  && printf 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml\n' >> /root/.bashrc \

@@ -14,9 +14,10 @@ source "$HERE/solutions.sh"
 source "$HERE/solutions-docker.sh"
 source "$HERE/solutions-compose.sh"
 source "$HERE/solutions-k8s.sh"
+source "$HERE/observational.sh"
 PSQL=(docker compose -f "$ROOT/docker-compose.yml" exec -T db psql -U golearn -d golearn -tAF'|')
 
-pass=0; failed=0; missing=0
+pass=0; failed=0; missing=0; observed=0
 lessons=$("${PSQL[@]}" -c "SELECT DISTINCT l.slug, l.order_num FROM lessons l JOIN modules m ON m.id=l.module_id JOIN tasks t ON t.lesson_id=l.id WHERE m.slug='$MODULE' AND t.check_script<>'' ORDER BY l.order_num;" | cut -d'|' -f1)
 
 for lesson in $lessons; do
@@ -56,7 +57,12 @@ for lesson in $lessons; do
     if [ "$after" = pass ] && [ "$before" = fail ]; then
       pass=$((pass+1))
     elif [ "$after" = pass ]; then
-      echo "WEAK  $lesson#$idx — проверка проходит ещё ДО решения"; failed=$((failed+1))
+      if printf '%s' "$OBSERVATIONAL" | grep -qx "$lesson#$idx"; then
+        echo "OBS   $lesson#$idx — наблюдательное задание (состояние создано предыдущим шагом)"
+        observed=$((observed+1))
+      else
+        echo "WEAK  $lesson#$idx — проверка проходит ещё ДО решения"; failed=$((failed+1))
+      fi
     else
       echo "FAIL  $lesson#$idx — эталонное решение не проходит проверку"
       echo "      $(echo "$out" | tail -1)"
@@ -68,4 +74,4 @@ for lesson in $lessons; do
   docker volume rm -f "$c-dind" >/dev/null 2>&1
 done
 echo "──────────────────────────────"
-echo "OK: $pass   проблемных: $failed   без решения: $missing"
+echo "OK: $pass   наблюдательных: $observed   проблемных: $failed   без решения: $missing"
