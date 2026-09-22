@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  nginx:
+  - apiVersion: "v2"
+    name: "nginx"
+    version: "18.2.5"
+    appVersion: "1.27.2"
+    description: "NGINX Open Source is a web server that can be also used as a reverse"
+    digest: "a5c7f229b77a3b5f918010ae34621987987f860988f35e03c2e704716ca88bae"
+    created: "2024-01-01T00:00:00Z"
+    urls:
+    - "http://localhost:8879/nginx-18.2.5.tgz"
+generated: "2024-01-01T00:00:00Z"

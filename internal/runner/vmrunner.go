@@ -396,8 +396,12 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
 			v.dir, v.vmkey, vmip)
 	}
+	// idle=halt matters: acpi=off leaves the guest without a cpuidle driver, so its
+	// idle loop never issues HLT and spins instead — the vCPU thread then burns a
+	// full host core for a VM that is doing nothing. Warm-pool VMs sit idle for
+	// hours, so this is the difference between one core per VM and roughly zero.
 	bootArgs := fmt.Sprintf(
-		"console=ttyS0 reboot=k panic=1 acpi=off net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
+		"console=ttyS0 reboot=k panic=1 acpi=off idle=halt net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
 		vmip)
 	setupB64 := base64.StdEncoding.EncodeToString([]byte(setup))
 
