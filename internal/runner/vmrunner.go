@@ -48,10 +48,11 @@ type VMRunner struct {
 	rootfsK8s string // Kubernetes profile golden (k3s auto-starts inside)
 	vmkey     string // key file (on the host) to reach a VM
 
-	vcpus  int
-	memMiB int
-	memK8s int // Kubernetes VMs need more RAM (k3s)
-	maxVMs int
+	vcpus   int
+	memMiB  int // docker profile: an engine runs inside the guest
+	memLite int // shell-only lessons (Linux, Git, SQL, trainers)
+	memK8s  int // Kubernetes VMs need more RAM (k3s)
+	maxVMs  int
 
 	mu       sync.Mutex
 	sessions map[string]*vmSession   // sid -> session
@@ -76,11 +77,21 @@ type vmSession struct {
 }
 
 // profileOf returns the pool profile for a sandbox image.
+// profileOf maps a lesson's sandbox image onto a VM profile. The profile decides
+// the golden rootfs and, just as importantly, the VM size: "lite" lessons (Linux,
+// Git, SQL, the trainers) only run shell tools, while "docker" and "k8s" carry an
+// engine or a cluster inside the guest.
 func profileOf(image string) string {
-	if strings.Contains(image, "sandbox-k8s") {
+	switch {
+	case strings.Contains(image, "sandbox-k8s"):
 		return "k8s"
+	case strings.Contains(image, "sandbox-docker"), strings.Contains(image, "sandbox-pg"):
+		// SQL lessons start a PostgreSQL server inside the guest, so they keep the
+		// larger size even though they carry no engine.
+		return "docker"
+	default:
+		return "lite"
 	}
-	return "docker"
 }
 
 const (
@@ -100,6 +111,7 @@ func NewVMRunner() *VMRunner {
 		vmkey:     shellEnv("FC_VMKEY", "vmkey"),
 		vcpus:     atoiDefault(shellEnv("FC_VCPUS", "1"), 1),
 		memMiB:    atoiDefault(shellEnv("FC_MEM_MIB", "1024"), 1024),
+		memLite:   atoiDefault(shellEnv("FC_MEM_LITE", "512"), 512),
 		memK8s:    atoiDefault(shellEnv("FC_MEM_K8S", "1536"), 1536),
 		maxVMs:    atoiDefault(shellEnv("FC_MAX_VMS", "8"), 8),
 	}
@@ -127,6 +139,7 @@ func NewVMRunner() *VMRunner {
 	v.sessions = make(map[string]*vmSession)
 	v.pool = map[string][]*vmSession{}
 	v.warmWant = map[string]int{
+		"lite":   atoiDefault(shellEnv("FC_WARM_LITE", "0"), 0),
 		"docker": atoiDefault(shellEnv("FC_WARM_DOCKER", "0"), 0),
 		"k8s":    atoiDefault(shellEnv("FC_WARM_K8S", "0"), 0),
 	}
@@ -134,7 +147,7 @@ func NewVMRunner() *VMRunner {
 	v.enabled = true
 	go v.sweepOrphans()
 	go v.reaper()
-	if v.warmWant["docker"] > 0 || v.warmWant["k8s"] > 0 {
+	if v.warmWant["lite"] > 0 || v.warmWant["docker"] > 0 || v.warmWant["k8s"] > 0 {
 		go v.poolManager()
 	}
 	return v
@@ -386,7 +399,12 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	// Ready, so the student's terminal opens onto a working cluster instead of a
 	// "connection refused" while k3s (~15s) is still coming up.
 	k8sWait := ""
-	if strings.Contains(s.image, "sandbox-k8s") {
+	if s.profile == "lite" {
+		// Shell-only lesson: same golden (it carries the CLI tools) but none of the
+		// memory an engine or a cluster would need.
+		mem = v.memLite
+	}
+	if s.profile == "k8s" {
 		// k3s fits comfortably in ~1.5 GB / 1 vCPU (devops404 runs it in 1 GB); the
 		// old 3 GB / 2 vCPU was ~3x too generous.
 		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 1
@@ -812,8 +830,11 @@ func (v *VMRunner) bootWarm(profile string) {
 		return
 	}
 	img := "golearn/sandbox:latest"
-	if profile == "k8s" {
+	switch profile {
+	case "k8s":
 		img = "golearn/sandbox-k8s:latest"
+	case "docker":
+		img = "golearn/sandbox-docker:latest"
 	}
 	sess := &vmSession{sid: fmt.Sprintf("warm-%s-%d", profile, slot), image: img, profile: profile,
 		slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
