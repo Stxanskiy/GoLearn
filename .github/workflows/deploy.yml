@@ -79,13 +79,16 @@ jobs:
           # `up -d` returns once the container exists, not once the app serves:
           # it still has to connect to the database, apply migrations and start
           # listening. Wait for readiness instead of racing it.
+          # Probe /healthz, not a page: the backend is a JSON API and serves no
+          # HTML at all, so the old /login check returned 404 forever and took the
+          # whole job down with it — including the cluster release step below.
           code=""
           for i in $(seq 1 30); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/login || true)
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8081/healthz || true)
             [ "$code" = 200 ] && break
             sleep 2
           done
-          echo "deploy check /login -> ${code:-none}"
+          echo "deploy check /healthz -> ${code:-none}"
           [ "$code" = 200 ]
 
       # The public site (learn.prod-factory.ru) is NOT this compose stack: it is
