@@ -42,8 +42,8 @@
       "question_html": "<p>Зачем нужен staging area (индекс) в Git?</p>",
       "options": [
         {
-          "text": "<code>+Чтобы выбирать какие именно изменения войдут в следующий коммит, не обязательно все</code>",
-          "correct": false,
+          "text": "<code>Чтобы выбирать какие именно изменения войдут в следующий коммит, не обязательно все</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -95,8 +95,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+git add -p</code> — интерактивный режим, позволяет выбрать отдельные части (hunks) файла для staging, а не весь файл целиком`",
-          "correct": false,
+          "text": "<code>git add -p</code> — интерактивный режим, позволяет выбрать отдельные части (hunks) файла для staging, а не весь файл целиком`",
+          "correct": true,
           "explanation": ""
         },
         {

@@ -21,27 +21,27 @@
       "title": "Развернуть backend-приложение",
       "taskid": "k8sgw_lab1_t2_backend",
       "hint": "<p>Если Service существует, но endpoints пустые, смотри labels Deployment и selector Service.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Разверни backend-приложение и Service к нему. Если Service существует, но endpoints пустые — сверь labels у Deployment и selector у Service, чаще всего расходятся именно они.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Разверни backend-приложение и Service к нему. Если Service существует, но endpoints пустые — сверь labels у Deployment и selector у Service, чаще всего расходятся именно они.</p>"
     },
     {
       "type": "self",
       "title": "Проверить Service до Gateway",
       "taskid": "k8sgw_lab1_t3_service_check",
       "hint": "<p>Если один из Service не отвечает, проверь <code>kubectl get pods -o wide</code>, endpoints, selector у Service и labels у Pod'ов. Gateway появится только в следующем слое.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Проверь, что сервисы отвечают ещё до того, как появится Gateway: обратись к ним изнутри кластера. Если какой-то не отвечает, смотри <code>kubectl get pods -o wide</code>, endpoints, selector у Service и labels у Pod'ов.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Проверь, что сервисы отвечают ещё до того, как появится Gateway: обратись к ним изнутри кластера. Если какой-то не отвечает, смотри <code>kubectl get pods -o wide</code>, endpoints, selector у Service и labels у Pod'ов.</p>"
     },
     {
       "type": "check",
       "title": "Создать Gateway",
       "taskid": "k8sgw_lab1_t4_gateway",
       "hint": "<p>В <code>describe gateway</code> ищи conditions <code>Accepted=True</code> и <code>Programmed=True</code>. Для Traefik Gateway provider listener должен совпасть с entryPoint; в этой лаборатории используется порт <code>8000</code>.</p>",
-      "question_html": "$28",
+      "question_html": "<p>Создай Gateway. В <code>kubectl describe gateway</code> ищи conditions <code>Accepted=True</code> и <code>Programmed=True</code> — пока их нет, маршрут работать не будет.</p>",
       "options": [],
-      "raw_description": "$28"
+      "raw_description": "<p>Создай Gateway. В <code>kubectl describe gateway</code> ищи conditions <code>Accepted=True</code> и <code>Programmed=True</code> — пока их нет, маршрут работать не будет.</p>"
     },
     {
       "type": "check",
@@ -73,9 +73,9 @@
       "title": "Проверить Gateway route через HTTP",
       "taskid": "k8sgw_lab1_t6_http_routes",
       "hint": "<p>Если запрос возвращает 404, сравни <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames[0]</code>. Если ответ 503/502 или пустой, проверь <code>ResolvedRefs</code> и endpoints Service.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Проверь маршрут через HTTP. Если запрос возвращает 404, сравни три места: <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames</code> — они должны совпадать.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Проверь маршрут через HTTP. Если запрос возвращает 404, сравни три места: <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames</code> — они должны совпадать.</p>"
     },
     {
       "type": "self",

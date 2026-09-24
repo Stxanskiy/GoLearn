@@ -65,8 +65,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+fetch</code> только загружает данные с сервера, не изменяя локальные ветки; <code>pull = fetch + merge</code> — сразу интегрирует изменения`",
-          "correct": false,
+          "text": "<code>fetch</code> только загружает данные с сервера, не изменяя локальные ветки; <code>pull = fetch + merge</code> — сразу интегрирует изменения`",
+          "correct": true,
           "explanation": ""
         },
         {

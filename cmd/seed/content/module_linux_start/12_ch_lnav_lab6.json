@@ -86,12 +86,12 @@
           "explanation": "Нет — это количество строк с 404"
         },
         {
-          "text": "20",
+          "text": "5",
           "correct": false,
           "explanation": "Нет — это общее количество строк"
         },
         {
-          "text": "16",
+          "text": "7",
           "correct": true,
           "explanation": "Верно! В логе 16 GET-запросов"
         },
@@ -126,7 +126,7 @@
           "explanation": "Нет — это количество 404-ответов"
         },
         {
-          "text": "20",
+          "text": "8",
           "correct": true,
           "explanation": "Верно! В подготовленном access.log 20 строк"
         }

@@ -12,9 +12,9 @@
       "title": "Найти manual job",
       "taskid": "gitlab_ci_lab3_t1_manual",
       "hint": "<p>Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>. На странице pipeline у <code>manual-deploy</code> должен быть статус ручного job и кнопка Play.</p>",
-      "question_html": "$28",
+      "question_html": "<p>Найди в pipeline job, который не запускается автоматически. У <code>manual-deploy</code> должна быть кнопка запуска: такой job объявлен с <code>when: manual</code> и ждёт ручного подтверждения.</p>",
       "options": [],
-      "raw_description": "$28"
+      "raw_description": "<p>Найди в pipeline job, который не запускается автоматически. У <code>manual-deploy</code> должна быть кнопка запуска: такой job объявлен с <code>when: manual</code> и ждёт ручного подтверждения.</p>"
     },
     {
       "type": "check",

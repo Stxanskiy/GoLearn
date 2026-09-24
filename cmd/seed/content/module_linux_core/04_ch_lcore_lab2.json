@@ -21,7 +21,7 @@
       "title": "Количество предупреждений",
       "taskid": "lcore_lab2_t2_count",
       "hint": "",
-      "question_html": "<p>Подсчитай количество строк с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>",
+      "question_html": "<p>Подсчитай количество строк с <code>WARN</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>",
       "options": [
         {
           "text": "<code>0</code>",
@@ -29,8 +29,8 @@
           "explanation": "Нет — предупреждение в логе есть"
         },
         {
-          "text": "<code>+1</code>",
-          "correct": false,
+          "text": "<code>1</code>",
+          "correct": true,
           "explanation": "Верно! В файле одна строка с WARNING"
         },
         {
@@ -44,7 +44,7 @@
           "explanation": "Нет — это общее количество строк"
         }
       ],
-      "raw_description": "<p>Подсчитай количество строк с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>\n<ul>\n<li><code>0</code> [Нет — предупреждение в логе есть]</li>\n<li><code>+1</code> [Верно! В файле одна строка с WARNING]</li>\n<li><code>2</code> [Нет — это количество ERROR]</li>\n<li><code>6</code> [Нет — это общее количество строк]</li>\n</ul>"
+      "raw_description": "<p>Подсчитай количество строк с <code>WARN</code> в <code>/opt/devops/lab2/app.log</code> и выбери правильный результат.</p>\n<ul>\n<li><code>0</code> [Нет — предупреждение в логе есть]</li>\n<li><code>+1</code> [Верно! В файле одна строка с WARN]</li>\n<li><code>2</code> [Нет — это количество ERROR]</li>\n<li><code>6</code> [Нет — это общее количество строк]</li>\n</ul>"
     },
     {
       "type": "check",
@@ -100,8 +100,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Показать номера строк, в которых найдено совпадение</code>",
-          "correct": false,
+          "text": "<code>Показать номера строк, в которых найдено совпадение</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -144,8 +144,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Он ищет без учёта регистра и снижает риск пропустить важные строки</code>",
-          "correct": false,
+          "text": "<code>Он ищет без учёта регистра и снижает риск пропустить важные строки</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -159,8 +159,8 @@
       "question_html": "<p>Для чего обычно применяют <code>grep -v</code>?</p>",
       "options": [
         {
-          "text": "<code>+Чтобы исключить строки по шаблону и оставить остальное</code>",
-          "correct": false,
+          "text": "<code>Чтобы исключить строки по шаблону и оставить остальное</code>",
+          "correct": true,
           "explanation": ""
         },
         {

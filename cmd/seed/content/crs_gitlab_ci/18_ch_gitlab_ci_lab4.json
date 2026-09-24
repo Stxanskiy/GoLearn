@@ -12,36 +12,36 @@
       "title": "Проверить приложение и Dockerfile",
       "taskid": "gitlab_ci_lab4_t1_dockerfile",
       "hint": "<p>Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>. Для этой лабораторной достаточно <code>FROM nginx:alpine</code> и <code>COPY public/ /usr/share/nginx/html/</code>.</p>",
-      "question_html": "$25",
+      "question_html": "<p>Осмотрись перед сборкой: проверь, что в проекте есть приложение и <code>Dockerfile</code>. Для этой лабораторной достаточно образа на базе <code>nginx:alpine</code>.</p><p>Если GitLab открылся на странице входа, данные для логина лежат в <code>/root/gitlab-ci.env</code>.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>Осмотрись перед сборкой: проверь, что в проекте есть приложение и <code>Dockerfile</code>. Для этой лабораторной достаточно образа на базе <code>nginx:alpine</code>.</p><p>Если GitLab открылся на странице входа, данные для логина лежат в <code>/root/gitlab-ci.env</code>.</p>"
     },
     {
       "type": "check",
       "title": "Собрать и отправить image в GitLab Registry",
       "taskid": "gitlab_ci_lab4_t2_registry",
       "hint": "<p>Если registry пустой, открой <strong>Build → Pipelines → последний pipeline</strong>, нажми на job <code>build-image</code> и прочитай log. В log должны быть команды <code>docker login</code>, <code>docker build</code> и <code>docker push</code>. Если одна из них упала, GitLab покажет ошибку в конце log.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Замени TODO-pipeline на рабочий. Job <code>build-image</code> должен залогиниться в GitLab Registry, собрать Docker-образ и запушить его в <code>$CI_REGISTRY_IMAGE</code>.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Замени TODO-pipeline на рабочий. Job <code>build-image</code> должен залогиниться в GitLab Registry, собрать Docker-образ и запушить его в <code>$CI_REGISTRY_IMAGE</code>.</p>"
     },
     {
       "type": "check",
       "title": "Добавить deploy-compose на учебный сервер",
       "taskid": "gitlab_ci_lab4_t3_variables",
       "hint": "<p>Если deploy job не появился, проверь, что в <code>stages</code> есть <code>deploy</code>, а job называется именно <code>deploy-compose</code>.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Добавь job <code>deploy-compose</code> в stage <code>deploy</code>: он поднимает собранный образ на учебном сервере через <code>docker compose</code>.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Добавь job <code>deploy-compose</code> в stage <code>deploy</code>: он поднимает собранный образ на учебном сервере через <code>docker compose</code>.</p>"
     },
     {
       "type": "check",
       "title": "Дождаться deploy-compose",
       "taskid": "gitlab_ci_lab4_t4_deploy",
       "hint": "<p>Если SSH падает, открой <strong>Build → Pipelines → последний pipeline → deploy-compose</strong> и прочитай log deploy job. Ищи строку с <code>ssh root@...</code> и сообщение ошибки сразу после неё. Ключ приходит через <code>STUDENT_DEPLOY_KEY</code>.</p>",
-      "question_html": "$28",
+      "question_html": "<p>Дождись, пока <code>deploy-compose</code> отработает, и посмотри его лог. Убедись, что сервис поднялся, а не просто job завершился без ошибки.</p>",
       "options": [],
-      "raw_description": "$28"
+      "raw_description": "<p>Дождись, пока <code>deploy-compose</code> отработает, и посмотри его лог. Убедись, что сервис поднялся, а не просто job завершился без ошибки.</p>"
     },
     {
       "type": "self",
@@ -57,9 +57,9 @@
       "title": "Собрать и задеплоить image с release tag",
       "taskid": "gitlab_ci_lab4_t6_image_tag",
       "hint": "<p>Если pipeline для <code>v1.0.0</code> не появился, проверь, что ты сделал <code>git push origin v1.0.0</code>. Если deploy не изменил сервер, открой этот tag pipeline и запусти manual job <code>deploy-compose</code>.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Собери и задеплой образ с осмысленным тегом релиза вместо <code>latest</code>: возьми, например, <code>$CI_PIPELINE_ID</code>. По тегу потом видно, какая именно сборка сейчас запущена.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Собери и задеплой образ с осмысленным тегом релиза вместо <code>latest</code>: возьми, например, <code>$CI_PIPELINE_ID</code>. По тегу потом видно, какая именно сборка сейчас запущена.</p>"
     },
     {
       "type": "check",

@@ -39,9 +39,9 @@
       "title": "Добавить job с bash-командами",
       "taskid": "gitlab_ci_lab1_t4_shell",
       "hint": "<p>Нажми на имя каждого job, чтобы открыть его log. В <code>shell-basics</code> ты должен увидеть вывод <code>pwd</code>, дату и значения встроенных переменных GitLab CI.</p>",
-      "question_html": "$25",
+      "question_html": "<p>Добавь в <code>.gitlab-ci.yml</code> job, который выполняет обычные bash-команды: выводит текущую директорию, список файлов и переменную <code>CI_COMMIT_SHA</code>. Закоммить изменение — pipeline запустится сам.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>Добавь в <code>.gitlab-ci.yml</code> job, который выполняет обычные bash-команды: выводит текущую директорию, список файлов и переменную <code>CI_COMMIT_SHA</code>. Закоммить изменение — pipeline запустится сам.</p>"
     },
     {
       "type": "check",

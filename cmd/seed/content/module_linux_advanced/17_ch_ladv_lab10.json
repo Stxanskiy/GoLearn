@@ -42,8 +42,8 @@
       "question_html": "<p>Сервер выдаёт ошибку «No space left on device», но <code>df -h</code> показывает 70% свободного места. В чём проблема?</p>",
       "options": [
         {
-          "text": "<code>+Исчерпаны inode: df -i покажет 100% использования inode — создать новый файл невозможно даже при наличии места</code>",
-          "correct": false,
+          "text": "<code>Исчерпаны inode: df -i покажет 100% использования inode — создать новый файл невозможно даже при наличии места</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -86,8 +86,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+findmnt даёт более структурированное дерево и удобный формат для анализа</code>",
-          "correct": false,
+          "text": "<code>findmnt даёт более структурированное дерево и удобный формат для анализа</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -121,8 +121,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Новые файлы создавать нельзя, даже если место в байтах ещё есть</code>",
-          "correct": false,
+          "text": "<code>Новые файлы создавать нельзя, даже если место в байтах ещё есть</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -156,8 +156,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Потому что это runtime-монтирование: после перезагрузки его нужно описать заново</code>",
-          "correct": false,
+          "text": "<code>Потому что это runtime-монтирование: после перезагрузки его нужно описать заново</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -171,8 +171,8 @@
       "question_html": "<p>Почему важно проверять точку монтирования перед командой mount?</p>",
       "options": [
         {
-          "text": "<code>+Можно перекрыть существующие файлы/данные в директории и получить неожиданный эффект</code>",
-          "correct": false,
+          "text": "<code>Можно перекрыть существующие файлы/данные в директории и получить неожиданный эффект</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -206,8 +206,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Проверить df -h, df -i, mount options и только затем планировать исправления</code>",
-          "correct": false,
+          "text": "<code>Проверить df -h, df -i, mount options и только затем планировать исправления</code>",
+          "correct": true,
           "explanation": ""
         },
         {

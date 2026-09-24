@@ -52,8 +52,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Выведет пустую строку — дочерний процесс не наследует переменную без export</code>",
-          "correct": false,
+          "text": "<code>Выведет пустую строку — дочерний процесс не наследует переменную без export</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -105,8 +105,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+После export VAR=value (или export VAR после присвоения)</code>",
-          "correct": false,
+          "text": "<code>После export VAR=value (или export VAR после присвоения)</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -120,8 +120,8 @@
       "question_html": "<p>Какое общее правило обычно верно для <code>.zshrc</code>?</p>",
       "options": [
         {
-          "text": "<code>+Применяется для интерактивных zsh-сессий и удобных пользовательских настроек</code>",
-          "correct": false,
+          "text": "<code>Применяется для интерактивных zsh-сессий и удобных пользовательских настроек</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -155,8 +155,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Потому что shell выбирает первую найденную команду с таким именем</code>",
-          "correct": false,
+          "text": "<code>Потому что shell выбирает первую найденную команду с таким именем</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -190,8 +190,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Проверить ключевые значения через echo/env/which и только потом продолжать</code>",
-          "correct": false,
+          "text": "<code>Проверить ключевые значения через echo/env/which и только потом продолжать</code>",
+          "correct": true,
           "explanation": ""
         },
         {

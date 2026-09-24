@@ -205,6 +205,63 @@ rm -f /root/var_sizes.txt /root/largest_files.txt`,
 	// CAP_SYS_ADMIN, которого у учебного контейнера нет.
 
 	// ── Lab 11: bash-приёмы ──
+	// ── Lab 12: сетевая диагностика ──
+	// The lesson diagnoses a live HTTP service: it asks the student to find who
+	// listens on :80, measure latency on a deliberately slow endpoint, tell a 404
+	// apart from a broken service, and see an API answering 503 while the page
+	// itself loads. None of that exists unless the setup starts it, so the lab
+	// shipped with nothing to diagnose. A small Python service provides all four
+	// behaviours, plus the local name app.internal the DNS step resolves.
+	"ch-ladv-lab12": {
+		Setup: `set -e
+mkdir -p /opt/devops/lab12
+pkill -f 'lab12[_]diag' >/dev/null 2>&1 || true
+cat > /opt/devops/lab12/lab12_diag.py <<'PY'
+import time
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+PAGE = """<!doctype html><meta charset="utf-8"><title>Advanced HTTP diagnostics</title>
+<h1>Advanced HTTP diagnostics</h1>
+<p>frontend: ok</p>
+<p>API: error — /api returns 503</p>"""
+
+class H(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.0"
+
+    def _send(self, code, body, ctype="text/html; charset=utf-8"):
+        raw = body.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("X-Lab", "lab12-diag")
+        self.end_headers()
+        self.wfile.write(raw)
+
+    def do_GET(self):
+        path = self.path.split("?")[0]
+        if path == "/":
+            self._send(200, PAGE)
+        elif path == "/slow":
+            time.sleep(1.5)
+            self._send(200, "<p>slow endpoint answered</p>")
+        elif path.startswith("/api"):
+            self._send(503, '{"error":"upstream unavailable"}', "application/json")
+        else:
+            self._send(404, "<h1>404 Not Found</h1>")
+
+    def log_message(self, *a):
+        pass
+
+HTTPServer(("0.0.0.0", 80), H).serve_forever()
+PY
+grep -q 'app.internal' /etc/hosts || echo '127.0.0.1 app.internal' >> /etc/hosts
+nohup python3 /opt/devops/lab12/lab12_diag.py >/var/log/lab12-diag.log 2>&1 &
+for i in $(seq 1 30); do
+  curl -s -o /dev/null http://localhost/ 2>/dev/null && break
+  sleep 1
+done`,
+	},
+
 	"ch-ladv-lab11": {
 		Setup: `set -e
 rm -rf /opt/devops/lab11

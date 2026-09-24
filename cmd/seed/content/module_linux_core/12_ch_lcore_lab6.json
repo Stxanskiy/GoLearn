@@ -61,8 +61,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+644</code>",
-          "correct": false,
+          "text": "<code>644</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -96,8 +96,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+600</code>",
-          "correct": false,
+          "text": "<code>600</code>",
+          "correct": true,
           "explanation": ""
         }
       ],

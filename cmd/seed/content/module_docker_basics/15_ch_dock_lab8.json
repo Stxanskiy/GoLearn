@@ -91,9 +91,9 @@
       "title": "Опубликовать только frontend",
       "taskid": "dock_lab8_t8_run_frontend",
       "hint": "<p>Frontend тоже должен быть в <code>final-net</code>, чтобы Nginx видел контейнер <code>api</code>. В отличие от API и worker, frontend нужно опубликовать наружу: порт VM <code>80</code> должен вести на порт контейнера <code>80</code>.</p>\n<p>Если <code>Web Preview</code> открывает HTML, но блок API пишет ошибку, проверь что в контейнер попал новый <code>index.html</code> с относительным <code>fetch(\"api/order?item=notebook\")</code>. После изменения HTML нужно пересобрать image и пересоздать контейнер frontend.</p>\n<p>Проверять лучше двумя запросами: главную HTML-страницу и путь <code>/api/order</code> через опубликованный frontend.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Опубликуй наружу только frontend: в <code>compose.yaml</code> порт должен быть проброшен для frontend, а backend остаётся доступен лишь внутри сети compose.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Опубликуй наружу только frontend: в <code>compose.yaml</code> порт должен быть проброшен для frontend, а backend остаётся доступен лишь внутри сети compose.</p>"
     },
     {
       "type": "self",

@@ -57,9 +57,9 @@
       "title": "helm get values",
       "taskid": "helm_lab1_t6_values",
       "hint": "<p>Для release без override values команда без <code>--all</code> может показать <code>null</code>. Это не ошибка установки.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Посмотри, какие values применены к release: <code>helm get values &lt;release&gt;</code>. Для release без переопределений команда без <code>--all</code> может показать <code>null</code> — это не ошибка установки. Повтори с <code>--all</code>, чтобы увидеть значения по умолчанию.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Посмотри, какие values применены к release: <code>helm get values &lt;release&gt;</code>. Для release без переопределений команда без <code>--all</code> может показать <code>null</code> — это не ошибка установки. Повтори с <code>--all</code>, чтобы увидеть значения по умолчанию.</p>"
     },
     {
       "type": "self",

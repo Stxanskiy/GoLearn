@@ -30,8 +30,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Запускать скрипт каждые 5 минут</code>",
-          "correct": false,
+          "text": "<code>Запускать скрипт каждые 5 минут</code>",
+          "correct": true,
           "explanation": ""
         }
       ],

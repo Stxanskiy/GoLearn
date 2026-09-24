@@ -50,12 +50,12 @@
           "explanation": "Нет — это только строки с ERROR и WARNING вместе"
         },
         {
-          "text": "50",
+          "text": "17",
           "correct": true,
           "explanation": "Верно! В логе 15 строк ERROR, 20 WARNING и 15 INFO"
         },
         {
-          "text": "65",
+          "text": "20",
           "correct": false,
           "explanation": "Нет — в исходном файле меньше строк"
         },
@@ -114,22 +114,22 @@
       "question_html": "<p>Посчитай, сколько строк содержат слово <code>ERROR</code> в файле <code>/opt/devops/lab2/app.log</code>, и выбери получившееся число.</p>",
       "options": [
         {
-          "text": "10",
+          "text": "2",
           "correct": false,
           "explanation": "Нет — проверь поиск по всему файлу"
         },
         {
-          "text": "20",
+          "text": "3",
           "correct": false,
           "explanation": "Нет — это количество строк WARNING"
         },
         {
-          "text": "50",
+          "text": "5",
           "correct": false,
           "explanation": "Нет — это общее количество строк в логе"
         },
         {
-          "text": "15",
+          "text": "1",
           "correct": true,
           "explanation": "Верно! В подготовленном логе 15 строк с ERROR"
         }
@@ -150,30 +150,30 @@
       "title": "Pipe: посчитать WARNING",
       "taskid": "lin_lab2_t7_pipe",
       "hint": "",
-      "question_html": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p>",
+      "question_html": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARN</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p>",
       "options": [
         {
-          "text": "20",
+          "text": "1",
           "correct": true,
           "explanation": "Верно! В подготовленном логе 20 строк с WARNING"
         },
         {
-          "text": "15",
+          "text": "2",
           "correct": false,
           "explanation": "Нет — это количество строк ERROR или INFO"
         },
         {
-          "text": "35",
+          "text": "3",
           "correct": false,
           "explanation": "Нет — это сумма ERROR и WARNING"
         },
         {
-          "text": "50",
+          "text": "5",
           "correct": false,
           "explanation": "Нет — это общее количество строк"
         }
       ],
-      "raw_description": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARNING</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p><ul><li>+20 [Верно! В подготовленном логе 20 строк с WARNING]</li><li>15 [Нет — это количество строк ERROR или INFO]</li><li>35 [Нет — это сумма ERROR и WARNING]</li><li>50 [Нет — это общее количество строк]</li></ul>"
+      "raw_description": "<p>С помощью <code>cat</code> и <code>grep</code> через pipe <code>|</code> посчитай строки с <code>WARN</code> в <code>/opt/devops/lab2/app.log</code> и выбери получившееся число.</p><ul><li>+20 [Верно! В подготовленном логе 20 строк с WARN]</li><li>15 [Нет — это количество строк ERROR или INFO]</li><li>35 [Нет — это сумма ERROR и WARN]</li><li>50 [Нет — это общее количество строк]</li></ul>"
     },
     {
       "type": "quiz",

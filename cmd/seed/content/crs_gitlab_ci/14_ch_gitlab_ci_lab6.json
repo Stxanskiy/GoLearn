@@ -48,9 +48,9 @@
       "title": "Добавить свой hidden job",
       "taskid": "gitlab_ci_lab6_t5_after_template",
       "hint": "<p><code>extends</code> может быть списком. Отступы важны: элементы списка <code>.alpine-base</code> и <code>.after-report</code> должны быть внутри <code>extends</code>.</p>",
-      "question_html": "$25",
+      "question_html": "<p>Добавь собственный скрытый job — имя начинается с точки, например <code>.my-template</code>. Такой job сам не выполняется, но его можно переиспользовать через <code>extends</code>. Подключи его к обычному job и убедись, что команды подхватились.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>Добавь собственный скрытый job — имя начинается с точки, например <code>.my-template</code>. Такой job сам не выполняется, но его можно переиспользовать через <code>extends</code>. Подключи его к обычному job и убедись, что команды подхватились.</p>"
     },
     {
       "type": "check",

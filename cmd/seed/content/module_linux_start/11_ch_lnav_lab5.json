@@ -63,7 +63,7 @@
       "question_html": "<p>Узнай, сколько строк содержит файл <code>/opt/devops/lab5/server.log</code>, и выбери получившееся число.</p>",
       "options": [
         {
-          "text": "32",
+          "text": "18",
           "correct": true,
           "explanation": "Верно! В подготовленном логе 32 строки"
         },

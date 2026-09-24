@@ -30,8 +30,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Перенаправить stderr (поток ошибок, дескриптор 2) в файл</code>",
-          "correct": false,
+          "text": "<code>Перенаправить stderr (поток ошибок, дескриптор 2) в файл</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -90,8 +90,8 @@
       "question_html": "<p>Команда <code>tee</code> используется для:</p>",
       "options": [
         {
-          "text": "<code>+Одновременной записи вывода в файл и его отображения на экране</code>",
-          "correct": false,
+          "text": "<code>Одновременной записи вывода в файл и его отображения на экране</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -125,8 +125,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы разделить нормальный результат и ошибки для удобной диагностики</code>",
-          "correct": false,
+          "text": "<code>Чтобы разделить нормальный результат и ошибки для удобной диагностики</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -160,8 +160,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Когда нужно отбросить шумный ненужный вывод (например, ожидаемые permission denied)</code>",
-          "correct": false,
+          "text": "<code>Когда нужно отбросить шумный ненужный вывод (например, ожидаемые permission denied)</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -195,8 +195,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Перенаправляет stderr туда же, куда сейчас направлен stdout</code>",
-          "correct": false,
+          "text": "<code>Перенаправляет stderr туда же, куда сейчас направлен stdout</code>",
+          "correct": true,
           "explanation": ""
         }
       ],

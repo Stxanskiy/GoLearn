@@ -30,8 +30,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+0</code>",
-          "correct": false,
+          "text": "<code>0</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -45,8 +45,8 @@
       "question_html": "<p>Выполни команду <code>ls /nonexistent_xyz</code> и выбери её exit code.</p>",
       "options": [
         {
-          "text": "<code>+2</code>",
-          "correct": false,
+          "text": "<code>2</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -98,8 +98,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Прерывает выполнение скрипта при первой команде, вернувшей ненулевой exit code</code>",
-          "correct": false,
+          "text": "<code>Прерывает выполнение скрипта при первой команде, вернувшей ненулевой exit code</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -142,8 +142,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Выполняет cmd2 только если cmd1 завершилась успешно (exit code 0)</code>",
-          "correct": false,
+          "text": "<code>Выполняет cmd2 только если cmd1 завершилась успешно (exit code 0)</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -177,8 +177,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Выполняет cmd2, если cmd1 завершилась с ошибкой</code>",
-          "correct": false,
+          "text": "<code>Выполняет cmd2, если cmd1 завершилась с ошибкой</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -192,8 +192,8 @@
       "question_html": "<p>Почему полезно анализировать <code>exit code</code> команды?</p>",
       "options": [
         {
-          "text": "<code>+Это быстрый и надёжный сигнал успеха/ошибки для скриптов и автоматизации</code>",
-          "correct": false,
+          "text": "<code>Это быстрый и надёжный сигнал успеха/ошибки для скриптов и автоматизации</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -227,8 +227,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы остановиться на первом сбое и не продолжать в потенциально неконсистентном состоянии</code>",
-          "correct": false,
+          "text": "<code>Чтобы остановиться на первом сбое и не продолжать в потенциально неконсистентном состоянии</code>",
+          "correct": true,
           "explanation": ""
         },
         {

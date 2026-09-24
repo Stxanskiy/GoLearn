@@ -84,12 +84,12 @@
         },
         {
           "text": "7",
-          "correct": false,
+          "correct": true,
           "explanation": "Нет — в таблице больше строк"
         },
         {
           "text": "8",
-          "correct": true,
+          "correct": false,
           "explanation": "Верно! В учебной таблице customers восемь клиентов"
         },
         {

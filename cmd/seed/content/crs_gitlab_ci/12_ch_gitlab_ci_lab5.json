@@ -12,9 +12,9 @@
       "title": "Разобрать базовый pipeline",
       "taskid": "gitlab_ci_lab5_t1_base_pipeline",
       "hint": "<p>Обрати внимание на <code>rules</code> у job <code>full-tests</code>: именно они решают, появится этот job в pipeline или нет.</p>",
-      "question_html": "$25",
+      "question_html": "<p>Разбери базовый pipeline: какие job в нём есть и от чего зависит их появление. Обрати внимание на <code>rules</code> у job <code>full-tests</code> — именно они решают, попадёт job в pipeline или нет.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>Разбери базовый pipeline: какие job в нём есть и от чего зависит их появление. Обрати внимание на <code>rules</code> у job <code>full-tests</code> — именно они решают, попадёт job в pipeline или нет.</p>"
     },
     {
       "type": "check",
@@ -50,9 +50,9 @@
       "title": "Добавить pipeline inputs",
       "taskid": "gitlab_ci_lab5_t4_inputs_yaml",
       "hint": "<p>Разделитель <code>---</code> обязателен: выше него находится <code>spec</code>, ниже — обычный pipeline со <code>stages</code> и jobs.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Добавь в начало <code>.gitlab-ci.yml</code> блок <code>spec:inputs</code> с параметром пайплайна и разделитель <code>---</code>. Затем используй значение через <code>$[[ inputs.&lt;имя&gt; ]]</code> в одном из job.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Добавь в начало <code>.gitlab-ci.yml</code> блок <code>spec:inputs</code> с параметром пайплайна и разделитель <code>---</code>. Затем используй значение через <code>$[[ inputs.&lt;имя&gt; ]]</code> в одном из job.</p>"
     },
     {
       "type": "check",
@@ -79,9 +79,9 @@
       "title": "Добавить variables для разных environments",
       "taskid": "gitlab_ci_lab5_t6_scoped_variables",
       "hint": "<p>Environment scope должен совпадать с <code>environment.name</code> в job. Здесь input выбирает <code>dev</code>, <code>stage</code> или <code>prod</code>, и такое же имя получает environment.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Задай разные значения переменной для разных окружений: объяви её на уровне job для <code>dev</code> и для <code>prod</code>, чтобы одно и то же имя давало разный результат в зависимости от того, куда идёт деплой.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Задай разные значения переменной для разных окружений: объяви её на уровне job для <code>dev</code> и для <code>prod</code>, чтобы одно и то же имя давало разный результат в зависимости от того, куда идёт деплой.</p>"
     },
     {
       "type": "check",

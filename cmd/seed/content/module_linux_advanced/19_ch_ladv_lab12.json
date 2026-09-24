@@ -151,9 +151,9 @@
       "title": "Собрать короткий troubleshooting-отчёт",
       "taskid": "ladv_lab12_t10_report",
       "hint": "",
-      "question_html": "$26",
+      "question_html": "<p>Собери короткий troubleshooting-отчёт по лабораторной: что слушает порт 80, какой была задержка на <code>/slow</code>, чем 404 на <code>/missing</code> отличается от 503 на <code>/api</code>, и куда резолвится <code>app.internal</code>. Важен не объём, а последовательность: наблюдение → вывод.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Собери короткий troubleshooting-отчёт по лабораторной: что слушает порт 80, какой была задержка на <code>/slow</code>, чем 404 на <code>/missing</code> отличается от 503 на <code>/api</code>, и куда резолвится <code>app.internal</code>. Важен не объём, а последовательность: наблюдение → вывод.</p>"
     }
   ],
   "vm_image": "base",

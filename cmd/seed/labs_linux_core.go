@@ -340,6 +340,9 @@ printf 'db_host=localhost\ncache=localhost\nport=8080\n' > /opt/devops/lab14/app
   echo "}"
 } > /opt/devops/lab14/nginx.conf
 printf 'id,username,email\n1,alice,alice@example.com\n2,bob,bob@example.com\n3,carol,carol@example.com\n' > /opt/devops/lab14/users.csv
+# Семь сумм, дающие в сумме 1400: квиз спрашивает итог, а отвлекающий вариант 7 —
+# это число строк, самая частая ошибка (wc -l вместо сложения).
+printf '100\n250\n300\n150\n200\n250\n150\n' > /opt/devops/lab14/sales.txt
 {
   echo '10.0.0.1 - - "GET / HTTP/1.1" 200'
   echo '10.0.0.2 - - "POST /api HTTP/1.1" 500'

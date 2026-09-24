@@ -117,9 +117,9 @@
       "title": "Установить remote chart с понятным image",
       "taskid": "helm_repos_t8_template",
       "hint": "<p>Короткая запись <code>nginx:alpine</code> в values chart раскладывается на registry, repository и tag. Для этой задачи image задаётся через <code>image.registry=docker.io</code>, <code>image.repository=nginx</code>, <code>image.tag=alpine</code>.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Установи remote chart <code>bitnami/nginx</code> как release <code>bitnami-nginx</code>, переопределив image на привычный <code>nginx:alpine</code>. Короткая запись раскладывается на registry, repository и tag — задай их через <code>--set image.registry</code>, <code>image.repository</code> и <code>image.tag</code>.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Установи remote chart <code>bitnami/nginx</code> как release <code>bitnami-nginx</code>, переопределив image на привычный <code>nginx:alpine</code>. Короткая запись раскладывается на registry, repository и tag — задай их через <code>--set image.registry</code>, <code>image.repository</code> и <code>image.tag</code>.</p>"
     },
     {
       "type": "self",
@@ -135,9 +135,9 @@
       "title": "Срендерить chart с dependency",
       "taskid": "helm_repos_t10_dependency_template",
       "hint": "<p>Когда chart подключён как dependency, его values лежат под ключом с именем dependency.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Срендери parent chart и посмотри, что попало в манифест из dependency. Values для dependency лежат под ключом с именем самой dependency: переопредели у неё image и убедись, что изменение видно в выводе <code>helm template</code>.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Срендери parent chart и посмотри, что попало в манифест из dependency. Values для dependency лежат под ключом с именем самой dependency: переопредели у неё image и убедись, что изменение видно в выводе <code>helm template</code>.</p>"
     }
   ],
   "vm_image": "kuber",

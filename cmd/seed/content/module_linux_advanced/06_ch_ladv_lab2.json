@@ -25,8 +25,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Публичный ключ на сервере (в authorized_keys), приватный — только на клиенте</code>",
-          "correct": false,
+          "text": "<code>Публичный ключ на сервере (в authorized_keys), приватный — только на клиенте</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -141,8 +141,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Хранит отпечатки (fingerprints) серверов — защита от MITM-атак при первом подключении</code>",
-          "correct": false,
+          "text": "<code>Хранит отпечатки (fingerprints) серверов — защита от MITM-атак при первом подключении</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -156,8 +156,8 @@
       "question_html": "<p>Почему приватный SSH-ключ нельзя копировать на сервер?</p>",
       "options": [
         {
-          "text": "<code>+Потому что компрометация сервера тогда даст атакующему полный доступ от твоего имени</code>",
-          "correct": false,
+          "text": "<code>Потому что компрометация сервера тогда даст атакующему полный доступ от твоего имени</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -191,8 +191,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы исключить доступ посторонних и не получить отказ SSH из-за небезопасных прав</code>",
-          "correct": false,
+          "text": "<code>Чтобы исключить доступ посторонних и не получить отказ SSH из-за небезопасных прав</code>",
+          "correct": true,
           "explanation": ""
         },
         {

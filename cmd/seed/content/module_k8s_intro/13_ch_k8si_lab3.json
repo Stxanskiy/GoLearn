@@ -48,9 +48,9 @@
       "title": "DNS внутри кластера",
       "taskid": "",
       "hint": "",
-      "question_html": "$26",
+      "question_html": "<p>Посмотри, как работает DNS внутри кластера: обратись к Service по короткому имени и по полному <code>&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</code>. Убедись, что оба варианта резолвятся в один и тот же адрес.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Посмотри, как работает DNS внутри кластера: обратись к Service по короткому имени и по полному <code>&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</code>. Убедись, что оба варианта резолвятся в один и тот же адрес.</p>"
     },
     {
       "type": "check",

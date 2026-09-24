@@ -24,8 +24,8 @@
       "question_html": "<p>В этой VM в <code>/var/log/</code> может не быть файлов <code>syslog</code> и <code>auth.log</code>: системные логи собирает <code>systemd-journald</code>. Какой инструмент стоит использовать, чтобы смотреть системные логи и логи сервисов?</p>",
       "options": [
         {
-          "text": "<code>+journalctl</code>",
-          "correct": false,
+          "text": "<code>journalctl</code>",
+          "correct": true,
           "explanation": ""
         },
         {

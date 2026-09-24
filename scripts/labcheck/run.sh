@@ -68,7 +68,10 @@ for lesson in $lessons; do
       echo "      $(echo "$out" | tail -1)"
       failed=$((failed+1))
     fi
-  done < <("${PSQL[@]}" -c "SELECT row_number() OVER (ORDER BY t.order_num, t.id), replace(t.check_script, E'\n', ' ') FROM tasks t JOIN lessons l ON l.id=t.lesson_id JOIN modules m ON m.id=l.module_id WHERE m.slug='$MODULE' AND l.slug='$lesson' ORDER BY t.order_num, t.id;")
+    # Number only the tasks that carry a check. Lessons also hold self-check tasks
+  # (the student marks them done), and counting those would shift every index the
+  # sol_<lesson>_<n> reference solutions are keyed by.
+done < <("${PSQL[@]}" -c "SELECT row_number() OVER (ORDER BY t.order_num, t.id), replace(t.check_script, E'\n', ' ') FROM tasks t JOIN lessons l ON l.id=t.lesson_id JOIN modules m ON m.id=l.module_id WHERE m.slug='$MODULE' AND l.slug='$lesson' AND coalesce(t.check_script,'') <> '' ORDER BY t.order_num, t.id;")
 
   docker rm -f "$c" >/dev/null 2>&1
   docker volume rm -f "$c-dind" >/dev/null 2>&1

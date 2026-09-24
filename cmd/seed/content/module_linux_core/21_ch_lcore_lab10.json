@@ -33,8 +33,8 @@
       "question_html": "<p>В чём разница между <code>systemctl start nginx</code> и <code>systemctl enable nginx</code>?</p>",
       "options": [
         {
-          "text": "<code>+start</code> запускает сервис прямо сейчас, <code>enable</code> включает автозапуск при загрузке системы",
-          "correct": false,
+          "text": "<code>start</code> запускает сервис прямо сейчас, <code>enable</code> включает автозапуск при загрузке системы",
+          "correct": true,
           "explanation": ""
         },
         {

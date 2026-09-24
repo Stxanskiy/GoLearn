@@ -113,6 +113,11 @@ var sqlExpressLabs = map[string]labSpec{
 	"ch-pgsql-lab1":           {Image: sandboxImagePG, Setup: shopSetup},
 	"ch-pgsql-lab2":           {Image: sandboxImagePG, Setup: shopSetup},
 	"ch-pgsql-lab-join-types": {Image: sandboxImagePG, Setup: joinLabSetup},
+	// Dump/restore lab: it works against the same `shop` database, and additionally
+	// needs a clean slate for shop_restored so a second attempt starts from zero.
+	"ch-pgsql-lab-backup-restore": {Image: sandboxImagePG, Setup: shopSetup + `
+psql -qc "DROP DATABASE IF EXISTS shop_restored" </dev/null 2>/dev/null || true
+rm -rf /root/backups`},
 
 	// ── Lab 1: база, схема, таблицы ──
 	"ch-pgsql-lab-schema": {

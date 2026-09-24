@@ -20,8 +20,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+:q! Enter</code> (двоеточие, q, восклицательный знак, Enter)",
-          "correct": false,
+          "text": "<code>:q! Enter</code> (двоеточие, q, восклицательный знак, Enter)",
+          "correct": true,
           "explanation": ""
         },
         {
