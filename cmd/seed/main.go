@@ -216,6 +216,11 @@ type T struct {
 	SandboxImage                        string
 	SetupScript                         string
 	CheckScript                         string
+	// SelfCheck marks a task the source export typed "self": the student verifies
+	// it themselves. It never gets an auto-check, and — crucially — it is skipped
+	// when Checks/Descs are numbered, so adding these tasks does not shift the
+	// index every authored check is keyed by.
+	SelfCheck bool
 }
 
 // ── Registry ──

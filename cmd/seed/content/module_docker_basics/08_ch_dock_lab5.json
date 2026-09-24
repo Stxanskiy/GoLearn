@@ -129,9 +129,9 @@
       "title": "Проверить связность между контейнерами",
       "taskid": "dock_lab5_t7_connect",
       "hint": "<p>Если <code>web1</code> не находит <code>web2</code>, проверь, что оба контейнера запущены и подключены к <code>mynet</code>: <code>docker ps</code> и <code>docker network inspect mynet</code>.</p>\n<p>Контейнер <code>outsider</code> специально запускается без <code>--network mynet</code>, поэтому он остаётся в default bridge-сети.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Проверь, что контейнеры видят друг друга по имени внутри сети <code>mynet</code>: из <code>web1</code> обратись к <code>web2</code>. Если имя не резолвится, проверь через <code>docker ps</code>, что оба контейнера запущены и подключены к одной сети.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Проверь, что контейнеры видят друг друга по имени внутри сети <code>mynet</code>: из <code>web1</code> обратись к <code>web2</code>. Если имя не резолвится, проверь через <code>docker ps</code>, что оба контейнера запущены и подключены к одной сети.</p>"
     },
     {
       "type": "check",

@@ -57,9 +57,9 @@
       "title": "Увидеть отказ из-за слишком больших ресурсов",
       "taskid": "k8si_lab6_t6_large_request",
       "hint": "",
-      "question_html": "$29",
+      "question_html": "<p>Увидь отказ своими глазами: запроси у Pod заведомо недостижимые ресурсы и посмотри, что произойдёт. Pod останется в <code>Pending</code>, а причину покажет <code>kubectl describe pod</code> в разделе Events.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Увидь отказ своими глазами: запроси у Pod заведомо недостижимые ресурсы и посмотри, что произойдёт. Pod останется в <code>Pending</code>, а причину покажет <code>kubectl describe pod</code> в разделе Events.</p>"
     },
     {
       "type": "quiz",

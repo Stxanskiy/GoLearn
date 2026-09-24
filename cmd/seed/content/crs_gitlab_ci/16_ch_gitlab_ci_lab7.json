@@ -12,9 +12,9 @@
       "title": "Подготовиться к reports в pipeline",
       "taskid": "gitlab_ci_lab7_t1_reports_intro",
       "hint": "<p>На этом шаге ничего запускать не нужно. Прочитай вводную и переходи к следующей задаче.</p>",
-      "question_html": "$25",
+      "question_html": "<p>На этом шаге ничего запускать не нужно. Прочитай вводную про <code>artifacts:reports</code> и переходи к следующей задаче.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>На этом шаге ничего запускать не нужно. Прочитай вводную про <code>artifacts:reports</code> и переходи к следующей задаче.</p>"
     },
     {
       "type": "check",
@@ -66,9 +66,9 @@
       "title": "Разрешить падение optional-lint через allow_failure",
       "taskid": "gitlab_ci_lab7_t7_allow_failure_pipeline",
       "hint": "<p><code>allow_failure</code> подходит для необязательных проверок, но не подходит для unit tests, build и production deploy.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Сделай так, чтобы падение job <code>optional-lint</code> не роняло весь pipeline: добавь ему <code>allow_failure: true</code>. После этого job может завершиться с ошибкой, а pipeline останется успешным.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Сделай так, чтобы падение job <code>optional-lint</code> не роняло весь pipeline: добавь ему <code>allow_failure: true</code>. После этого job может завершиться с ошибкой, а pipeline останется успешным.</p>"
     },
     {
       "type": "quiz",

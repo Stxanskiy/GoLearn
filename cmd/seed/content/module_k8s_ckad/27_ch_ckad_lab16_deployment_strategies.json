@@ -48,9 +48,9 @@
       "title": "Исследовать promotion canary",
       "taskid": "k8s_strategy_lab_t5_promote",
       "hint": "<p>Если <code>strategy-debug</code> был удалён, создай его заново через <code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sleep 3600</code>.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Исследуй promotion canary: посмотри, как трафик распределяется между старой и новой версией, и что меняется при увеличении доли canary. Если Pod <code>strategy-debug</code> был удалён, создай его заново через <code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never</code>.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Исследуй promotion canary: посмотри, как трафик распределяется между старой и новой версией, и что меняется при увеличении доли canary. Если Pod <code>strategy-debug</code> был удалён, создай его заново через <code>kubectl run strategy-debug --image=busybox:1.28 --restart=Never</code>.</p>"
     },
     {
       "type": "check",

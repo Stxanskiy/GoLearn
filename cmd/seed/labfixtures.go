@@ -76,6 +76,10 @@ func applyLabFixtures(moduleSlug string, l *L) {
 	if !ok {
 		return
 	}
+	// n counts only the tasks the Checks/Descs keys refer to. Self-check tasks are
+	// invisible to that numbering, so an authored check keeps landing on the task
+	// it was written for even in lessons that mix the two.
+	n := 0
 	for i := range l.Tasks {
 		if spec.Image != "" {
 			l.Tasks[i].SandboxImage = spec.Image
@@ -83,10 +87,14 @@ func applyLabFixtures(moduleSlug string, l *L) {
 		if i == 0 {
 			l.Tasks[i].SetupScript = spec.Setup
 		}
-		if chk, ok := spec.Checks[i+1]; ok {
+		if l.Tasks[i].SelfCheck {
+			continue
+		}
+		n++
+		if chk, ok := spec.Checks[n]; ok {
 			l.Tasks[i].CheckScript = chk
 		}
-		if d, ok := spec.Descs[i+1]; ok {
+		if d, ok := spec.Descs[n]; ok {
 			l.Tasks[i].Description = d
 		}
 	}

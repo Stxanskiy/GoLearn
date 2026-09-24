@@ -12,9 +12,9 @@
       "title": "Разобрать stages",
       "taskid": "gitlab_ci_lab2_t1_stages",
       "hint": "<p>Setup уже подготовил базовый pipeline. Если GitLab открылся на странице входа, используй данные из <code>/root/gitlab-ci.env</code>.</p>",
-      "question_html": "$25",
+      "question_html": "<p>Открой pipeline проекта и разбери его по стадиям: какие <code>stages</code> объявлены, в каком порядке идут и какие job попадают в каждую. Ничего менять не нужно — задача в том, чтобы увидеть структуру.</p><p>Если GitLab открылся на странице входа, данные для логина лежат в <code>/root/gitlab-ci.env</code>.</p>",
       "options": [],
-      "raw_description": "$25"
+      "raw_description": "<p>Открой pipeline проекта и разбери его по стадиям: какие <code>stages</code> объявлены, в каком порядке идут и какие job попадают в каждую. Ничего менять не нужно — задача в том, чтобы увидеть структуру.</p><p>Если GitLab открылся на странице входа, данные для логина лежат в <code>/root/gitlab-ci.env</code>.</p>"
     },
     {
       "type": "check",
@@ -57,18 +57,18 @@
       "title": "Добавить variable через GitLab UI",
       "taskid": "gitlab_ci_lab2_t6_ui_variable",
       "hint": "<p>Если job печатает пустое значение, проверь имя переменной: в UI должен быть <code>APP_NAME</code>, а в YAML используется <code>$APP_NAME</code>. После создания переменной нужен новый pipeline.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Добавь переменную через интерфейс GitLab: <strong>Settings → CI/CD → Variables</strong>. Ключ <code>APP_NAME</code>, значение придумай сам. Затем выведи её в job, чтобы убедиться, что она доезжает до runner.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Добавь переменную через интерфейс GitLab: <strong>Settings → CI/CD → Variables</strong>. Ключ <code>APP_NAME</code>, значение придумай сам. Затем выведи её в job, чтобы убедиться, что она доезжает до runner.</p>"
     },
     {
       "type": "check",
       "title": "Что сохраняет artifacts?",
       "taskid": "gitlab_ci_lab2_t7_predefined_variables",
       "hint": "<p>Не создавай эти переменные руками. <code>CI_COMMIT_REF_NAME</code>, <code>CI_COMMIT_SHORT_SHA</code> и <code>CI_JOB_ID</code> GitLab передает сам.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Разберись, что именно сохраняет <code>artifacts</code>: добавь в job создание файла и объяви его в <code>artifacts:paths</code>. После выполнения pipeline скачай артефакт со страницы job и убедись, что файл тот самый.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Разберись, что именно сохраняет <code>artifacts</code>: добавь в job создание файла и объяви его в <code>artifacts:paths</code>. После выполнения pipeline скачай артефакт со страницы job и убедись, что файл тот самый.</p>"
     },
     {
       "type": "quiz",

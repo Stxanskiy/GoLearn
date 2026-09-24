@@ -12,9 +12,9 @@
       "title": "Создать Deployment для HPA",
       "taskid": "ckad_lab6_t1_deploy",
       "hint": "<p>Используй YAML-манифест Deployment. Образ контейнера: <code>nginx:alpine</code>, label/selector можно сделать <code>app: hpa-app</code>. После применения проверь готовность через <code>kubectl rollout status deployment/hpa-app</code>.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Создай Deployment, которым будет управлять HPA: у контейнера обязательно должны быть заданы <code>resources.requests.cpu</code> — без них автоскейлер не сможет считать загрузку.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Создай Deployment, которым будет управлять HPA: у контейнера обязательно должны быть заданы <code>resources.requests.cpu</code> — без них автоскейлер не сможет считать загрузку.</p>"
     },
     {
       "type": "check",
@@ -48,9 +48,9 @@
       "title": "Посмотреть масштабирование",
       "taskid": "ckad_lab6_t5_scale",
       "hint": "",
-      "question_html": "$27",
+      "question_html": "<p>Посмотри, как работает масштабирование: следи за <code>kubectl get hpa</code> и <code>kubectl get pods</code>. Обрати внимание на столбец <code>REPLICAS</code> — он меняется не мгновенно, HPA принимает решение по метрикам с задержкой.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Посмотри, как работает масштабирование: следи за <code>kubectl get hpa</code> и <code>kubectl get pods</code>. Обрати внимание на столбец <code>REPLICAS</code> — он меняется не мгновенно, HPA принимает решение по метрикам с задержкой.</p>"
     },
     {
       "type": "check",

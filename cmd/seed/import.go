@@ -227,9 +227,11 @@ func buildModule(s importSpec) (M, error) {
 			VMInit:  ch.VMInit,
 		}
 
+		// "self" tasks are practice steps the platform never validated; they are
+		// still work the student does, so they belong in the lesson.
 		hasCheck := false
 		for _, t := range ch.Tasks {
-			if t.Type == "check" {
+			if t.Type == "check" || t.Type == "self" {
 				hasCheck = true
 				break
 			}
@@ -254,6 +256,10 @@ func buildModule(s importSpec) (M, error) {
 				}
 			case "check":
 				l.Tasks = append(l.Tasks, toShellTask(t, ch.VMImage))
+			case "self":
+				task := toShellTask(t, ch.VMImage)
+				task.SelfCheck = true
+				l.Tasks = append(l.Tasks, task)
 			}
 		}
 

@@ -93,9 +93,9 @@
       "title": "Подключиться к Pod через kubectl debug",
       "taskid": "k8sdbg_lab2_t10_ephemeral_debug_start",
       "hint": "<p>Используй <code>--profile=baseline</code>: такой debug container создаётся без дополнительных привилегий и подходит для обычной диагностики сети, DNS и HTTP.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Подключись к Pod через <code>kubectl debug</code> с <code>--profile=baseline</code>: такой debug-контейнер создаётся без дополнительных привилегий и подходит для обычной диагностики сети и конфигурации.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Подключись к Pod через <code>kubectl debug</code> с <code>--profile=baseline</code>: такой debug-контейнер создаётся без дополнительных привилегий и подходит для обычной диагностики сети и конфигурации.</p>"
     },
     {
       "type": "self",

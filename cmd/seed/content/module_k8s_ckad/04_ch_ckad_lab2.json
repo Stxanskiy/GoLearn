@@ -39,9 +39,9 @@
       "title": "Самопроверка: подключить тот же PVC к новому Pod",
       "taskid": "ckad_lab2_t4_reconnect_pvc",
       "hint": "<p>Это самопроверка: здесь важно увидеть поведение глазами. Pod можно удалить, PVC остаётся. Новый Pod подключает тот же claim через <code>persistentVolumeClaim.claimName</code>.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Самопроверка: удали Pod и создай новый, подключив тот же PVC через <code>persistentVolumeClaim</code>. Убедись, что файлы на месте — PVC переживает Pod. Здесь важно увидеть поведение глазами, автопроверки нет.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Самопроверка: удали Pod и создай новый, подключив тот же PVC через <code>persistentVolumeClaim</code>. Убедись, что файлы на месте — PVC переживает Pod. Здесь важно увидеть поведение глазами, автопроверки нет.</p>"
     },
     {
       "type": "quiz",

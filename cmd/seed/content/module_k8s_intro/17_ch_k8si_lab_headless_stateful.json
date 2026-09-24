@@ -12,9 +12,9 @@
       "title": "Создать StatefulSet",
       "taskid": "k8si_headless_t1_statefulset",
       "hint": "<p>Если rollout ещё идёт, посмотри <code>kubectl get pods -l app=web-sts -w</code>. StatefulSet создаёт Pod'ы последовательно.</p>",
-      "question_html": "$26",
+      "question_html": "<p>Создай StatefulSet вместе с headless Service. У такого Service должен быть <code>clusterIP: None</code> — именно он даёт каждому Pod стабильное DNS-имя.</p>",
       "options": [],
-      "raw_description": "$26"
+      "raw_description": "<p>Создай StatefulSet вместе с headless Service. У такого Service должен быть <code>clusterIP: None</code> — именно он даёт каждому Pod стабильное DNS-имя.</p>"
     },
     {
       "type": "check",
@@ -48,18 +48,18 @@
       "title": "Проверить DNS и ответы конкретных Pod'ов",
       "taskid": "k8si_headless_t4_dns",
       "hint": "<p>Если DNS-имя не находится, проверь <code>kubectl get service web-headless</code>: у Service должен быть <code>clusterIP: None</code> и selector <code>app=web-sts</code>.</p>",
-      "question_html": "$27",
+      "question_html": "<p>Проверь, что каждый Pod доступен по своему стабильному имени, и что отвечает именно он. Если DNS-имя не находится, проверь <code>kubectl get service web-headless</code>: у Service должен быть <code>clusterIP: None</code> и корректный selector.</p>",
       "options": [],
-      "raw_description": "$27"
+      "raw_description": "<p>Проверь, что каждый Pod доступен по своему стабильному имени, и что отвечает именно он. Если DNS-имя не находится, проверь <code>kubectl get service web-headless</code>: у Service должен быть <code>clusterIP: None</code> и корректный selector.</p>"
     },
     {
       "type": "self",
       "title": "Сравнить с обычным Deployment и Service",
       "taskid": "k8si_headless_t5_deployment_compare",
       "hint": "<p>Если за 20 запросов попался только один Pod, повтори команду ещё раз. Service распределяет запросы, но в маленьком кластере короткая серия иногда выглядит неравномерно.</p>",
-      "question_html": "$28",
+      "question_html": "<p>Сравни поведение с обычной парой Deployment + Service: запросы распределяются между Pod'ами, и заранее неизвестно, какой ответит. Если за 20 запросов попался только один Pod, повтори — в маленьком кластере короткая серия бывает неравномерной.</p>",
       "options": [],
-      "raw_description": "$28"
+      "raw_description": "<p>Сравни поведение с обычной парой Deployment + Service: запросы распределяются между Pod'ами, и заранее неизвестно, какой ответит. Если за 20 запросов попался только один Pod, повтори — в маленьком кластере короткая серия бывает неравномерной.</p>"
     },
     {
       "type": "check",
@@ -75,9 +75,9 @@
       "title": "Проверить восстановление стабильного имени",
       "taskid": "k8si_headless_t7_recreate",
       "hint": "<p>Если <code>kubectl wait</code> не успел за 120 секунд, посмотри <code>kubectl get pods -l app=web-sts</code> и события через <code>kubectl get events --sort-by=.lastTimestamp</code>. В норме новый <code>web-sts-1</code> появляется с тем же именем, но с новым возрастом.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Удали один Pod и дождись, пока StatefulSet поднимет замену. Имя должно остаться прежним — в этом и смысл. Если <code>kubectl wait</code> не уложился в 120 секунд, смотри <code>kubectl get pods -l app=web-sts</code> и события кластера.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Удали один Pod и дождись, пока StatefulSet поднимет замену. Имя должно остаться прежним — в этом и смысл. Если <code>kubectl wait</code> не уложился в 120 секунд, смотри <code>kubectl get pods -l app=web-sts</code> и события кластера.</p>"
     },
     {
       "type": "check",

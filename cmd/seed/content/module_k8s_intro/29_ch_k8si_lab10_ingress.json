@@ -46,9 +46,9 @@
       "title": "Проверить Service изнутри кластера",
       "taskid": "k8si_ingress_t3_service_check",
       "hint": "<p>Если один из запросов не отвечает, проверь <code>kubectl get pods -o wide</code>, <code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code>, selector у Service и labels у Pod'ов. Ingress пока не участвовал в этих запросах.</p>",
-      "question_html": "$29",
+      "question_html": "<p>Проверь сервисы изнутри кластера, до Ingress. Если один из запросов не отвечает, смотри <code>kubectl get pods -o wide</code> и <code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code> — пустые endpoints означают, что selector не совпал с labels.</p>",
       "options": [],
-      "raw_description": "$29"
+      "raw_description": "<p>Проверь сервисы изнутри кластера, до Ingress. Если один из запросов не отвечает, смотри <code>kubectl get pods -o wide</code> и <code>kubectl get endpoints frontend-svc catalog-svc cart-svc</code> — пустые endpoints означают, что selector не совпал с labels.</p>"
     },
     {
       "type": "check",
