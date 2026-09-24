@@ -110,5 +110,32 @@ func escapeQuotes(s string) string { return strings.ReplaceAll(s, `"`, `\"`) }
 
 // check builds "if <cond>; then ✓; else ✗; fi".
 func check(cond, good, bad string) string {
-	return "if " + cond + "; then " + ok(good) + "; else " + fail(bad) + "; fi"
+	return "if " + cond + "; then " + ok(good) + "; else " + fail(studentFail(good, bad)) + "; fi"
+}
+
+// studentFail turns the author's note into feedback that does not hand over the
+// answer. In most fixtures `bad` is the literal command that solves the task, so
+// printing it on every failed attempt turned "Проверить" into a solution button —
+// the student learns nothing by pressing it. What they get instead is the
+// expectation the check tested: it says what is missing without saying how to
+// produce it.
+//
+// The one part of `bad` worth keeping is a live diagnostic — authors write those
+// as a trailing "Сейчас: ..." with a substitution reporting the current state.
+// That teaches, because it shows the gap. Anything before it is dropped: keying
+// on the word rather than on "$(" avoids mistaking an awk field like $(NF-1), or
+// a `kill $(cat pid)` inside the solution itself, for a diagnostic.
+func studentFail(good, bad string) string {
+	msg := "не выполнено: " + good
+	// Index by the whole word: slicing one byte back to pick up the capital letter
+	// cuts a two-byte "С" in half, and the invalid UTF-8 makes PostgreSQL reject
+	// the row — the task then vanishes from the course without a word.
+	i := strings.Index(bad, "Сейчас")
+	if i < 0 {
+		i = strings.Index(bad, "сейчас")
+	}
+	if i < 0 || !strings.Contains(bad[i:], "$(") {
+		return msg
+	}
+	return msg + " — " + strings.TrimSpace(bad[i:])
 }

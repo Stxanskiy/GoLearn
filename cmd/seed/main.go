@@ -145,9 +145,14 @@ func main() {
 				if kind == "" {
 					kind = "go"
 				}
-				pool.Exec(ctx,
+				// A dropped task is invisible otherwise: the lesson just ships with fewer
+				// steps than it was authored with. Fail loudly instead — one bad byte
+				// in a check message silently removed nine tasks before this.
+				if _, err := pool.Exec(ctx,
 					`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-					lessonID, t.Title, t.Description, t.Hints, t.Solution, ti+1, tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript)
+					lessonID, t.Title, t.Description, t.Hints, t.Solution, ti+1, tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript); err != nil {
+					log.Fatalf("task %q of lesson %q: %v", t.Title, lesson.Slug, err)
+				}
 			}
 			if len(lesson.Tasks) > 0 {
 				fmt.Printf("    Tasks: %d\n", len(lesson.Tasks))
