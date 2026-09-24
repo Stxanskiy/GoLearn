@@ -414,10 +414,21 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
 			v.dir, v.vmkey, vmip)
 	}
-	// idle=halt matters: acpi=off leaves the guest without a cpuidle driver, so its
-	// idle loop never issues HLT and spins instead — the vCPU thread then burns a
-	// full host core for a VM that is doing nothing. Warm-pool VMs sit idle for
-	// hours, so this is the difference between one core per VM and roughly zero.
+	// An idle VM still burns a full host core, and idle=halt does NOT fix it —
+	// measured, not assumed. acpi=off makes the guest boot, but it also throws away
+	// the MADT, so the kernel reports "No local APIC present", falls back to a
+	// polling idle loop and ignores idle=halt (forcing it with `lapic` changes
+	// nothing). Inside such a VM /proc/stat reports 100% idle while the host sees
+	// the fc_vcpu thread at 100% user time in state R.
+	//
+	// Firecracker v1.16.1 does publish ACPI tables with an APIC entry, and with
+	// acpi=off dropped the guest reaches "APIC: Switch to symmetric I/O mode" — but
+	// then panics with "VFS: Unable to mount root fs": virtio-mmio registers and no
+	// block device appears. acpi=noirq and noapic fail the same way. So the fix is
+	// not a boot argument: it needs a guest kernel that boots with ACPI enabled.
+	// Until then the lever is the warm pool (FC_WARM_*) — a VM only costs a core
+	// while it exists. idle=halt is kept because it is harmless and becomes the
+	// right setting the moment the APIC works.
 	bootArgs := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 acpi=off idle=halt net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
 		vmip)
