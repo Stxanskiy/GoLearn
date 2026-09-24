@@ -103,8 +103,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+template рендерит YAML без изменения кластера, sync устанавливает или обновляет releases [Верно! Поэтому перед sync полезно смотреть template]</code>",
-          "correct": false,
+          "text": "<code>template рендерит YAML без изменения кластера, sync устанавливает или обновляет releases [Верно! Поэтому перед sync полезно смотреть template]</code>",
+          "correct": true,
           "explanation": ""
         },
         {

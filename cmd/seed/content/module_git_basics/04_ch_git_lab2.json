@@ -70,8 +70,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Убирает файл из staging area, но оставляет изменения в рабочей директории</code>",
-          "correct": false,
+          "text": "<code>Убирает файл из staging area, но оставляет изменения в рабочей директории</code>",
+          "correct": true,
           "explanation": ""
         },
         {

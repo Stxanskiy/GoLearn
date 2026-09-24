@@ -101,8 +101,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Точка передаёт helper текущий контекст, чтобы внутри были доступны .Release, .Chart и .Values [Верно! Без контекста helper не сможет читать нужные поля]</code>",
-          "correct": false,
+          "text": "<code>Точка передаёт helper текущий контекст, чтобы внутри были доступны .Release, .Chart и .Values [Верно! Без контекста helper не сможет читать нужные поля]</code>",
+          "correct": true,
           "explanation": ""
         },
         {

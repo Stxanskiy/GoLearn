@@ -60,8 +60,8 @@
       "question_html": "<p>Зачем обычно используют <code>git clone</code>?</p>",
       "options": [
         {
-          "text": "<code>+Чтобы получить локальную копию репозитория вместе с историей и remote origin</code>",
-          "correct": false,
+          "text": "<code>Чтобы получить локальную копию репозитория вместе с историей и remote origin</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -95,8 +95,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+add помещает изменения в staging area, commit фиксирует staged изменения в историю</code>",
-          "correct": false,
+          "text": "<code>add помещает изменения в staging area, commit фиксирует staged изменения в историю</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -130,8 +130,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Когда хочешь отправить локальные коммиты в удалённый репозиторий</code>",
-          "correct": false,
+          "text": "<code>Когда хочешь отправить локальные коммиты в удалённый репозиторий</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -165,8 +165,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы изолировать изменения и не ломать main до готовности</code>",
-          "correct": false,
+          "text": "<code>Чтобы изолировать изменения и не ломать main до готовности</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -180,8 +180,8 @@
       "question_html": "<p>Что означает fast-forward merge?</p>",
       "options": [
         {
-          "text": "<code>+main просто сдвигается вперёд на указатель feature без merge-коммита</code>",
-          "correct": false,
+          "text": "<code>main просто сдвигается вперёд на указатель feature без merge-коммита</code>",
+          "correct": true,
           "explanation": ""
         },
         {

@@ -94,7 +94,7 @@
       "options": [
         {
           "text": "2",
-          "correct": false,
+          "correct": true,
           "explanation": "Нет — проверь все обычные файлы верхнего уровня"
         },
         {
@@ -104,7 +104,7 @@
         },
         {
           "text": "3",
-          "correct": true,
+          "correct": false,
           "explanation": "Верно! Это <code>config.txt</code>, <code>data.log</code> и <code>readme.md</code>"
         },
         {

@@ -15,8 +15,8 @@
       "question_html": "<p>Подсчитай общее количество строк (запросов) в <code>/opt/devops/lab5/access.log</code> и выбери получившееся число.</p>",
       "options": [
         {
-          "text": "<code>+100</code>",
-          "correct": false,
+          "text": "<code>39</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -25,12 +25,12 @@
           "explanation": ""
         },
         {
-          "text": "<code>150</code>",
+          "text": "<code>42</code>",
           "correct": false,
           "explanation": ""
         },
         {
-          "text": "<code>200</code>",
+          "text": "<code>35</code>",
           "correct": false,
           "explanation": ""
         }
@@ -68,8 +68,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Каждую уникальную строку с префиксом — количеством повторений</code>",
-          "correct": false,
+          "text": "<code>Каждую уникальную строку с префиксом — количеством повторений</code>",
+          "correct": true,
           "explanation": ""
         },
         {

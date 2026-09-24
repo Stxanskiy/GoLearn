@@ -70,8 +70,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Annotated хранит метаданные и сообщение, lightweight — просто указатель на коммит</code>",
-          "correct": false,
+          "text": "<code>Annotated хранит метаданные и сообщение, lightweight — просто указатель на коммит</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -105,8 +105,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Нужно временно отложить незакоммиченные изменения и переключиться на другую задачу</code>",
-          "correct": false,
+          "text": "<code>Нужно временно отложить незакоммиченные изменения и переключиться на другую задачу</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -120,8 +120,8 @@
       "question_html": "<p>Какой риск есть у <code>git stash pop</code>?</p>",
       "options": [
         {
-          "text": "<code>+Если изменения конфликтуют с текущей веткой, потребуется ручное разрешение конфликтов</code>",
-          "correct": false,
+          "text": "<code>Если изменения конфликтуют с текущей веткой, потребуется ручное разрешение конфликтов</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -155,8 +155,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Он не переписывает историю, а добавляет новый коммит-откат</code>",
-          "correct": false,
+          "text": "<code>Он не переписывает историю, а добавляет новый коммит-откат</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -190,8 +190,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Отправить тег на remote (например, git push origin v1.0.0 или --tags)</code>",
-          "correct": false,
+          "text": "<code>Отправить тег на remote (например, git push origin v1.0.0 или --tags)</code>",
+          "correct": true,
           "explanation": ""
         },
         {

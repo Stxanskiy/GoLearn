@@ -65,8 +65,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы объединить шумные промежуточные коммиты в один аккуратный логический коммит</code>",
-          "correct": false,
+          "text": "<code>Чтобы объединить шумные промежуточные коммиты в один аккуратный логический коммит</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -100,8 +100,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Нужно перенести один hotfix-коммит в другую ветку без полного merge</code>",
-          "correct": false,
+          "text": "<code>Нужно перенести один hotfix-коммит в другую ветку без полного merge</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -135,8 +135,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Локальные перемещения HEAD (checkout, commit, reset, rebase и т.д.)</code>",
-          "correct": false,
+          "text": "<code>Локальные перемещения HEAD (checkout, commit, reset, rebase и т.д.)</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -150,8 +150,8 @@
       "question_html": "<p>Главное отличие <code>git reset --soft</code> от <code>git reset --hard</code>?</p>",
       "options": [
         {
-          "text": "<code>+soft сохраняет изменения staged, hard удаляет изменения из working tree/staging</code>",
-          "correct": false,
+          "text": "<code>soft сохраняет изменения staged, hard удаляет изменения из working tree/staging</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -185,8 +185,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы видеть реальную структуру ветвления и merge</code>",
-          "correct": false,
+          "text": "<code>Чтобы видеть реальную структуру ветвления и merge</code>",
+          "correct": true,
           "explanation": ""
         },
         {

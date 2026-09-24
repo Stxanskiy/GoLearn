@@ -61,8 +61,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Сжать с помощью gzip (создать .gz архив)</code>",
-          "correct": false,
+          "text": "<code>Сжать с помощью gzip (создать .gz архив)</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -96,8 +96,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Посмотреть список через tar -tzf и убедиться, что внутри ожидаемые пути</code>",
-          "correct": false,
+          "text": "<code>Посмотреть список через tar -tzf и убедиться, что внутри ожидаемые пути</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -111,8 +111,8 @@
       "question_html": "<p>Почему в имени backup полезен timestamp?</p>",
       "options": [
         {
-          "text": "<code>+Проще хранить несколько версий и быстро понимать, какой архив новее</code>",
-          "correct": false,
+          "text": "<code>Проще хранить несколько версий и быстро понимать, какой архив новее</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -146,8 +146,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Проверить, что нужные файлы реально восстановились и читаются</code>",
-          "correct": false,
+          "text": "<code>Проверить, что нужные файлы реально восстановились и читаются</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -181,8 +181,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Проверить свободное место, очистить ненужное и повторить с контролем результата</code>",
-          "correct": false,
+          "text": "<code>Проверить свободное место, очистить ненужное и повторить с контролем результата</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -216,8 +216,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Чтобы не переполнить диск и сохранить предсказуемый объём хранения</code>",
-          "correct": false,
+          "text": "<code>Чтобы не переполнить диск и сохранить предсказуемый объём хранения</code>",
+          "correct": true,
           "explanation": ""
         }
       ],

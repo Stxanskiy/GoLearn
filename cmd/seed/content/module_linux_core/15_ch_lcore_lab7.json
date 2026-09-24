@@ -30,8 +30,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Информация о пользователях: логин, UID, GID, домашняя директория, оболочка (но не пароли)</code>",
-          "correct": false,
+          "text": "<code>Информация о пользователях: логин, UID, GID, домашняя директория, оболочка (но не пароли)</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -45,8 +45,8 @@
       "question_html": "<p>Узнай UID, GID и группы пользователя <code>devuser</code>. Какая команда показывает эти поля одной строкой?</p>",
       "options": [
         {
-          "text": "<code>+id devuser</code>",
-          "correct": false,
+          "text": "<code>id devuser</code>",
+          "correct": true,
           "explanation": "Верно! <code>id</code> показывает UID, GID и группы пользователя"
         },
         {

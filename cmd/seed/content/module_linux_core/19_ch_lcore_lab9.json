@@ -24,8 +24,8 @@
       "question_html": "<p>Проверь, слушает ли сервер на порту 22 (SSH), и выбери верный вывод.</p>",
       "options": [
         {
-          "text": "<code>+Если в выводе есть LISTEN для :22, SSH-сервер принимает подключения</code>",
-          "correct": false,
+          "text": "<code>Если в выводе есть LISTEN для :22, SSH-сервер принимает подключения</code>",
+          "correct": true,
           "explanation": "Верно! Так проверяют слушающий порт"
         },
         {
@@ -59,8 +59,8 @@
           "explanation": "Нет — setup этой лабы поднимает другой процесс"
         },
         {
-          "text": "<code>+python3</code>",
-          "correct": false,
+          "text": "<code>python3</code>",
+          "correct": true,
           "explanation": "Верно! HTTP-сервер запущен через python3"
         },
         {
@@ -84,8 +84,8 @@
       "question_html": "<p>Команда <code>ss</code> в современных системах заменяет устаревший <code>netstat</code>. Что означают флаги в <code>ss -tlnp</code>?</p>",
       "options": [
         {
-          "text": "<code>+-t — TCP, -l — listen (слушающие), -n — числовые IP, -p — показать процесс</code>",
-          "correct": false,
+          "text": "<code>-t — TCP, -l — listen (слушающие), -n — числовые IP, -p — показать процесс</code>",
+          "correct": true,
           "explanation": "Верно! Эта команда показывает слушающие TCP-сокеты без DNS-резолва и с именем процесса"
         },
         {

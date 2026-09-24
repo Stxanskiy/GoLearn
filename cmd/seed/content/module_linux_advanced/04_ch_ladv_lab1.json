@@ -61,8 +61,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Выполняет HEAD-запрос — получает только заголовки ответа, без тела</code>",
-          "correct": false,
+          "text": "<code>Выполняет HEAD-запрос — получает только заголовки ответа, без тела</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -114,8 +114,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+python3</code>",
-          "correct": false,
+          "text": "<code>python3</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -129,8 +129,8 @@
       "question_html": "<p>Какой подход обычно безопаснее при сетевой диагностике?</p>",
       "options": [
         {
-          "text": "<code>+Идти шагами: проверить интерфейсы и маршруты, затем порты и HTTP</code>",
-          "correct": false,
+          "text": "<code>Идти шагами: проверить интерфейсы и маршруты, затем порты и HTTP</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -164,8 +164,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Так проще сравнить состояние до/после и быстрее найти причину сбоя</code>",
-          "correct": false,
+          "text": "<code>Так проще сравнить состояние до/после и быстрее найти причину сбоя</code>",
+          "correct": true,
           "explanation": ""
         },
         {

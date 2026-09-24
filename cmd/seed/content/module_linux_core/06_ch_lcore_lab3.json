@@ -20,8 +20,8 @@
           "explanation": "Нет — это вторая строка CSV"
         },
         {
-          "text": "<code>+alice</code>",
-          "correct": false,
+          "text": "<code>alice</code>",
+          "correct": true,
           "explanation": "Верно! Первая строка начинается с alice"
         },
         {
@@ -82,8 +82,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Изменять файл на месте (in-place), без создания копии</code>",
-          "correct": false,
+          "text": "<code>Изменять файл на месте (in-place), без создания копии</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -117,8 +117,8 @@
           "explanation": "Нет — это количество строк в access.log"
         },
         {
-          "text": "<code>+4</code>",
-          "correct": false,
+          "text": "<code>4</code>",
+          "correct": true,
           "explanation": "Верно! В файле четыре уникальных IP-адреса"
         }
       ],
@@ -141,8 +141,8 @@
       "question_html": "<p>Почему конвейеры (<code>|</code>) считаются одной из самых сильных сторон CLI?</p>",
       "options": [
         {
-          "text": "<code>+Потому что позволяют собирать сложную обработку из простых команд по шагам</code>",
-          "correct": false,
+          "text": "<code>Потому что позволяют собирать сложную обработку из простых команд по шагам</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -176,8 +176,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Когда нужна фильтрация по условию и логика по нескольким полям</code>",
-          "correct": false,
+          "text": "<code>Когда нужна фильтрация по условию и логика по нескольким полям</code>",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -211,8 +211,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Потому что он изменяет файл сразу, и ошибочный шаблон может испортить содержимое</code>",
-          "correct": false,
+          "text": "<code>Потому что он изменяет файл сразу, и ошибочный шаблон может испортить содержимое</code>",
+          "correct": true,
           "explanation": ""
         },
         {

@@ -30,8 +30,8 @@
           "explanation": "watch перечитывает весь файл целиком каждые 2 секунды"
         },
         {
-          "text": "<code>+tail -f /var/log/nginx/access.log</code>",
-          "correct": false,
+          "text": "<code>tail -f /var/log/nginx/access.log</code>",
+          "correct": true,
           "explanation": "Верно! tail -f (follow) выводит новые строки по мере их появления"
         }
       ],
@@ -63,8 +63,8 @@
       "question_html": "<p>Подсчитай общее количество строк в файле <code>/opt/devops/lab1/app.log</code> и выбери правильный результат.</p>",
       "options": [
         {
-          "text": "<code>+12</code>",
-          "correct": false,
+          "text": "<code>20</code>",
+          "correct": true,
           "explanation": "Верно! В файле 12 строк"
         },
         {
@@ -78,7 +78,7 @@
           "explanation": "Нет — это больше фактического количества"
         },
         {
-          "text": "<code>5</code>",
+          "text": "<code>25</code>",
           "correct": false,
           "explanation": "Нет — это количество строк из предыдущей задачи"
         }
@@ -98,8 +98,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+less</code> не загружает весь файл в память и позволяет листать вперёд-назад",
-          "correct": false,
+          "text": "<code>less</code> не загружает весь файл в память и позволяет листать вперёд-назад",
+          "correct": true,
           "explanation": ""
         },
         {
@@ -133,8 +133,8 @@
           "explanation": "Нет — это уже включает другие коды"
         },
         {
-          "text": "<code>+3</code>",
-          "correct": false,
+          "text": "<code>3</code>",
+          "correct": true,
           "explanation": "Верно! В логе три ответа с кодом 200"
         },
         {
@@ -186,8 +186,8 @@
           "explanation": ""
         },
         {
-          "text": "<code>+Проверка контекста снижает риск неверных выводов и лишней отладки</code>",
-          "correct": false,
+          "text": "<code>Проверка контекста снижает риск неверных выводов и лишней отладки</code>",
+          "correct": true,
           "explanation": ""
         }
       ],
@@ -201,8 +201,8 @@
       "question_html": "<p>Какой подход обычно безопаснее при поиске проблем в логе?</p>",
       "options": [
         {
-          "text": "<code>+Идти шагами: сначала grep/head, затем добавлять сортировку и агрегацию</code>",
-          "correct": false,
+          "text": "<code>Идти шагами: сначала grep/head, затем добавлять сортировку и агрегацию</code>",
+          "correct": true,
           "explanation": ""
         },
         {
