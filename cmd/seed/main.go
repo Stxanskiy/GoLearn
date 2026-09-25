@@ -100,6 +100,10 @@ func main() {
 				lDiff = difficulty
 			}
 			lKind := lesson.Kind
+			lFormat := lesson.Format
+			if lFormat == "" {
+				lFormat = "html"
+			}
 			if lKind == "" {
 				lKind = "theory"
 			}
@@ -107,14 +111,15 @@ func main() {
 			keepLessonSlugs = append(keepLessonSlugs, lesson.Slug)
 			var lessonID int
 			err := pool.QueryRow(ctx,
-				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, source)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'seed')
+				`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, vm_image, vm_init, format, source)
+				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'seed')
 				 ON CONFLICT (module_id, slug) DO UPDATE SET title=EXCLUDED.title, content=EXCLUDED.content,
 				   difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
-				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init
+				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init,
+				   format=EXCLUDED.format
 				 RETURNING id`,
 				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack,
-				lKind, lesson.VMImage, lesson.VMInit).Scan(&lessonID)
+				lKind, lesson.VMImage, lesson.VMInit, lFormat).Scan(&lessonID)
 			if err != nil {
 				log.Fatalf("upsert lesson %s: %v", lesson.Slug, err)
 			}
@@ -192,6 +197,7 @@ type L struct {
 	Difficulty           string // beginner | intermediate | advanced | expert
 	Track                string // backend | devops | shared
 	Kind                 string // theory | quiz | lab | sim (empty -> theory)
+	Format               string // html | md (empty -> html)
 	VMImage              string // lab terminal image
 	VMInit               string // lab setup reference/script
 	Quiz                 []Q

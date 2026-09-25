@@ -85,6 +85,7 @@ type pkChapter struct {
 	Tasks       []pkTask `json:"tasks"`
 	VMImage     string   `json:"vm_image"`
 	VMInit      string   `json:"vm_init"`
+	Format      string   `json:"format"`
 }
 
 // importSpec describes how an embedded parser course maps into a GoLearn module.
@@ -225,6 +226,7 @@ func buildModule(s importSpec) (M, error) {
 			Track:   s.Track,
 			VMImage: ch.VMImage,
 			VMInit:  ch.VMInit,
+			Format:  ch.Format,
 		}
 
 		// "self" tasks are practice steps the platform never validated; they are
