@@ -14,6 +14,7 @@ import (
 	"github.com/backendraz/golearn/internal/apidocs"
 	"github.com/backendraz/golearn/internal/config"
 	"github.com/backendraz/golearn/internal/migrate"
+	"github.com/backendraz/golearn/internal/obs"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
 	"github.com/backendraz/golearn/internal/simulators"
@@ -68,7 +69,27 @@ func main() {
 	codeRunner := runner.New()
 	// Two lab backends: Firecracker micro-VMs when an FC host is configured, plain
 	// containers otherwise (SANDBOX_LOCAL runs them on this machine's Docker).
-	sandbox := runner.NewDispatcher(runner.NewShellRunner(), runner.NewVMRunner())
+	vmRunner := runner.NewVMRunner()
+	sandbox := runner.NewDispatcher(runner.NewShellRunner(), vmRunner)
+
+	// The numbers an incident actually starts from: how loaded the database pool
+	// is, and how many micro-VMs exist. Both were only answerable by hand before.
+	obs.Gauge("golearn_db_pool_acquired", "Connections currently checked out.",
+		func() float64 { return float64(pool.Stat().AcquiredConns()) })
+	obs.Gauge("golearn_db_pool_total", "Connections in the pool.",
+		func() float64 { return float64(pool.Stat().TotalConns()) })
+	obs.Gauge("golearn_vm_sessions", "Live micro-VMs, warm ones included.",
+		func() float64 { return float64(vmRunner.Stats().Sessions) })
+	obs.Gauge("golearn_vm_free_slots", "Micro-VM slots still available.",
+		func() float64 { return float64(vmRunner.Stats().FreeSlot) })
+	obs.Gauge("golearn_vm_warm", "Pre-booted idle micro-VMs across all profiles.",
+		func() float64 {
+			var n int
+			for _, c := range vmRunner.Stats().Warm {
+				n += c
+			}
+			return float64(n)
+		})
 
 	// A freshly migrated database has no accounts and self-registration is off
 	// by default, so seed the first admin instead of locking the owner out.
@@ -89,10 +110,19 @@ func main() {
 	simCancel()
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	// RequestID first: everything below it, including the panic handler, can then
+	// name the request a report is about.
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(obs.Middleware)
+	r.Use(obs.Logger(log))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Compress(5))
 	r.Use(securityHeaders)
+
+	// Metrics sit outside /api/v1: they are for operators, not for the API
+	// contract, and must stay reachable even when the API is unhappy.
+	r.Handle("/metrics", obs.Handler())
 
 	// Liveness/readiness for k8s probes. /readyz pings the DB.
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })

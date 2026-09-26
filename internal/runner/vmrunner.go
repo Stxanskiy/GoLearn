@@ -994,3 +994,34 @@ func (v *VMRunner) signer() (ssh.Signer, error) {
 	}
 	return ssh.ParsePrivateKey(data)
 }
+
+// Stats reports what the pool is doing right now. Exposed so the server can turn
+// it into metrics without this package knowing about Prometheus: during an
+// incident the first question is always how many VMs exist and how many slots
+// are left, and until now that could only be answered by counting processes on
+// the host by hand.
+type Stats struct {
+	Enabled  bool
+	Sessions int            // live VMs, warm ones included
+	Warm     map[string]int // profile -> pre-booted and idle
+	FreeSlot int            // slots still available
+	MaxVMs   int
+}
+
+func (v *VMRunner) Stats() Stats {
+	if v == nil {
+		return Stats{}
+	}
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	s := Stats{Enabled: v.enabled, Sessions: len(v.sessions), MaxVMs: v.maxVMs, Warm: map[string]int{}}
+	for profile, list := range v.pool {
+		s.Warm[profile] = len(list)
+	}
+	for _, used := range v.freeSlot {
+		if !used {
+			s.FreeSlot++
+		}
+	}
+	return s
+}
