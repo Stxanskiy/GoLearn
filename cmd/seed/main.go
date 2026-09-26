@@ -51,9 +51,16 @@ func main() {
 	// Idempotent seed: rebuild quizzes/questions/tasks (no user progress lives
 	// there), but UPSERT modules/lessons by slug (stable IDs) below and KEEP the
 	// progress table — so user progress survives re-seeds on every deploy.
-	pool.Exec(ctx, "DELETE FROM quiz_questions")
-	pool.Exec(ctx, "DELETE FROM quizzes")
-	pool.Exec(ctx, "DELETE FROM tasks") // cascades submissions (code-attempt history)
+	// Wiping silently is how a re-seed ends up mixing old rows with new ones.
+	for _, stmt := range []string{
+		"DELETE FROM quiz_questions",
+		"DELETE FROM quizzes",
+		"DELETE FROM tasks", // cascades submissions (code-attempt history)
+	} {
+		if _, err := pool.Exec(ctx, stmt); err != nil {
+			log.Fatalf("%s: %v", stmt, err)
+		}
+	}
 	keepModuleSlugs := []string{}
 
 	modules := getAllModules()
@@ -133,9 +140,11 @@ func main() {
 				for qi, q := range lesson.Quiz {
 					optJSON, _ := json.Marshal(q.Options)
 					oexplJSON, _ := json.Marshal(q.OptionExpl)
-					pool.Exec(ctx,
+					if _, err := pool.Exec(ctx,
 						`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1)
+						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1); err != nil {
+						log.Fatalf("quiz question of lesson %q: %v", lesson.Slug, err)
+					}
 				}
 				fmt.Printf("    Quiz: %d questions\n", len(lesson.Quiz))
 			}
@@ -164,12 +173,16 @@ func main() {
 			}
 		}
 		if len(keepLessonSlugs) > 0 {
-			pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND source='seed' AND slug <> ALL($2)`, moduleID, keepLessonSlugs)
+			if _, err := pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND source='seed' AND slug <> ALL($2)`, moduleID, keepLessonSlugs); err != nil {
+				log.Fatalf("prune lessons: %v", err)
+			}
 		}
 	}
 	if len(keepModuleSlugs) > 0 {
 		// Only prune seed-managed modules; admin-created courses survive re-seeds.
-		pool.Exec(ctx, `DELETE FROM modules WHERE source='seed' AND slug <> ALL($1)`, keepModuleSlugs)
+		if _, err := pool.Exec(ctx, `DELETE FROM modules WHERE source='seed' AND slug <> ALL($1)`, keepModuleSlugs); err != nil {
+			log.Fatalf("prune modules: %v", err)
+		}
 	}
 	fmt.Println("\nSeed completed!")
 }
