@@ -78,10 +78,14 @@ func main() {
 		func() float64 { return float64(pool.Stat().AcquiredConns()) })
 	obs.Gauge("golearn_db_pool_total", "Connections in the pool.",
 		func() float64 { return float64(pool.Stat().TotalConns()) })
-	obs.Gauge("golearn_vm_sessions", "Live micro-VMs, warm ones included.",
+	obs.Gauge("golearn_vm_sessions", "Micro-VMs handed out to a student.",
 		func() float64 { return float64(vmRunner.Stats().Sessions) })
 	obs.Gauge("golearn_vm_free_slots", "Micro-VM slots still available.",
 		func() float64 { return float64(vmRunner.Stats().FreeSlot) })
+	// Slots are claimed before a VM boots, so used > sessions+warm means something
+	// is starting — or, if it stays that way, that a slot leaked.
+	obs.Gauge("golearn_vm_slots_used", "Micro-VM slots taken, including VMs still booting.",
+		func() float64 { return float64(vmRunner.Stats().SlotsUsed) })
 	obs.Gauge("golearn_vm_warm", "Pre-booted idle micro-VMs across all profiles.",
 		func() float64 {
 			var n int

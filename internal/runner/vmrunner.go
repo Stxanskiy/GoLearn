@@ -1001,12 +1001,18 @@ func (v *VMRunner) signer() (ssh.Signer, error) {
 // are left, and until now that could only be answered by counting processes on
 // the host by hand.
 type Stats struct {
-	Enabled  bool
-	Sessions int            // live VMs, warm ones included
-	Warm     map[string]int // profile -> pre-booted and idle
-	FreeSlot int            // slots still available
-	MaxVMs   int
+	Enabled   bool
+	Sessions  int            // VMs handed out to a student
+	Warm      map[string]int // profile -> pre-booted, idle, not handed out
+	FreeSlot  int            // slots still available
+	SlotsUsed int            // slots taken; a slot is claimed before the VM boots
+	MaxVMs    int
 }
+
+// A slot is claimed before the VM boots and released only when it is killed, so
+// SlotsUsed is always >= Sessions + sum(Warm). A small gap means something is
+// booting right now; a gap that stays is a leaked slot, and the pool will run
+// out without a single VM to show for it.
 
 func (v *VMRunner) Stats() Stats {
 	if v == nil {
@@ -1019,7 +1025,9 @@ func (v *VMRunner) Stats() Stats {
 		s.Warm[profile] = len(list)
 	}
 	for _, used := range v.freeSlot {
-		if !used {
+		if used {
+			s.SlotsUsed++
+		} else {
 			s.FreeSlot++
 		}
 	}
