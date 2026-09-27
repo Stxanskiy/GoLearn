@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"log"
 	"os"
 	"time"
@@ -48,19 +50,12 @@ func main() {
 		fmt.Printf("Applied %d migration(s): %v\n", len(ran), ran)
 	}
 
-	// Idempotent seed: rebuild quizzes/questions/tasks (no user progress lives
-	// there), but UPSERT modules/lessons by slug (stable IDs) below and KEEP the
-	// progress table — so user progress survives re-seeds on every deploy.
-	// Wiping silently is how a re-seed ends up mixing old rows with new ones.
-	for _, stmt := range []string{
-		"DELETE FROM quiz_questions",
-		"DELETE FROM quizzes",
-		"DELETE FROM tasks", // cascades submissions (code-attempt history)
-	} {
-		if _, err := pool.Exec(ctx, stmt); err != nil {
-			log.Fatalf("%s: %v", stmt, err)
-		}
-	}
+	// Idempotent seed: modules and lessons are UPSERTed by slug so ids stay stable
+	// and user progress survives. Quizzes and tasks are rebuilt, but per lesson and
+	// only for lessons this seeder still owns — see the edited_at guard below.
+	//
+	// It used to wipe every task and quiz in the database before rebuilding, which
+	// meant a task an author added in the studio lived until the next deploy.
 	keepModuleSlugs := []string{}
 
 	modules := getAllModules()
@@ -124,13 +119,33 @@ func main() {
 				   difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
 				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init,
 				   format=EXCLUDED.format
+				 WHERE lessons.edited_at IS NULL
 				 RETURNING id`,
 				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack,
 				lKind, lesson.VMImage, lesson.VMInit, lFormat).Scan(&lessonID)
+			if errors.Is(err, pgx.ErrNoRows) {
+				// The guard above refused the update: an author owns this lesson now.
+				// Leave it and everything under it exactly as they left it. It still
+				// counts as kept, or the prune below would delete it instead.
+				fmt.Printf("  Lesson %d: %s — правка автора, пропускаю\n", lesson.Order, lesson.Slug)
+				continue
+			}
 			if err != nil {
 				log.Fatalf("upsert lesson %s: %v", lesson.Slug, err)
 			}
 			fmt.Printf("  Lesson %d: %s [%s]\n", lesson.Order, lesson.Title, lDiff)
+
+			// Rebuild this lesson's quiz and tasks. Scoped to the lesson, so a course
+			// an author owns keeps its tasks even while its neighbours are reseeded.
+			for _, stmt := range []string{
+				`DELETE FROM quiz_questions WHERE quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1)`,
+				`DELETE FROM quizzes WHERE lesson_id=$1`,
+				`DELETE FROM tasks WHERE lesson_id=$1`,
+			} {
+				if _, err := pool.Exec(ctx, stmt, lessonID); err != nil {
+					log.Fatalf("clear lesson %s: %v", lesson.Slug, err)
+				}
+			}
 
 			if len(lesson.Quiz) > 0 {
 				var quizID int
@@ -173,14 +188,14 @@ func main() {
 			}
 		}
 		if len(keepLessonSlugs) > 0 {
-			if _, err := pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND source='seed' AND slug <> ALL($2)`, moduleID, keepLessonSlugs); err != nil {
+			if _, err := pool.Exec(ctx, `DELETE FROM lessons WHERE module_id=$1 AND source='seed' AND edited_at IS NULL AND slug <> ALL($2)`, moduleID, keepLessonSlugs); err != nil {
 				log.Fatalf("prune lessons: %v", err)
 			}
 		}
 	}
 	if len(keepModuleSlugs) > 0 {
 		// Only prune seed-managed modules; admin-created courses survive re-seeds.
-		if _, err := pool.Exec(ctx, `DELETE FROM modules WHERE source='seed' AND slug <> ALL($1)`, keepModuleSlugs); err != nil {
+		if _, err := pool.Exec(ctx, `DELETE FROM modules WHERE source='seed' AND edited_at IS NULL AND slug <> ALL($1)`, keepModuleSlugs); err != nil {
 			log.Fatalf("prune modules: %v", err)
 		}
 	}

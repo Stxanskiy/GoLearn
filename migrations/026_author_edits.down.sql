@@ -1,0 +1,2 @@
+ALTER TABLE lessons DROP COLUMN IF EXISTS edited_at;
+ALTER TABLE modules DROP COLUMN IF EXISTS edited_at;

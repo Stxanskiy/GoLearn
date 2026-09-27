@@ -101,7 +101,7 @@ func (r *ModuleRepo) Update(ctx context.Context, m model.Module) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE modules SET slug=$1, title=$2, description=$3, order_num=$4, track=$5, difficulty=$6,
 		   category=$7, label=$8, tags=$9, cover_image=$10, accent=$11, est_minutes=$12, is_trainer=$13,
-		   published=$14 WHERE id=$15`,
+		   published=$14, edited_at=now() WHERE id=$15`,
 		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
 		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published, m.ID)
 	return err

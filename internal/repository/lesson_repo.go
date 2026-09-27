@@ -116,7 +116,9 @@ func (r *LessonRepo) Create(ctx context.Context, l model.Lesson) (int, error) {
 
 func (r *LessonRepo) Update(ctx context.Context, l model.Lesson) error {
 	_, err := r.pool.Exec(ctx,
-		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9, published=$10 WHERE id=$11`,
+		// edited_at is what keeps this change: the seeder runs on every deploy and
+		// skips rows a human has touched.
+		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9, published=$10, edited_at=now() WHERE id=$11`,
 		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published, l.ID)
 	return err
 }
