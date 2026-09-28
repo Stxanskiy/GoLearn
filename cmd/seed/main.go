@@ -269,24 +269,13 @@ func getAllModules() []M {
 	// now. Their content still lives in cmd/seed/mod*.go — registering that list
 	// here again is all it takes to bring them back.
 
-	// ── Section: Кибербезопасность ──
-	security := []M{
-		mod_security_offense(),
-		mod_security_defense(),
-	}
-	for i := range security {
-		security[i].Track = "security"
-	}
-	// Replace the legacy Go-coding tasks with real shell labs (auto-checked in
-	// the sandbox terminal), matching the DevOps courses.
-	applySecurityLabs(security)
-
-	// DevOps + Database sections come fully from the devops404 export.
+	// Every course now comes from data, not from Go: the devops404 export under
+	// cmd/seed/content and the SQL academy files. The three courses that used to
+	// be written out in Go — the terminal practicum and the two security ones —
+	// were removed rather than migrated.
 	var mods []M
-	mods = append(mods, mod_linux_terminal()) // interactive Linux module with auto-checked shell tasks
 	mods = append(mods, importedModules()...)
 	mods = append(mods, sqlAcademyModules()...)
-	mods = append(mods, security...)
 
 	if err := assignOrder(mods); err != nil {
 		log.Fatalf("curriculum order: %v", err)
