@@ -1,0 +1,68 @@
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+# ── base system + all course CLI tools ──
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      systemd systemd-sysv dbus \
+      docker.io docker-compose-v2 \
+      iproute2 iptables kmod \
+      openssh-server \
+      e2fsprogs ca-certificates \
+      curl wget vim nano less jq tree htop tmux git make unzip \
+      iputils-ping dnsutils netcat-openbsd \
+      zsh bash-completion \
+      ansible python3 python3-pip \
+      neovim gcc libc6-dev \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+# ── kubectl ──
+RUN KV=$(curl -fSL --retry 3 https://dl.k8s.io/release/stable.txt) && \
+    curl -fSL --retry 3 "https://dl.k8s.io/release/${KV}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl
+# ── helm ──
+RUN curl -fSL --retry 3 https://get.helm.sh/helm-v3.16.3-linux-amd64.tar.gz | tar xz -C /tmp && \
+    mv /tmp/linux-amd64/helm /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm -rf /tmp/linux-amd64
+# ── k3s ──
+RUN curl -fSL --retry 3 "https://github.com/k3s-io/k3s/releases/download/v1.30.6%2Bk3s1/k3s" -o /usr/local/bin/k3s && \
+    chmod +x /usr/local/bin/k3s
+# ── zsh: plugins + config, make it root's shell ──
+RUN git clone -q --depth=1 https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh-plugins/zsh-autosuggestions && \
+    git clone -q --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting /usr/share/zsh-plugins/zsh-syntax-highlighting && \
+    rm -rf /usr/share/zsh-plugins/*/.git
+COPY rootfs-extra/zshrc /root/.zshrc
+RUN chsh -s /usr/bin/zsh root
+RUN passwd -d root
+# ── neovim: config + plugins baked in, because the VM has no network ──
+# Plugins are cloned and treesitter parsers compiled here, at build time. A
+# student opening a file must not wait on a request that cannot succeed, so
+# lazy.nvim's update checker is off in init.lua and nothing installs at runtime.
+COPY rootfs-extra/nvim /root/.config/nvim
+RUN git clone -q --depth=1 --branch=stable \
+      https://github.com/folke/lazy.nvim /root/.local/share/nvim/lazy/lazy.nvim && \
+    nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 && \
+    nvim --headless "+TSUpdateSync yaml bash dockerfile json lua markdown" +qa 2>&1 | tail -5 && \
+    find /root/.local/share/nvim/lazy -name .git -type d -prune -exec rm -rf {} + && \
+    printf 'export EDITOR=nvim\nalias vim=nvim\nalias vi=nvim\n' >> /root/.zshrc
+
+# ── serial autologin + kill the dev-ttyS0.device boot stall ──
+RUN mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d && \
+    printf '[Service]\nExecStart=\nExecStart=-/sbin/agetty --autologin root --noclear ttyS0 115200 linux\n' \
+      > /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf && \
+    systemctl mask systemd-networkd-wait-online.service systemd-resolved.service 2>/dev/null || true
+# ── sshd: root by key only ──
+RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
+COPY imgseed/authorized_keys /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys && \
+    printf 'PermitRootLogin prohibit-password\nPasswordAuthentication no\nUseDNS no\n' > /etc/ssh/sshd_config.d/golearn.conf && \
+    systemctl enable ssh
+# ── network: static IP from kernel cmdline gl.ip= ──
+COPY rootfs-extra/glnet /usr/local/bin/glnet
+COPY rootfs-extra/glnet.service /etc/systemd/system/glnet.service
+RUN chmod +x /usr/local/bin/glnet && \
+    ln -sf /etc/systemd/system/glnet.service /etc/systemd/system/sysinit.target.wants/glnet.service && \
+    systemctl disable systemd-networkd 2>/dev/null || true
+RUN systemctl enable docker || true
+# ── iptables legacy (kernel raw table works with legacy) ──
+RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+RUN echo "KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> /etc/environment
+RUN echo tot-lab > /etc/hostname
+# ── MOTD ──
+RUN printf '\n  Welcome to your TOT lab environment!\n\n' > /etc/motd

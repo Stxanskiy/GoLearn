@@ -1,0 +1,4 @@
+#!/bin/bash
+ip route | grep -q '^default' || { GW=$(ip -4 addr show eth0 2>/dev/null | awk '/inet /{print $2}' | cut -d/ -f1 | sed 's/\.[0-9]*$/.1/'); [ -n "$GW" ] && ip route add default via "$GW" dev eth0 2>/dev/null; }
+NODEIP=$(ip -4 addr show eth0 2>/dev/null | awk '/inet /{print $2}' | cut -d/ -f1)
+exec /usr/local/bin/k3s server --node-ip "${NODEIP:-127.0.0.1}" --flannel-iface eth0 --disable traefik --disable metrics-server --disable servicelb --write-kubeconfig-mode 600

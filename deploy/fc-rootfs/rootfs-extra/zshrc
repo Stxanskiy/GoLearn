@@ -1,0 +1,39 @@
+# ── TOT lab shell ─────────────────────────────────────────────
+autoload -U colors && colors
+setopt PROMPT_SUBST INTERACTIVE_COMMENTS
+# history
+HISTFILE=~/.zsh_history; HISTSIZE=5000; SAVEHIST=5000
+setopt HIST_IGNORE_DUPS SHARE_HISTORY
+# completion
+autoload -Uz compinit && compinit -u
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+# git branch in prompt
+_gl_git() { local b; b=$(git symbolic-ref --short HEAD 2>/dev/null) || return; echo " %F{magenta}⎇ ${b}%f"; }
+# two-line prompt in TOT cyan; red arrow on error
+PROMPT='%F{cyan}╭─%F{81}%n%F{cyan}@%F{81}%m %F{cyan}in %F{yellow}%~$(_gl_git)
+%F{cyan}╰─%(?.%F{81}.%F{red})❯%f '
+RPROMPT='%F{240}%D{%H:%M:%S}%f'
+# aliases
+alias ll="ls -alF --color=auto"
+alias la="ls -A --color=auto"
+alias l="ls -CF --color=auto"
+alias ls="ls --color=auto"
+alias grep="grep --color=auto"
+alias ..="cd .."
+alias ...="cd ../.."
+alias k="kubectl"
+alias d="docker"
+alias dc="docker compose"
+alias tf="terraform"
+export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=1;32:bd=34;46:cd=34;43"
+export EDITOR=vim
+# plugins (installed offline at build)
+[ -f /usr/share/zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ] && source /usr/share/zsh-plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+[ -f /usr/share/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=240"
+
+# tool completions so Tab completes flags (e.g. kubectl ... --imag<Tab>)
+command -v kubectl >/dev/null && source <(kubectl completion zsh) 2>/dev/null
+command -v helm    >/dev/null && source <(helm completion zsh) 2>/dev/null
+command -v docker  >/dev/null && source <(docker completion zsh 2>/dev/null) 2>/dev/null

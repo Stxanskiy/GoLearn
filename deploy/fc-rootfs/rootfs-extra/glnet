@@ -1,0 +1,5 @@
+#!/bin/sh
+ip link set eth0 up
+IP=$(sed -n 's/.*gl\.ip=\([^ ]*\).*/\1/p' /proc/cmdline)
+[ -n "$IP" ] && ip addr add "$IP" dev eth0
+exit 0

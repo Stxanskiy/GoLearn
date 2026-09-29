@@ -1,0 +1,12 @@
+[Unit]
+Description=GoLearn static net (IP from kernel cmdline gl.ip=)
+DefaultDependencies=no
+After=systemd-udevd.service
+Before=network.target ssh.service
+Wants=network.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/glnet
+[Install]
+WantedBy=sysinit.target
