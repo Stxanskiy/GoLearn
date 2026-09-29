@@ -3,10 +3,13 @@ package repository
 import (
 	"context"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/backendraz/golearn/internal/migrate"
 )
 
 // Billing is the one place where wrong SQL either costs a user money or gives
@@ -29,17 +32,36 @@ func billingPool(t *testing.T) *pgxpool.Pool {
 		t.Skipf("database unreachable: %v", err)
 	}
 	t.Cleanup(pool.Close)
+	// Bring the schema up with the same migrator the server uses, so an empty
+	// database (CI) works and a broken migration fails here rather than in prod.
+	// On an already migrated database this is a no-op.
+	schemaOnce.Do(func() {
+		_, schemaErr = migrate.Up(context.Background(), pool, "../../migrations")
+	})
+	if schemaErr != nil {
+		t.Fatalf("migrate: %v", schemaErr)
+	}
 	return pool
 }
 
+var (
+	schemaOnce sync.Once
+	schemaErr  error
+)
+
 func testUser(t *testing.T, pool *pgxpool.Pool) int {
+	t.Helper()
+	return testUserWithRole(t, pool, RoleStudent)
+}
+
+func testUserWithRole(t *testing.T, pool *pgxpool.Pool, role string) int {
 	t.Helper()
 	ctx := context.Background()
 	var id int
 	email := "billing-test-" + time.Now().Format("150405.000000000") + "@example.test"
 	err := pool.QueryRow(ctx,
-		`INSERT INTO users (email, password_hash, name, role) VALUES ($1, 'x', 'billing test', 'student') RETURNING id`,
-		email).Scan(&id)
+		`INSERT INTO users (email, password_hash, name, role) VALUES ($1, 'x', 'billing test', $2) RETURNING id`,
+		email, role).Scan(&id)
 	if err != nil {
 		t.Fatalf("create user: %v", err)
 	}

@@ -1,0 +1,64 @@
+name: ci
+
+# Build, vet and test on every branch and pull request. deploy.yml only runs on
+# main and runs no tests, so until this existed a change reached production
+# without `go test` ever running outside someone's laptop.
+#
+# GitHub-hosted on purpose: the self-hosted "berg" runner is the production
+# box, and a test run has no business competing with the site for it.
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: golearn
+          POSTGRES_PASSWORD: golearn
+          POSTGRES_DB: golearn_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U golearn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # The repository tests apply migrations/ to this empty database themselves.
+      TEST_DATABASE_URL: postgres://golearn:golearn@localhost:5432/golearn_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -count=1 ./...
+
+      # The database tests skip when they cannot reach a database, which would
+      # keep this job green while checking nothing. Here a skip is a failure.
+      - name: Database tests actually ran
+        run: |
+          set -o pipefail
+          out=$(go test -count=1 -v ./internal/repository/)
+          if grep -- '--- SKIP' <<<"$out"; then
+            echo "::error::database tests were skipped - TEST_DATABASE_URL is not reachable"
+            exit 1
+          fi

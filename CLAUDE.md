@@ -2,11 +2,16 @@
 
 ## What This Is
 An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm, SQL — theory,
-quizzes and hands-on labs in a real terminal. Deployed at `tot.prod-factory.ru`
+quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
 (see `deploy/berg/README.md`).
 
-The Go courses were removed (migration `013`); their content still lives in
-`cmd/seed/mod*.go` but is no longer registered in `getAllModules()`.
+Course content is JSON in `cmd/seed/content/`, compiled into the seeder with
+`go:embed` and imported by `cmd/seed/import.go`. No course is written in Go any
+more — the Go courses and the last `mod*.go` files are gone.
+
+The database is the source of truth for anything edited in the studio: a lesson
+or module with `edited_at` set (migration `026`) is never overwritten or pruned
+by the seeder, so a deploy does not undo an author's changes.
 
 ## Stack
 - **Backend:** Go 1.22+, chi router, pgx (PostgreSQL)
@@ -37,7 +42,9 @@ go run ./cmd/seed
 
 # 5. Start server (also applies migrations, creates the first admin)
 go run ./cmd/server
-# Open http://localhost:8080 — login: ADMIN_EMAIL / ADMIN_PASSWORD from .env
+# JSON API on http://localhost:8080 (PORT): /api/v1, Swagger UI at /docs,
+# /healthz, /readyz, Prometheus metrics at /metrics. There are no pages here —
+# the UI is frontend-tot; log in there with ADMIN_EMAIL / ADMIN_PASSWORD from .env
 ```
 
 Uploaded images (course and specialization icons, covers, lesson pictures) go to the
@@ -48,7 +55,19 @@ inline data URIs. The bucket is prepared on the first upload, so storage that st
 the server needs no restart.
 
 Migrations run automatically on startup (`internal/migrate`, tracked in the
-`schema_migrations` table) — no manual psql step.
+`schema_migrations` table) — no manual psql step. A migration is identified by
+its full file name, so never rename one that has shipped; `025` exists twice
+(`025_billing`, `025_trainer_flag`) for that reason — the next one is `027`.
+
+## Tests
+```bash
+go test ./...
+```
+The repository tests run against a real database: set `TEST_DATABASE_URL` (or
+`DATABASE_URL`) and they apply `migrations/` themselves; without one they skip.
+CI (`.github/workflows/ci.yml`) runs them on every branch and PR against a
+`postgres:16` service and fails if any of them skipped. `deploy.yml` runs only
+on `main` and runs no tests.
 
 ## Lab sandboxes
 Two interchangeable backends behind `runner.Engine`, picked by `runner.Dispatcher`:
@@ -92,7 +111,7 @@ Verify them with the regression harness:
 ## Project Structure
 ```
 cmd/server/     — HTTP server entry point
-cmd/seed/       — Database seeder with all course content
+cmd/seed/       — Seeder: embedded JSON course content (content/), importer, lab fixtures
 api/            — OpenAPI contract for the JSON API (openapi.yaml)
 internal/
   api/          — JSON API /api/v1 for the Next.js frontend; after editing the spec run `go generate ./internal/api/apigen`
@@ -101,13 +120,21 @@ internal/
   model/        — Data models
   repository/   — PostgreSQL queries
   apidocs/      — serves api/openapi.yaml and a Swagger UI for it at /docs
+  catalog/      — course taxonomy, progress status rules, cover rendering
+  content/      — renders stored lesson/task content (HTML or Markdown) into safe HTML
+  courseio/     — native course interchange format (import/export)
+  lab/          — lab rules: session keys, path jail, preview, git helpers
+  migrate/      — applies migrations/ once each, tracked in schema_migrations
+  obs/          — Prometheus metrics (/metrics), request ids, structured request log
+  runner/       — lab sandboxes: VMRunner (Firecracker) and ShellRunner (containers)
   simulators/   — built-in simulator scenarios and their one-time seeding
+  storage/      — uploaded images in S3-compatible storage
 migrations/     — SQL migrations
 ```
 
 ## Learning Context
-- Student builds WatchTogether through lesson tasks
-- Each lesson has: theory (HTML content), quiz (multiple choice), practical tasks
+- Each lesson has: theory (HTML or Markdown), quiz (multiple choice), practical tasks
+  (auto-checked labs in a sandbox)
 - Progress is tracked in the database
 - Brain/memory for this project: ~/.claude/projects/-Users-backendraz-GolandProjects-GoLearn/memory/
 

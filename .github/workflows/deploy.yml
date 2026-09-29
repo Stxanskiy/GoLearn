@@ -115,7 +115,11 @@ jobs:
           # Prove the import actually landed. imagePullPolicy is IfNotPresent and
           # there is no registry, so a missing tag means every future pod lands in
           # ImagePullBackOff — and the running pod hides it until it restarts.
-          if ! sudo k3s ctr images ls -q | grep -qx "docker.io/library/golearn:$SHA"; then
+          # Capture the list before searching it: `grep -q` exits on the first
+          # match, `ctr` then dies of SIGPIPE, and pipefail turns a found image
+          # into "not in containerd" (run 117).
+          refs=$(sudo k3s ctr images ls -q)
+          if ! grep -qx "docker.io/library/golearn:$SHA" <<<"$refs"; then
             echo "!! golearn:$SHA is not in containerd - refusing to point git at it"
             exit 1
           fi
@@ -171,7 +175,8 @@ jobs:
                     | sort -r | head -5 | cut -d'|' -f2)" "$CURRENT" local)
           for ref in $(sudo k3s ctr images ls -q 2>/dev/null \
                        | grep '^docker.io/library/golearn:'); do
-            printf '%s\n' "$KEEP" | grep -qx "${ref##*:}" \
+            # Same SIGPIPE trap as above, and here a false miss deletes a kept image.
+            grep -qx "${ref##*:}" <<<"$KEEP" \
               || sudo k3s ctr images rm "$ref" >/dev/null || true
           done
 

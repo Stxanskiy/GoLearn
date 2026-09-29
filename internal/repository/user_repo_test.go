@@ -79,6 +79,10 @@ func TestSetAccessChangesRoleAndBlock(t *testing.T) {
 	ctx := context.Background()
 	repo := NewUserRepo(pool)
 	userID := testUser(t, pool)
+	// SetAccess refuses any change that leaves no active admin, so this test
+	// brings its own rather than leaning on the one a dev database happens to
+	// have — an empty CI database has none.
+	testUserWithRole(t, pool, RoleAdmin)
 
 	if err := repo.SetAccess(ctx, userID, RoleAuthor, false); err != nil {
 		t.Fatalf("promote to author: %v", err)
