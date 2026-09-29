@@ -24,6 +24,7 @@ type fakeSandbox struct {
 		body   []byte
 		ct     string
 		status int
+		path   string // what the handler asked upstream for, recorded by Preview
 	}
 	execs, resets, touches, ensures []string
 	pty                             *fakePTY
@@ -81,7 +82,8 @@ func (f *fakeSandbox) Check(context.Context, int, string, string, string, string
 	return f.checkPass, "check output", f.checkErr
 }
 
-func (f *fakeSandbox) Preview(context.Context, int, string, string, string, int, string) ([]byte, string, int, error) {
+func (f *fakeSandbox) Preview(_ context.Context, _ int, _, _, _ string, _ int, path string) ([]byte, string, int, error) {
+	f.preview.path = path
 	if f.preview.body == nil {
 		return nil, "", 0, errors.New("preview: no-server")
 	}

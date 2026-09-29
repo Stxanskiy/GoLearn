@@ -230,6 +230,18 @@ func TestLabPreviewAndGitGraph(t *testing.T) {
 		t.Errorf("bad port: %d", w.Code)
 	}
 
+	// Next strips the trailing slash from ".../preview/8080/" with a 308 before
+	// the request reaches us, so the form the browser actually sends is the
+	// slash-less one. It has to proxy "/" exactly like the slashed form does.
+	sb.preview.body, sb.preview.ct, sb.preview.status = []byte("<html><head></head>root"), "text/html", 200
+	w = get("/lessons/102/lab/preview/8080")
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "root") {
+		t.Errorf("preview without a trailing slash: %d %s", w.Code, w.Body)
+	}
+	if got := sb.preview.path; got != "/" {
+		t.Errorf("slash-less preview asked upstream for %q, want \"/\"", got)
+	}
+
 	// The preview is the one response meant to be shown inside an iframe, and the
 	// service-wide "frame-ancestors 'none'" silently made it unviewable once —
 	// the browser refused the frame and the student saw a connection error rather

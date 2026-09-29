@@ -290,6 +290,12 @@ func (a *API) Routes() chi.Router {
 		r.Get("/lessons/{lessonId}/lab/fs/entries", a.listLabFiles)
 		r.Get("/lessons/{lessonId}/lab/fs/content", a.readLabFile)
 		r.Put("/lessons/{lessonId}/lab/fs/content", a.writeLabFile)
+		// Both spellings, because the frontend asks for ".../preview/80/" and Next
+		// normalises the trailing slash away with a 308 before proxying to us. The
+		// wildcard route does not match what arrives, so the preview answered 404
+		// — and a 404 carries the API-wide "frame-ancestors 'none'", which the
+		// browser reports as "refused to connect" inside the iframe.
+		r.Get("/lessons/{lessonId}/lab/preview/{port}", a.previewLab)
 		r.Get("/lessons/{lessonId}/lab/preview/{port}/*", a.previewLab)
 		r.Post("/tasks/{taskId}/check", a.checkTask)
 		r.Post("/tasks/{taskId}/done", a.markTaskDone)

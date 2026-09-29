@@ -766,6 +766,29 @@ paths:
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+  /lessons/{lessonId}/lab/preview/{port}:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+      - name: port
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1, maximum: 65535 }
+    get:
+      tags: [labs]
+      summary: Preview lab http root
+      operationId: previewLabHttpRoot
+      description: |
+        Same as the path form with an empty path — it proxies `/`. It exists because a
+        proxy in front of this service may strip the trailing slash from `.../preview/{port}/`.
+      responses:
+        '200':
+          description: Upstream response (status and Content-Type mirrored).
+          content:
+            '*/*': { schema: { type: string, format: binary } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
   /lessons/{lessonId}/lab/preview/{port}/{path}:
     parameters:
       - $ref: '#/components/parameters/LessonId'
