@@ -230,6 +230,21 @@ func TestLabPreviewAndGitGraph(t *testing.T) {
 		t.Errorf("bad port: %d", w.Code)
 	}
 
+	// The preview is the one response meant to be shown inside an iframe, and the
+	// service-wide "frame-ancestors 'none'" silently made it unviewable once —
+	// the browser refused the frame and the student saw a connection error rather
+	// than their own page. Every preview response, the placeholder included, has
+	// to carry a policy that permits framing by us.
+	for _, path := range []string{
+		"/lessons/102/lab/preview/8080/index.html", // no session: placeholder
+		"/lessons/102/lab/preview/8080/app/",       // proxied page
+	} {
+		csp := get(path).Header().Get("Content-Security-Policy")
+		if !strings.Contains(csp, "frame-ancestors 'self'") {
+			t.Errorf("%s: preview is unframeable, CSP is %q", path, csp)
+		}
+	}
+
 	delete(sb.sessions, sid(1, "l102"))
 	if g := decode[apigen.GitGraph](t, get("/lessons/102/lab/git-graph")); len(g.Commits) != 0 || len(sb.execs) != 0 {
 		t.Errorf("graph without session = %+v execs=%v", g, sb.execs)

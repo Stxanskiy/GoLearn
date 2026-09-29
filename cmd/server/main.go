@@ -253,7 +253,10 @@ func sweepSubscriptions(repo *repository.BillingRepo, log *slog.Logger) {
 func securityHeaders(next http.Handler) http.Handler {
 	// A JSON API needs to load nothing at all. The permissive policy this
 	// replaces existed for the server-rendered pages, which are gone; /docs
-	// sets its own, narrower exception for the viewer it loads.
+	// sets its own, narrower exception for the viewer it loads, and the lab
+	// preview sets one too — it is the single response meant to be framed, and
+	// frame-ancestors here silently made it unviewable. Tightening this policy
+	// means checking those two handlers still override what they need.
 	const csp = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()

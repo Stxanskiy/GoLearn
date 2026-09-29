@@ -54,7 +54,25 @@ func TestExecVMOutputAndExitCode(t *testing.T) {
 	}
 }
 
+// requireGNU guards the tests whose scripts lean on GNU-only behaviour: base64
+// taking a file as a positional argument, and find's -printf. The guest is
+// Linux, so that is a fair assumption there; macOS ships the BSD versions,
+// where base64 reads a file only via -i and find has no -printf at all. Failing
+// on a Mac would say nothing about the code, and two permanently red tests
+// teach everyone to ignore the suite — so skip here instead. Both are exercised
+// on Linux, where they pass.
+func requireGNU(t *testing.T) {
+	t.Helper()
+	if err := exec.Command("base64", os.DevNull).Run(); err != nil {
+		t.Skip("base64 takes no file argument here (BSD, not GNU); these scripts target the Linux guest")
+	}
+	if err := exec.Command("find", os.TempDir(), "-maxdepth", "0", "-printf", "").Run(); err != nil {
+		t.Skip("find has no -printf here (BSD, not GNU); these scripts target the Linux guest")
+	}
+}
+
 func TestFileRoundTripBeyondArgLimits(t *testing.T) {
+	requireGNU(t)
 	v := transportRunner(t)
 	ctx := context.Background()
 	file := filepath.Join(t.TempDir(), "nested dir", "big.bin")
@@ -92,6 +110,7 @@ func TestFileRoundTripBeyondArgLimits(t *testing.T) {
 }
 
 func TestPreviewLargeBody(t *testing.T) {
+	requireGNU(t)
 	v := transportRunner(t)
 	body := strings.Repeat("<p>preview</p>", 20000) // ~280 KiB, above the display output cap
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

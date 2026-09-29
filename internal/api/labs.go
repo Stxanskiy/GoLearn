@@ -391,7 +391,32 @@ func (a *API) previewLab(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx := r.Context()
 	uid := userFrom(ctx).ID
+
+	// The service-wide policy is "default-src 'none'; frame-ancestors 'none'",
+	// which is right for a JSON API and fatal here: this is the one endpoint that
+	// returns a page meant to be framed, and frame-ancestors wins over
+	// X-Frame-Options, so the browser refused to show the preview at all. The
+	// same policy also blocked the page's own assets and the <base href> injected
+	// below.
+	//
+	// Relaxing it is safe because the isolation is the iframe, not the header: the
+	// frontend mounts it with sandbox="allow-scripts allow-forms" and no
+	// allow-same-origin, so the student's page runs in an opaque origin and cannot
+	// reach our cookies. Framing stays restricted to us.
+	//
+	// The pane also offers "open in a new tab", and there the sandbox is gone: the
+	// student's own HTML then runs on our origin. That is deliberate — it is the
+	// only way their JavaScript works in the standalone view, which is the point
+	// of the feature — and it grants nothing, because the session cookie is
+	// HttpOnly and the preview always resolves to the VM of whoever is asking. A
+	// student cannot serve their page to anyone else, so the worst case is running
+	// their own code against their own account.
+	previewCSP := func() {
+		w.Header().Set("Content-Security-Policy", "default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self'")
+		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+	}
 	placeholder := func(err error) {
+		previewCSP()
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte(lab.PreviewErrorPage(port, err)))
 	}
@@ -417,8 +442,8 @@ func (a *API) previewLab(w http.ResponseWriter, r *http.Request) {
 	if status == 0 {
 		status = http.StatusOK
 	}
+	previewCSP()
 	w.Header().Set("Content-Type", ct)
-	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 	w.WriteHeader(status)
 	_, _ = w.Write(body)
 }
