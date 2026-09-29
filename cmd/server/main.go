@@ -187,6 +187,12 @@ func main() {
 	docs := apidocs.New(os.Getenv("OPENAPI_SPEC"))
 	r.Get("/openapi.yaml", docs.Spec)
 	r.Get("/docs", docs.UI)
+	// The same pair under /api/v1: the public site (tot.prod-factory.ru) proxies
+	// only that prefix to this service, so this is the address that reaches it
+	// there. Registered here rather than in the API router, because the viewer is
+	// not an operation of the contract it displays.
+	r.Get("/api/v1/openapi.yaml", docs.Spec)
+	r.Get("/api/v1/docs", docs.UI)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

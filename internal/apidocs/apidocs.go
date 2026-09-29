@@ -67,7 +67,9 @@ const page = `<!doctype html>
 <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
 <script>
 SwaggerUIBundle({
-  url: "/openapi.yaml",
+  // Relative, so /docs loads /openapi.yaml and /api/v1/docs loads
+  // /api/v1/openapi.yaml — whichever prefix the proxy in front passes through.
+  url: "openapi.yaml",
   dom_id: "#ui",
   deepLinking: true,
   // The API authenticates with a session cookie, so "Try it out" only works
