@@ -2,8 +2,10 @@
 
 ## What This Is
 An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm, SQL — theory,
-quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
-(see `deploy/berg/README.md`).
+quizzes and hands-on labs in a real terminal. The public site is
+`https://tot.prod-factory.ru` (frontend-tot, which proxies `/api/v1` to this
+service); the backend itself is deployed as described in `deploy/berg/README.md`.
+Live API docs: `https://tot.prod-factory.ru/api/v1/docs`.
 
 Course content is JSON in `cmd/seed/content/`, compiled into the seeder with
 `go:embed` and imported by `cmd/seed/import.go`. No course is written in Go any
@@ -42,7 +44,7 @@ go run ./cmd/seed
 
 # 5. Start server (also applies migrations, creates the first admin)
 go run ./cmd/server
-# JSON API on http://localhost:8080 (PORT): /api/v1, Swagger UI at /docs,
+# JSON API on http://localhost:8080 (PORT): /api/v1, Swagger UI at /docs and /api/v1/docs,
 # /healthz, /readyz, Prometheus metrics at /metrics. There are no pages here —
 # the UI is frontend-tot; log in there with ADMIN_EMAIL / ADMIN_PASSWORD from .env
 ```
@@ -68,6 +70,16 @@ The repository tests run against a real database: set `TEST_DATABASE_URL` (or
 CI (`.github/workflows/ci.yml`) runs them on every branch and PR against a
 `postgres:16` service and fails if any of them skipped. `deploy.yml` runs only
 on `main` and runs no tests.
+
+To check a running deployment against the contract (GET only, safe on prod):
+```bash
+go run ./scripts/apicheck                                 # https://tot.prod-factory.ru
+go run ./scripts/apicheck -base http://localhost:8080
+GOLEARN_SESSION=<session cookie> go run ./scripts/apicheck  # also signed-in GETs
+```
+It fails when the site serves a different `openapi.yaml` than the checkout (stale
+deploy), when `/api/v1` answers with frontend HTML instead of the API, or when an
+operation answers a status the spec does not list.
 
 ## Lab sandboxes
 Two interchangeable backends behind `runner.Engine`, picked by `runner.Dispatcher`:
