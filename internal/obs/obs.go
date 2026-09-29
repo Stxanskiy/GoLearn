@@ -55,6 +55,15 @@ func Gauge(name, help string, fn func() float64) {
 		prometheus.GaugeOpts{Name: name, Help: help}, fn))
 }
 
+// Counter registers a labelled counter and hands back a function that bumps it,
+// so callers can record an event without importing Prometheus themselves. Keep
+// the label values to a small fixed set — one series is minted per combination.
+func Counter(name, help string, labels ...string) func(...string) {
+	c := prometheus.NewCounterVec(prometheus.CounterOpts{Name: name, Help: help}, labels)
+	Registry.MustRegister(c)
+	return func(values ...string) { c.WithLabelValues(values...).Inc() }
+}
+
 // Handler serves the metrics in Prometheus text format.
 func Handler() http.Handler {
 	return promhttp.HandlerFor(Registry, promhttp.HandlerOpts{Registry: Registry})

@@ -26,6 +26,10 @@ import (
 
 func main() {
 	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	// Packages that have no logger of their own (the VM runner records why a boot
+	// failed) write through the default one; without this they would go to stderr
+	// in a different format.
+	slog.SetDefault(log)
 
 	_ = godotenv.Load() // load .env if exists
 

@@ -13,7 +13,11 @@ import (
 	"sync"
 	"time"
 
+	"log/slog"
+
 	"golang.org/x/crypto/ssh"
+
+	"github.com/backendraz/golearn/internal/obs"
 )
 
 // VMRunner runs student labs inside per-(user,lesson) Firecracker micro-VMs on a
@@ -55,11 +59,32 @@ type VMRunner struct {
 	maxVMs  int
 
 	mu       sync.Mutex
-	sessions map[string]*vmSession   // sid -> session
-	freeSlot []bool                  // slot in use?
-	pool     map[string][]*vmSession // profile -> pre-booted warm VMs
-	warmWant map[string]int          // profile -> desired warm count (0 = disabled)
-	refill   chan struct{}           // nudge the pool manager to top up
+	sessions map[string]*vmSession // sid -> session
+	booting  map[string]*vmBoot    // sid -> boot in flight (see EnsureSession)
+	// bringUpHook stands in for bringUp so the coordination in EnsureSession can
+	// be tested without a Firecracker host. nil everywhere but in tests.
+	bringUpHook func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error)
+	freeSlot    []bool                  // slot in use?
+	pool        map[string][]*vmSession // profile -> pre-booted warm VMs
+	warmWant    map[string]int          // profile -> desired warm count (0 = disabled)
+	refill      chan struct{}           // nudge the pool manager to top up
+}
+
+// vmStartFailed counts bring-ups that did not produce a usable VM. Until this
+// existed, "иногда не запускается" could not be answered at all: there was no
+// number for how often, and no reason attached to the ones that did fail.
+var vmStartFailed = obs.Counter(
+	"golearn_vm_start_failures_total",
+	"Micro-VM bring-ups that failed, by reason.",
+	"reason")
+
+// vmBoot is one in-flight bring-up, shared by everyone who asks for the same
+// session while it is still coming up.
+type vmBoot struct {
+	done   chan struct{}
+	cancel context.CancelFunc // stops a boot the same user has superseded
+	ip     string
+	err    error
 }
 
 type vmSession struct {
@@ -137,6 +162,7 @@ func NewVMRunner() *VMRunner {
 	v.keyFile = f.Name()
 	v.freeSlot = make([]bool, v.maxVMs)
 	v.sessions = make(map[string]*vmSession)
+	v.booting = make(map[string]*vmBoot)
 	v.pool = map[string][]*vmSession{}
 	v.warmWant = map[string]int{
 		"lite":   atoiDefault(shellEnv("FC_WARM_LITE", "0"), 0),
@@ -319,25 +345,73 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 	}
 	sid := vmSID(userID, key)
 
-	v.mu.Lock()
-	if s := v.sessions[sid]; s != nil {
-		ip := s.ip
-		s.last = time.Now()
-		v.mu.Unlock()
-		// Confirm it is still reachable; if not, fall through and rebuild.
-		if v.alive(ctx, ip) {
-			return ip, nil
+	for {
+		v.mu.Lock()
+		// Someone is already bringing this session up — wait for them.
+		//
+		// Without this, a second request during the 15-25s a VM takes to boot found
+		// the session, asked alive(), got false because sshd was not up yet, and
+		// tore the VM down — deleting the work dir out from under the boot script
+		// that was still running. Both requests then failed with "No such file or
+		// directory", and the student saw "не удалось запустить". Opening the
+		// terminal and pressing "Проверить" was enough to trigger it.
+		if b := v.booting[sid]; b != nil {
+			v.mu.Unlock()
+			select {
+			case <-b.done:
+			case <-ctx.Done():
+				return "", ctx.Err()
+			}
+			return b.ip, b.err
 		}
-		v.teardown(sid)
-	} else {
+		if s := v.sessions[sid]; s != nil {
+			ip := s.ip
+			s.last = time.Now()
+			v.mu.Unlock()
+			// Confirm it is still reachable; if not, drop it and look again — by then
+			// another request may have started a boot we should wait for.
+			if v.alive(ctx, ip) {
+				return ip, nil
+			}
+			v.teardown(sid)
+			continue
+		}
+		bootCtx, cancel := context.WithCancel(ctx)
+		b := &vmBoot{done: make(chan struct{}), cancel: cancel}
+		v.booting[sid] = b
 		v.mu.Unlock()
-	}
 
+		up := v.bringUpHook
+		if up == nil {
+			up = v.bringUp
+		}
+		b.ip, b.err = up(bootCtx, sid, userID, key, image, setup)
+		cancel()
+		close(b.done)
+		v.mu.Lock()
+		delete(v.booting, sid)
+		v.mu.Unlock()
+		return b.ip, b.err
+	}
+}
+
+// bringUp creates the session: it frees whatever else the user holds, takes a
+// warm VM if one matches, and otherwise boots a fresh one. Only ever called with
+// this sid claimed in v.booting, so it cannot race another bring-up of its own.
+func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
 	profile := profileOf(image)
 	// One-at-a-time: drop any other VM this user holds, then try the warm pool.
 	v.mu.Lock()
 	for other, s := range v.sessions {
 		if s.userID == userID && other != sid {
+			// If that session is still booting, stop it first. Tearing it down while
+			// its boot script runs is the same race this file guards against above —
+			// only across two lessons instead of two requests for one. Cancelling
+			// rather than waiting is deliberate: two bring-ups waiting on each other
+			// would deadlock.
+			if b := v.booting[other]; b != nil && b.cancel != nil {
+				b.cancel()
+			}
 			v.teardownLocked(other)
 		}
 	}
@@ -358,6 +432,7 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 	slot := v.allocSlot()
 	if slot < 0 {
 		v.mu.Unlock()
+		vmStartFailed("slots")
 		return "", fmt.Errorf("все VM-слоты заняты (лимит %d) — попробуй чуть позже", v.maxVMs)
 	}
 	sess := &vmSession{sid: sid, userID: userID, key: key, image: image, slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
@@ -488,17 +563,32 @@ echo "GLVMOK %[13]s"
 
 	out, _, err := v.runHost(ctx, script)
 	if err != nil {
-		return fmt.Errorf("VM host error: %w", err)
+		vmStartFailed("host")
+		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "err", err)
+		return errStudentBoot
 	}
 	if !strings.Contains(out, "GLVMOK") {
 		msg := strings.TrimSpace(out)
-		if strings.Contains(msg, "boot-timeout") {
-			return fmt.Errorf("VM не поднялась вовремя — попробуй открыть лабораторную заново")
+		switch {
+		case strings.Contains(msg, "boot-timeout"):
+			vmStartFailed("boot-timeout")
+		case strings.Contains(msg, "GLVMERR setup"):
+			vmStartFailed("setup")
+		default:
+			vmStartFailed("boot")
 		}
-		return fmt.Errorf("VM start failed: %s", msg)
+		// Kept out of the student's error on purpose: this is host paths and shell
+		// output. It used to be shown verbatim, which is how "/opt/fc/sessions/…"
+		// ended up on screen.
+		slog.Error("VM boot failed", "sid", s.sid, "slot", s.slot, "profile", s.profile, "detail", tail(msg))
+		return errStudentBoot
 	}
 	return nil
 }
+
+// errStudentBoot is the one message a failed boot shows; the reason is logged and
+// counted in golearn_vm_start_failures_total.
+var errStudentBoot = errors.New("песочница не запустилась — попробуй открыть лабораторную заново")
 
 // alive reports whether the VM at ip answers SSH.
 func (v *VMRunner) alive(ctx context.Context, ip string) bool {
@@ -824,12 +914,32 @@ func (v *VMRunner) applySetup(ctx context.Context, s *vmSession, setup string) e
 		v.dir, v.vmkey, s.ip, b64)
 	out, _, err := v.runHost(ctx, script)
 	if err != nil {
-		return fmt.Errorf("setup error: %w", err)
+		vmStartFailed("setup-host")
+		slog.Error("lab setup: host error", "sid", s.sid, "err", err)
+		return errStudentSetup
 	}
 	if !strings.Contains(out, "GLVMOK") {
-		return fmt.Errorf("setup failed")
+		// The script already collected the last lines of the failure; throwing them
+		// away here is why "setup failed" used to be the whole story.
+		vmStartFailed("setup")
+		slog.Error("lab setup failed", "sid", s.sid, "image", s.image, "detail", tail(out))
+		return errStudentSetup
 	}
 	return nil
+}
+
+// errStudentSetup is what the student sees. The reason goes to the log instead:
+// the raw text is host paths and shell errors, which mean nothing to them and
+// disclose the layout of the FC host.
+var errStudentSetup = errors.New("не удалось подготовить окружение урока — открой лабораторную заново")
+
+// tail keeps a failure line short enough to log without dumping a whole script.
+func tail(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) > 400 {
+		s = s[len(s)-400:]
+	}
+	return s
 }
 
 // bootWarm boots one warm VM of the profile and adds it to the pool (synchronous).
