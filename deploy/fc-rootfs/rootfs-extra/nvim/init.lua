@@ -130,6 +130,9 @@ require("lazy").setup({
   -- Offline guarantees: never check for updates, never report them.
   checker = { enabled = false },
   change_detection = { enabled = false, notify = false },
-  install = { missing = false },
+  -- install.missing НЕ выключаем: этот же флаг блокирует установку во время
+  -- сборки образа, и первая попытка оставила один lazy.nvim без единого плагина.
+  -- После успешной сборки недостающих плагинов не остаётся, а проверку
+  -- обновлений выключает checker выше — в офлайн-VM никто никуда не ходит.
   ui = { border = "rounded" },
 })

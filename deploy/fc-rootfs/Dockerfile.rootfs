@@ -39,6 +39,10 @@ RUN git clone -q --depth=1 --branch=stable \
       https://github.com/folke/lazy.nvim /root/.local/share/nvim/lazy/lazy.nvim && \
     nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 && \
     nvim --headless "+TSUpdateSync yaml bash dockerfile json lua markdown" +qa 2>&1 | tail -5 && \
+    # Тихая сборка уже один раз оставила один lazy.nvim без плагинов: без этой
+    # проверки сломанный образ выглядел бы как успешный.
+    test "$(ls /root/.local/share/nvim/lazy | wc -l)" -ge 7 && \
+    test -n "$(ls /root/.local/share/nvim/lazy/nvim-treesitter/parser 2>/dev/null)" && \
     find /root/.local/share/nvim/lazy -name .git -type d -prune -exec rm -rf {} + && \
     printf 'export EDITOR=nvim\nalias vim=nvim\nalias vi=nvim\n' >> /root/.zshrc
 
