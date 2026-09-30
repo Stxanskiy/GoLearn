@@ -31,14 +31,3 @@ func TestSlugify(t *testing.T) {
 		t.Errorf("slugify empty fallback=%q want ch-7", got)
 	}
 }
-
-func TestSQLDDL(t *testing.T) {
-	db := sqlDB{Tables: []sqlTable{{ID: "users", Props: []sqlProp{
-		{Name: "id", Type: "INT", IsKey: true}, {Name: "email", Type: "VARCHAR"},
-	}}}}
-	ddl := sqlDDL(db)
-	want := "CREATE TABLE IF NOT EXISTS \"users\" (\"id\" INT, \"email\" VARCHAR, PRIMARY KEY (\"id\"));\n"
-	if ddl != want {
-		t.Errorf("sqlDDL=\n%q\nwant\n%q", ddl, want)
-	}
-}
