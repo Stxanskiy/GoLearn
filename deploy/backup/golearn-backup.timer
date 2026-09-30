@@ -1,0 +1,13 @@
+[Unit]
+Description=Nightly GoLearn database backup
+
+[Timer]
+# 04:20 local, a quiet hour; RandomizedDelaySec keeps it off the exact minute.
+OnCalendar=*-*-* 04:20:00
+RandomizedDelaySec=10m
+# If the machine was off at 04:20, back up as soon as it is on again — the whole
+# point is not to skip a day silently.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=GoLearn database backup
+# The dump goes through k3s, so there is nothing to do before the cluster is up.
+After=k3s.service
+Wants=k3s.service
+
+[Service]
+Type=oneshot
+User=berg
+ExecStart=/usr/local/bin/golearn-backup.sh
+# A failed backup must be visible in `systemctl list-timers` / journal rather
+# than scrolling past: the script already exits non-zero with a reason.
+StandardOutput=journal
+StandardError=journal
