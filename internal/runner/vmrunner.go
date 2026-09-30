@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"log/slog"
@@ -32,7 +33,7 @@ import (
 //	<kernel>                           guest kernel (docker-ready, boots with acpi=off)
 //	<rootfs>                           golden read-only ext4 (systemd+root+sshd+dockerd)
 //	vmkey                              private key the backend uses to SSH into a VM
-//	sessions/<sid>/{boot.ext4,fc.json,fc.pid,fc.log}
+//	sessions/<sid>-<attempt>/{boot.ext4,fc.json,fc.pid,fc.log}
 //
 // Networking: each VM gets a private /30 point-to-point link — host 172.31.<slot>.1,
 // VM 172.31.<slot>.2 — on its own tap device (no bridge → VMs can't see each other;
@@ -77,6 +78,13 @@ var vmStartFailed = obs.Counter(
 	"golearn_vm_start_failures_total",
 	"Micro-VM bring-ups that failed, by reason.",
 	"reason")
+
+// bootGen numbers boot attempts so each gets its own work directory. killVM
+// deletes asynchronously, so without this a teardown scheduled by a failed
+// attempt lands on top of the directory the *next* attempt has just created:
+// "cp: cannot create '/opt/fc/sessions/warm-docker-0/boot.ext4'". The warm pool
+// retries every 400ms, so it span on that for nine attempts before one survived.
+var bootGen atomic.Uint64
 
 // vmBoot is one in-flight bring-up, shared by everyone who asks for the same
 // session while it is still coming up.
@@ -464,7 +472,7 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	hostIP := vmHostIP(s.slot)
 	vmip := s.ip
 	mac := vmMAC(s.slot)
-	work := fmt.Sprintf("%s/sessions/%s", v.dir, s.sid)
+	work := fmt.Sprintf("%s/sessions/%s-%d", v.dir, s.sid, bootGen.Add(1))
 	s.work, s.tap, s.profile = work, tap, profileOf(s.image)
 
 	// Kubernetes lessons get the k3s golden and a bigger VM; everything else uses
@@ -857,15 +865,18 @@ func (v *VMRunner) killVM(s *vmSession) {
 	if tap == "" {
 		tap = vmTap(s.slot)
 	}
-	work := s.work
-	if work == "" {
-		work = fmt.Sprintf("%s/sessions/%s", v.dir, s.sid)
+	// Each boot attempt gets its own directory (see bootGen), so there is nothing
+	// to guess: an empty work means the attempt never created one. Deriving a path
+	// from the sid here would delete a directory belonging to a *later* attempt.
+	rmWork := ""
+	if s.work != "" {
+		rmWork = "rm -rf " + s.work
 	}
 	script := fmt.Sprintf(`
-[ -f %[1]s/fc.pid ] && kill "$(cat %[1]s/fc.pid)" 2>/dev/null || true
+[ -n "%[1]s" ] && [ -f %[1]s/fc.pid ] && kill "$(cat %[1]s/fc.pid)" 2>/dev/null || true
 sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
-rm -rf %[1]s
-`, work, tap)
+%[3]s
+`, s.work, tap, rmWork)
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
