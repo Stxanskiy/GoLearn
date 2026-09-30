@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"image"
+	"image/jpeg"
 	"image/png"
 
 	"golang.org/x/image/draw"
@@ -27,7 +28,11 @@ func Normalize(img Image, p Profile) (Image, error) {
 	// the right proportions — otherwise a small square image was stored as is
 	// and shown squashed into a 16:9 card.
 	cropped := p.CropAspect && p.Aspect > 0 && !withinAspect(w, h, p.Aspect)
-	if !cropped && w <= p.StoredSide && h <= p.StoredSide && img.ContentType == MimePNG {
+	want := p.StoredMime
+	if want == "" {
+		want = MimePNG
+	}
+	if !cropped && w <= p.StoredSide && h <= p.StoredSide && img.ContentType == want {
 		return img, nil
 	}
 
@@ -45,6 +50,12 @@ func Normalize(img Image, p Profile) (Image, error) {
 	draw.CatmullRom.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
 
 	var buf bytes.Buffer
+	if want == MimeJPEG {
+		if err := jpeg.Encode(&buf, dst, &jpeg.Options{Quality: 82}); err != nil {
+			return Image{}, err
+		}
+		return Image{Data: buf.Bytes(), ContentType: MimeJPEG}, nil
+	}
 	if err := png.Encode(&buf, dst); err != nil {
 		return Image{}, err
 	}

@@ -262,7 +262,7 @@ func (a *API) adminMoveCourse(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminUploadCourseCover(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok || !a.checkEditable(w, r, course) {
+	if !ok || !a.checkPresentation(w, r, course) {
 		return
 	}
 	cover, ok := a.storeCover(w, r)
@@ -279,7 +279,7 @@ func (a *API) adminUploadCourseCover(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) adminDeleteCourseCover(w http.ResponseWriter, r *http.Request) {
 	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok || !a.checkEditable(w, r, course) {
+	if !ok || !a.checkPresentation(w, r, course) {
 		return
 	}
 	a.dropStored(r, course.module.CoverImage)

@@ -43,6 +43,7 @@ type Profile struct {
 	MinHeight  int     // height in pixels; 0 disables the check
 	MaxSide    int     // longest side in pixels; 0 disables the check
 	StoredSide int     // longest side kept in storage; 0 stores the upload as is
+	StoredMime string  // re-encode to this type; empty keeps PNG
 	Hint       string  // contract text sent with the error
 }
 
@@ -60,7 +61,12 @@ var (
 		CropAspect: true,
 		MinWidth:   960,
 		MinHeight:  540,
-		StoredSide: 1920,
+		// A cover is a photograph shown at most ~1200 px wide. Kept as PNG at 1920
+		// it weighed 2.2 MB, and cover_image is selected with every module row —
+		// the catalogue would have carried tens of megabytes per request. JPEG at
+		// 1600 is about a tenth of that and looks the same on a card.
+		StoredSide: 1600,
+		StoredMime: MimeJPEG,
 		Hint:       "cover must be PNG, JPEG, WebP or SVG, at least 960x540, max 4 MiB; it is cropped to 16:9",
 	}
 	// ContentProfile: illustration inside lesson content, any proportions.

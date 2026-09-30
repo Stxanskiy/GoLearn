@@ -84,6 +84,22 @@ func (a *API) checkEditable(w http.ResponseWriter, r *http.Request, course cours
 		writeError(w, http.StatusConflict, codeDraftRequired, "published courses are edited through a draft")
 		return false
 	}
+	return a.checkNotUnderReview(w, r, course)
+}
+
+// checkPresentation guards changes that are not content: the cover, and anything
+// else about how a course looks rather than what it teaches.
+//
+// Review exists to keep published teaching material from changing under a
+// student. A picture is not that, and demanding a whole draft cycle to swap one
+// meant the editor showed a cover button on every published course that could
+// only ever answer 409 — which the author read as "it accepted it and did
+// nothing". A course actually under review still holds still.
+func (a *API) checkPresentation(w http.ResponseWriter, r *http.Request, course courseRef) bool {
+	return a.checkNotUnderReview(w, r, course)
+}
+
+func (a *API) checkNotUnderReview(w http.ResponseWriter, r *http.Request, course courseRef) bool {
 	pending, err := a.Reviews.Pending(r.Context(), course.live.ID)
 	if err != nil {
 		a.internalError(w, "admin: pending review", err)
