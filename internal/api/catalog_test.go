@@ -29,7 +29,7 @@ func storefront() (*fakeUsers, *fakeContent) {
 	score := 4
 	c := newFakeContent()
 	c.specs = []model.Specialization{
-		{Slug: "devops", Name: "DevOps", Icon: "♾️", Published: true},
+		{Slug: "devops", Name: "DevOps", Published: true},
 		{Slug: "database", Name: "Базы данных", Published: true},
 		{Slug: "security", Name: "Security", Published: false},
 	}

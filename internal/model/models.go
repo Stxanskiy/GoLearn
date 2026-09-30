@@ -16,7 +16,6 @@ type Module struct {
 	Label         string    `json:"label" db:"label"`                 // Старт | Практика | Вызов; empty -> derived
 	Tags          []string  `json:"tags"`                             // topic chips (JSON array in DB)
 	CoverImage    string    `json:"cover_image" db:"cover_image"`     // real photo; empty -> generated SVG
-	IconURL       string    `json:"icon_url" db:"icon_url"`           // uploaded course icon; empty -> derived from category
 	Accent        string    `json:"accent" db:"accent"`               // gradient key; empty -> by category
 	EstMinutes    int       `json:"est_minutes" db:"est_minutes"`     // 0 -> derived from lesson count
 	IsTrainer     bool      `json:"is_trainer" db:"is_trainer"`       // practice-only course, listed under trainers
@@ -51,8 +50,6 @@ type Lesson struct {
 type Specialization struct {
 	Slug        string `json:"slug" db:"slug"`
 	Name        string `json:"name" db:"name"`
-	Icon        string `json:"icon" db:"icon"`
-	IconURL     string `json:"icon_url" db:"icon_url"` // uploaded icon; empty -> Icon glyph
 	Description string `json:"description" db:"description"`
 	OrderNum    int    `json:"order_num" db:"order_num"`
 	CoverImage  string `json:"cover_image" db:"cover_image"`

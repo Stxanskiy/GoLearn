@@ -604,13 +604,7 @@ type AdminCourse struct {
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
-
-	// Icon Emoji fallback of the category, used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded square course icon; empty when none.
-	IconURL string `json:"icon_url"`
-	ID      int    `json:"id"`
+	ID             int  `json:"id"`
 
 	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
 	IsTrainer bool `json:"is_trainer"`
@@ -705,13 +699,7 @@ type AdminCourseRow struct {
 
 	// HasCustomCover Uploaded or external cover is set.
 	HasCustomCover bool `json:"has_custom_cover"`
-
-	// Icon Emoji fallback of the category, used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded square course icon; empty when none.
-	IconURL string `json:"icon_url"`
-	ID      int    `json:"id"`
+	ID             int  `json:"id"`
 
 	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
 	IsTrainer bool `json:"is_trainer"`
@@ -860,8 +848,6 @@ type AdminSpecialization struct {
 	CoverURL       *string `json:"cover_url"`
 	Description    string  `json:"description"`
 	HasCustomCover bool    `json:"has_custom_cover"`
-	Icon           string  `json:"icon"`
-	IconURL        string  `json:"icon_url"`
 	Name           string  `json:"name"`
 	OrderNum       int     `json:"order_num"`
 	OwnerID        *int    `json:"owner_id"`
@@ -874,7 +860,6 @@ type AdminSpecializationInput struct {
 	// CoverURL External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.
 	CoverURL    *string `json:"cover_url,omitempty"`
 	Description *string `json:"description,omitempty"`
-	Icon        *string `json:"icon,omitempty"`
 	Name        string  `json:"name"`
 
 	// Published Omitted → unchanged (draft on create).
@@ -1042,13 +1027,7 @@ type CourseCard struct {
 	Description *string    `json:"description,omitempty"`
 	Difficulty  Difficulty `json:"difficulty"`
 	EstMinutes  int        `json:"est_minutes"`
-
-	// Icon Emoji fallback of the category, used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded square course icon; empty when none.
-	IconURL string `json:"icon_url"`
-	ID      int    `json:"id"`
+	ID          int        `json:"id"`
 
 	// IsTrainer Practice-only course; listed under trainers instead of the catalog.
 	IsTrainer bool `json:"is_trainer"`
@@ -1162,12 +1141,6 @@ type CoursePreview struct {
 	Description string     `json:"description"`
 	Difficulty  Difficulty `json:"difficulty"`
 	EstMinutes  int        `json:"est_minutes"`
-
-	// Icon Emoji fallback of the category, used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded square course icon; empty when none.
-	IconURL string `json:"icon_url"`
 
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label     CourseLabel `json:"label"`
@@ -1402,10 +1375,6 @@ type LandingStats struct {
 type LandingTrack struct {
 	CoursesCount int    `json:"courses_count"`
 	Description  string `json:"description"`
-
-	// Icon Emoji fallback used when `icon_url` is empty.
-	Icon    string `json:"icon"`
-	IconURL string `json:"icon_url"`
 
 	// LessonsCount Published lessons across the courses of the track.
 	LessonsCount int    `json:"lessons_count"`
@@ -1691,14 +1660,8 @@ type Specialization struct {
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`; 16:9.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
-
-	// Icon Emoji fallback used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded icon in object storage; empty when none.
-	IconURL string `json:"icon_url"`
-	Name    string `json:"name"`
-	Slug    string `json:"slug"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
 }
 
 // SpecializationWithCourses defines model for SpecializationWithCourses.
@@ -1712,14 +1675,8 @@ type SpecializationWithCourses struct {
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`; 16:9.
 	CoverURL    string `json:"cover_url"`
 	Description string `json:"description"`
-
-	// Icon Emoji fallback used when `icon_url` is empty.
-	Icon string `json:"icon"`
-
-	// IconURL Uploaded icon in object storage; empty when none.
-	IconURL string `json:"icon_url"`
-	Name    string `json:"name"`
-	Slug    string `json:"slug"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
 }
 
 // SQLColumn defines model for SqlColumn.
@@ -1920,12 +1877,6 @@ type AdminUploadCourseCoverMultipartBody struct {
 	File openapi_types.File `json:"file"`
 }
 
-// AdminUploadCourseIconMultipartBody defines parameters for AdminUploadCourseIcon.
-type AdminUploadCourseIconMultipartBody struct {
-	// File Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.
-	File openapi_types.File `json:"file"`
-}
-
 // AdminMoveCourseJSONBody defines parameters for AdminMoveCourse.
 type AdminMoveCourseJSONBody struct {
 	Direction AdminMoveCourseJSONBodyDirection `json:"direction"`
@@ -1986,7 +1937,6 @@ type AdminCreateSpecializationJSONBody struct {
 	// CoverURL External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.
 	CoverURL    *string `json:"cover_url,omitempty"`
 	Description *string `json:"description,omitempty"`
-	Icon        *string `json:"icon,omitempty"`
 	Name        string  `json:"name"`
 
 	// Published Omitted → unchanged (draft on create).
@@ -1997,12 +1947,6 @@ type AdminCreateSpecializationJSONBody struct {
 // AdminUploadSpecializationCoverMultipartBody defines parameters for AdminUploadSpecializationCover.
 type AdminUploadSpecializationCoverMultipartBody struct {
 	// File Cover: PNG, JPEG, WebP or SVG, 16:9 (tolerance 2%), at least 960x540, max 4 MiB.
-	File openapi_types.File `json:"file"`
-}
-
-// AdminUploadSpecIconMultipartBody defines parameters for AdminUploadSpecIcon.
-type AdminUploadSpecIconMultipartBody struct {
-	// File Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.
 	File openapi_types.File `json:"file"`
 }
 
@@ -2170,9 +2114,6 @@ type AdminAddCourseAuthorJSONRequestBody AdminAddCourseAuthorJSONBody
 // AdminUploadCourseCoverMultipartRequestBody defines body for AdminUploadCourseCover for multipart/form-data ContentType.
 type AdminUploadCourseCoverMultipartRequestBody AdminUploadCourseCoverMultipartBody
 
-// AdminUploadCourseIconMultipartRequestBody defines body for AdminUploadCourseIcon for multipart/form-data ContentType.
-type AdminUploadCourseIconMultipartRequestBody AdminUploadCourseIconMultipartBody
-
 // AdminCreateLessonJSONRequestBody defines body for AdminCreateLesson for application/json ContentType.
 type AdminCreateLessonJSONRequestBody = AdminLessonInput
 
@@ -2238,9 +2179,6 @@ type AdminUpdateSpecializationJSONRequestBody = AdminSpecializationInput
 
 // AdminUploadSpecializationCoverMultipartRequestBody defines body for AdminUploadSpecializationCover for multipart/form-data ContentType.
 type AdminUploadSpecializationCoverMultipartRequestBody AdminUploadSpecializationCoverMultipartBody
-
-// AdminUploadSpecIconMultipartRequestBody defines body for AdminUploadSpecIcon for multipart/form-data ContentType.
-type AdminUploadSpecIconMultipartRequestBody AdminUploadSpecIconMultipartBody
 
 // AdminMoveSpecializationJSONRequestBody defines body for AdminMoveSpecialization for application/json ContentType.
 type AdminMoveSpecializationJSONRequestBody AdminMoveSpecializationJSONBody

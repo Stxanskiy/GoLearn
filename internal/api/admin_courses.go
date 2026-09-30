@@ -220,7 +220,6 @@ func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "admin: delete course", err)
 		return
 	}
-	a.dropStored(r, course.module.IconURL)
 	a.dropStored(r, course.module.CoverImage)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -498,7 +497,6 @@ func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLe
 	out := apigen.AdminCourse{
 		ID: m.ID, Slug: live.Slug, PreviewSlug: m.Slug, DraftOf: m.DraftOf, Title: m.Title, Description: m.Description, Track: m.Track,
 		Difficulty: apigen.Difficulty(m.Difficulty), Category: m.Category, Accent: m.Accent,
-		Icon: catalog.CategoryIcon(catalog.Category(m)), IconURL: m.IconURL,
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published, IsTrainer: m.IsTrainer,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",

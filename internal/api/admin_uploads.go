@@ -13,66 +13,6 @@ import (
 
 const maxImageBytes = 4 << 20
 
-func (a *API) adminUploadCourseIcon(w http.ResponseWriter, r *http.Request) {
-	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok || !a.checkEditable(w, r, course) {
-		return
-	}
-	url, ok := a.storeUpload(w, r, storage.KindIcon, storage.IconProfile)
-	if !ok {
-		return
-	}
-	a.dropStored(r, course.module.IconURL)
-	if err := a.Modules.SetIcon(r.Context(), course.module.ID, url); err != nil {
-		a.internalError(w, "admin: upload course icon", err)
-		return
-	}
-	writeJSON(w, http.StatusOK, apigen.UploadedImage{URL: url})
-}
-
-func (a *API) adminDeleteCourseIcon(w http.ResponseWriter, r *http.Request) {
-	course, ok := a.managedCourseParam(w, r, needEdit)
-	if !ok || !a.checkEditable(w, r, course) {
-		return
-	}
-	a.dropStored(r, course.module.IconURL)
-	if err := a.Modules.SetIcon(r.Context(), course.module.ID, ""); err != nil {
-		a.internalError(w, "admin: delete course icon", err)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (a *API) adminUploadSpecIcon(w http.ResponseWriter, r *http.Request) {
-	spec, ok := a.specBySlug(w, r)
-	if !ok {
-		return
-	}
-	url, ok := a.storeUpload(w, r, storage.KindIcon, storage.IconProfile)
-	if !ok {
-		return
-	}
-	a.dropStored(r, spec.IconURL)
-	if err := a.Specs.SetIcon(r.Context(), spec.Slug, url); err != nil {
-		a.internalError(w, "admin: upload specialization icon", err)
-		return
-	}
-	writeJSON(w, http.StatusOK, apigen.UploadedImage{URL: url})
-}
-
-func (a *API) adminDeleteSpecIcon(w http.ResponseWriter, r *http.Request) {
-	spec, ok := a.specBySlug(w, r)
-	if !ok {
-		return
-	}
-	a.dropStored(r, spec.IconURL)
-	if err := a.Specs.SetIcon(r.Context(), spec.Slug, ""); err != nil {
-		a.internalError(w, "admin: delete specialization icon", err)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-
 func (a *API) adminUploadImage(w http.ResponseWriter, r *http.Request) {
 	url, ok := a.storeUpload(w, r, storage.KindLesson, storage.ContentProfile)
 	if !ok {

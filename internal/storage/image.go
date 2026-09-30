@@ -48,16 +48,6 @@ type Profile struct {
 
 // Upload profiles of the image slots.
 var (
-	// IconProfile: square marker shown at 32-56 px, transparent background expected.
-	IconProfile = Profile{
-		Mimes:      []string{MimePNG, MimeWebP, MimeSVG},
-		MaxBytes:   4 << 20,
-		Aspect:     1,
-		MinSide:    128,
-		MaxSide:    4096,
-		StoredSide: 256,
-		Hint:       "icon must be PNG, WebP or SVG, square, 128-4096 px a side, max 4 MiB",
-	}
 	// CoverProfile: 16:9 banner of the course card and of the course page header.
 	// A cover is cropped to 16:9 from the middle rather than refused for not
 	// being 16:9 already. Demanding the exact ratio to within 2% meant almost no

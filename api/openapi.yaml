@@ -1178,41 +1178,6 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
-  /admin/courses/{courseId}/icon:
-    parameters:
-      - $ref: '#/components/parameters/CourseId'
-    put:
-      tags: [admin-courses]
-      summary: Upload course icon
-      operationId: adminUploadCourseIcon
-      description: Needs `can_edit`. The image goes to object storage and the course keeps its public URL.
-      requestBody: { $ref: '#/components/requestBodies/IconUpload' }
-      responses:
-        '200':
-          description: Icon replaced.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UploadedImage' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ReviewConflict' }
-        '413': { $ref: '#/components/responses/PayloadTooLarge' }
-        '415': { $ref: '#/components/responses/UnsupportedMedia' }
-        '503': { $ref: '#/components/responses/StorageDisabled' }
-
-    delete:
-      tags: [admin-courses]
-      summary: Delete course icon
-      operationId: adminDeleteCourseIcon
-      description: Falls back to the icon derived from the category.
-      responses:
-        '204': { description: Icon removed. }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ReviewConflict' }
-
   /admin/courses/{courseId}/authors:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1960,39 +1925,6 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-
-  /admin/specializations/{specSlug}/icon:
-    parameters:
-      - $ref: '#/components/parameters/SpecSlug'
-    put:
-      tags: [admin-catalog]
-      summary: Upload specialization icon
-      operationId: adminUploadSpecIcon
-      description: Admin only. The image goes to object storage.
-      requestBody: { $ref: '#/components/requestBodies/IconUpload' }
-      responses:
-        '200':
-          description: Icon replaced.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UploadedImage' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '413': { $ref: '#/components/responses/PayloadTooLarge' }
-        '415': { $ref: '#/components/responses/UnsupportedMedia' }
-        '503': { $ref: '#/components/responses/StorageDisabled' }
-
-    delete:
-      tags: [admin-catalog]
-      summary: Delete specialization icon
-      operationId: adminDeleteSpecIcon
-      description: Falls back to the emoji glyph.
-      responses:
-        '204': { description: Icon removed. }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
 
   /admin/specializations/{specSlug}/published:
     parameters:
@@ -2763,12 +2695,10 @@ components:
       default: asc
     LandingTrack:
       type: object
-      required: [slug, name, icon, icon_url, description, courses_count, lessons_count]
+      required: [slug, name, description, courses_count, lessons_count]
       properties:
         slug: { type: string }
         name: { type: string }
-        icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
-        icon_url: { type: string }
         description: { type: string }
         courses_count: { type: integer }
         lessons_count: { type: integer, description: Published lessons across the courses of the track. }
@@ -2776,18 +2706,16 @@ components:
     # ── catalog ──
     Specialization:
       type: object
-      required: [slug, name, icon, icon_url, description, cover_url]
+      required: [slug, name, description, cover_url]
       properties:
         slug: { type: string }
         name: { type: string }
-        icon: { type: string, description: 'Emoji fallback used when `icon_url` is empty.' }
-        icon_url: { type: string, description: 'Uploaded icon in object storage; empty when none.' }
         description: { type: string }
         cover_url: { type: string, description: 'Always `/api/v1/specializations/{slug}/cover`; 16:9.' }
 
     CourseCard:
       type: object
-      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, icon, icon_url, lessons_count, lessons_completed, progress_pct, est_minutes, status, last_activity, is_trainer]
+      required: [id, slug, title, spec_slug, category, label, difficulty, tags, cover_url, lessons_count, lessons_completed, progress_pct, est_minutes, status, last_activity, is_trainer]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -2801,8 +2729,6 @@ components:
           type: array
           items: { type: string }
         cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
-        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
-        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         lessons_count: { type: integer }
         lessons_completed: { type: integer }
         progress_pct: { type: integer, minimum: 0, maximum: 100 }
@@ -2844,7 +2770,7 @@ components:
     CoursePreview:
       type: object
       description: Public course page for anonymous visitors.
-      required: [slug, title, description, category, label, difficulty, tags, cover_url, icon, icon_url, est_minutes, lessons_count, labs_count, specialization, lessons]
+      required: [slug, title, description, category, label, difficulty, tags, cover_url, est_minutes, lessons_count, labs_count, specialization, lessons]
       properties:
         slug: { type: string }
         title: { type: string }
@@ -2856,8 +2782,6 @@ components:
           type: array
           items: { type: string }
         cover_url: { type: string, description: 'Always `/api/v1/courses/{slug}/cover`; 16:9.' }
-        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
-        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         est_minutes: { type: integer }
         lessons_count: { type: integer }
         labs_count: { type: integer }
@@ -3378,7 +3302,7 @@ components:
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, icon, icon_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -3389,8 +3313,6 @@ components:
         category: { type: string, description: Stored value; empty when derived. }
         label: { oneOf: [{ $ref: '#/components/schemas/CourseLabel' }, { type: 'null' }], description: Null when derived. }
         accent: { type: string }
-        icon: { type: string, description: 'Emoji fallback of the category, used when `icon_url` is empty.' }
-        icon_url: { type: string, description: 'Uploaded square course icon; empty when none.' }
         tags:
           type: array
           items: { type: string }
@@ -3577,19 +3499,16 @@ components:
       required: [name]
       properties:
         name: { type: string, minLength: 1, maxLength: 80 }
-        icon: { type: string, maxLength: 16 }
         description: { type: string, maxLength: 5000 }
         cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
         published: { type: boolean, description: Omitted → unchanged (draft on create). }
 
     AdminSpecialization:
       type: object
-      required: [slug, name, icon, icon_url, description, published, order_num, owner_id, courses_count, cover_url, has_custom_cover, cover_preview_url]
+      required: [slug, name, description, published, order_num, owner_id, courses_count, cover_url, has_custom_cover, cover_preview_url]
       properties:
         slug: { type: string }
         name: { type: string }
-        icon: { type: string }
-        icon_url: { type: string }
         description: { type: string }
         published: { type: boolean }
         order_num: { type: integer }

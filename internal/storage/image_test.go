@@ -61,29 +61,6 @@ func TestDecodeImageRejectsOther(t *testing.T) {
 	}
 }
 
-func TestIconProfile(t *testing.T) {
-	cases := []struct {
-		name string
-		data []byte
-		want error
-	}{
-		{"square", rectPNG(t, 256, 256), nil},
-		{"square svg", []byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect/></svg>`), nil},
-		{"not square", rectPNG(t, 256, 200), ErrImageProportions},
-		{"too small", rectPNG(t, 64, 64), ErrImageTooSmall},
-		{"oversized is normalized, not rejected", rectPNG(t, 4096, 4096), nil},
-		{"jpeg rejected", append([]byte("\xff\xd8\xff\xe0"), make([]byte, 64)...), ErrUnsupportedImage},
-		{"gif rejected", append([]byte("GIF89a"), make([]byte, 64)...), ErrUnsupportedImage},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			if _, err := DecodeImage(c.data, IconProfile); err != c.want {
-				t.Fatalf("err = %v, want %v", err, c.want)
-			}
-		})
-	}
-}
-
 func TestCoverProfile(t *testing.T) {
 	cases := []struct {
 		name string
@@ -226,33 +203,13 @@ func TestWebPDimensions(t *testing.T) {
 	}
 }
 
-func TestNormalizeIcon(t *testing.T) {
-	img, err := DecodeImage(rectPNG(t, 1024, 1024), IconProfile)
-	if err != nil {
-		t.Fatalf("DecodeImage: %v", err)
-	}
-	out, err := Normalize(img, IconProfile)
-	if err != nil {
-		t.Fatalf("Normalize: %v", err)
-	}
-	if out.ContentType != MimePNG {
-		t.Fatalf("content type = %q, want %q", out.ContentType, MimePNG)
-	}
-	w, h, ok := Dimensions(out.Data, out.ContentType)
-	if !ok || w != IconProfile.StoredSide || h != IconProfile.StoredSide {
-		t.Fatalf("size = %d x %d, ok = %v; want %d square", w, h, ok, IconProfile.StoredSide)
-	}
-	if len(out.Data) >= len(img.Data) {
-		t.Fatalf("normalized size = %d, want less than %d", len(out.Data), len(img.Data))
-	}
-}
-
-func TestNormalizeWebPIcon(t *testing.T) {
+func TestNormalizeWebP(t *testing.T) {
+	p := Profile{Mimes: []string{MimeWebP}, MaxBytes: 4 << 20, StoredSide: 256}
 	data, err := base64.StdEncoding.DecodeString(webpFixtures["lossless"])
 	if err != nil {
 		t.Fatalf("decode fixture: %v", err)
 	}
-	out, err := Normalize(Image{Data: data, ContentType: MimeWebP}, IconProfile)
+	out, err := Normalize(Image{Data: data, ContentType: MimeWebP}, p)
 	if err != nil {
 		t.Fatalf("Normalize: %v", err)
 	}
@@ -266,12 +223,13 @@ func TestNormalizeWebPIcon(t *testing.T) {
 }
 
 func TestNormalizeKeepsSmallPNGAndSVG(t *testing.T) {
+	p := Profile{Mimes: []string{MimePNG, MimeSVG}, MaxBytes: 4 << 20, StoredSide: 256}
 	small := Image{Data: rectPNG(t, 200, 200), ContentType: MimePNG}
-	if out, err := Normalize(small, IconProfile); err != nil || !bytes.Equal(out.Data, small.Data) {
+	if out, err := Normalize(small, p); err != nil || !bytes.Equal(out.Data, small.Data) {
 		t.Fatalf("small PNG must pass through: %v", err)
 	}
 	svg := Image{Data: []byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"/>`), ContentType: MimeSVG}
-	if out, err := Normalize(svg, IconProfile); err != nil || out.ContentType != MimeSVG {
+	if out, err := Normalize(svg, p); err != nil || out.ContentType != MimeSVG {
 		t.Fatalf("SVG must pass through: %v", err)
 	}
 }
@@ -290,12 +248,14 @@ func pngHeader(w, h int) []byte {
 	return binary.BigEndian.AppendUint32(out, crc32.ChecksumIEEE(ihdr))
 }
 
-func TestDecodeImageRejectsOversizedIcon(t *testing.T) {
-	side := IconProfile.MaxSide + 1
-	if _, err := DecodeImage(pngHeader(side, side), IconProfile); err != ErrImageTooLarge {
+// MaxSide is checked from the header alone, before the pixels are decoded —
+// that is what keeps a declared-huge PNG from being decoded at all.
+func TestDecodeImageRejectsOversized(t *testing.T) {
+	p := Profile{Mimes: []string{MimePNG}, MaxBytes: 4 << 20, MaxSide: 4096}
+	if _, err := DecodeImage(pngHeader(p.MaxSide+1, p.MaxSide+1), p); err != ErrImageTooLarge {
 		t.Fatalf("err = %v, want ErrImageTooLarge", err)
 	}
-	if _, err := DecodeImage(pngHeader(IconProfile.MaxSide, IconProfile.MaxSide), IconProfile); err != nil {
-		t.Fatalf("icon at the limit rejected: %v", err)
+	if _, err := DecodeImage(pngHeader(p.MaxSide, p.MaxSide), p); err != nil {
+		t.Fatalf("image at the limit rejected: %v", err)
 	}
 }

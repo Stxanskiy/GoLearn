@@ -119,8 +119,6 @@ func (a *API) landingTracks(ctx context.Context) ([]apigen.LandingTrack, error) 
 		tracks = append(tracks, apigen.LandingTrack{
 			Slug:         s.Slug,
 			Name:         s.Name,
-			Icon:         s.Icon,
-			IconURL:      s.IconURL,
 			Description:  s.Description,
 			CoursesCount: courses[s.Slug],
 			LessonsCount: lessonCount[s.Slug],
@@ -249,8 +247,6 @@ func (a *API) getCoursePreview(w http.ResponseWriter, r *http.Request) {
 		Difficulty:     apigen.Difficulty(m.Difficulty),
 		Tags:           tags,
 		CoverURL:       "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
-		Icon:           catalog.CategoryIcon(c.Category),
-		IconURL:        m.IconURL,
 		EstMinutes:     c.EstMinutes,
 		LessonsCount:   len(lessons),
 		LabsCount:      labs,
@@ -268,8 +264,6 @@ func (a *API) previewSpec(ctx context.Context, spec string) *apigen.Specializati
 	return &apigen.Specialization{
 		Slug:        s.Slug,
 		Name:        s.Name,
-		Icon:        s.Icon,
-		IconURL:     s.IconURL,
 		Description: s.Description,
 		CoverURL:    "/api/v1/specializations/" + url.PathEscape(s.Slug) + "/cover",
 	}

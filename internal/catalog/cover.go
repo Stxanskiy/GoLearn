@@ -93,19 +93,17 @@ func CourseCoverSVG(m model.Module) string {
 	return b.String()
 }
 
-// SpecCoverSVG renders the generated specialization banner: gradient, grid and icon.
+// SpecCoverSVG renders the generated specialization banner: gradient and grid.
+// It used to stamp the section's emoji in the middle; icons are gone from the
+// product, and a banner reads better without one glyph blown up to 320px.
 func SpecCoverSVG(s model.Specialization) string {
 	key := map[string]string{"devops": "DevOps", "golang": "Golang", "security": "Security", "database": "Database"}[s.Slug]
 	from, to := Gradient(key)
-	icon := s.Icon
-	if icon == "" {
-		icon = "📚"
-	}
 	var b strings.Builder
 	svgOpen(&b, from, to)
 	b.WriteString(svgGrid + `</defs>`)
 	svgBackdrop(&b)
-	fmt.Fprintf(&b, `<text x="640" y="394" font-size="320" text-anchor="middle" dominant-baseline="middle">%s</text></svg>`, html.EscapeString(icon))
+	b.WriteString(`</svg>`)
 	return b.String()
 }
 

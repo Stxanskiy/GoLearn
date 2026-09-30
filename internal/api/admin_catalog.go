@@ -37,7 +37,7 @@ func (a *API) adminCreateSpecialization(w http.ResponseWriter, r *http.Request) 
 	}
 	ctx := r.Context()
 	s, fields := specFromInput(apigen.AdminSpecializationInput{
-		Name: body.Name, Icon: body.Icon, Description: body.Description, CoverURL: body.CoverURL,
+		Name: body.Name, Description: body.Description, CoverURL: body.CoverURL,
 	})
 	s.Slug = strings.TrimSpace(body.Slug)
 	checkSlug(fields, "slug", s.Slug)
@@ -112,7 +112,6 @@ func (a *API) adminDeleteSpecialization(w http.ResponseWriter, r *http.Request) 
 		a.internalError(w, "admin: delete specialization", err)
 		return
 	}
-	a.dropStored(r, s.IconURL)
 	a.dropStored(r, s.CoverImage)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -389,12 +388,10 @@ func specFromInput(in apigen.AdminSpecializationInput) (model.Specialization, ma
 	fields := map[string]string{}
 	s := model.Specialization{
 		Name:        strings.TrimSpace(in.Name),
-		Icon:        strings.TrimSpace(deref(in.Icon)),
 		Description: deref(in.Description),
 		CoverImage:  deref(in.CoverURL),
 	}
 	checkText(fields, "name", s.Name, 80, true)
-	checkText(fields, "icon", s.Icon, 16, false)
 	checkText(fields, "description", s.Description, 5000, false)
 	if in.CoverURL != nil && !isHTTPURL(*in.CoverURL) {
 		fields["cover_url"] = fieldInvalidFormat
@@ -444,7 +441,7 @@ func simFromInput(sc apigen.Scenario) (model.Simulator, map[string]string) {
 
 func toAdminSpecialization(s model.Specialization, courses int) apigen.AdminSpecialization {
 	out := apigen.AdminSpecialization{
-		Slug: s.Slug, Name: s.Name, Icon: s.Icon, IconURL: s.IconURL, Description: s.Description, Published: s.Published,
+		Slug: s.Slug, Name: s.Name, Description: s.Description, Published: s.Published,
 		OrderNum: s.OrderNum, OwnerID: s.OwnerID, CoursesCount: courses,
 		HasCustomCover:  s.CoverImage != "",
 		CoverPreviewURL: "/api/v1/specializations/" + s.Slug + "/cover",

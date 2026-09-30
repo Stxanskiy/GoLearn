@@ -177,8 +177,6 @@ func specWithCourses(s model.Specialization, all, shown []catalog.Course) apigen
 	return apigen.SpecializationWithCourses{
 		Slug:        s.Slug,
 		Name:        s.Name,
-		Icon:        s.Icon,
-		IconURL:     s.IconURL,
 		Description: s.Description,
 		CoverURL:    "/api/v1/specializations/" + url.PathEscape(s.Slug) + "/cover",
 		Courses:     cards,
@@ -238,8 +236,6 @@ func courseCard(c catalog.Course) apigen.CourseCard {
 		IsTrainer:        c.Module.IsTrainer,
 		Tags:             tags,
 		CoverURL:         "/api/v1/courses/" + url.PathEscape(c.Module.Slug) + "/cover",
-		Icon:             catalog.CategoryIcon(c.Category),
-		IconURL:          c.Module.IconURL,
 		LessonsCount:     len(c.Lessons),
 		LessonsCompleted: c.Completed,
 		ProgressPct:      c.Pct,

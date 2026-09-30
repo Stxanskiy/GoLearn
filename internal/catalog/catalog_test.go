@@ -118,10 +118,6 @@ func TestBuildCourse(t *testing.T) {
 }
 
 func TestCoverSVGEscapes(t *testing.T) {
-	spec := SpecCoverSVG(model.Specialization{Slug: "x", Icon: `<script>`})
-	if strings.Contains(spec, "<script>") {
-		t.Errorf("spec icon not escaped: %s", spec)
-	}
 	course := CourseCoverSVG(model.Module{Category: `A&B<`})
 	if strings.Contains(course, "A&B<") || !strings.Contains(course, "A&amp;B&lt;") {
 		t.Errorf("category not escaped: %s", course)
