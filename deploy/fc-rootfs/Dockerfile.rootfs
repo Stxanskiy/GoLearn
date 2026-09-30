@@ -33,8 +33,8 @@ RUN passwd -d root
 # From upstream, not apt: Ubuntu 24.04 ships 0.9.5, and current plugins require
 # 0.10+. gitsigns installed against 0.9.5 threw a stack trace over the file every
 # time a student opened one, and took two Enters to get past.
-RUN curl -fsSL --retry 3 https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux64.tar.gz \
-      | tar xz -C /opt && ln -sf /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim && \
+RUN curl -fsSL --retry 3 https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz \
+      | tar xz -C /opt && ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim && \
     nvim --version | head -1
 
 # ── neovim: config + plugins baked in, because the VM has no network ──
