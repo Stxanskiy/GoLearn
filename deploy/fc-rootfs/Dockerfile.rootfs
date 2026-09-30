@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       iputils-ping dnsutils netcat-openbsd \
       zsh bash-completion \
       ansible python3 python3-pip \
-      neovim gcc libc6-dev \
+      neovim \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 # ── kubectl ──
 RUN KV=$(curl -fSL --retry 3 https://dl.k8s.io/release/stable.txt) && \
@@ -31,18 +31,18 @@ COPY rootfs-extra/zshrc /root/.zshrc
 RUN chsh -s /usr/bin/zsh root
 RUN passwd -d root
 # ── neovim: config + plugins baked in, because the VM has no network ──
-# Plugins are cloned and treesitter parsers compiled here, at build time. A
-# student opening a file must not wait on a request that cannot succeed, so
+# A student opening a file must not wait on a request that cannot succeed, so
 # lazy.nvim's update checker is off in init.lua and nothing installs at runtime.
 COPY rootfs-extra/nvim /root/.config/nvim
 RUN git clone -q --depth=1 --branch=stable \
       https://github.com/folke/lazy.nvim /root/.local/share/nvim/lazy/lazy.nvim && \
-    nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 && \
-    nvim --headless "+TSUpdateSync yaml bash dockerfile json lua markdown" +qa 2>&1 | tail -5 && \
-    # Тихая сборка уже один раз оставила один lazy.nvim без плагинов: без этой
-    # проверки сломанный образ выглядел бы как успешный.
+    mkdir -p /root/.local/state/nvim && \
+    nvim --headless "+Lazy! install" +qa > /tmp/lazy.log 2>&1; tail -5 /tmp/lazy.log; \
+    # Проверяем результат, а не код возврата. nvim выходит ненулём из-за мелочей
+    # уже после успешной установки; и наоборот — первая сборка прошла «успешно»
+    # с одним lazy.nvim, потому что конвейер `| tail` подменял статус. Смотрим на
+    # то, что реально лежит в образе.
     test "$(ls /root/.local/share/nvim/lazy | wc -l)" -ge 7 && \
-    test -n "$(ls /root/.local/share/nvim/lazy/nvim-treesitter/parser 2>/dev/null)" && \
     find /root/.local/share/nvim/lazy -name .git -type d -prune -exec rm -rf {} + && \
     printf 'export EDITOR=nvim\nalias vim=nvim\nalias vi=nvim\n' >> /root/.zshrc
 

@@ -9,6 +9,11 @@
 -- few minutes inside a lesson, not a workstation: they need to see the YAML they
 -- are writing, know where they are, and be able to find a command they half
 -- remember. Anything beyond that is weight they did not ask for.
+--
+-- No treesitter. Its parsers have to be compiled into the image, and getting
+-- that to happen reliably in a headless build cost four attempts for a gain
+-- Neovim's built-in syntax already covers at the scale of a lesson: YAML, bash,
+-- Dockerfile, JSON and Markdown all highlight fine without it.
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
@@ -69,21 +74,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Syntax that actually understands the file. Parsers are compiled into the
-  -- image; ensure_installed is empty so nothing is fetched at runtime.
-  {
-    "nvim-treesitter/nvim-treesitter",
-    event = "VeryLazy",
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {},
-        auto_install = false,
-        highlight = { enable = true },
-        indent = { enable = true },
-      })
-    end,
-  },
-
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -135,4 +125,8 @@ require("lazy").setup({
   -- После успешной сборки недостающих плагинов не остаётся, а проверку
   -- обновлений выключает checker выше — в офлайн-VM никто никуда не ходит.
   ui = { border = "rounded" },
+  -- Свой путь для lazy-lock.json: по умолчанию он пишется рядом с конфигом, а в
+  -- собранном образе тот каталог только для чтения — запись падала assert'ом и
+  -- роняла сборку уже ПОСЛЕ того, как плагины успешно встали.
+  lockfile = vim.fn.stdpath("state") .. "/lazy-lock.json",
 })
