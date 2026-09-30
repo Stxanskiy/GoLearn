@@ -111,7 +111,10 @@ func (a *API) adminCreateCourse(w http.ResponseWriter, r *http.Request) {
 		writeValidation(w, fields)
 		return
 	}
-	if m.OrderNum, err = a.Modules.NextOrder(ctx); err != nil {
+	// A new course goes to the end unless the caller says where it belongs.
+	if body.OrderNum != nil {
+		m.OrderNum = *body.OrderNum
+	} else if m.OrderNum, err = a.Modules.NextOrder(ctx); err != nil {
 		a.internalError(w, "admin: course order", err)
 		return
 	}
@@ -171,6 +174,13 @@ func (a *API) adminUpdateCourse(w http.ResponseWriter, r *http.Request) {
 	}
 	m.DraftOf = cur.DraftOf
 	m.ID, m.OrderNum, m.OwnerID, m.Source, m.CreatedAt = cur.ID, cur.OrderNum, cur.OwnerID, cur.Source, cur.CreatedAt
+	// Position was read-only here: the up/down endpoint could nudge a course one
+	// step at a time, but there was no way to say where it belongs. The seeder
+	// sets order_num only on first insert, so whatever is set here survives a
+	// deploy.
+	if body.OrderNum != nil {
+		m.OrderNum = *body.OrderNum
+	}
 	m.CoverImage, m.Published = cur.CoverImage, cur.Published
 	if body.CoverURL != nil {
 		m.CoverImage = *body.CoverURL

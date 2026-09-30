@@ -3364,6 +3364,14 @@ components:
           maxItems: 20
           items: { type: string, maxLength: 40 }
         est_minutes: { type: integer, minimum: 0, maximum: 100000, description: 0 → lessons × 10. }
+        order_num:
+          type: integer
+          minimum: 0
+          maximum: 1000000
+          description: |
+            Position in the catalogue; courses are listed by it ascending. Omit to keep
+            the current value. The seeder assigns it on first import and never overwrites
+            it, so an order set here survives a deploy.
         is_trainer: { type: boolean, description: 'Practice-only course. Admin only; omitted → unchanged.' }
         cover_url: { type: string, format: uri, description: 'External http(s) cover. Omitted → cover unchanged; remove it via `DELETE …/cover`.' }
         published: { type: boolean, description: 'Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.' }

@@ -102,7 +102,7 @@ type importSpec struct {
 // importedModules builds GoLearn modules from embedded parser content.
 func importedModules() []M {
 	specs := []importSpec{
-		// ── DevOps section (all from devops404 export) ──
+		// ── DevOps section (all from the imported export) ──
 		{Dir: "crs_express_devops", Slug: "express-devops", Track: "devops", Difficulty: "beginner", Category: "DevOps"},
 		{Dir: "module_devops", Slug: "devops-foundations", Track: "devops", Difficulty: "beginner", Category: "DevOps"},
 		{Dir: "module_linux_start", Slug: "linux-start", Track: "devops", Difficulty: "beginner", Category: "Linux"},

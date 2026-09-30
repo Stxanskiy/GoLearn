@@ -7,7 +7,7 @@ import (
 )
 
 // TestGitlabCIImports verifies the imported GitLab CI/CD course parses from the
-// embedded devops404 export: 20 chapters, with quizzes and lab (shell) lessons.
+// embedded export: 20 chapters, with quizzes and lab (shell) lessons.
 // It needs no database — buildModule reads only the embedded content FS.
 func TestGitlabCIImports(t *testing.T) {
 	m, err := buildModule(importSpec{

@@ -171,7 +171,7 @@ type DashboardStats struct {
 	CurrentStreak   int     `json:"current_streak"`
 }
 
-// ProgressOverview powers the "Мой прогресс" dashboard (devops404 style).
+// ProgressOverview powers the "Мой прогресс" dashboard.
 type ProgressOverview struct {
 	Streak        int
 	ActiveDays    int

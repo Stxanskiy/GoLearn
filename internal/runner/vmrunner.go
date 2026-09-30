@@ -24,7 +24,7 @@ import (
 // dedicated host (the "FC host", e.g. berg), reached over SSH. Each VM has its own
 // kernel, so Docker/k3s run natively inside — no dind, no --privileged, no host
 // root — and the hypervisor boundary means one student deleting files or crashing
-// their VM cannot touch another's. This mirrors devops404's lab model.
+// their VM cannot touch another's.
 //
 // Layout on the FC host (all under FC_DIR):
 //
@@ -36,7 +36,7 @@ import (
 //
 // Networking: each VM gets a private /30 point-to-point link — host 172.31.<slot>.1,
 // VM 172.31.<slot>.2 — on its own tap device (no bridge → VMs can't see each other;
-// no NAT → the VM is offline, like devops404). The VM reads its address from the
+// no NAT → the VM is offline by design). The VM reads its address from the
 // kernel cmdline (gl.ip=...) via the baked glnet service.
 type VMRunner struct {
 	enabled bool
@@ -480,7 +480,7 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 		mem = v.memLite
 	}
 	if s.profile == "k8s" {
-		// k3s fits comfortably in ~1.5 GB / 1 vCPU (devops404 runs it in 1 GB); the
+		// k3s fits comfortably in ~1.5 GB / 1 vCPU (a single node needs about 1 GB); the
 		// old 3 GB / 2 vCPU was ~3x too generous.
 		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 1
 		k8sWait = fmt.Sprintf(

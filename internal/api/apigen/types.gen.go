@@ -664,6 +664,11 @@ type AdminCourseInput struct {
 	// Label Localized on the frontend (Старт / Практика / Вызов).
 	Label *CourseLabel `json:"label,omitempty"`
 
+	// OrderNum Position in the catalogue; courses are listed by it ascending. Omit to keep
+	// the current value. The seeder assigns it on first import and never overwrites
+	// it, so an order set here survives a deploy.
+	OrderNum *int `json:"order_num,omitempty"`
+
 	// Published Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.
 	Published *bool     `json:"published,omitempty"`
 	Slug      Slug      `json:"slug"`

@@ -9,7 +9,7 @@ import "context"
 //     SSH to a shared sandbox VM. Used by every course today.
 //   - VMRunner — one Firecracker micro-VM per (user, lesson), reached over SSH. Gives
 //     the Docker/Kubernetes courses a real, isolated kernel (native dockerd/k3s, no
-//     dind, no host root) — the model devops404 uses.
+//     dind, no host root) — the model this kind of platform uses.
 //
 // The two are interchangeable behind this interface; a dispatcher (see Engines)
 // picks one per lesson from the sandbox image name.

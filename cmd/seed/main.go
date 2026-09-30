@@ -269,13 +269,12 @@ func getAllModules() []M {
 	// now. Their content still lives in cmd/seed/mod*.go — registering that list
 	// here again is all it takes to bring them back.
 
-	// Every course now comes from data, not from Go: the devops404 export under
+	// Every course now comes from data, not from Go: the export under
 	// cmd/seed/content and the SQL academy files. The three courses that used to
 	// be written out in Go — the terminal practicum and the two security ones —
 	// were removed rather than migrated.
 	var mods []M
 	mods = append(mods, importedModules()...)
-	mods = append(mods, sqlAcademyModules()...)
 
 	if err := assignOrder(mods); err != nil {
 		log.Fatalf("curriculum order: %v", err)

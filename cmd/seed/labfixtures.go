@@ -2,7 +2,7 @@ package main
 
 // Lab fixtures and auto-checks for imported courses.
 //
-// The devops404 export ships task text but no environment and no validator, so
+// The imported export ships task text but no environment and no validator, so
 // a task like "выведи ошибки из /opt/devops/lab5/server.log" had nothing to
 // read and no way to pass. Each lesson below gets:
 //   - Setup: the files the lesson's tasks talk about, created once per lab

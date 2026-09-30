@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -332,5 +333,43 @@ func TestAuthorKeepsTheTrainerFlagOfAnOwnedCourse(t *testing.T) {
 	}
 	if got := decode[apigen.AdminCourse](t, do(h, http.MethodPut, "/admin/courses/30", body+`,"is_trainer":false}`, withCookie(adminToken))); got.IsTrainer {
 		t.Errorf("admin clears the trainer flag: %+v", got)
+	}
+}
+
+// Where a course sits in the catalogue used to be settable only one step at a
+// time, through the up/down endpoint: the update handler copied the stored value
+// over whatever the client sent, so an author could nudge a course but never say
+// where it belongs. The seeder writes order_num on first insert and leaves it
+// alone afterwards, so a position set here is meant to survive a deploy.
+func TestCourseOrderIsSettableAndOtherwiseKept(t *testing.T) {
+	h, _ := authorsFixture(t)
+
+	w := do(h, http.MethodPost, "/admin/courses",
+		`{"slug":"ordered","title":"Ordered","track":"devops","difficulty":"beginner","order_num":900}`,
+		withCookie(otherToken))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("create: %d %s", w.Code, w.Body)
+	}
+	created := decode[apigen.AdminCourse](t, w)
+	if created.OrderNum != 900 {
+		t.Fatalf("created at position %d, asked for 900", created.OrderNum)
+	}
+
+	put := func(body string) apigen.AdminCourse {
+		t.Helper()
+		w := do(h, http.MethodPut, "/admin/courses/"+strconv.Itoa(created.ID), body, withCookie(otherToken))
+		if w.Code != http.StatusOK {
+			t.Fatalf("update: %d %s", w.Code, w.Body)
+		}
+		return decode[apigen.AdminCourse](t, w)
+	}
+	const base = `"slug":"ordered","title":"Ordered","track":"devops","difficulty":"beginner"`
+
+	if got := put("{" + base + `,"order_num":4242}`).OrderNum; got != 4242 {
+		t.Errorf("position is %d after setting it to 4242", got)
+	}
+	// Omitting it must not move the course — most updates say nothing about order.
+	if got := put("{" + base + "}").OrderNum; got != 4242 {
+		t.Errorf("an update that said nothing about position moved it to %d", got)
 	}
 }

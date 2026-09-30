@@ -2,7 +2,7 @@ package main
 
 // Fixtures + auto-checks for "GitLab CI/CD" (gitlab-ci).
 //
-// The devops404 original ran these labs against a live GitLab stand: students
+// The original of these labs ran against a live GitLab stand: students
 // pushed to a real GitLab, watched pipelines run, clicked jobs in the UI, used
 // the container registry and a deploy VM. None of that exists in our
 // --network none sandbox. So the labs are reframed as *offline authoring* labs:
