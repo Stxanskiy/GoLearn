@@ -69,6 +69,7 @@ type VMRunner struct {
 	pool        map[string][]*vmSession // profile -> pre-booted warm VMs
 	warmWant    map[string]int          // profile -> desired warm count (0 = disabled)
 	refill      chan struct{}           // nudge the pool manager to top up
+	swept       chan struct{}           // closed once sweepOrphans has finished
 }
 
 // vmStartFailed counts bring-ups that did not produce a usable VM. Until this
@@ -178,12 +179,20 @@ func NewVMRunner() *VMRunner {
 		"k8s":    atoiDefault(shellEnv("FC_WARM_K8S", "0"), 0),
 	}
 	v.refill = make(chan struct{}, 1)
+	v.swept = make(chan struct{})
 	v.enabled = true
-	go v.sweepOrphans()
+	// sweepOrphans wipes sessions/* wholesale. Starting the warm pool alongside it
+	// meant the first VM's work directory was deleted mid-boot — production logged
+	// exactly that on the first redeploy after the pool was enabled. Nothing boots
+	// until the sweep is done.
+	go func() {
+		v.sweepOrphans()
+		close(v.swept)
+		if v.warmWant["lite"] > 0 || v.warmWant["docker"] > 0 || v.warmWant["k8s"] > 0 {
+			v.poolManager()
+		}
+	}()
 	go v.reaper()
-	if v.warmWant["lite"] > 0 || v.warmWant["docker"] > 0 || v.warmWant["k8s"] > 0 {
-		go v.poolManager()
-	}
 	return v
 }
 
@@ -407,6 +416,15 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 // warm VM if one matches, and otherwise boots a fresh one. Only ever called with
 // this sid claimed in v.booting, so it cannot race another bring-up of its own.
 func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
+	// A student opening a lab in the first seconds after a deploy would otherwise
+	// race the startup sweep, which deletes sessions/* wholesale.
+	if v.swept != nil {
+		select {
+		case <-v.swept:
+		case <-ctx.Done():
+			return "", ctx.Err()
+		}
+	}
 	profile := profileOf(image)
 	// One-at-a-time: drop any other VM this user holds, then try the warm pool.
 	v.mu.Lock()
@@ -851,10 +869,11 @@ func (v *VMRunner) teardownLocked(sid string) {
 	if s == nil {
 		return
 	}
+	// The slot is freed by killVM once the host has actually removed the tap.
+	// Freeing it here let the next attempt take the same slot, create gltap<slot>,
+	// and then lose it to the previous attempt's delayed delete — "Cannot find
+	// device gltap0".
 	v.killVM(s)
-	if s.slot >= 0 && s.slot < len(v.freeSlot) {
-		v.freeSlot[s.slot] = false
-	}
 	delete(v.sessions, sid)
 }
 
@@ -877,10 +896,18 @@ func (v *VMRunner) killVM(s *vmSession) {
 sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
 %[3]s
 `, s.work, tap, rmWork)
+	slot := s.slot
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 		_, _, _ = v.runHost(ctx, script)
+		if slot >= 0 {
+			v.mu.Lock()
+			if slot < len(v.freeSlot) {
+				v.freeSlot[slot] = false
+			}
+			v.mu.Unlock()
+		}
 	}()
 }
 
