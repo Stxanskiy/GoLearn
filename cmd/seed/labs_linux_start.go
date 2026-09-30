@@ -7,6 +7,36 @@ package main
 const lab1Config = "server_port=8080\\nlog_level=info\\nmax_connections=100\\n"
 
 var linuxStartLabs = map[string]labSpec{
+	// ── Lab 0: первое знакомство с песочницей ──
+	// Четыре команды, чтобы студент один раз прошёл весь цикл «набрал → увидел
+	// результат → нажал Проверить» до того, как появится хоть какая-то теория.
+	"ch-lnav-lab0": {
+		Setup: `set -e
+cat > /root/welcome.txt <<'TXT'
+Добро пожаловать в лабораторию TOT.
+
+Это обычная Linux-машина, и ты в ней root. Всё, что ты здесь делаешь,
+происходит по-настоящему — сломать её не страшно, она твоя.
+
+Команда дня: ls -la
+TXT
+rm -f /root/where_am_i.txt /root/listing.txt /root/welcome_copy.txt /root/hello.txt`,
+		Checks: map[int]string{
+			1: check(`[ -s /root/where_am_i.txt ] && grep -qE '^/' /root/where_am_i.txt`,
+				"текущий каталог записан в /root/where_am_i.txt",
+				"Выведи текущий каталог и направь вывод в файл: pwd > /root/where_am_i.txt"),
+			2: check(`[ -s /root/listing.txt ] && grep -q 'welcome.txt' /root/listing.txt`,
+				"список каталога сохранён в /root/listing.txt",
+				"Покажи содержимое каталога вместе со скрытыми файлами и сохрани: ls -la > /root/listing.txt"),
+			3: check(`[ -s /root/welcome_copy.txt ] && grep -q 'TOT' /root/welcome_copy.txt`,
+				"приветствие скопировано в /root/welcome_copy.txt",
+				"Прочитай файл и направь вывод в новый: cat /root/welcome.txt > /root/welcome_copy.txt"),
+			4: check(`[ -s /root/hello.txt ]`,
+				"создан непустой файл /root/hello.txt",
+				"Создай файл с любой строкой: echo привет > /root/hello.txt"),
+		},
+	},
+
 	// ── Lab 1: навигация по файловой системе ──
 	"ch-lnav-lab1": {
 		Setup: `set -e

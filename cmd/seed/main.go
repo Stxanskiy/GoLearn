@@ -118,7 +118,12 @@ func main() {
 				 ON CONFLICT (module_id, slug) DO UPDATE SET title=EXCLUDED.title, content=EXCLUDED.content,
 				   difficulty=EXCLUDED.difficulty, track=EXCLUDED.track,
 				   kind=EXCLUDED.kind, vm_image=EXCLUDED.vm_image, vm_init=EXCLUDED.vm_init,
-				   format=EXCLUDED.format
+				   format=EXCLUDED.format,
+				   -- order_num used to be insert-only, so moving a chapter in the content
+				   -- file changed nothing: the lesson kept whatever position it got the
+				   -- first time it was seeded. Author-edited lessons are excluded by the
+				   -- guard below, so this only re-sequences lessons the seeder owns.
+				   order_num=EXCLUDED.order_num
 				 WHERE lessons.edited_at IS NULL
 				 RETURNING id`,
 				moduleID, lesson.Slug, lesson.Title, lesson.Content, lesson.Order, lDiff, lTrack,

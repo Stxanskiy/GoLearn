@@ -229,6 +229,17 @@
       "isFree": true,
       "courseId": "module_git_basics",
       "userProgress": []
+    },
+    {
+      "id": "ch_git_next_steps",
+      "title": "Что мы изучили и куда двигаться дальше",
+      "type": "chapter",
+      "task_id": null,
+      "position": 20,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "module_git_basics",
+      "userProgress": []
     }
   ]
 }

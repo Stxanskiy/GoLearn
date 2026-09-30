@@ -394,3 +394,426 @@ sol_ch_ckad_lab14_debug_service_config_3='kubectl exec deploy/orders-api -- wget
 sol_ch_ckad_lab14_debug_service_config_4='sed -i "s/targetPort: 8080/targetPort: 80/" /root/debug-routing/app-b.yaml && kubectl apply -f /root/debug-routing/app-b.yaml >/dev/null && kubectl rollout status deploy/reports-api --timeout=180s >/dev/null'
 sol_ch_ckad_lab14_debug_service_config_5='kubectl create configmap profile-config --from-literal=app_env=prod >/dev/null 2>&1; kubectl apply -f /root/debug-routing/app-c.yaml >/dev/null && kubectl rollout status deploy/profile-api --timeout=180s >/dev/null'
 sol_ch_ckad_lab14_debug_service_config_6='kubectl delete deploy orders-api reports-api profile-api --ignore-not-found >/dev/null 2>&1; kubectl delete svc orders-svc reports-svc profile-svc --ignore-not-found >/dev/null 2>&1; kubectl delete configmap orders-config profile-config --ignore-not-found >/dev/null 2>&1; kubectl delete pod debug-client --ignore-not-found >/dev/null 2>&1; true'
+
+# ── CKAD labs 1-3 ────────────────────────────────────────────────────────────
+# These had no reference solution, so the harness never ran their checks: 38 of
+# the 49 CKAD checks were unverified. A check nobody exercises is a check that
+# breaks silently.
+
+sol_ch_ckad_lab1_1='cat > /root/init-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-pod
+spec:
+  volumes:
+    - name: data
+      emptyDir: {}
+  initContainers:
+    - name: init-data
+      image: nginx:alpine
+      command: ["sh", "-c", "echo init done; echo init data > /data/init.txt"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "cat /data/init.txt; sleep 3600"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+YAML
+kubectl apply -f /root/init-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/init-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab1_2='cat > /root/sidecar-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-pod
+spec:
+  volumes:
+    - name: logs
+      emptyDir: {}
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "touch /logs/app.log; while true; do echo request >> /logs/app.log; sleep 5; done"]
+      volumeMounts:
+        - name: logs
+          mountPath: /logs
+    - name: log-reader
+      image: nginx:alpine
+      command: ["sh", "-c", "touch /logs/app.log; tail -F /logs/app.log"]
+      volumeMounts:
+        - name: logs
+          mountPath: /logs
+YAML
+kubectl apply -f /root/sidecar-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/sidecar-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab1_3='cat > /root/multi-init.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-init
+spec:
+  volumes:
+    - name: data
+      emptyDir: {}
+  initContainers:
+    - name: step1
+      image: nginx:alpine
+      command: ["sh", "-c", "echo step1 > /data/step1"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+    - name: step2
+      image: nginx:alpine
+      command: ["sh", "-c", "echo step2 > /data/step2"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "cat /data/step1 /data/step2; sleep 3600"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+YAML
+kubectl apply -f /root/multi-init.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/multi-init --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab1_4='kubectl delete pod init-pod sidecar-pod multi-init --ignore-not-found --wait >/dev/null 2>&1'
+
+sol_ch_ckad_lab2_1='cat > /root/pvc.yaml <<YAML
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lab-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 100Mi
+YAML
+kubectl apply -f /root/pvc.yaml >/dev/null'
+
+sol_ch_ckad_lab2_2='cat > /root/pvc-writer-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-writer-pod
+spec:
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "echo persistent data > /data/data.txt; sleep 3600"]
+      volumeMounts:
+        - name: app-data
+          mountPath: /data
+  volumes:
+    - name: app-data
+      persistentVolumeClaim:
+        claimName: lab-pvc
+YAML
+kubectl apply -f /root/pvc-writer-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/pvc-writer-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab2_3='kubectl delete pod pvc-writer-pod pvc-reader-pod emptydir-demo --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete pvc lab-pvc --ignore-not-found --wait >/dev/null 2>&1'
+
+sol_ch_ckad_lab3_1='cat > /root/secure-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "sleep 3600"]
+YAML
+kubectl apply -f /root/secure-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/secure-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab3_2='cat > /root/readonly-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readonly-pod
+spec:
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "echo tmp writable > /tmp/ok.txt; cat /tmp/ok.txt; sleep 3600"]
+      securityContext:
+        readOnlyRootFilesystem: true
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+YAML
+kubectl apply -f /root/readonly-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/readonly-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab3_3='cat > /root/noprivilege-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: noprivilege-pod
+spec:
+  containers:
+    - name: app
+      image: nginx:alpine
+      command: ["sh", "-c", "sleep 3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+YAML
+kubectl apply -f /root/noprivilege-pod.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/noprivilege-pod --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab3_4='kubectl delete pod secure-pod readonly-pod noprivilege-pod --ignore-not-found --wait >/dev/null 2>&1'
+
+# ── CKAD lab 4: probes ───────────────────────────────────────────────────────
+# The checks read the spec, not the status, which is the right call here: a
+# readinessProbe on /ready never goes Ready against stock nginx, and an exec
+# probe on /tmp/healthy is meant to fail. Waiting for Ready would hang.
+
+sol_ch_ckad_lab4_1='cat > /root/liveness-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-pod
+spec:
+  containers:
+    - name: app
+      image: nginx:alpine
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 80
+        initialDelaySeconds: 5
+        periodSeconds: 10
+YAML
+kubectl apply -f /root/liveness-pod.yaml >/dev/null'
+
+sol_ch_ckad_lab4_2='cat > /root/readiness-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-pod
+spec:
+  containers:
+    - name: app
+      image: nginx:alpine
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 80
+        initialDelaySeconds: 3
+        periodSeconds: 5
+YAML
+kubectl apply -f /root/readiness-pod.yaml >/dev/null'
+
+sol_ch_ckad_lab4_3='cat > /root/exec-probe.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: exec-probe
+spec:
+  containers:
+    - name: app
+      image: nginx:alpine
+      livenessProbe:
+        exec:
+          command: ["cat", "/tmp/healthy"]
+        initialDelaySeconds: 5
+        periodSeconds: 10
+YAML
+kubectl apply -f /root/exec-probe.yaml >/dev/null'
+
+sol_ch_ckad_lab4_4='cat > /root/tcp-probe.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-probe
+spec:
+  containers:
+    - name: app
+      image: redis:alpine
+      livenessProbe:
+        tcpSocket:
+          port: 6379
+        initialDelaySeconds: 5
+        periodSeconds: 10
+YAML
+kubectl apply -f /root/tcp-probe.yaml >/dev/null'
+
+sol_ch_ckad_lab4_5='kubectl delete pod liveness-pod readiness-pod exec-probe tcp-probe --ignore-not-found --wait >/dev/null 2>&1'
+
+# ── CKAD lab 5: Jobs and CronJobs ────────────────────────────────────────────
+
+sol_ch_ckad_lab5_1='cat > /root/pi-job.yaml <<YAML
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi-job
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: pi
+          image: nginx:alpine
+          command: ["sh", "-c", "echo 3.14159"]
+YAML
+kubectl apply -f /root/pi-job.yaml >/dev/null
+kubectl wait --for=condition=complete job/pi-job --timeout=120s >/dev/null 2>&1'
+
+sol_ch_ckad_lab5_2='cat > /root/multi-job.yaml <<YAML
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-job
+spec:
+  completions: 3
+  parallelism: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: worker
+          image: nginx:alpine
+          command: ["sh", "-c", "echo multi-job"]
+YAML
+kubectl apply -f /root/multi-job.yaml >/dev/null'
+
+sol_ch_ckad_lab5_3='kubectl wait --for=condition=complete job/multi-job --timeout=120s >/dev/null 2>&1'
+
+sol_ch_ckad_lab5_4='cat > /root/cron-job.yaml <<YAML
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello-cron
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: hello
+              image: nginx:alpine
+              command: ["sh", "-c", "date; echo hello from cron"]
+YAML
+kubectl apply -f /root/cron-job.yaml >/dev/null'
+
+sol_ch_ckad_lab5_6='kubectl create job manual-run --from=cronjob/hello-cron >/dev/null 2>&1
+kubectl wait --for=condition=complete job/manual-run --timeout=120s >/dev/null 2>&1'
+
+sol_ch_ckad_lab5_7='kubectl delete job pi-job multi-job manual-run --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete cronjob hello-cron --ignore-not-found --wait >/dev/null 2>&1'
+
+# ── CKAD lab 6: HPA ──────────────────────────────────────────────────────────
+
+sol_ch_ckad_lab6_1='kubectl create deployment hpa-app --image=nginx:alpine --replicas=1 >/dev/null 2>&1
+kubectl rollout status deployment/hpa-app --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab6_2='cat > /root/hpa.yaml <<YAML
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hpa-app
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+YAML
+kubectl apply -f /root/hpa.yaml >/dev/null'
+
+sol_ch_ckad_lab6_4='kubectl delete hpa hpa-app --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete deployment hpa-app --ignore-not-found --wait >/dev/null 2>&1'
+
+# ── CKAD lab 8: RBAC ─────────────────────────────────────────────────────────
+
+sol_ch_ckad_lab8_1='kubectl create serviceaccount app-sa >/dev/null 2>&1'
+
+sol_ch_ckad_lab8_2='cat > /root/pod-reader-role.yaml <<YAML
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+YAML
+kubectl apply -f /root/pod-reader-role.yaml >/dev/null'
+
+sol_ch_ckad_lab8_3='kubectl create rolebinding pod-reader-binding --role=pod-reader --serviceaccount=default:app-sa >/dev/null 2>&1'
+
+sol_ch_ckad_lab8_4='cat > /root/sa-pod.yaml <<YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sa-pod
+spec:
+  serviceAccountName: app-sa
+  containers:
+    - name: app
+      image: nginx:alpine
+YAML
+kubectl apply -f /root/sa-pod.yaml >/dev/null'
+
+sol_ch_ckad_lab8_5='kubectl delete pod sa-pod --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete sa app-sa --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete rolebinding pod-reader-binding --ignore-not-found >/dev/null 2>&1
+kubectl delete role pod-reader --ignore-not-found >/dev/null 2>&1'
+
+# ── CKAD lab 16: canary and blue-green ───────────────────────────────────────
+# The manifests come from the lesson setup, so these steps are apply and patch.
+
+sol_ch_ckad_lab16_deployment_strategies_1='kubectl apply -f /root/deploy-strategies/canary-v1.yaml >/dev/null
+kubectl rollout status deployment/shop-v1 --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab16_deployment_strategies_2='kubectl apply -f /root/deploy-strategies/canary-v2.yaml >/dev/null
+kubectl rollout status deployment/shop-v2 --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab16_deployment_strategies_3='kubectl apply -f /root/deploy-strategies/blue-green.yaml >/dev/null
+kubectl rollout status deployment/checkout-blue --timeout=180s >/dev/null 2>&1
+kubectl rollout status deployment/checkout-green --timeout=180s >/dev/null 2>&1'
+
+sol_ch_ckad_lab16_deployment_strategies_4='kubectl patch service checkout-svc -p "{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"green\"}}}" >/dev/null'
+
+sol_ch_ckad_lab16_deployment_strategies_5='kubectl patch service checkout-svc -p "{\"spec\":{\"selector\":{\"app\":\"checkout\",\"color\":\"blue\"}}}" >/dev/null'
+
+sol_ch_ckad_lab16_deployment_strategies_6='kubectl delete deployment shop-v1 shop-v2 checkout-blue checkout-green --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete service shop-svc checkout-svc --ignore-not-found --wait >/dev/null 2>&1
+kubectl delete pod strategy-debug --ignore-not-found --wait >/dev/null 2>&1'
+
+# Наблюдательные шаги: состояние уже создано предыдущим заданием, поэтому
+# решение — это та самая команда «посмотреть», которую просит условие. Эталон им
+# всё равно нужен: без него run.sh считает шаг пропущенным и не доходит до
+# проверки, что он наблюдательный.
+sol_ch_ckad_lab5_5='kubectl get cronjob hello-cron -o jsonpath="{.spec.schedule}" >/dev/null'
+sol_ch_ckad_lab6_3='kubectl get hpa hpa-app -o jsonpath="{.spec.minReplicas}/{.spec.maxReplicas}" >/dev/null'

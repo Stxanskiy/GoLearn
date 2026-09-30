@@ -20,4 +20,6 @@ ch-helm-lab4#4
 ch-helm-lab4#6
 ch-helm-lab4#9
 ch-ckad-lab14-debug-service-config#3
+ch-ckad-lab5#5
+ch-ckad-lab6#3
 "

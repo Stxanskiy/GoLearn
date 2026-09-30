@@ -58,8 +58,14 @@ func TestGitBasicsAdvancedLessons(t *testing.T) {
 	if err != nil {
 		t.Fatalf("buildModule: %v", err)
 	}
-	if got := len(m.Lessons); got != 19 {
-		t.Fatalf("git-basics lessons = %d, want 19", got)
+	if got := len(m.Lessons); got != 20 {
+		t.Fatalf("git-basics lessons = %d, want 20", got)
+	}
+	// The course used to stop dead on the advanced quiz: its closing chapter was
+	// displaced when the advanced block took slot 15 and was never restored. A
+	// course that ends without tying anything together is worth guarding against.
+	if last := m.Lessons[len(m.Lessons)-1]; last.Slug != "ch-git-next-steps" {
+		t.Errorf("git-basics ends on %q, not the closing chapter", last.Slug)
 	}
 	newLabs := map[string]bool{"ch-git-lab8": false, "ch-git-lab9": false, "ch-git-lab10": false}
 	for i := range m.Lessons {

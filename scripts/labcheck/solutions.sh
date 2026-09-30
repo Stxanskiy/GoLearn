@@ -255,7 +255,11 @@ sol_ch_ltrouble_lab3_2="sed -i 's/http.server 9090/http.server 8080/' /etc/syste
 sol_ch_ltrouble_lab3_3='kill $(cat /run/gl-stray.pid) 2>/dev/null; sleep 0.5; (cd /opt/app && setsid python3 -m http.server 3000 >/dev/null 2>&1 &); sleep 1'
 sol_ch_ltrouble_lab3_4='chmod +x /opt/app/maintenance.sh'
 
-sol_ch_ltrouble_lab4_2='P=$(pgrep -f "[p]ayment_logger" | head -1); cat /proc/$P/fd/3 > /root/recovered-payment-token.txt'
+# Keyed _1, not _2: the fixture's Checks map is indexed over every non-self task,
+# but run.sh numbers only the tasks that actually carry a check_script — and this
+# lesson has exactly one. The solution existed all along under _2 and was never
+# run, so the check went unverified and the harness reported it as missing.
+sol_ch_ltrouble_lab4_1='P=$(pgrep -f "[p]ayment_logger" | head -1); cat /proc/$P/fd/3 > /root/recovered-payment-token.txt'
 
 # ── sql-express ──
 sol_ch_pgsql_lab_schema_1='psql -qc "CREATE DATABASE training_shop"'
@@ -748,3 +752,9 @@ s=s.replace("optional-lint:\n  stage: test\n",
             "optional-lint:\n  stage: test\n  allow_failure: true\n")
 io.open(p,"w").write(s)
 PY'
+
+# ── Лабораторная 0: первое знакомство ──
+sol_ch_lnav_lab0_1='pwd > /root/where_am_i.txt'
+sol_ch_lnav_lab0_2='ls -la > /root/listing.txt'
+sol_ch_lnav_lab0_3='cat /root/welcome.txt > /root/welcome_copy.txt'
+sol_ch_lnav_lab0_4='echo привет > /root/hello.txt'

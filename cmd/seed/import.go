@@ -153,7 +153,9 @@ func buildModule(s importSpec) (M, error) {
 	}
 
 	// Map chapter id -> filename (files are "NN_<id>.json"; NN is scrape order, NOT
-	// learning order). Authoritative order comes from course.ChapterList positions.
+	// learning order). Learning order is the ORDER OF THE chapter_list ARRAY — the
+	// "position" field in it is decorative and read by nothing, so a chapter
+	// appended to the end lands at the end no matter what position it claims.
 	entries, err := contentFS.ReadDir(base)
 	if err != nil {
 		return M{}, err
