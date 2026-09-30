@@ -119,7 +119,10 @@ func TestCatalog(t *testing.T) {
 	if docker.Status != "in_progress" || docker.LessonsCompleted != 0 || docker.Label != "practice" || docker.Category != "Docker" || docker.EstMinutes != 20 {
 		t.Errorf("docker card = %+v", docker)
 	}
-	if docker.CoverURL != "/api/v1/courses/docker/cover" || devops.CoverURL != "/api/v1/specializations/devops/cover" {
+	// Versioned: the cover is cached for a day, so replacing one has to change
+	// the address or the browser keeps showing the old picture.
+	if !strings.HasPrefix(docker.CoverURL, "/api/v1/courses/docker/cover?v=") ||
+		!strings.HasPrefix(devops.CoverURL, "/api/v1/specializations/devops/cover?v=") {
 		t.Errorf("cover urls: %q %q", docker.CoverURL, devops.CoverURL)
 	}
 	if len(cat.Specializations[1].Courses) != 0 {
@@ -322,7 +325,7 @@ func TestCoursePreviewIsPublic(t *testing.T) {
 		t.Errorf("Cache-Control = %q", got)
 	}
 	p := decode[apigen.CoursePreview](t, w)
-	if p.Title != "Linux: Старт" || p.CoverURL != "/api/v1/courses/linux/cover" {
+	if p.Title != "Linux: Старт" || !strings.HasPrefix(p.CoverURL, "/api/v1/courses/linux/cover?v=") {
 		t.Errorf("course = %+v", p)
 	}
 	if p.LessonsCount != 3 || p.LabsCount != 1 {
@@ -531,5 +534,23 @@ func TestTrainerStandsOutsideTheCoursePath(t *testing.T) {
 		if ref != nil && ref.Slug == "gym-linux" {
 			t.Errorf("neighbour is a trainer: %+v", ref)
 		}
+	}
+}
+
+// Covers are cached for a day. Replacing one kept the same address, so the
+// browser went on showing the old picture and the upload looked like it had
+// done nothing — the author's actual complaint.
+func TestCoverURLChangesWithTheCover(t *testing.T) {
+	before := coverURL("courses", "linux", "data:image/png;base64,AAAA")
+	after := coverURL("courses", "linux", "data:image/png;base64,BBBB")
+	if before == after {
+		t.Errorf("a new cover kept the same address: %s", before)
+	}
+	if again := coverURL("courses", "linux", "data:image/png;base64,AAAA"); again != before {
+		t.Errorf("the same cover moved: %s vs %s", again, before)
+	}
+	// The slug still has to survive escaping.
+	if got := coverURL("courses", "a b", ""); !strings.Contains(got, "a%20b") {
+		t.Errorf("slug not escaped: %s", got)
 	}
 }

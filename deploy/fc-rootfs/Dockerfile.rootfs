@@ -30,10 +30,11 @@ COPY rootfs-extra/zshrc /root/.zshrc
 RUN chsh -s /usr/bin/zsh root
 RUN passwd -d root
 # ── neovim ───────────────────────────────────────────────────────────────────
-# From upstream, not apt: Ubuntu 24.04 ships 0.9.5, and current plugins require
-# 0.10+. gitsigns installed against 0.9.5 threw a stack trace over the file every
-# time a student opened one, and took two Enters to get past.
-RUN curl -fsSL --retry 3 https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz \
+# From upstream, not apt: Ubuntu 24.04 ships 0.9.5. Current gitsigns calls the
+# 0.11 form of vim.validate, which older Neovim reads as the old one and rejects
+# with "opt: expected table, got string" — a stack trace over the student's file
+# and two Enters to get past it. 0.10 was not enough; 0.11 is.
+RUN curl -fsSL --retry 3 https://github.com/neovim/neovim/releases/download/v0.11.4/nvim-linux-x86_64.tar.gz \
       | tar xz -C /opt && ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim && \
     nvim --version | head -1
 
@@ -53,14 +54,17 @@ RUN git clone -q --depth=1 --branch=stable \
     find /root/.local/share/nvim/lazy -name .git -type d -prune -exec rm -rf {} + && \
     printf 'export EDITOR=nvim\nalias vim=nvim\nalias vi=nvim\n' >> /root/.zshrc
 
-# Smoke test: open a file the way a student does and fail the build on any error.
-# A plugin incompatible with this Neovim still installs cleanly and only shows
-# itself as a stack trace over the student's file, which is how it shipped once.
+# Smoke test. It must LOAD the plugins, not merely start Neovim: lazy.nvim holds
+# them until the VeryLazy event, which fires after the UI appears — and there is
+# no UI in --headless. The previous version of this test opened a file headless,
+# loaded nothing, and passed happily on a config that threw a stack trace at the
+# first student who opened one. "Lazy! load all" is what makes it mean anything.
 RUN cd /tmp && git init -q smoke && cd smoke && \
     printf 'a: 1\nb: two\n' > smoke.yaml && git add -A && \
     git -c user.email=b@t -c user.name=b commit -qm init && \
     printf 'a: 2\n' >> smoke.yaml && \
-    nvim --headless -c "sleep 2" -c "qa!" smoke.yaml > /tmp/smoke.log 2>&1; \
+    nvim --headless "+Lazy! load all" -c "edit smoke.yaml" \
+      -c "lua vim.wait(2000)" -c "messages" -c "qa!" > /tmp/smoke.log 2>&1; \
     cat /tmp/smoke.log; \
     test ! -s /tmp/smoke.log && rm -rf /tmp/smoke
 

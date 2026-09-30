@@ -500,7 +500,7 @@ func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLe
 		Tags: m.Tags, EstMinutes: m.EstMinutes, OrderNum: m.OrderNum, Published: m.Published, IsTrainer: m.IsTrainer,
 		Source: apigen.AdminCourseSource(m.Source), Owner: owner, Access: courseAccess(level), Review: review,
 		HasCustomCover:  m.CoverImage != "",
-		CoverPreviewURL: "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
+		CoverPreviewURL: coverURL("courses", m.Slug, m.CoverImage),
 		CreatedAt:       m.CreatedAt,
 	}
 	if out.Tags == nil {

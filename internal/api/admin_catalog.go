@@ -444,7 +444,7 @@ func toAdminSpecialization(s model.Specialization, courses int) apigen.AdminSpec
 		Slug: s.Slug, Name: s.Name, Description: s.Description, Published: s.Published,
 		OrderNum: s.OrderNum, OwnerID: s.OwnerID, CoursesCount: courses,
 		HasCustomCover:  s.CoverImage != "",
-		CoverPreviewURL: "/api/v1/specializations/" + s.Slug + "/cover",
+		CoverPreviewURL: coverURL("specializations", s.Slug, s.CoverImage),
 	}
 	if s.CoverImage != "" && !strings.HasPrefix(s.CoverImage, "data:") {
 		out.CoverURL = &s.CoverImage

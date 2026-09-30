@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"net/url"
 	"time"
@@ -178,7 +180,7 @@ func specWithCourses(s model.Specialization, all, shown []catalog.Course) apigen
 		Slug:        s.Slug,
 		Name:        s.Name,
 		Description: s.Description,
-		CoverURL:    "/api/v1/specializations/" + url.PathEscape(s.Slug) + "/cover",
+		CoverURL:    coverURL("specializations", s.Slug, s.CoverImage),
 		Courses:     cards,
 		CoursesDone: done,
 	}
@@ -235,7 +237,7 @@ func courseCard(c catalog.Course) apigen.CourseCard {
 		Difficulty:       apigen.Difficulty(c.Module.Difficulty),
 		IsTrainer:        c.Module.IsTrainer,
 		Tags:             tags,
-		CoverURL:         "/api/v1/courses/" + url.PathEscape(c.Module.Slug) + "/cover",
+		CoverURL:         coverURL("courses", c.Module.Slug, c.Module.CoverImage),
 		LessonsCount:     len(c.Lessons),
 		LessonsCompleted: c.Completed,
 		ProgressPct:      c.Pct,
@@ -265,4 +267,16 @@ func linkRef(m *model.Module) *apigen.LinkRef {
 		return nil
 	}
 	return &apigen.LinkRef{Slug: m.Slug, Title: m.Title}
+}
+
+// coverURL builds the address a cover is served from, with a version derived
+// from the stored image.
+//
+// The cover itself is cached for a day, which is right for students and wrong
+// for an author: replacing a cover kept the same address, so the browser went on
+// showing the old picture and the upload looked like it had done nothing. The
+// version changes only when the image does, so the cache still works.
+func coverURL(kind, slug, cover string) string {
+	sum := sha256.Sum256([]byte(cover))
+	return "/api/v1/" + kind + "/" + url.PathEscape(slug) + "/cover?v=" + hex.EncodeToString(sum[:4])
 }

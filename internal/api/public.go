@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"context"
 	"net/http"
-	"net/url"
 	"slices"
 	"strconv"
 
@@ -246,7 +245,7 @@ func (a *API) getCoursePreview(w http.ResponseWriter, r *http.Request) {
 		Label:          apigen.CourseLabel(c.Label),
 		Difficulty:     apigen.Difficulty(m.Difficulty),
 		Tags:           tags,
-		CoverURL:       "/api/v1/courses/" + url.PathEscape(m.Slug) + "/cover",
+		CoverURL:       coverURL("courses", m.Slug, m.CoverImage),
 		EstMinutes:     c.EstMinutes,
 		LessonsCount:   len(lessons),
 		LabsCount:      labs,
@@ -265,7 +264,7 @@ func (a *API) previewSpec(ctx context.Context, spec string) *apigen.Specializati
 		Slug:        s.Slug,
 		Name:        s.Name,
 		Description: s.Description,
-		CoverURL:    "/api/v1/specializations/" + url.PathEscape(s.Slug) + "/cover",
+		CoverURL:    coverURL("specializations", s.Slug, s.CoverImage),
 	}
 }
 
