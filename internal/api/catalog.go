@@ -188,26 +188,33 @@ func specWithCourses(s model.Specialization, all, shown []catalog.Course) apigen
 
 // courseCards returns cards of the regular courses that belong to spec; trainers have their own list.
 func courseCards(courses []catalog.Course, spec string) []apigen.CourseCard {
-	return progressOrderedCards(courses, func(c catalog.Course) bool {
+	return selectedCards(courses, func(c catalog.Course) bool {
 		return c.Spec == spec && !c.Module.IsTrainer
 	})
 }
 
 // trainerCards returns cards of the practice-only courses, whatever specialization they belong to.
 func trainerCards(courses []catalog.Course) []apigen.CourseCard {
-	return progressOrderedCards(courses, func(c catalog.Course) bool { return c.Module.IsTrainer })
+	return selectedCards(courses, func(c catalog.Course) bool { return c.Module.IsTrainer })
 }
 
-// progressOrderedCards selects courses and returns them in the catalogue order: started, untouched, completed.
-func progressOrderedCards(courses []catalog.Course, keep func(catalog.Course) bool) []apigen.CourseCard {
+// selectedCards returns the matching courses in curriculum order — the order an
+// author set with order_num.
+//
+// They used to be re-sorted by progress here, started first. That put the
+// catalogue and the specialisation page, whose list is headed "порядок
+// прохождения", in an order nobody chose and which changed as a student worked:
+// with several courses touched, the sequence bore no relation to the one the
+// author arranged. Where the student left off belongs on the dashboard, and the
+// dashboard asks for it separately (LatestInProgress); a catalogue should show
+// the curriculum.
+func selectedCards(courses []catalog.Course, keep func(catalog.Course) bool) []apigen.CourseCard {
 	picked := []catalog.Course{}
 	for _, c := range courses {
 		if keep(c) {
 			picked = append(picked, c)
 		}
 	}
-	catalog.SortByProgress(picked)
-
 	cards := make([]apigen.CourseCard, 0, len(picked))
 	for _, c := range picked {
 		cards = append(cards, courseCard(c))

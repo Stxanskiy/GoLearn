@@ -101,18 +101,21 @@ func TestCatalog(t *testing.T) {
 	}
 
 	devops := cat.Specializations[0]
-	// Cards come back in progress order: started, then untouched, then completed.
-	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "docker" || devops.Courses[1].Slug != "helm" || devops.Courses[2].Slug != "linux" {
+	// Curriculum order, the one an author set with order_num — not the student's
+	// progress. Cards used to be re-sorted started-first, which left the
+	// catalogue and the "порядок прохождения" list in a sequence nobody chose and
+	// that moved as the student worked.
+	if len(devops.Courses) != 3 || devops.Courses[0].Slug != "linux" || devops.Courses[1].Slug != "docker" || devops.Courses[2].Slug != "helm" {
 		t.Fatalf("devops courses = %+v", devops.Courses)
 	}
-	linux := devops.Courses[2]
+	linux := devops.Courses[0]
 	if linux.Status != "completed" || linux.LessonsCount != 3 || linux.LessonsCompleted != 3 || linux.ProgressPct != 100 {
 		t.Errorf("linux card (quiz by score, lab by passed tasks, draft lesson excluded) = %+v", linux)
 	}
 	if devops.CoursesDone != 1 {
 		t.Errorf("courses_done = %d", devops.CoursesDone)
 	}
-	docker := devops.Courses[0]
+	docker := devops.Courses[1]
 	if docker.Status != "in_progress" || docker.LessonsCompleted != 0 || docker.Label != "practice" || docker.Category != "Docker" || docker.EstMinutes != 20 {
 		t.Errorf("docker card = %+v", docker)
 	}

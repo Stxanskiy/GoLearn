@@ -37,7 +37,10 @@ type Profile struct {
 	Mimes      []string
 	MaxBytes   int
 	Aspect     float64 // required width/height; 0 disables the check
+	CropAspect bool    // crop to Aspect instead of rejecting what does not match
 	MinSide    int     // shortest side in pixels; 0 disables the check
+	MinWidth   int     // width in pixels; 0 disables the check
+	MinHeight  int     // height in pixels; 0 disables the check
 	MaxSide    int     // longest side in pixels; 0 disables the check
 	StoredSide int     // longest side kept in storage; 0 stores the upload as is
 	Hint       string  // contract text sent with the error
@@ -56,12 +59,19 @@ var (
 		Hint:       "icon must be PNG, WebP or SVG, square, 128-4096 px a side, max 4 MiB",
 	}
 	// CoverProfile: 16:9 banner of the course card and of the course page header.
+	// A cover is cropped to 16:9 from the middle rather than refused for not
+	// being 16:9 already. Demanding the exact ratio to within 2% meant almost no
+	// real screenshot or photo was accepted, and the author was sent off to crop
+	// it by hand — work the server can do in a line.
 	CoverProfile = Profile{
-		Mimes:    []string{MimePNG, MimeJPEG, MimeWebP, MimeSVG},
-		MaxBytes: 4 << 20,
-		Aspect:   16.0 / 9.0,
-		MinSide:  540,
-		Hint:     "cover must be PNG, JPEG, WebP or SVG, 16:9, at least 960x540, max 4 MiB",
+		Mimes:      []string{MimePNG, MimeJPEG, MimeWebP, MimeSVG},
+		MaxBytes:   4 << 20,
+		Aspect:     16.0 / 9.0,
+		CropAspect: true,
+		MinWidth:   960,
+		MinHeight:  540,
+		StoredSide: 1920,
+		Hint:       "cover must be PNG, JPEG, WebP or SVG, at least 960x540, max 4 MiB; it is cropped to 16:9",
 	}
 	// ContentProfile: illustration inside lesson content, any proportions.
 	ContentProfile = Profile{
@@ -152,7 +162,11 @@ func checkGeometry(data []byte, mime string, p Profile) error {
 			return ErrImageTooLarge
 		}
 	}
-	if p.Aspect > 0 {
+	if p.MinWidth > 0 && w < p.MinWidth || p.MinHeight > 0 && h < p.MinHeight {
+		return ErrImageTooSmall
+	}
+	// Proportions are only a hard requirement for slots that cannot crop.
+	if p.Aspect > 0 && !p.CropAspect {
 		got := float64(w) / float64(h)
 		if got < p.Aspect*(1-aspectTolerance) || got > p.Aspect*(1+aspectTolerance) {
 			return ErrImageProportions

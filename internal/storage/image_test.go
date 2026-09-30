@@ -92,13 +92,52 @@ func TestCoverProfile(t *testing.T) {
 	}{
 		{"16:9", rectPNG(t, 1280, 720), nil},
 		{"16:9 svg", []byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720"><rect/></svg>`), nil},
-		{"square", rectPNG(t, 720, 720), ErrImageProportions},
-		{"too small", rectPNG(t, 640, 360), ErrImageTooSmall},
+		// Anything big enough is accepted and cropped to 16:9 — demanding the
+		// exact ratio meant almost no real screenshot could be used as a cover.
+		{"square", rectPNG(t, 1080, 1080), nil},
+		{"portrait", rectPNG(t, 1000, 1400), nil},
+		{"too narrow", rectPNG(t, 800, 1400), ErrImageTooSmall},
+		{"too short", rectPNG(t, 1400, 400), ErrImageTooSmall},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			if _, err := DecodeImage(c.data, CoverProfile); err != c.want {
 				t.Fatalf("err = %v, want %v", err, c.want)
+			}
+		})
+	}
+}
+
+// What a cover looks like after upload: 16:9, whatever it was before.
+func TestCoverIsCroppedToSixteenNine(t *testing.T) {
+	for _, in := range []struct {
+		name string
+		w, h int
+	}{
+		{"square", 1080, 1080},
+		{"portrait", 1000, 1400},
+		{"wider than 16:9", 2400, 1000},
+		{"already 16:9", 1280, 720},
+	} {
+		t.Run(in.name, func(t *testing.T) {
+			img, err := DecodeImage(rectPNG(t, in.w, in.h), CoverProfile)
+			if err != nil {
+				t.Fatalf("decode: %v", err)
+			}
+			out, err := Normalize(img, CoverProfile)
+			if err != nil {
+				t.Fatalf("normalize: %v", err)
+			}
+			w, h, ok := Dimensions(out.Data, out.ContentType)
+			if !ok {
+				t.Fatal("stored cover has no readable size")
+			}
+			got := float64(w) / float64(h)
+			if got < 16.0/9.0*0.99 || got > 16.0/9.0*1.01 {
+				t.Errorf("stored %dx%d (ratio %.3f), want 16:9", w, h, got)
+			}
+			if w < 960 || h < 540 {
+				t.Errorf("stored %dx%d is smaller than the card needs", w, h)
 			}
 		})
 	}
