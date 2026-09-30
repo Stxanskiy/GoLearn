@@ -34,9 +34,14 @@ func (r *SubmissionRepo) IsTaskPassed(ctx context.Context, userID, taskID int) (
 
 // LessonLabStatus returns, per lesson with tasks, whether the user has passed all of them.
 func (r *SubmissionRepo) LessonLabStatus(ctx context.Context, userID int) (map[int]bool, error) {
+	// COUNT(DISTINCT t.id), not COUNT(*): the join multiplies a task by its
+	// submissions, so every re-press of "Проверить" inflated the total while
+	// passed stayed a count of distinct tasks. One retry anywhere in a lab —
+	// which is what checking a task twice is — made passed >= total impossible,
+	// and the lab never showed as finished however much the student did.
 	rows, err := r.pool.Query(ctx, `
 		SELECT t.lesson_id,
-		       COUNT(*) total,
+		       COUNT(DISTINCT t.id) total,
 		       COUNT(DISTINCT CASE WHEN s.passed THEN t.id END) passed
 		FROM tasks t LEFT JOIN submissions s ON s.task_id = t.id AND s.user_id = $1
 		GROUP BY t.lesson_id`, userID)

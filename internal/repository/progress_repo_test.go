@@ -155,3 +155,60 @@ func TestQuizAttemptsAccumulate(t *testing.T) {
 		}
 	}
 }
+
+// A lab is marked finished when every task in it has passed. The count of tasks
+// came from COUNT(*) over tasks LEFT JOIN submissions, which counts rows, not
+// tasks: each re-press of "Проверить" added one. Checking a single task twice —
+// the normal way anyone uses a lab — pushed the total past the number of passed
+// tasks and the lesson never showed as done, no matter how much the student did.
+func TestLabCountsAsPassedDespiteRetries(t *testing.T) {
+	pool := billingPool(t)
+	ctx := context.Background()
+	repo := NewSubmissionRepo(pool)
+	userID, lessonID := testUser(t, pool), testLesson(t, pool)
+
+	var taskIDs []int
+	for i := 1; i <= 2; i++ {
+		var id int
+		err := pool.QueryRow(ctx,
+			`INSERT INTO tasks (lesson_id, title, order_num, kind, check_script)
+			 VALUES ($1, $2, $3, 'shell', 'true') RETURNING id`,
+			lessonID, "task", i).Scan(&id)
+		if err != nil {
+			t.Fatalf("create task %d: %v", i, err)
+		}
+		taskIDs = append(taskIDs, id)
+	}
+
+	// The first task is checked three times — twice failing, then passing, which
+	// is what actually happens in a lab.
+	for _, passed := range []bool{false, false, true} {
+		if err := repo.Save(ctx, userID, taskIDs[0], "", "", "", passed); err != nil {
+			t.Fatalf("save attempt: %v", err)
+		}
+	}
+	if err := repo.Save(ctx, userID, taskIDs[1], "", "", "", true); err != nil {
+		t.Fatalf("save second task: %v", err)
+	}
+
+	status, err := repo.LessonLabStatus(ctx, userID)
+	if err != nil {
+		t.Fatalf("lab status: %v", err)
+	}
+	if !status[lessonID] {
+		t.Error("every task passed, but the lab does not count as finished")
+	}
+
+	// And it must still be honest: one task left undone means not finished.
+	other := testUser(t, pool)
+	if err := repo.Save(ctx, other, taskIDs[0], "", "", "", true); err != nil {
+		t.Fatalf("save for second user: %v", err)
+	}
+	status, err = repo.LessonLabStatus(ctx, other)
+	if err != nil {
+		t.Fatalf("lab status: %v", err)
+	}
+	if status[lessonID] {
+		t.Error("a lab with one of two tasks passed counts as finished")
+	}
+}
