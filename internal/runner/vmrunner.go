@@ -515,23 +515,26 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
 			v.dir, v.vmkey, vmip)
 	}
-	// An idle VM still burns a full host core, and idle=halt does NOT fix it —
-	// measured, not assumed. acpi=off makes the guest boot, but it also throws away
-	// the MADT, so the kernel reports "No local APIC present", falls back to a
-	// polling idle loop and ignores idle=halt (forcing it with `lapic` changes
-	// nothing). Inside such a VM /proc/stat reports 100% idle while the host sees
-	// the fc_vcpu thread at 100% user time in state R.
+	// nopv is what keeps an idle VM from burning a full host core.
 	//
-	// Firecracker v1.16.1 does publish ACPI tables with an APIC entry, and with
-	// acpi=off dropped the guest reaches "APIC: Switch to symmetric I/O mode" — but
-	// then panics with "VFS: Unable to mount root fs": virtio-mmio registers and no
-	// block device appears. acpi=noirq and noapic fail the same way. So the fix is
-	// not a boot argument: it needs a guest kernel that boots with ACPI enabled.
-	// Until then the lever is the warm pool (FC_WARM_*) — a VM only costs a core
-	// while it exists. idle=halt is kept because it is harmless and becomes the
-	// right setting the moment the APIC works.
+	// The cause was never ACPI. With KVM paravirtualisation on, the guest never
+	// executes HLT at all — measured: halt_exits stays at 0 while the fc_vcpu
+	// thread takes 503 ticks of every 500, and the guest's own /proc/stat reports
+	// 100% idle. Turning paravirt off drops that to 2 ticks of 500, on this very
+	// kernel; a Kubernetes VM idles at 6% instead of 100%, k3s and Docker
+	// unaffected. idle=halt alone does nothing, and neither does lapic.
+	//
+	// What the guest gives up is kvmclock (it falls back to TSC — sleep(5) lands
+	// within 2ms), PV EOI, and the paravirt spinlock and TLB paths, which cost a
+	// one-vCPU VM nothing.
+	//
+	// acpi=off stays. Firecracker does publish ACPI tables, but with them enabled
+	// virtio_blk and virtio_net fail to probe with -22 and the guest panics on
+	// "VFS: Unable to mount root fs" — on 6.1 and on 6.12 alike, with or without
+	// swiotlb/iommu/x2apic tweaks. Nothing is lost by leaving it off now that the
+	// idle problem is solved elsewhere.
 	bootArgs := fmt.Sprintf(
-		"console=ttyS0 reboot=k panic=1 acpi=off idle=halt net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
+		"console=ttyS0 reboot=k panic=1 acpi=off idle=halt nopv net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
 		vmip)
 	setupB64 := base64.StdEncoding.EncodeToString([]byte(setup))
 
