@@ -1,13 +1,20 @@
 # GoLearn — Learning Management System
 
 ## What This Is
-An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm, SQL — theory,
+An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm — theory,
 quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
 (see `deploy/berg/README.md`).
 
 Course content is JSON in `cmd/seed/content/`, compiled into the seeder with
 `go:embed` and imported by `cmd/seed/import.go`. No course is written in Go any
 more — the Go courses and the last `mod*.go` files are gone.
+
+There is no SQL course. "Экспресс-курс по SQL" was withdrawn in migration `030`:
+the first task of every one of its labs ran `psql -U student`, and the sandbox
+only ever created a `root` role, so each lab failed on its first command. It was
+never published. Its content, fixtures and reference solutions are deleted; the
+`database` track keeps its order_num band so a replacement lands in the right
+place rather than at the end of the DevOps path.
 
 The database is the source of truth for anything edited in the studio: a lesson
 or module with `edited_at` set (migration `026`) is never overwritten or pruned
@@ -25,6 +32,7 @@ by the seeder, so a deploy does not undo an author's changes.
 # 1. Build the lab sandbox images (once; network is needed only at build time)
 docker build -t golearn/sandbox:latest    -f deploy/sandbox/Dockerfile    deploy/sandbox
 docker tag   golearn/sandbox:latest golearn/git:latest
+# sandbox-pg is only needed if the SQL course comes back (see below) — skip it
 docker build -t golearn/sandbox-pg:latest -f deploy/sandbox-pg/Dockerfile deploy/sandbox-pg
 bash deploy/sandbox-docker/prepare.sh     # images + offline registry (needs network)
 docker build -t golearn/sandbox-docker:latest -f deploy/sandbox-docker/Dockerfile deploy/sandbox-docker
@@ -88,7 +96,7 @@ with `--network none`. Four images, picked per lesson via `tasks.sandbox_image`:
 | Image | Used by | Notes |
 |---|---|---|
 | `golearn/sandbox` | Linux, Git, тренажёры | CLI tools baked in; offline apt repo; `systemctl` shim (`deploy/sandbox/systemctl`) |
-| `golearn/sandbox-pg` | SQL | PostgreSQL server; lesson setup calls `pg-start` |
+| `golearn/sandbox-pg` | — | PostgreSQL server; unused since the SQL course was withdrawn (migration `030`), kept because rebuilding it is the expensive part of bringing that course back |
 | `golearn/sandbox-docker` | Docker, Compose | full Docker Engine (**privileged**); `docker-start`; offline Docker Hub stand-in so `docker pull` works |
 | `golearn/sandbox-k8s` | Kubernetes, Helm | single-node k3s + kubectl/helm (**privileged**); `k8s-start`; images and traefik baked in |
 

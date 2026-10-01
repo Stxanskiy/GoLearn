@@ -33,7 +33,6 @@ var labFixtures = map[string]map[string]labSpec{
 	"ansible":                ansibleLabs,
 	"express-devops":         expressDevopsLabs,
 	"gym-git":                gymGitLabs,
-	"sql-express":            sqlExpressLabs,
 	"docker-basics":          dockerBasicsLabs,
 	"docker-compose":         dockerComposeLabs,
 	"k8s-intro":              k8sIntroLabs,

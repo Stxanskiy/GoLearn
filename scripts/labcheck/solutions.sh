@@ -265,24 +265,6 @@ sol_ch_ltrouble_lab4_1='sed -i "s#--directory /opt/shop/wwwroot#--directory /opt
 # шаг, поэтому решение жило под _1.
 sol_ch_ltrouble_lab4_2='P=$(pgrep -f "[p]ayment_logger" | head -1); cat /proc/$P/fd/3 > /root/recovered-payment-token.txt'
 
-# ── sql-express ──
-sol_ch_pgsql_lab_schema_1='psql -qc "CREATE DATABASE training_shop"'
-sol_ch_pgsql_lab_schema_2='psql -qd training_shop -c "CREATE SCHEMA store"'
-sol_ch_pgsql_lab_schema_3='psql -qd training_shop -c "CREATE TABLE store.customers (id SERIAL PRIMARY KEY, full_name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, registered_at TIMESTAMPTZ NOT NULL DEFAULT now())"'
-sol_ch_pgsql_lab_schema_4='psql -qd training_shop -c "CREATE TABLE store.products (id SERIAL PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price NUMERIC(10,2) NOT NULL CHECK (price >= 0), in_stock INT NOT NULL CHECK (in_stock >= 0))"'
-sol_ch_pgsql_lab_schema_5='psql -qd training_shop -c "CREATE TABLE store.orders (id SERIAL PRIMARY KEY, customer_id INT NOT NULL REFERENCES store.customers(id), status TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now())"'
-
-sol_ch_pgsql_lab_insert_1='psql -qd training_shop -c "INSERT INTO store.customers (full_name, email) VALUES ('"'"'Alex'"'"','"'"'alex@example.test'"'"'),('"'"'Max'"'"','"'"'max@example.test'"'"')"'
-sol_ch_pgsql_lab_insert_2='psql -qd training_shop -c "INSERT INTO store.products (name, category, price, in_stock) VALUES ('"'"'PostgreSQL Guide'"'"','"'"'book'"'"',1900.00,25),('"'"'SQL Basics Course'"'"','"'"'course'"'"',4900.00,100),('"'"'Sticker Pack'"'"','"'"'merch'"'"',500.00,200)"'
-sol_ch_pgsql_lab_insert_3='psql -qd training_shop -c "INSERT INTO store.orders (customer_id, status) VALUES (1,'"'"'new'"'"'),(2,'"'"'paid'"'"')"'
-sol_ch_pgsql_lab_insert_4='psql -qd training_shop -c "INSERT INTO store.order_items (order_id, product_id, quantity, price) VALUES (1,2,1,4900.00),(2,1,2,1900.00),(2,3,3,500.00)"'
-
-sol_ch_pgsql_lab3_1='psql -qd training_shop -c "CREATE TABLE query_notes (id SERIAL PRIMARY KEY, topic TEXT NOT NULL, note TEXT, completed BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMPTZ NOT NULL DEFAULT now())"'
-sol_ch_pgsql_lab3_2='psql -qd training_shop -c "INSERT INTO query_notes (topic, note) VALUES ('"'"'select'"'"','"'"'выборка'"'"'),('"'"'join'"'"','"'"'соединения'"'"'),('"'"'transaction'"'"','"'"'транзакции'"'"')"'
-sol_ch_pgsql_lab3_3='psql -qd training_shop -c "UPDATE query_notes SET completed = true WHERE topic IN ('"'"'select'"'"','"'"'join'"'"')"'
-sol_ch_pgsql_lab3_4='psql -qd training_shop -c "DELETE FROM query_notes WHERE completed = false"'
-sol_ch_pgsql_lab3_5='psql -qd training_shop -c "CREATE INDEX idx_orders_created_at ON orders (created_at)"'
-
 # ── linux-terminal-start ──
 sol_navigation_and_links_1='cd /tmp && pwd > /root/.gl_cwd'
 sol_navigation_and_links_2='mkdir -p /root/workspace && echo hello > /root/workspace/readme.txt'

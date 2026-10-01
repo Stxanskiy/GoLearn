@@ -117,7 +117,6 @@ func importedModules() []M {
 		{Dir: "module_k8s_ckad", Slug: "k8s-ckad", Track: "devops", Difficulty: "advanced", Category: "Kubernetes", Image: sandboxImageK8s},
 		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes", Image: sandboxImageK8s},
 		// ── Database section ──
-		{Dir: "module_postgres_sql", Slug: "sql-express", Track: "database", Difficulty: "beginner", Category: "Database"},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
 		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
 		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "devops", Trainer: true, Difficulty: "intermediate", Category: "Linux"},

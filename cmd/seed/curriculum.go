@@ -25,12 +25,6 @@ var curriculum = map[string][]string{
 		"k8s-ckad",             // оркестрация: продвинутая практика
 		"helm",                 // пакетирование и деплой в кластер
 	},
-	"database": {
-		"sql-express", // быстрый старт по SQL
-		"sql-easy",    // затем практика по возрастанию сложности
-		"sql-medium",
-		"sql-hard",
-	},
 	"security": {
 		"security-offense",
 		"security-defense",
@@ -45,7 +39,9 @@ var curriculum = map[string][]string{
 // specBand is the order_num range reserved for each curriculum group; `gym` is
 // the shared band of the trainers, whatever specialization they belong to.
 var specBand = map[string]int{
-	"devops":   100,
+	"devops": 100,
+	// database остаётся без курсов: SQL убран, но полоса номеров сохранена,
+	// чтобы вернувшийся курс встал на своё место, а не в конец devops.
 	"database": 300,
 	"security": 400,
 	"gym":      500,
