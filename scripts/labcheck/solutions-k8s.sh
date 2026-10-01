@@ -133,7 +133,9 @@ sol_ch_k8si_lab9_dns_1='kubectl create deployment web-svc-app --image=nginx:alpi
 
 sol_ch_k8si_lab10_ingress_1='kubectl apply -f /root/ingress-lab/app.yaml >/dev/null && for d in frontend catalog cart; do kubectl rollout status deployment/$d --timeout=180s >/dev/null; done'
 sol_ch_k8si_lab10_ingress_2='kubectl create ingress store-ingress --rule="/*=frontend-svc:80" --rule="/catalog*=catalog-svc:80" --rule="/cart*=cart-svc:80" >/dev/null; kubectl -n kube-system rollout status deployment/traefik --timeout=180s >/dev/null 2>&1; for i in $(seq 1 30); do kubectl get ingress store-ingress -o jsonpath="{.status.loadBalancer.ingress[0].ip}" 2>/dev/null | grep -q . && break; sleep 2; done'
-sol_ch_k8si_lab10_ingress_3='for i in $(seq 1 45); do curl -s --max-time 5 http://10.55.0.2/ | grep -q "store frontend" && break; sleep 2; done; curl -s --max-time 10 http://10.55.0.2/ > /root/ingress_root.txt'
+# Шаг 3 теперь добавляет маршрут /health (так и называется задание в контенте)
+# и только потом проверяет маршрутизацию.
+sol_ch_k8si_lab10_ingress_3='kubectl patch ingress store-ingress --type=json -p "[{\"op\":\"add\",\"path\":\"/spec/rules/0/http/paths/-\",\"value\":{\"path\":\"/health\",\"pathType\":\"Prefix\",\"backend\":{\"service\":{\"name\":\"frontend-svc\",\"port\":{\"number\":80}}}}}]" >/dev/null; for i in $(seq 1 45); do curl -s --max-time 5 http://10.55.0.2/ | grep -q "store frontend" && break; sleep 2; done; curl -s --max-time 10 http://10.55.0.2/ > /root/ingress_root.txt'
 sol_ch_k8si_lab10_ingress_4='kubectl delete ingress store-ingress --ignore-not-found --wait >/dev/null; kubectl delete service frontend-svc catalog-svc cart-svc --ignore-not-found --wait >/dev/null; kubectl delete deployment frontend catalog cart --ignore-not-found --wait >/dev/null; kubectl delete configmap frontend-content catalog-source cart-source --ignore-not-found --wait >/dev/null'
 
 # ── Helm ──

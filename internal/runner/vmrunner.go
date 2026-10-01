@@ -65,11 +65,14 @@ type VMRunner struct {
 	// bringUpHook stands in for bringUp so the coordination in EnsureSession can
 	// be tested without a Firecracker host. nil everywhere but in tests.
 	bringUpHook func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error)
-	freeSlot    []bool                  // slot in use?
-	pool        map[string][]*vmSession // profile -> pre-booted warm VMs
-	warmWant    map[string]int          // profile -> desired warm count (0 = disabled)
-	refill      chan struct{}           // nudge the pool manager to top up
-	swept       chan struct{}           // closed once sweepOrphans has finished
+	// killHook stands in for the host side of killVM for the same reason. The
+	// bookkeeping around it still runs, which is the part worth testing.
+	killHook func(*vmSession)
+	freeSlot []bool                  // slot in use?
+	pool     map[string][]*vmSession // profile -> pre-booted warm VMs
+	warmWant map[string]int          // profile -> desired warm count (0 = disabled)
+	refill   chan struct{}           // nudge the pool manager to top up
+	swept    chan struct{}           // closed once sweepOrphans has finished
 }
 
 // vmStartFailed counts bring-ups that did not produce a usable VM. Until this
@@ -480,21 +483,21 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 		}
 	}
 	profile := profileOf(image)
+
 	// One-at-a-time: drop any other VM this user holds, then try the warm pool.
+	//
+	// A session that is still booting is cancelled and then *waited for* before it
+	// is torn down. Cancelling alone was not enough: teardown ran while the boot
+	// was still mid-flight, so it deleted the work dir and the tap out from under
+	// a script that went on using them, and whatever that script created
+	// afterwards was left behind with nobody tracking it.
+	//
+	// Cancel-then-wait cannot deadlock the way plain waiting would: the other side
+	// is cancelled first, so its boot returns instead of blocking. The deadline is
+	// only a backstop for a boot wedged somewhere uncancellable.
+	v.dropOtherSessions(ctx, sid, userID)
+
 	v.mu.Lock()
-	for other, s := range v.sessions {
-		if s.userID == userID && other != sid {
-			// If that session is still booting, stop it first. Tearing it down while
-			// its boot script runs is the same race this file guards against above —
-			// only across two lessons instead of two requests for one. Cancelling
-			// rather than waiting is deliberate: two bring-ups waiting on each other
-			// would deadlock.
-			if b := v.booting[other]; b != nil && b.cancel != nil {
-				b.cancel()
-			}
-			v.teardownLocked(other)
-		}
-	}
 	// A pre-booted warm VM of the right profile → hand it out instantly, then just
 	// apply the lesson setup (no cp, no boot, no k3s wait).
 	if warm := v.takeWarmLocked(profile); warm != nil {
@@ -515,7 +518,17 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 		vmStartFailed("slots")
 		return "", fmt.Errorf("все VM-слоты заняты (лимит %d) — попробуй чуть позже", v.maxVMs)
 	}
-	sess := &vmSession{sid: sid, userID: userID, key: key, image: image, slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
+	// Каталог и tap известны до начала загрузки и проставляются здесь, под
+	// замком: снос сессии в любой момент после этой строки знает, что убирать.
+	// Свой каталог на попытку (bootGen) — чтобы отменённая попытка не удалила
+	// каталог следующей.
+	sess := &vmSession{
+		sid: sid, userID: userID, key: key, image: image,
+		slot: slot, ip: vmIP(slot), profile: profile,
+		tap:     vmTap(slot),
+		work:    fmt.Sprintf("%s/sessions/%s-%d", v.dir, sid, bootGen.Add(1)),
+		started: time.Now(), last: time.Now(),
+	}
 	v.sessions[sid] = sess
 	v.mu.Unlock()
 
@@ -529,6 +542,54 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 	return sess.ip, nil
 }
 
+// dropOtherSessions releases every VM this user holds except sid.
+//
+// Split out of bringUp because it has to let go of v.mu while it waits: holding
+// the lock across the wait would block every other request on the runner.
+func (v *VMRunner) dropOtherSessions(ctx context.Context, sid string, userID int) {
+	for {
+		v.mu.Lock()
+		var other string
+		var boot *vmBoot
+		for cand, s := range v.sessions {
+			if s.userID == userID && cand != sid {
+				other, boot = cand, v.booting[cand]
+				break
+			}
+		}
+		if other == "" {
+			v.mu.Unlock()
+			return
+		}
+		// Nothing in flight: tear it down right here, still under the lock.
+		if boot == nil {
+			v.teardownLocked(other)
+			v.mu.Unlock()
+			continue
+		}
+		if boot.cancel != nil {
+			boot.cancel()
+		}
+		v.mu.Unlock()
+
+		wait, stop := context.WithTimeout(ctx, vmBootWait)
+		select {
+		case <-boot.done:
+		case <-wait.Done():
+			// The boot did not return in time. Tearing down anyway is still better
+			// than leaking the slot — and the boot script now cleans up after itself
+			// on the host, so what it created does not survive either.
+			slog.Warn("VM: superseded boot did not finish in time, tearing down anyway",
+				"sid", other, "user", userID)
+		}
+		stop()
+
+		v.mu.Lock()
+		v.teardownLocked(other)
+		v.mu.Unlock()
+	}
+}
+
 func vmHostIP(slot int) string { return fmt.Sprintf("172.31.%d.1", slot) }
 func vmIP(slot int) string     { return fmt.Sprintf("172.31.%d.2", slot) }
 func vmTap(slot int) string    { return fmt.Sprintf("gltap%d", slot) }
@@ -540,12 +601,22 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	ctx, cancel := context.WithTimeout(ctx, vmBootWait+30*time.Second)
 	defer cancel()
 
-	tap := vmTap(s.slot)
+	// work/tap/profile уже заполнены под v.mu тем, кто создал сессию (bringUp или
+	// bootWarm), и здесь только читаются.
+	//
+	// Раньше их писали здесь, без замка, а killVM читал под замком — настоящая
+	// гонка по полям vmSession. Хуже того, между созданием сессии и этой строкой
+	// существовало окно: снос сессии внутри него видел s.work == "" и вырождался
+	// в скрипт без единого действия, поэтому процесс Firecracker оставался жить,
+	// а копия rootfs на 5 ГБ — лежать на диске.
+	v.mu.Lock()
+	tap, work, vmip, profile := s.tap, s.work, s.ip, s.profile
+	v.mu.Unlock()
 	hostIP := vmHostIP(s.slot)
-	vmip := s.ip
 	mac := vmMAC(s.slot)
-	work := fmt.Sprintf("%s/sessions/%s-%d", v.dir, s.sid, bootGen.Add(1))
-	s.work, s.tap, s.profile = work, tap, profileOf(s.image)
+	if work == "" || tap == "" {
+		return fmt.Errorf("bootVM: сессия %s создана без work/tap", s.sid)
+	}
 
 	// Kubernetes lessons get the k3s golden and a bigger VM; everything else uses
 	// the default docker+tools golden.
@@ -554,12 +625,12 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	// Ready, so the student's terminal opens onto a working cluster instead of a
 	// "connection refused" while k3s (~15s) is still coming up.
 	k8sWait := ""
-	if s.profile == "lite" {
+	if profile == "lite" {
 		// Shell-only lesson: same golden (it carries the CLI tools) but none of the
 		// memory an engine or a cluster would need.
 		mem = v.memLite
 	}
-	if s.profile == "k8s" {
+	if profile == "k8s" {
 		// k3s fits comfortably in ~1.5 GB / 1 vCPU (a single node needs about 1 GB); the
 		// old 3 GB / 2 vCPU was ~3x too generous.
 		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 1
@@ -594,6 +665,19 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 
 	script := fmt.Sprintf(`set -e
 WORK=%[1]s
+# Скрипт убирает за собой сам, если умрёт или будет убит на любом шаге.
+#
+# exec.CommandContext убивает локальный ssh, но не удалённый bash: тот продолжал
+# копировать 5 ГБ и поднимать Firecracker уже после того, как слот отдали
+# следующему студенту, и оставлял и процесс, и tap, и копию rootfs. Теперь любой
+# выход, кроме успешного, разбирает за собой на той стороне, не полагаясь на
+# нашу. Обе операции идемпотентны, так что повторная уборка из killVM безвредна.
+cleanup_boot() {
+  if [ -f "$WORK/fc.pid" ]; then kill "$(cat "$WORK/fc.pid")" 2>/dev/null || true; fi
+  sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
+  rm -rf "$WORK" 2>/dev/null || true
+}
+trap cleanup_boot EXIT HUP TERM INT
 mkdir -p "$WORK"
 # fresh tap via the restricted gl-tap wrapper (the only privileged op we may do)
 sudo /usr/local/sbin/gl-tap add %[2]s %[3]s
@@ -625,6 +709,8 @@ if [ -n "%[14]s" ]; then
   fi
 fi
 %[15]s
+# Дошли до конца — разоружаем уборку, VM остаётся жить.
+trap - EXIT HUP TERM INT
 echo "GLVMOK %[13]s"
 `,
 		work,                        // 1
@@ -956,8 +1042,9 @@ func (v *VMRunner) killVM(s *vmSession) {
 		tap = vmTap(s.slot)
 	}
 	// Each boot attempt gets its own directory (see bootGen), so there is nothing
-	// to guess: an empty work means the attempt never created one. Deriving a path
-	// from the sid here would delete a directory belonging to a *later* attempt.
+	// to guess. Every session is created with work already set, so this branch is
+	// defensive only — but it stays: deriving a path from the sid instead would
+	// delete a directory belonging to a *later* attempt.
 	rmWork := ""
 	if s.work != "" {
 		rmWork = "rm -rf " + s.work
@@ -968,10 +1055,21 @@ sudo /usr/local/sbin/gl-tap del %[2]s 2>/dev/null || true
 %[3]s
 `, s.work, tap, rmWork)
 	slot := s.slot
+	// The slot is freed only after the host has actually removed the tap, and
+	// always through the lock — killVM is called both with v.mu held
+	// (teardownLocked) and without it (bootWarm), so the goroutine is what keeps
+	// that discipline the same in both cases.
+	host := func(ctx context.Context) {
+		if v.killHook != nil {
+			v.killHook(s)
+			return
+		}
+		_, _, _ = v.runHost(ctx, script)
+	}
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
-		_, _, _ = v.runHost(ctx, script)
+		host(ctx)
 		if slot >= 0 {
 			v.mu.Lock()
 			if slot < len(v.freeSlot) {
@@ -1066,8 +1164,14 @@ func (v *VMRunner) bootWarm(profile string) {
 	case "docker":
 		img = "golearn/sandbox-docker:latest"
 	}
-	sess := &vmSession{sid: fmt.Sprintf("warm-%s-%d", profile, slot), image: img, profile: profile,
-		slot: slot, ip: vmIP(slot), started: time.Now(), last: time.Now()}
+	sid := fmt.Sprintf("warm-%s-%d", profile, slot)
+	sess := &vmSession{
+		sid: sid, image: img, profile: profile,
+		slot: slot, ip: vmIP(slot),
+		tap:     vmTap(slot),
+		work:    fmt.Sprintf("%s/sessions/%s-%d", v.dir, sid, bootGen.Add(1)),
+		started: time.Now(), last: time.Now(),
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	if err := v.bootVM(ctx, sess, ""); err != nil {

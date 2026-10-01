@@ -142,3 +142,115 @@ func TestGivingUpDoesNotCancelTheBootForOthers(t *testing.T) {
 		t.Errorf("the caller that waited got ip=%q err=%v", ip, stayed)
 	}
 }
+
+// Opening a second lesson drops the VM the student already holds. When that VM
+// is still booting, cancelling its context was not enough: teardown ran straight
+// away, deleting the work dir and the tap out from under a boot script that went
+// on using them — and whatever the script created after that was left on the
+// host with nothing tracking it, while the slot had already been handed on.
+//
+// The three tests above all replace bringUp with a hook, so none of them reaches
+// this. This one exercises dropOtherSessions directly.
+func TestDroppingASessionWaitsForItsBootToStop(t *testing.T) {
+	v := &VMRunner{
+		enabled:  true,
+		sessions: map[string]*vmSession{},
+		booting:  map[string]*vmBoot{},
+		freeSlot: make([]bool, 4),
+		killHook: func(*vmSession) {},
+	}
+
+	// The student's first lesson, mid-boot.
+	old := &vmSession{sid: "u1-l1", userID: 1, slot: 0, ip: vmIP(0),
+		tap: vmTap(0), work: "/opt/fc/sessions/u1-l1-1"}
+	bootCtx, cancel := context.WithCancel(context.Background())
+	boot := &vmBoot{done: make(chan struct{}), cancel: cancel}
+	v.sessions[old.sid] = old
+	v.booting[old.sid] = boot
+	v.freeSlot[0] = true
+
+	// The boot script: it notices the cancellation and only then returns, which is
+	// the ordering teardown has to respect.
+	finished := make(chan struct{})
+	go func() {
+		<-bootCtx.Done()
+		time.Sleep(30 * time.Millisecond) // unwinding takes a moment
+		close(finished)
+		close(boot.done)
+	}()
+
+	done := make(chan struct{})
+	go func() {
+		v.dropOtherSessions(context.Background(), "u1-l2", 1)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("dropOtherSessions did not return — cancel-then-wait deadlocked")
+	}
+
+	select {
+	case <-finished:
+	default:
+		t.Error("the session was torn down before its boot had stopped")
+	}
+	v.mu.Lock()
+	_, stillThere := v.sessions[old.sid]
+	v.mu.Unlock()
+	if stillThere {
+		t.Error("the superseded session was not torn down")
+	}
+}
+
+// Two lessons opened at once by the same user cancel each other. Waiting without
+// cancelling first would deadlock; cancelling makes both sides return, so this
+// has to finish.
+func TestTwoSimultaneousDropsDoNotDeadlock(t *testing.T) {
+	v := &VMRunner{
+		enabled:  true,
+		sessions: map[string]*vmSession{},
+		booting:  map[string]*vmBoot{},
+		freeSlot: make([]bool, 4),
+		killHook: func(*vmSession) {},
+	}
+
+	for i, sid := range []string{"u1-l1", "u1-l2"} {
+		s := &vmSession{sid: sid, userID: 1, slot: i, ip: vmIP(i),
+			tap: vmTap(i), work: "/opt/fc/sessions/" + sid}
+		ctx, cancel := context.WithCancel(context.Background())
+		b := &vmBoot{done: make(chan struct{}), cancel: cancel}
+		v.sessions[sid] = s
+		v.booting[sid] = b
+		v.freeSlot[i] = true
+		go func() {
+			<-ctx.Done()
+			close(b.done)
+		}()
+	}
+
+	var wg sync.WaitGroup
+	for _, sid := range []string{"u1-l3", "u1-l4"} {
+		wg.Add(1)
+		go func(sid string) {
+			defer wg.Done()
+			v.dropOtherSessions(context.Background(), sid, 1)
+		}(sid)
+	}
+
+	settled := make(chan struct{})
+	go func() { wg.Wait(); close(settled) }()
+	select {
+	case <-settled:
+	case <-time.After(5 * time.Second):
+		t.Fatal("two concurrent drops deadlocked")
+	}
+
+	v.mu.Lock()
+	left := len(v.sessions)
+	v.mu.Unlock()
+	if left != 0 {
+		t.Errorf("sessions left behind: %d", left)
+	}
+}
