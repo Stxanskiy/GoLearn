@@ -140,34 +140,54 @@ func main() {
 			}
 			fmt.Printf("  Lesson %d: %s [%s]\n", lesson.Order, lesson.Title, lDiff)
 
-			// Rebuild this lesson's quiz and tasks. Scoped to the lesson, so a course
-			// an author owns keeps its tasks even while its neighbours are reseeded.
-			for _, stmt := range []string{
-				`DELETE FROM quiz_questions WHERE quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1)`,
-				`DELETE FROM quizzes WHERE lesson_id=$1`,
-				`DELETE FROM tasks WHERE lesson_id=$1`,
-			} {
-				if _, err := pool.Exec(ctx, stmt, lessonID); err != nil {
-					log.Fatalf("clear lesson %s: %v", lesson.Slug, err)
-				}
-			}
-
+			// Refresh this lesson's quiz and tasks IN PLACE.
+			//
+			// This used to delete them and insert them again. submissions and
+			// quiz_answers reference them with ON DELETE CASCADE, so every release
+			// erased the lab and quiz progress of every student on the platform —
+			// they came back to a lesson they had finished and found it blank.
+			// Rows are matched by their key in the content instead, and only keys
+			// that have genuinely disappeared are removed.
 			if len(lesson.Quiz) > 0 {
 				var quizID int
-				pool.QueryRow(ctx,
-					`INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
-					lessonID, "Квиз: "+lesson.Title).Scan(&quizID)
+				if err := pool.QueryRow(ctx,
+					`INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2)
+					 ON CONFLICT (lesson_id) DO UPDATE SET title=EXCLUDED.title
+					 RETURNING id`,
+					lessonID, "Квиз: "+lesson.Title).Scan(&quizID); err != nil {
+					log.Fatalf("quiz of lesson %q: %v", lesson.Slug, err)
+				}
+				keepQuestionKeys := make([]string, 0, len(lesson.Quiz))
 				for qi, q := range lesson.Quiz {
 					optJSON, _ := json.Marshal(q.Options)
 					oexplJSON, _ := json.Marshal(q.OptionExpl)
+					// Questions carry no id in the source, so position is the key. A
+					// reordered quiz keeps answers attached to the slot, which is the
+					// best available and far better than losing them all.
+					key := fmt.Sprintf("q%d", qi+1)
+					keepQuestionKeys = append(keepQuestionKeys, key)
 					if _, err := pool.Exec(ctx,
-						`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1); err != nil {
+						`INSERT INTO quiz_questions (quiz_id, question, options, option_explanations, correct_index, explanation, order_num, source_key)
+						 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+						 ON CONFLICT (quiz_id, source_key) WHERE source_key <> '' DO UPDATE SET
+						   question=EXCLUDED.question, options=EXCLUDED.options,
+						   option_explanations=EXCLUDED.option_explanations,
+						   correct_index=EXCLUDED.correct_index, explanation=EXCLUDED.explanation,
+						   order_num=EXCLUDED.order_num`,
+						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1, key); err != nil {
 						log.Fatalf("quiz question of lesson %q: %v", lesson.Slug, err)
 					}
 				}
+				if _, err := pool.Exec(ctx,
+					`DELETE FROM quiz_questions WHERE quiz_id=$1 AND source_key <> ALL($2)`,
+					quizID, keepQuestionKeys); err != nil {
+					log.Fatalf("prune quiz questions of lesson %q: %v", lesson.Slug, err)
+				}
 				fmt.Printf("    Quiz: %d questions\n", len(lesson.Quiz))
+			} else if _, err := pool.Exec(ctx, `DELETE FROM quizzes WHERE lesson_id=$1`, lessonID); err != nil {
+				log.Fatalf("drop quiz of lesson %q: %v", lesson.Slug, err)
 			}
+			keepTaskKeys := make([]string, 0, len(lesson.Tasks))
 			for ti, t := range lesson.Tasks {
 				tDiff := t.Difficulty
 				if tDiff == "" {
@@ -182,11 +202,33 @@ func main() {
 				// A dropped task is invisible otherwise: the lesson just ships with fewer
 				// steps than it was authored with. Fail loudly instead — one bad byte
 				// in a check message silently removed nine tasks before this.
+				// 44 of 846 tasks carry no key in the source; a positional one keeps
+				// them stable as long as the lesson's task order does not change.
+				key := t.SourceKey
+				if key == "" {
+					key = fmt.Sprintf("pos%d", ti+1)
+				}
+				keepTaskKeys = append(keepTaskKeys, key)
 				if _, err := pool.Exec(ctx,
-					`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-					lessonID, t.Title, t.Description, t.Hints, t.Solution, ti+1, tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript); err != nil {
+					`INSERT INTO tasks (lesson_id, title, description, hints, solution, order_num, difficulty, glossary, test_cases, starter_code, kind, sandbox_image, setup_script, check_script, source_key)
+					 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+					 ON CONFLICT (lesson_id, source_key) WHERE source_key <> '' DO UPDATE SET
+					   title=EXCLUDED.title, description=EXCLUDED.description, hints=EXCLUDED.hints,
+					   solution=EXCLUDED.solution, order_num=EXCLUDED.order_num, difficulty=EXCLUDED.difficulty,
+					   glossary=EXCLUDED.glossary, test_cases=EXCLUDED.test_cases,
+					   starter_code=EXCLUDED.starter_code, kind=EXCLUDED.kind,
+					   sandbox_image=EXCLUDED.sandbox_image, setup_script=EXCLUDED.setup_script,
+					   check_script=EXCLUDED.check_script`,
+					lessonID, t.Title, t.Description, t.Hints, t.Solution, ti+1, tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript, key); err != nil {
 					log.Fatalf("task %q of lesson %q: %v", t.Title, lesson.Slug, err)
 				}
+			}
+			// Only keys that really left the content are removed; everything else keeps
+			// its id, and with it every submission pointing at it.
+			if _, err := pool.Exec(ctx,
+				`DELETE FROM tasks WHERE lesson_id=$1 AND source_key <> ALL($2)`,
+				lessonID, keepTaskKeys); err != nil {
+				log.Fatalf("prune tasks of lesson %q: %v", lesson.Slug, err)
 			}
 			if len(lesson.Tasks) > 0 {
 				fmt.Printf("    Tasks: %d\n", len(lesson.Tasks))
@@ -252,14 +294,19 @@ type TestCase struct {
 }
 type T struct {
 	Title, Description, Hints, Solution string
-	Difficulty                          string // easy | medium | hard
-	Glossary                            []GlossaryItem
-	TestCases                           []TestCase
-	StarterCode                         string
-	Kind                                string // "" -> go | shell
-	SandboxImage                        string
-	SetupScript                         string
-	CheckScript                         string
+	// SourceKey is the task's identity in the content ("lnav_lab1_t2_pwd"). The
+	// seeder updates a task in place by it instead of deleting and re-inserting,
+	// which used to take every student submission with it through ON DELETE
+	// CASCADE — a release wiped the lab progress of everyone on the platform.
+	SourceKey    string
+	Difficulty   string // easy | medium | hard
+	Glossary     []GlossaryItem
+	TestCases    []TestCase
+	StarterCode  string
+	Kind         string // "" -> go | shell
+	SandboxImage string
+	SetupScript  string
+	CheckScript  string
 	// SelfCheck marks a task the source export typed "self": the student verifies
 	// it themselves. It never gets an auto-check, and — crucially — it is skipped
 	// when Checks/Descs are numbered, so adding these tasks does not shift the

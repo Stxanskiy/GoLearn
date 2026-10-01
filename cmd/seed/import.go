@@ -315,6 +315,7 @@ func toShellTask(t pkTask, vmImage string) T {
 		img = sandboxImage
 	}
 	return T{
+		SourceKey:    strings.TrimSpace(t.TaskID),
 		Title:        t.Title,
 		Description:  t.QuestionHTML,
 		Hints:        t.Hint,

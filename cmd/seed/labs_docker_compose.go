@@ -164,7 +164,7 @@ rm -rf /root/dbapp /root/backups && mkdir -p /root/dbapp
 cat > /root/dbapp/docker-compose.yml <<'YEOF'
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
@@ -323,7 +323,7 @@ cat > /root/healthapp/app.py <<'PYEOF'
 cat > /root/healthapp/docker-compose.yml <<'YEOF'
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     environment:
       POSTGRES_PASSWORD: postgres
   app:

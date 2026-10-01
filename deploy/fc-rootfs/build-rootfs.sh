@@ -60,4 +60,32 @@ trap - EXIT
 cleanup
 
 echo "==> готово: $OUT"
+
+# Сравнение с живым образом. Этот рецепт был восстановлен с хоста и не знал про
+# то, что добавляли руками: предзагруженные образы контейнеров (573 МБ для k3s,
+# 2,4 ГБ для Docker). Пересборка молча их потеряла, и в проде перестали
+# запускаться Pod'ы и контейнеры — лабораторные выглядели «зависшими».
+LIVE="/opt/fc/rootfs-$FLAVOUR.ext4"
+if [ -f "$LIVE" ]; then
+  mnt_new=$(mktemp -d); mnt_live=$(mktemp -d)
+  sudo mount -o loop,ro "$OUT" "$mnt_new"; sudo mount -o loop,ro "$LIVE" "$mnt_live"
+  echo "==> сравнение с живым образом:"
+  drift=0
+  for d in /var/lib/docker /var/lib/rancher/k3s/agent/images /usr/share/zsh-plugins /root/.local/share/nvim/lazy; do
+    a=$(sudo du -sm "$mnt_new$d"  2>/dev/null | cut -f1); a=${a:-0}
+    b=$(sudo du -sm "$mnt_live$d" 2>/dev/null | cut -f1); b=${b:-0}
+    [ "$a" = 0 ] && [ "$b" = 0 ] && continue
+    mark=""
+    [ "$a" -lt "$((b * 80 / 100))" ] && { mark="  <-- НОВЫЙ ОБРАЗ БЕДНЕЕ ЖИВОГО"; drift=1; }
+    printf "    %-44s новый %5s МБ, живой %5s МБ%s\n" "$d" "$a" "$b" "$mark"
+  done
+  sudo umount "$mnt_new"; sudo umount "$mnt_live"; rmdir "$mnt_new" "$mnt_live"
+  if [ "$drift" = 1 ]; then
+    echo
+    echo "    НЕ СТАВЬ ЭТОТ ОБРАЗ, пока не разберёшься: живой содержит то, чего нет в"
+    echo "    рецепте. Перенеси недостающее и добавь шаг в Dockerfile.rootfs."
+    exit 1
+  fi
+fi
+
 echo "    проверь его на одной VM, и только потом ставь на место живого (README.md)"

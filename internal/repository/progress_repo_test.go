@@ -212,3 +212,55 @@ func TestLabCountsAsPassedDespiteRetries(t *testing.T) {
 		t.Error("a lab with one of two tasks passed counts as finished")
 	}
 }
+
+// Every release ran the seeder, the seeder deleted a lesson's tasks before
+// inserting them again, and submissions reference tasks with ON DELETE CASCADE.
+// So each deploy erased the lab progress of everyone on the platform: a student
+// returned to a lesson they had finished and found it blank. Tasks carry a
+// source_key now and are updated in place; this is the property that must hold.
+func TestSubmissionsSurviveATaskRefresh(t *testing.T) {
+	pool := billingPool(t)
+	ctx := context.Background()
+	userID, lessonID := testUser(t, pool), testLesson(t, pool)
+
+	upsert := func(title string) int {
+		t.Helper()
+		var id int
+		err := pool.QueryRow(ctx,
+			`INSERT INTO tasks (lesson_id, title, order_num, kind, check_script, source_key)
+			 VALUES ($1, $2, 1, 'shell', 'true', 'lab_t1')
+			 ON CONFLICT (lesson_id, source_key) WHERE source_key <> '' DO UPDATE
+			   SET title = EXCLUDED.title
+			 RETURNING id`, lessonID, title).Scan(&id)
+		if err != nil {
+			t.Fatalf("upsert task: %v", err)
+		}
+		return id
+	}
+
+	first := upsert("Шаг 1")
+	if err := NewSubmissionRepo(pool).Save(ctx, userID, first, "", "", "", true); err != nil {
+		t.Fatalf("save submission: %v", err)
+	}
+
+	// What a reseed does: the same task, with edited text.
+	again := upsert("Шаг 1, формулировка поправлена")
+	if again != first {
+		t.Fatalf("task was recreated: id %d became %d", first, again)
+	}
+
+	passed, err := NewSubmissionRepo(pool).PassedTaskIDs(ctx, userID, lessonID)
+	if err != nil {
+		t.Fatalf("passed tasks: %v", err)
+	}
+	if !passed[first] {
+		t.Error("the student's answer did not survive a reseed")
+	}
+	var title string
+	if err := pool.QueryRow(ctx, `SELECT title FROM tasks WHERE id=$1`, first).Scan(&title); err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	if title != "Шаг 1, формулировка поправлена" {
+		t.Errorf("the edit did not land: title is %q", title)
+	}
+}

@@ -270,7 +270,7 @@ git commit -am "trigger"</pre>`,
 mkdir -p /root/gitlab-ci-lab/ci
 cat > /root/gitlab-ci-lab/ci/templates.yml <<'YML'
 .alpine-base:
-  image: alpine:3.20
+  image: alpine:latest
 
 .test-template:
   script:
@@ -399,7 +399,7 @@ git commit -am "Add junit report"</pre>`,
 	// ── Lab 4: image build, registry, deploy (reframed offline) ──
 	"ch-gitlab-ci-lab4": {
 		Setup: ciInit + `
-printf 'FROM alpine:3.20\nCMD ["echo","hi"]\n' > /root/gitlab-ci-lab/Dockerfile
+printf 'FROM alpine:latest\nCMD ["echo","hi"]\n' > /root/gitlab-ci-lab/Dockerfile
 printf 'services:\n  app:\n    image: demo\n' > /root/gitlab-ci-lab/docker-compose.yml
 cat > /root/gitlab-ci-lab/.gitlab-ci.yml <<'YML'
 stages:
