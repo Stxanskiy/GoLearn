@@ -356,3 +356,58 @@ func TestLabTerminal(t *testing.T) {
 		t.Errorf("disabled sandbox: %v", err)
 	}
 }
+
+// The subscription gate used to sit in two handlers — the lesson and the lab —
+// while everything else that a lesson id reaches had none. A student without a
+// subscription could open a paid course's terminal, run checks, read and write
+// its files and take its quiz. The terminal is also the most expensive thing on
+// the host: one Firecracker VM out of eight.
+func TestSubscriptionGateCoversEveryLessonPath(t *testing.T) {
+	h, c := labFixture(t)
+	for i := range c.modules {
+		if c.modules[i].ID == 10 {
+			c.modules[i].AccessTier = "subscription"
+		}
+	}
+
+	paid := []struct {
+		method, path, body string
+	}{
+		{http.MethodGet, "/courses/linux/lessons/lab", ""},
+		{http.MethodGet, "/lessons/102/lab", ""},
+		{http.MethodGet, "/lessons/102/lab/terminal", ""},
+		{http.MethodGet, "/lessons/102/lab/session", ""},
+		{http.MethodDelete, "/lessons/102/lab/session", ""},
+		{http.MethodPost, "/lessons/102/lab/retry", ""},
+		{http.MethodGet, "/lessons/102/lab/git-graph", ""},
+		{http.MethodGet, "/lessons/102/lab/fs/entries?path=/root", ""},
+		{http.MethodGet, "/lessons/102/lab/fs/content?path=/root/a.txt", ""},
+		{http.MethodPut, "/lessons/102/lab/fs/content?path=/root/a.txt", `{"content":"x"}`},
+		{http.MethodGet, "/lessons/102/lab/preview/8080", ""},
+		{http.MethodPost, "/tasks/900/check", ""},
+		{http.MethodPost, "/tasks/900/done", ""},
+		{http.MethodPost, "/lessons/101/quiz/answers", `{"question_id":1001,"selected_index":0}`},
+		{http.MethodPost, "/lessons/101/quiz/submit", ""},
+	}
+
+	for _, p := range paid {
+		w := do(h, p.method, p.path, p.body, withCookie(studentToken))
+		if w.Code != http.StatusPaymentRequired {
+			t.Errorf("%s %s = %d, want 402: a paid course is reachable without a subscription", p.method, p.path, w.Code)
+		}
+	}
+
+	// With a subscription the same calls must not be refused for payment.
+	c.subscribed[1] = true
+	for _, p := range paid {
+		if w := do(h, p.method, p.path, p.body, withCookie(studentToken)); w.Code == http.StatusPaymentRequired {
+			t.Errorf("%s %s = 402 for a subscriber", p.method, p.path)
+		}
+	}
+
+	// And an admin keeps the catalogue inspectable.
+	c.subscribed[1] = false
+	if w := do(h, http.MethodGet, "/lessons/102/lab", "", withCookie(adminToken)); w.Code == http.StatusPaymentRequired {
+		t.Error("an admin was asked to pay")
+	}
+}

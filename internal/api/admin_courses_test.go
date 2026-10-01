@@ -373,3 +373,41 @@ func TestCourseOrderIsSettableAndOtherwiseKept(t *testing.T) {
 		t.Errorf("an update that said nothing about position moved it to %d", got)
 	}
 }
+
+// Deleting a course cascades to every student's submissions, progress and quiz
+// answers on it, and nothing brings those back. Deleting one published lesson
+// already needed the owner and a draft; the whole course needed neither, which
+// made the most destructive control on the platform the least guarded one.
+func TestPublishedCourseCannotBeDeleted(t *testing.T) {
+	h, c := authorsFixture(t)
+
+	// module 10 (linux) is published; make the owner of k8s-draft its owner too,
+	// so the refusal is about the course being live and not about permissions.
+	owner := 3
+	c.modules[0].OwnerID = &owner
+
+	w := do(h, http.MethodDelete, "/admin/courses/10", "", withCookie(ownerToken))
+	if w.Code != http.StatusConflict || errorCode(t, w) != codeDraftRequired {
+		t.Errorf("delete published course: %d %s, want 409 draft_required", w.Code, w.Body)
+	}
+	if w := do(h, http.MethodDelete, "/admin/courses/10", "", withCookie(adminToken)); w.Code != http.StatusConflict {
+		t.Errorf("an admin must not be able to either: %d %s", w.Code, w.Body)
+	}
+	var still bool
+	for _, m := range c.modules {
+		if m.ID == 10 {
+			still = true
+		}
+	}
+	if !still {
+		t.Fatal("the course was deleted anyway")
+	}
+
+	// Unpublishing first is the reversible step, and then it goes.
+	if w := do(h, http.MethodPut, "/admin/courses/12/published", `{"published":false}`, withCookie(ownerToken)); w.Code != http.StatusOK && w.Code != http.StatusNoContent {
+		t.Fatalf("unpublish: %d %s", w.Code, w.Body)
+	}
+	if w := do(h, http.MethodDelete, "/admin/courses/12", "", withCookie(ownerToken)); w.Code != http.StatusNoContent {
+		t.Errorf("delete an unpublished course: %d %s", w.Code, w.Body)
+	}
+}

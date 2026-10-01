@@ -216,6 +216,23 @@ func (a *API) adminDeleteCourse(w http.ResponseWriter, r *http.Request) {
 		a.discardDraft(w, r, course)
 		return
 	}
+	// Deleting a published course cascades through its lessons and tasks to the
+	// submissions, progress and quiz answers of every student on it, and nothing
+	// brings those back. Deleting a single published *lesson* already needs the
+	// owner and a draft; the whole course did not, which left the most
+	// destructive button on the platform as the least guarded one.
+	//
+	// So: the course has to be unpublished first — that is a reversible step the
+	// author can take themselves — and it may not be under review, because
+	// deleting what a reviewer is looking at loses their work too.
+	if course.module.Published {
+		writeError(w, http.StatusConflict, codeDraftRequired,
+			"unpublish the course before deleting it: deleting a published course removes every student's progress on it")
+		return
+	}
+	if course.live != nil && !a.checkNotUnderReview(w, r, course) {
+		return
+	}
 	if err := a.Modules.Delete(r.Context(), course.module.ID); err != nil {
 		a.internalError(w, "admin: delete course", err)
 		return
