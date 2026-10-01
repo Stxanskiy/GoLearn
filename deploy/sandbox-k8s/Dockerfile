@@ -28,8 +28,14 @@ COPY bin/app-images.tar /var/lib/glk8s/app-images.tar
 COPY bin/registry /usr/local/bin/registry
 COPY registry /var/lib/glregistry
 COPY bin/helmfile /usr/local/bin/helmfile
-# Applied by the Gateway API lesson's setup; k3s does not bring these itself.
-COPY bin/gateway-api-crds.yaml /opt/gateway-api/crds.yaml
+# Gateway API. k3s brings Traefik but neither the CRDs nor the Gateway provider,
+# so both are placed where k3s applies manifests at startup. Doing it here rather
+# than in the lesson matters: enabling the provider later means a Helm upgrade and
+# a Traefik restart inside a one-vCPU VM, which the lab cannot sensibly wait out.
+# This way the cluster is already serving Gateway API by the time a student opens
+# the lesson.
+COPY bin/gateway-api-crds.yaml /var/lib/rancher/k3s/server/manifests/gateway-api-crds.yaml
+COPY traefik-gateway.yaml      /var/lib/rancher/k3s/server/manifests/traefik-gateway.yaml
 COPY k8s-start /usr/local/bin/k8s-start
 # Offline Helm repository (the `bitnami` repo of the repos lab) plus the script
 # that serves it on localhost:8879 — there is no network at runtime.

@@ -541,37 +541,23 @@ YAML`,
 	"ch-ckad-lab9-gateway-api": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-[ -f /opt/gateway-api/crds.yaml ] || { echo "в образе песочницы нет /opt/gateway-api/crds.yaml — пересобери образ (deploy/sandbox-k8s/prepare.sh)" >&2; exit 1; }
-kubectl apply -f /opt/gateway-api/crds.yaml >/dev/null
-kubectl wait --for=condition=Established crd/gateways.gateway.networking.k8s.io --timeout=60s >/dev/null
+# CRD Gateway API и включённый провайдер Traefik приходят из образа: они лежат в
+# каталоге манифестов k3s и применяются при старте кластера (см.
+# deploy/sandbox-k8s/Dockerfile). Включать провайдер здесь было бы нельзя — это
+# Helm-апгрейд и перезапуск Traefik внутри VM с одним ядром, и лаба столько
+# ждать не может.
+kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1 || {
+  echo "в образе песочницы нет CRD Gateway API — пересобери образ (deploy/sandbox-k8s/prepare.sh)" >&2; exit 1; }
 
-# Traefik слушает Gateway API только когда провайдер включён, а в k3s он
-# выключен по умолчанию. HelmChartConfig подхватывается k3s-ным helm-контроллером.
-mkdir -p /var/lib/rancher/k3s/server/manifests
-cat > /var/lib/rancher/k3s/server/manifests/traefik-gateway.yaml <<'YEOF'
-apiVersion: helm.cattle.io/v1
-kind: HelmChartConfig
-metadata:
-  name: traefik
-  namespace: kube-system
-spec:
-  valuesContent: |-
-    providers:
-      kubernetesGateway:
-        enabled: true
-    gateway:
-      enabled: false
-YEOF
-# GatewayClass приходит из Traefik, но ждать его перезапуск долго; свой класс
-# создаётся сразу и не зависит от момента, когда helm-контроллер доедет.
-cat <<'YEOF' | kubectl apply -f - >/dev/null
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: traefik
-spec:
-  controllerName: traefik.io/gateway-controller
-YEOF
+# GatewayClass создаёт сам Traefik, когда провайдер включён. Дождаться его —
+# единственный надёжный признак, что контроллер действительно слушает Gateway API:
+# без этого Gateway просто навсегда останется без условия Accepted.
+for i in $(seq 1 90); do
+  kubectl get gatewayclass -o jsonpath='{.items[*].spec.controllerName}' 2>/dev/null | grep -q 'traefik.io/gateway-controller' && break
+  sleep 2
+done
+GWCLASS=$(kubectl get gatewayclass -o jsonpath='{range .items[?(@.spec.controllerName=="traefik.io/gateway-controller")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | head -1)
+[ -n "$GWCLASS" ] || { echo "Traefik не поднял GatewayClass — провайдер Gateway API выключен в образе" >&2; exit 1; }
 
 kdel httproute route-demo
 kdel gateway lab-gateway
@@ -616,13 +602,13 @@ spec:
       targetPort: 80
 YEOF
 
-cat > /root/gateway-api/gateway.yaml <<'YEOF'
+cat > /root/gateway-api/gateway.yaml <<YEOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: lab-gateway
 spec:
-  gatewayClassName: traefik
+  gatewayClassName: $GWCLASS
   listeners:
     - name: http
       protocol: HTTP
@@ -659,7 +645,7 @@ rm -f /root/gateway_http.txt`,
 				"backend развёрнут, у backend-svc есть endpoints",
 				"kubectl apply -f /root/gateway-api/backend.yaml, затем kubectl rollout status deploy/backend"),
 			2: kcheck(`kubectl get gateway lab-gateway >/dev/null 2>&1 && `+
-				jp("get gateway lab-gateway", "{.spec.gatewayClassName}", "traefik")+` && `+
+				`[ -n "$(kubectl get gatewayclass "$(kubectl get gateway lab-gateway -o jsonpath='{.spec.gatewayClassName}' 2>/dev/null)" -o jsonpath='{.spec.controllerName}' 2>/dev/null | grep traefik)" ] && `+
 				`kubectl get gateway lab-gateway -o jsonpath='{.status.conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True`,
 				"Gateway создан и принят (Accepted=True)",
 				"kubectl apply -f /root/gateway-api/gateway.yaml, затем kubectl describe gateway lab-gateway — ищи conditions"),

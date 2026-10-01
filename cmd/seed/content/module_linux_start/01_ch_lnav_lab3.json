@@ -41,8 +41,8 @@
       "type": "check",
       "title": "Создать симлинк на файл",
       "taskid": "lnav_lab3_t2_symlink",
-      "hint": "<p>Используй <code>ln</code> для символической ссылки; важен порядок: сначала цель, потом имя ссылки.</p>",
-      "question_html": "<p>Создай символическую ссылку <code>/root/config_link</code>, которая указывает на <code>/opt/devops/lab1/config.txt</code>.</p>",
+      "hint": "<p>Нужна команда <code>ln</code> с флагом для символической ссылки. Аргументы идут в том же порядке, что у <code>cp</code>: сначала то, куда ведём, потом имя самой ссылки. Перепутаешь — ссылка создастся, но в обратную сторону.</p>",
+      "question_html": "<p>Сделай символическую ссылку <code>/root/config_link</code> так, чтобы она вела на <code>/opt/devops/lab1/config.txt</code>.</p>",
       "options": [],
       "raw_description": "<p>Создай символическую ссылку <code>/root/config_link</code>, которая указывает на <code>/opt/devops/lab1/config.txt</code>.</p>"
     },
@@ -50,8 +50,8 @@
       "type": "check",
       "title": "Проверить симлинк",
       "taskid": "lnav_lab3_t3_check",
-      "hint": "<p>Используй <code>readlink</code> или <code>ls -l</code>: читай именно путь симлинка, не оригинальный файл.</p>",
-      "question_html": "<p>Убедись что симлинк работает: прочитай содержимое <code>/root/config_link</code> и запиши результат в <code>/root/link_content.txt</code>.</p>\n<p>Если симлинк создан правильно, ты увидишь содержимое оригинального <code>config.txt</code>.</p>",
+      "hint": "<p>Читать нужно именно содержимое, а не путь: <code>readlink</code> здесь не подойдёт, он печатает, куда ведёт ссылка. Возьми обычную команду вывода файла и перенаправь её вывод в <code>/root/link_content.txt</code>.</p>",
+      "question_html": "<p>Проверь, что ссылка действительно работает: прочитай <code>/root/config_link</code> и сохрани прочитанное в <code>/root/link_content.txt</code>.</p><p>Если ссылка сделана верно, ты получишь содержимое исходного <code>config.txt</code> — обычные команды проходят сквозь ссылку и не видят разницы.</p>",
       "options": [],
       "raw_description": "<p>Убедись что симлинк работает: прочитай содержимое <code>/root/config_link</code> и запиши результат в <code>/root/link_content.txt</code>.</p>\n<p>Если симлинк создан правильно, ты увидишь содержимое оригинального <code>config.txt</code>.</p>"
     },
@@ -59,8 +59,8 @@
       "type": "check",
       "title": "Создать broken симлинк",
       "taskid": "lnav_lab3_t4_broken",
-      "hint": "<p>Используй <code>ln</code>: символическая ссылка может указывать на несуществующий путь. Порядок тот же — сначала цель, потом имя ссылки.</p>",
-      "question_html": "<p>Создай симлинк <code>/root/broken_link</code>, который указывает на несуществующий путь <code>/opt/devops/lab1/nonexistent.txt</code>.</p>\n<p>Это создаст «битый» симлинк — полезно понять, как они выглядят.</p>",
+      "hint": "<p>Та же команда, что и в задании выше. Существование цели при создании никто не проверяет: ссылка — это просто файл с записанным внутри путём.</p>",
+      "question_html": "<p>Теперь сделай ссылку <code>/root/broken_link</code> на путь, которого нет: <code>/opt/devops/lab1/nonexistent.txt</code>.</p><p>Получится битая ссылка. Создать такую полезно нарочно — чтобы увидеть, как она ведёт себя в выводе команд, и узнавать её потом на настоящем сервере.</p>",
       "options": [],
       "raw_description": "<p>Создай симлинк <code>/root/broken_link</code>, который указывает на несуществующий путь <code>/opt/devops/lab1/nonexistent.txt</code>.</p>\n<p>Это создаст «битый» симлинк — полезно понять, как они выглядят.</p>"
     },
@@ -68,8 +68,8 @@
       "type": "check",
       "title": "Найти все симлинки",
       "taskid": "lnav_lab3_t5_find",
-      "hint": "<p>Используй <code>find</code> для рекурсивного поиска по <code>/root</code> и фильтр по типу файла. У символической ссылки свой тип <code>l</code>.</p>",
-      "question_html": "<p>Найди все символические ссылки в директории <code>/root</code> и запиши список в <code>/root/all_links.txt</code>.</p>",
+      "hint": "<p>Обходить дерево умеет <code>find</code>. У ссылок свой тип файла, и отобрать по нему можно условием <code>-type</code>; буква типа — та же, что стоит первой в строке <code>ls -l</code> для ссылки.</p>",
+      "question_html": "<p>Найди в каталоге <code>/root</code> все символические ссылки и сложи список в <code>/root/all_links.txt</code>.</p>",
       "options": [],
       "raw_description": "<p>Найди все символические ссылки в директории <code>/root</code> и запиши список в <code>/root/all_links.txt</code>.</p>"
     },
