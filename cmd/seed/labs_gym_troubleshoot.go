@@ -181,10 +181,52 @@ chmod 644 /opt/app/maintenance.sh`,
 	},
 
 	// ── Lab 4: разбор инцидентов ──
-	// Задание 1 (магазин) остаётся ручным: его сценарий завязан на Web Preview
-	// и на несколько сервисов, которых нет в изолированной песочнице.
 	"ch-ltrouble-lab4": {
 		Setup: `set -e
+# ── Задание 1: магазин с двумя поломками ──
+#
+# Сценария не существовало: текст просил починить сайт и корзину через Web
+# Preview, а setup не создавал ни того, ни другого, и проверки у задания не
+# было вовсе — оставалась кнопка «Готово». Собрано на python3 и systemd,
+# потому что nginx в боевой micro-VM нет, а эти два есть и там, и в
+# контейнерной песочнице.
+#
+# Поломки намеренно разной природы, и вторая видна только после первой —
+# ровно так это и приходит на собеседовании: «починил, всплыло следующее».
+mkdir -p /opt/shop/www/cart
+cat > /opt/shop/www/index.html <<'HEOF'
+<html><head><meta charset="utf-8"><title>Vibi Shop</title></head>
+<body><h1>Vibi Shop</h1><p>Витрина работает.</p>
+<p><a href="/cart/">Корзина</a></p></body></html>
+HEOF
+cat > /opt/shop/www/cart/index.html <<'HEOF'
+<html><head><meta charset="utf-8"><title>Корзина</title></head>
+<body><h1>Корзина</h1><p>CART-OK</p></body></html>
+HEOF
+
+# Поломка 1: в ExecStart каталог, которого нет, — python немедленно выходит,
+# и сервис не поднимается.
+cat > /etc/systemd/system/shop-web.service <<'UEOF'
+[Unit]
+Description=Vibi Shop web front
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 80 --directory /opt/shop/wwwroot
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+UEOF
+
+# Поломка 2: каталог корзины закрыт по правам. Видна только когда витрина уже
+# открылась: тогда "/" отвечает, а "/cart/" отдаёт 403.
+chmod 000 /opt/shop/www/cart
+
+systemctl daemon-reload >/dev/null 2>&1 || true
+systemctl start shop-web >/dev/null 2>&1 || true
+
+# ── Задание 2: удалённый, но открытый лог ──
 mkdir -p /opt/payment
 cat > /usr/local/bin/payment_logger <<'SH'
 #!/bin/bash
@@ -200,6 +242,18 @@ chmod +x /usr/local/bin/payment_logger
 sleep 0.5
 rm -f /root/recovered-payment-token.txt`,
 		Checks: map[int]string{
+			// Проверяется результат, а не способ: это задача на диагностику, и
+			// студент вправе прийти к рабочему магазину своим путём. Но сервис
+			// обязан быть поднят именно как сервис — иначе «починка» сводится к
+			// запуску python руками, и первая же перезагрузка всё вернёт.
+			1: check(`[ "$(systemctl is-active shop-web 2>/dev/null)" = active ] && `+
+				`curl -s --max-time 5 http://localhost/ | grep -q 'Vibi Shop' && `+
+				`curl -s --max-time 5 http://localhost/cart/ | grep -q 'CART-OK'`,
+				"витрина и корзина открываются, shop-web поднят как сервис",
+				"Поломок две, и вторая видна только после первой. Сейчас: shop-web "+
+					"$(systemctl is-active shop-web 2>/dev/null), \"/\" -> "+
+					"$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://localhost/ 2>/dev/null), "+
+					"\"/cart/\" -> $(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://localhost/cart/ 2>/dev/null)"),
 			2: check(`grep -q 'GL-RECOVER-7731' /root/recovered-payment-token.txt 2>/dev/null`,
 				"recovery-code восстановлен из удалённого, но открытого файла",
 				"Файл удалён, но процесс держит его открытым: найди PID (ps aux | grep payment_logger), посмотри ls -l /proc/<PID>/fd — у удалённого файла будет пометка (deleted). Прочитай его: cat /proc/<PID>/fd/<N> > /root/recovered-payment-token.txt"),

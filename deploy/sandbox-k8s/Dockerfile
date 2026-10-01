@@ -28,6 +28,8 @@ COPY bin/app-images.tar /var/lib/glk8s/app-images.tar
 COPY bin/registry /usr/local/bin/registry
 COPY registry /var/lib/glregistry
 COPY bin/helmfile /usr/local/bin/helmfile
+# Applied by the Gateway API lesson's setup; k3s does not bring these itself.
+COPY bin/gateway-api-crds.yaml /opt/gateway-api/crds.yaml
 COPY k8s-start /usr/local/bin/k8s-start
 # Offline Helm repository (the `bitnami` repo of the repos lab) plus the script
 # that serves it on localhost:8879 — there is no network at runtime.

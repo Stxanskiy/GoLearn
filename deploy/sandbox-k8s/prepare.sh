@@ -96,6 +96,18 @@ cid=$(docker create registry:2)
 docker cp "$cid:/bin/registry" bin/registry >/dev/null
 docker rm "$cid" >/dev/null
 
+# Gateway API CRDs. k3s ships Traefik but not these, so without them the Gateway
+# API lesson has no gatewayclass, no gateway and no httproute to create — the
+# whole lab is "resource type not found" with nothing the student can do about
+# it. The lab's setup applies this file; the sandbox has no network, so it has to
+# be here.
+GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v1.2.1}"
+echo "==> Gateway API CRDs ($GATEWAY_API_VERSION)"
+curl -fsSL --retry 3 --retry-delay 2 -o bin/gateway-api-crds.yaml \
+    "https://github.com/kubernetes-sigs/gateway-api/releases/download/${GATEWAY_API_VERSION}/standard-install.yaml"
+grep -q 'kind: CustomResourceDefinition' bin/gateway-api-crds.yaml \
+    || { echo "скачанный standard-install.yaml не похож на набор CRD" >&2; exit 1; }
+
 echo "==> application images + offline registry (from the Docker sandbox context)"
 if [ ! -f "$DOCKER_CTX/images/preload.tar" ]; then
     echo "run deploy/sandbox-docker/prepare.sh first" >&2

@@ -127,10 +127,17 @@ kdel pod liveness-pod readiness-pod exec-probe tcp-probe`,
 			3: kcheck(jp("get pod exec-probe", "{.spec.containers[0].livenessProbe.exec.command[*]}", "'cat /tmp/healthy'"),
 				"exec-probe с exec livenessProbe",
 				"Pod exec-probe: livenessProbe.exec.command: [cat, /tmp/healthy]"),
-			4: kcheck(jp("get pod tcp-probe", "{.spec.containers[0].image}", "redis:alpine")+` && `+
-				jp("get pod tcp-probe", "{.spec.containers[0].livenessProbe.tcpSocket.port}", "6379"),
-				"tcp-probe с TCP livenessProbe",
-				"Pod tcp-probe на redis:alpine: livenessProbe.tcpSocket.port: 6379"),
+			// Было redis:alpine. Этого образа в k8s-VM нет, а сети там тоже нет, так
+			// что Pod навсегда оставался в ImagePullBackOff — при этом проверка
+			// проходила, потому что смотрит на спеку, а её kubectl apply заполняет
+			// независимо от того, скачался образ или нет. Студент видел красный Pod
+			// и зелёную галочку одновременно. nginx:alpine в образе есть и слушает
+			// TCP 80, чего для демонстрации tcpSocket-пробы достаточно.
+			4: kcheck(jp("get pod tcp-probe", "{.spec.containers[0].image}", "nginx:alpine")+` && `+
+				jp("get pod tcp-probe", "{.spec.containers[0].livenessProbe.tcpSocket.port}", "80")+` && `+
+				jp("get pod tcp-probe", "{.status.phase}", "Running"),
+				"tcp-probe с TCP livenessProbe работает",
+				"Pod tcp-probe на nginx:alpine: livenessProbe.tcpSocket.port: 80"),
 			5: kcheck(`! kubectl get pod liveness-pod >/dev/null 2>&1 && ! kubectl get pod readiness-pod >/dev/null 2>&1 && ! kubectl get pod exec-probe >/dev/null 2>&1 && ! kubectl get pod tcp-probe >/dev/null 2>&1`,
 				"тестовые Pod'ы удалены",
 				"kubectl delete pod liveness-pod readiness-pod exec-probe tcp-probe --ignore-not-found"),
@@ -517,6 +524,159 @@ YAML`,
 			6: kcheck(`! kubectl get deploy orders-api >/dev/null 2>&1 && ! kubectl get deploy reports-api >/dev/null 2>&1 && ! kubectl get deploy profile-api >/dev/null 2>&1 && ! kubectl get svc orders-svc >/dev/null 2>&1 && ! kubectl get svc reports-svc >/dev/null 2>&1 && ! kubectl get svc profile-svc >/dev/null 2>&1 && ! kubectl get pod debug-client >/dev/null 2>&1`,
 				"все ресурсы лабораторной удалены",
 				"kubectl delete deploy orders-api reports-api profile-api; kubectl delete svc orders-svc reports-svc profile-svc; kubectl delete configmap orders-config profile-config; kubectl delete pod debug-client"),
+		},
+	},
+
+	// ── Lab 9: Gateway API ──
+	//
+	// Этого описания не было вовсе: урок получал базовый образ без kubectl, ни
+	// одного из файлов, на которые ссылаются задания, не существовало, и все
+	// пять проверок отсутствовали — то есть задания закрывались кнопкой «Готово».
+	//
+	// Gateway API в k3s не входит: Traefik он приносит, а CRD — нет. Поэтому
+	// CRD запечены в образ (deploy/sandbox-k8s/prepare.sh и
+	// deploy/fc-rootfs/Dockerfile.rootfs), а setup их применяет. Если образ
+	// старый и файла нет, setup падает с внятным текстом, а не оставляет урок,
+	// в котором «ресурс такого типа не найден» и делать нечего.
+	"ch-ckad-lab9-gateway-api": {
+		Image: sandboxImageK8s,
+		Setup: k8sBoot + `
+[ -f /opt/gateway-api/crds.yaml ] || { echo "в образе песочницы нет /opt/gateway-api/crds.yaml — пересобери образ (deploy/sandbox-k8s/prepare.sh)" >&2; exit 1; }
+kubectl apply -f /opt/gateway-api/crds.yaml >/dev/null
+kubectl wait --for=condition=Established crd/gateways.gateway.networking.k8s.io --timeout=60s >/dev/null
+
+# Traefik слушает Gateway API только когда провайдер включён, а в k3s он
+# выключен по умолчанию. HelmChartConfig подхватывается k3s-ным helm-контроллером.
+mkdir -p /var/lib/rancher/k3s/server/manifests
+cat > /var/lib/rancher/k3s/server/manifests/traefik-gateway.yaml <<'YEOF'
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    providers:
+      kubernetesGateway:
+        enabled: true
+    gateway:
+      enabled: false
+YEOF
+# GatewayClass приходит из Traefik, но ждать его перезапуск долго; свой класс
+# создаётся сразу и не зависит от момента, когда helm-контроллер доедет.
+cat <<'YEOF' | kubectl apply -f - >/dev/null
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: traefik
+spec:
+  controllerName: traefik.io/gateway-controller
+YEOF
+
+kdel httproute route-demo
+kdel gateway lab-gateway
+kdel svc backend-svc
+kdel deployment backend
+rm -rf /root/gateway-api && mkdir -p /root/gateway-api
+
+# Хост маршрута лежит в файле: задания сверяют три места, где он должен
+# совпадать, и без общего источника правды сверять было бы нечего.
+echo 'store.lab' > /root/gateway-api/expected-host.txt
+
+cat > /root/gateway-api/backend.yaml <<'YEOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 80
+      targetPort: 80
+YEOF
+
+cat > /root/gateway-api/gateway.yaml <<'YEOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: lab-gateway
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: store.lab
+      allowedRoutes:
+        namespaces:
+          from: Same
+YEOF
+
+cat > /root/gateway-api/httproute.yaml <<'YEOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-demo
+spec:
+  parentRefs:
+    - name: lab-gateway
+  hostnames:
+    - store.lab
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend-svc
+          port: 80
+YEOF
+rm -f /root/gateway_http.txt`,
+		Checks: map[int]string{
+			1: kcheck(jp("get deploy backend", "{.status.readyReplicas}", "1")+` && `+
+				`[ -n "$(kubectl get endpoints backend-svc -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null)" ]`,
+				"backend развёрнут, у backend-svc есть endpoints",
+				"kubectl apply -f /root/gateway-api/backend.yaml, затем kubectl rollout status deploy/backend"),
+			2: kcheck(`kubectl get gateway lab-gateway >/dev/null 2>&1 && `+
+				jp("get gateway lab-gateway", "{.spec.gatewayClassName}", "traefik")+` && `+
+				`kubectl get gateway lab-gateway -o jsonpath='{.status.conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True`,
+				"Gateway создан и принят (Accepted=True)",
+				"kubectl apply -f /root/gateway-api/gateway.yaml, затем kubectl describe gateway lab-gateway — ищи conditions"),
+			3: kcheck(`kubectl get httproute route-demo >/dev/null 2>&1 && `+
+				`kubectl get httproute route-demo -o jsonpath='{.status.parents[0].conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True && `+
+				`kubectl get httproute route-demo -o jsonpath='{.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}' 2>/dev/null | grep -q True`,
+				"HTTPRoute принят Gateway и его backend разрешён",
+				"kubectl apply -f /root/gateway-api/httproute.yaml, затем kubectl describe httproute route-demo — смотри Accepted и ResolvedRefs"),
+			4: kcheck(`grep -q 'Welcome to nginx' /root/gateway_http.txt 2>/dev/null`,
+				"ответ получен через Gateway по нужному Host",
+				`Gateway отвечает по имени из expected-host.txt: kubectl run probe --rm -i --restart=Never --image=busybox:1.28 -- wget -qO- --header="Host: store.lab" http://10.55.0.2/ > /root/gateway_http.txt`),
+			5: kcheck(`! kubectl get httproute route-demo >/dev/null 2>&1 && `+
+				`! kubectl get gateway lab-gateway >/dev/null 2>&1 && `+
+				`! kubectl get deploy backend >/dev/null 2>&1 && `+
+				`! kubectl get svc backend-svc >/dev/null 2>&1`,
+				"ресурсы лабораторной удалены",
+				"kubectl delete -f /root/gateway-api/httproute.yaml -f /root/gateway-api/gateway.yaml -f /root/gateway-api/backend.yaml --ignore-not-found"),
 		},
 	},
 }

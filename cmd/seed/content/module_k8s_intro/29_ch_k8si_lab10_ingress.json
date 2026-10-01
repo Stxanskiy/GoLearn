@@ -73,7 +73,7 @@
       "title": "Проверить Ingress через HTTP изнутри кластера",
       "taskid": "k8si_ingress_t5_ingress_check",
       "hint": "<p>Если прямые запросы к Service из задачи 3 работают, а через Traefik нет, смотри <code>kubectl get ingress store-ingress -o yaml</code>: host, paths, backend service names и ports. В этой лабе backend port у Ingress должен быть <code>80</code>, потому что это port Service, а не containerPort.</p>",
-      "question_html": "$2c",
+      "question_html": "<p>До этого ты обращался к Ingress по адресу узла — <code>10.55.0.2</code>. Так ходит\nклиент снаружи. Теперь посмотри на то же самое изнутри кластера: Pod'ы видят Service\nпо имени, и это другой путь к тем же данным.</p>\n<p>Запусти одноразовый Pod с curl и пройди по сервисам напрямую, минуя Ingress:</p>\n<pre><code>kubectl run probe --rm -it --restart=Never --image=busybox:1.28 -- \\\n  sh -c 'wget -qO- http://frontend-svc/; wget -qO- http://catalog-svc/; wget -qO- http://cart-svc/'</code></pre>\n<p>Сравни с тем, что отдавал Ingress:</p>\n<pre><code>curl -s http://10.55.0.2/\ncurl -s http://10.55.0.2/catalog</code></pre>\n<p>Ответы должны совпадать. Разница только в том, кто выбирает сервис: изнутри ты\nназываешь его сам, а снаружи выбор делает Ingress по пути запроса. Если изнутри\nотвечает, а через Ingress нет — проблема в правилах Ingress, а не в приложении, и это\nглавное, что даёт такое сравнение.</p>",
       "options": [],
       "raw_description": "$2c"
     },
@@ -102,7 +102,7 @@
       "title": "Пройти debug-чеклист по Ingress",
       "taskid": "k8si_ingress_t7_debug_report",
       "hint": "<p>Для прикладной диагностики Ingress надёжнее смотреть <code>get ingress -o yaml</code>, <code>get service</code> и <code>get endpoints</code>: так видно правило маршрутизации, Service и реальные backend Pod'ы.</p>",
-      "question_html": "$2d",
+      "question_html": "<p>Соберём последовательность, по которой стоит идти, когда Ingress «не работает».\nПорядок здесь не случайный: каждый шаг отсекает половину возможных причин, поэтому\nпройди его сверху вниз на живой лабе и посмотри, что отвечает каждая команда.</p>\n<pre><code># 1. Есть ли сам Ingress и какие у него правила?\nkubectl get ingress store-ingress -o yaml | grep -A3 'paths:'\n\n# 2. Знает ли Ingress про адрес? Пустой ADDRESS означает, что controller его ещё не принял\nkubectl get ingress store-ingress\n\n# 3. Существуют ли сервисы, на которые он ссылается, и совпадают ли порты?\nkubectl get svc frontend-svc catalog-svc cart-svc\n\n# 4. Есть ли за сервисами живые Pod'ы? Пустой список endpoints — selector не совпал с label\nkubectl get endpoints frontend-svc catalog-svc cart-svc\n\n# 5. Отвечает ли приложение, если обойти Ingress целиком?\nkubectl run probe --rm -it --restart=Never --image=busybox:1.28 -- wget -qO- http://frontend-svc/\n\n# 6. И только теперь — что говорит сам controller\nkubectl -n kube-system logs -l app.kubernetes.io/name=traefik --tail=30</code></pre>\n<p>Смысл порядка: шаги 1–4 проверяют то, что ты настроил сам, и именно там лежит\nпочти каждая реальная поломка. Шаг 5 отвечает на вопрос «приложение или\nмаршрутизация». До логов controller'а в шаге 6 доходит дело редко — и если начать с\nних, читать придётся много, не зная, что искать.</p>",
       "options": [],
       "raw_description": "$2d"
     },

@@ -199,19 +199,23 @@ docker rm -f web1 web2 outsider >/dev/null 2>&1 || true
 docker network rm mynet >/dev/null 2>&1 || true
 rm -rf /root/docker-lab5
 mkdir -p /root/docker-lab5/web1 /root/docker-lab5/web2
-echo '<h1>WEB1</h1>' > /root/docker-lab5/web1/index.html
-echo '<h1>WEB2</h1>' > /root/docker-lab5/web2/index.html
+# Эти две строки процитированы в тексте заданий. Студент читает «корректная
+# страница содержит …» и сверяет глазами, поэтому расхождение здесь выглядит как
+# его собственная ошибка: страница открывается, а текст не тот, и он идёт искать
+# несуществующую проблему в монтировании.
+echo '<h1>Docker network preview works</h1>' > /root/docker-lab5/web1/index.html
+echo '<h1>Hello from web2 backend</h1>' > /root/docker-lab5/web2/index.html
 docker run -d --name outsider nginx:alpine >/dev/null
 rm -f /root/web1_ip.txt`,
 		Checks: map[int]string{
 			1: dcheck(`[ "$(docker network inspect -f '{{.Driver}}' mynet 2>/dev/null)" = bridge ]`,
 				"сеть mynet создана",
 				"docker network create mynet"),
-			2: dcheck(`docker inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' web1 2>/dev/null | grep -q mynet && curl -s --max-time 5 http://localhost/ | grep -q WEB1`,
+			2: dcheck(`docker inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' web1 2>/dev/null | grep -q mynet && curl -s --max-time 5 http://localhost/ | grep -q 'Docker network preview works'`,
 				"web1 в сети mynet и отдаёт свой index.html",
 				"docker run -d --name web1 --network mynet -p 80:80 -v /root/docker-lab5/web1:/usr/share/nginx/html nginx:alpine"),
 			3: dcheck(`docker inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' web2 2>/dev/null | grep -q mynet && `+
-				`docker run --rm --network mynet alpine:latest wget -qO- --timeout=5 http://web2/ 2>/dev/null | grep -q WEB2`,
+				`docker run --rm --network mynet alpine:latest wget -qO- --timeout=5 http://web2/ 2>/dev/null | grep -q 'Hello from web2 backend'`,
 				"web2 доступен по имени внутри mynet",
 				"docker run -d --name web2 --network mynet -v /root/docker-lab5/web2:/usr/share/nginx/html nginx:alpine (порт наружу не нужен)"),
 			4: dcheck(`[ -s /root/web1_ip.txt ] && [ "$(tr -d ' \n' < /root/web1_ip.txt)" = "$(docker inspect -f '{{(index .NetworkSettings.Networks "mynet").IPAddress}}' web1 2>/dev/null)" ]`,

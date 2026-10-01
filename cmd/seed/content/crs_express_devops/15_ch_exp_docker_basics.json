@@ -42,27 +42,27 @@
       "title": "Викторина: какого образа нет?",
       "taskid": "exp_dock_basics_t2_quiz",
       "hint": "",
-      "question_html": "<p>Ты посмотрел список образов командой <code>docker images</code>. Какого из перечисленных образов <strong>нет</strong> среди загруженных?</p>",
+      "question_html": "<p>Ты посмотрел список образов командой <code>docker images</code>. Какого из перечисленных образов в этом списке точно нет?</p>",
       "options": [
         {
           "text": "nginx:alpine",
           "correct": false,
-          "explanation": "Этот образ есть — ты видел его в списке"
+          "explanation": "Этот образ есть — из него запускаются почти все примеры курса."
         },
         {
-          "text": "golang",
+          "text": "webserver:final",
           "correct": true,
-          "explanation": "Правильно! Образ golang не загружен. На машине есть nginx:alpine, python:3.12-alpine, alpine и hello-world"
+          "explanation": "Правильно. Такого образа не существует: это выдуманное имя. Обрати внимание, что здесь указано имя <em>образа</em>, а не имя контейнера — контейнер можно назвать как угодно через <code>--name</code>, а образ приходит из реестра под своим именем."
         },
         {
           "text": "python:3.12-alpine",
           "correct": false,
-          "explanation": "Этот образ есть — ты видел его в списке"
+          "explanation": "Этот образ есть — он нужен для контейнера worker в этой же лабораторной."
         },
         {
           "text": "alpine",
           "correct": false,
-          "explanation": "Этот образ есть — ты видел его в списке"
+          "explanation": "Этот образ есть — это базовый минимальный Linux, на котором собраны остальные alpine-образы."
         }
       ],
       "raw_description": "<p>Ты посмотрел список образов командой <code>docker images</code>. Какого из перечисленных образов <strong>нет</strong> среди загруженных?</p>\n<ul>\n<li>nginx:alpine [Этот образ есть — ты видел его в списке]</li>\n<li>+golang [Правильно! Образ golang не загружен. На машине есть nginx:alpine, python:3.12-alpine, alpine и hello-world]</li>\n<li>python:3.12-alpine [Этот образ есть — ты видел его в списке]</li>\n<li>alpine [Этот образ есть — ты видел его в списке]</li>\n</ul>"

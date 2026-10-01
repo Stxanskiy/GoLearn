@@ -320,7 +320,10 @@ rm -f /root/store_http.txt`,
 				"selector исправлен, Endpoints появились",
 				"В /root/service-manifests/service.yaml замени selector app: shop на app: store и примени файл заново"),
 			3: kcheck(jp("get svc store-svc", "{.spec.ports[0].targetPort}", "80")+` && `+
-				`grep -qE 'targetPort:\s*80' /root/service-manifests/service.yaml`,
+				// Якорь конца строки обязателен: без него шаблон совпадал и с исходным
+				// targetPort: 8080, то есть проверял ровно ту ошибку, которую студент
+				// должен был исправить.
+				`grep -qE 'targetPort:[[:space:]]*80[[:space:]]*$' /root/service-manifests/service.yaml`,
 				"targetPort исправлен на 80",
 				"В service.yaml поставь targetPort: 80 и примени файл"),
 			4: kcheck(`grep -q 'Welcome to nginx' /root/store_http.txt 2>/dev/null`,
@@ -783,10 +786,20 @@ YEOF`,
 <li><code>/cart</code> → сервис <code>cart-svc</code> (порт 80)</li>
 </ul>
 <p>Подсказка: <code>kubectl create ingress store-ingress --rule="/*=frontend-svc:80" --rule="/catalog*=catalog-svc:80" --rule="/cart*=cart-svc:80"</code></p>`,
-			3: `<p>Проверь, что маршрутизация работает. В песочнице Ingress доступен по адресу узла <code>10.55.0.2</code>:</p>
+			// Этот текст описывал проверку маршрутизации, а заголовок задания в
+			// контенте — добавление маршрута /health. Задание теперь делает то, что
+			// обещает его заголовок, и заодно проверяет маршруты: HTTP-проверка
+			// изнутри кластера осталась отдельным наблюдательным заданием.
+			3: `<p>В схеме лабораторной есть ещё один маршрут: <code>/health</code> → <code>frontend-svc</code>.
+Добавь его к уже созданному <code>store-ingress</code>.</p>
+<p>Правило можно дописать так:</p>
+<pre><code>kubectl annotate ingress store-ingress --overwrite kubernetes.io/ingress.class=traefik
+kubectl patch ingress store-ingress --type=json -p '[{"op":"add","path":"/spec/rules/0/http/paths/-","value":{"path":"/health","pathType":"Prefix","backend":{"service":{"name":"frontend-svc","port":{"number":80}}}}}]'</code></pre>
+<p>Затем убедись, что маршрутизация работает. В песочнице Ingress доступен по адресу узла <code>10.55.0.2</code>:</p>
 <pre><code>curl http://10.55.0.2/
 curl http://10.55.0.2/catalog
-curl http://10.55.0.2/cart</code></pre>
+curl http://10.55.0.2/cart
+curl http://10.55.0.2/health</code></pre>
 <p>Сохрани ответ корневого пути в <code>/root/ingress_root.txt</code> — в нём должен быть текст <code>store frontend</code>.</p>`,
 		},
 		Checks: map[int]string{
@@ -805,11 +818,12 @@ curl http://10.55.0.2/cart</code></pre>
 			// exit status came from the last curl alone, so the saved-response
 			// requirement was ignored and the check passed as soon as task 2 had
 			// created the Ingress.
-			3: kcheck(`grep -q 'store frontend' /root/ingress_root.txt 2>/dev/null && `+
+			3: kcheck(`kubectl get ingress store-ingress -o jsonpath='{.spec.rules[0].http.paths[*].path}' 2>/dev/null | tr ' ' '\n' | grep -qx '/health' && `+
+				`grep -q 'store frontend' /root/ingress_root.txt 2>/dev/null && `+
 				`{ for i in $(seq 1 20); do curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service' && break; sleep 2; done; `+
 				`curl -s --max-time 5 http://10.55.0.2/catalog | grep -q 'catalog service'; }`,
-				"маршрутизация через Ingress работает",
-				"curl http://10.55.0.2/ > /root/ingress_root.txt и проверь curl http://10.55.0.2/catalog"),
+				"маршрут /health добавлен и маршрутизация через Ingress работает",
+				"допиши путь /health в store-ingress, затем curl http://10.55.0.2/ > /root/ingress_root.txt и проверь curl http://10.55.0.2/catalog"),
 			4: kcheck(`! kubectl get ingress store-ingress >/dev/null 2>&1 && ! kubectl get deploy frontend >/dev/null 2>&1 && `+
 				`! kubectl get svc cart-svc >/dev/null 2>&1 && ! kubectl get configmap catalog-source >/dev/null 2>&1`,
 				"ресурсы лаборатории удалены",

@@ -87,7 +87,7 @@
       "title": "Самопроверка: сравнить PVC и emptyDir",
       "taskid": "ckad_lab2_t7_emptydir_compare",
       "hint": "<p>Если хочешь увидеть это в манифестах, сравни <code>volumes[].emptyDir</code> у <code>emptydir-demo</code> и <code>volumes[].persistentVolumeClaim.claimName</code> у <code>pvc-reader-pod</code>.</p>",
-      "question_html": "$2a",
+      "question_html": "<p>Ты поработал с двумя способами дать Pod'у место на диске: <code>emptyDir</code>\nи PVC. Выглядят они похоже — том, монтирование, путь — но ведут себя по-разному, и\nразницу стоит увидеть, а не запомнить.</p>\n<pre><code># Что это за тома с точки зрения кластера\nkubectl get pvc\nkubectl get pv\n\n# А emptyDir нигде не числится — он существует только внутри Pod'а\nkubectl get pod emptydir-demo -o jsonpath='{.spec.volumes}' ; echo</code></pre>\n<p>Теперь главный опыт: удали и пересоздай оба Pod'а и посмотри, что осталось.</p>\n<pre><code>kubectl delete pod emptydir-demo pvc-reader-pod --ignore-not-found\nkubectl apply -f /root/storage-lab/emptydir-demo.yaml\nkubectl apply -f /root/storage-lab/pvc-reader-pod.yaml\nkubectl exec emptydir-demo -- ls /data\nkubectl exec pvc-reader-pod -- ls /data</code></pre>\n<p>В <code>emptyDir</code> пусто: его жизнь равна жизни Pod'а, и при удалении данные\nуходят вместе с ним. В томе от PVC файлы на месте, потому что PVC — это отдельный\nобъект кластера, который Pod лишь на время занимает.</p>\n<p>Отсюда и правило выбора: <code>emptyDir</code> годится для кэша, временных файлов и\nобмена данными между контейнерами одного Pod'а; всё, что должно пережить\nперезапуск, просит PVC.</p>",
       "options": [],
       "raw_description": "$2a"
     },

@@ -48,7 +48,7 @@
       "title": "Pod с TCP probe",
       "taskid": "ckad_lab4_t5_tcp_probe",
       "hint": "<p>Используй образ <code>redis:alpine</code>: Redis слушает TCP port <code>6379</code>, поэтому он подходит для TCP probe.</p>",
-      "question_html": "<p>Создай Pod <code>tcp-probe</code> на образе <code>redis:alpine</code> с <code>livenessProbe</code> через TCP socket на port <code>6379</code>.</p><p>Сохрани манифест в <code>/root/tcp-probe.yaml</code> и примени его в кластер.</p>",
+      "question_html": "<p>Создай Pod <code>tcp-probe</code> на образе <code>nginx:alpine</code> с <code>livenessProbe</code> через TCP socket на <code>port 80</code>. Сохрани манифест в <code>/root/tcp-probe.yaml</code> и примени его в кластер.</p><p>TCP-проба не отправляет HTTP-запрос и не читает ответ — она лишь открывает соединение на указанный порт. Если соединение установилось, контейнер считается живым. Поэтому такая проба годится для чего угодно, что слушает TCP: базы данных, брокера очередей, обычного веб-сервера. Здесь это nginx на порту 80.</p><p>Разница с <code>httpGet</code> из первого задания существенная: HTTP-проба проверяет, что приложение отвечает осмысленно, а TCP-проба — только что порт принимает соединения. Процесс может слушать порт и при этом не работать, и tcpSocket этого не заметит.</p>",
       "options": [],
       "raw_description": "<p>Создай Pod <code>tcp-probe</code> на образе <code>redis:alpine</code> с <code>livenessProbe</code> через TCP socket на port <code>6379</code>.</p><p>Сохрани манифест в <code>/root/tcp-probe.yaml</code> и примени его в кластер.</p>"
     },

@@ -57,10 +57,10 @@
     },
     {
       "type": "check",
-      "title": "Проверить задачу в crontab",
+      "title": "Выгрузить crontab в файл",
       "taskid": "lcore_lab13_t4_check",
       "hint": "<p>Если ищешь точную строку команды, у <code>grep</code> есть режим фиксированной строки (<code>-F</code>). Если нужна только проверка наличия без вывода, есть тихий режим, но для обучения полезно сначала увидеть совпадение.</p>",
-      "question_html": "<p>Проверь, что задача <code>/opt/devops/lab13/backup.sh</code> добавлена в crontab.</p>",
+      "question_html": "<p>Сохрани текущий crontab в файл <code>/root/crontab-backup.txt</code>.</p><pre><code>crontab -l &gt; /root/crontab-backup.txt</code></pre><p>Это не формальность. <code>crontab -e</code> правит единственную копию задач пользователя, и у неё нет истории: одна ошибка в редакторе или <code>crontab -r</code>, набранное вместо <code>crontab -e</code>, — и все задачи исчезают молча, без предупреждения и без возможности вернуть. Поэтому выгрузка в файл (а ещё лучше — в репозиторий) делается до правок, а не после.</p>",
       "options": [],
       "raw_description": "<p>Проверь, что задача <code>/opt/devops/lab13/backup.sh</code> добавлена в crontab.</p>"
     },

@@ -82,7 +82,7 @@
       "title": "Открыть `Web Preview`",
       "taskid": "k8sgw_lab1_t7_web_preview",
       "hint": "",
-      "question_html": "$2a",
+      "question_html": "<p>Нажми кнопку <code>Web Preview</code>. Через Gateway должна открыться страница\nприложения — тот же маршрут, который ты до этого проверял через <code>curl</code>, но\nтеперь его проходит браузер.</p>\n<p>Если страница не открывается, не угадывай: сначала посмотри, принял ли Gateway\nадрес и привязался ли к нему маршрут.</p>\n<pre><code>kubectl get gateway\nkubectl get httproute</code></pre>\n<p>Пустой адрес у Gateway означает, что controller его ещё не обработал — такое бывает\nсразу после <code>apply</code>, подожди несколько секунд. А вот\n<code>HTTPRoute</code> без привязки к Gateway сам не исправится: смотри поле\n<code>parentRefs</code> и статус маршрута.</p>",
       "options": [],
       "raw_description": "$2a"
     },
@@ -91,7 +91,7 @@
       "title": "Разобрать диагностику Gateway API",
       "taskid": "k8sgw_lab1_t8_diagnostics",
       "hint": "<p>Думай слоями: внешний вход и Traefik → Gateway listener → HTTPRoute rules → Service → endpoints → Pod. Когда <code>Web Preview</code> не открывается, обычно один из этих слоёв прямо показывает проблему в conditions, events или пустых endpoints.</p>",
-      "question_html": "$2b",
+      "question_html": "<p>Диагностика Gateway API отличается от диагностики Ingress тем, что ответ «что\nсломано» разложен по двум объектам: Gateway отвечает за точку входа, HTTPRoute — за\nправила. Поэтому и смотреть надо оба, и именно в статусах, а не в спецификации.</p>\n<pre><code># 1. Gateway: получил ли адрес и приняты ли его listener'ы\nkubectl describe gateway gw-demo | sed -n '/Status:/,$p'\n\n# 2. HTTPRoute: принял ли его Gateway. Ключевое поле — Parents/Conditions\nkubectl describe httproute route-demo | sed -n '/Status:/,$p'\n\n# 3. Существует ли сервис, на который ссылается маршрут, и есть ли за ним Pod'ы\nkubectl get svc,endpoints\n\n# 4. Отвечает ли приложение, если обойти Gateway\nkubectl run probe --rm -it --restart=Never --image=busybox:1.28 -- wget -qO- http://app-svc/</code></pre>\n<p>Две самые частые причины видны именно в условиях статуса. <code>Accepted=False</code>\nу HTTPRoute означает, что Gateway отказался его принять — обычно из-за\n<code>parentRefs</code>, указывающего на чужой Gateway или чужой namespace.\n<code>ResolvedRefs=False</code> означает, что сам маршрут в порядке, но сервис из\n<code>backendRefs</code> не существует или называется иначе.</p>\n<p>Разница с Ingress здесь принципиальная: там неверная ссылка на сервис давала\nмолчаливый 503 и приходилось идти в логи controller'а. Gateway API пишет причину в\nстатус объекта, поэтому <code>describe</code> почти всегда быстрее, чем логи.</p>",
       "options": [],
       "raw_description": "$2b"
     },

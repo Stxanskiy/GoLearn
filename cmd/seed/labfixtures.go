@@ -100,6 +100,28 @@ func applyLabFixtures(moduleSlug string, l *L) {
 	}
 }
 
+// A note on the "the resource is gone" checks, of which there are about sixty —
+// the last task of nearly every lab.
+//
+// Most of them pass on a freshly prepared container, because setup has just
+// removed the resource they look for. A student working through the lab in
+// order never notices; one who clicks the final step first gets a tick they
+// did not earn, and skips a task.
+//
+// The obvious fix — have each passing check leave a marker in the container and
+// make the cleanup check require one — is worse than the problem. Markers live
+// in the container, and /lab/retry destroys it while the passed tasks stay
+// passed in the database. The student would then be told "not done" about work
+// they had done, which is the failure this file has been bitten by before and
+// costs far more than an unearned tick.
+//
+// Where the free pass actually confuses someone working in order — a mid-lab
+// "stop the server" standing green before the server was ever started — the
+// check asks for evidence from the student's own artifacts instead; see
+// ch-lcore-lab8 in labs_linux_core.go. The honest place for a general rule is
+// the API, which knows which tasks really passed; until then the rest of them
+// stay as they are rather than acquiring a mechanism that can lie.
+
 // ok/fail keep every check's output in the same shape. Hints are echoed inside
 // double quotes so $(...) in a hint still reports live state, which means any
 // literal quote in the text has to be escaped or it would break the script.
@@ -137,5 +159,22 @@ func studentFail(good, bad string) string {
 	if i < 0 || !strings.Contains(bad[i:], "$(") {
 		return msg
 	}
-	return msg + " — " + strings.TrimSpace(bad[i:])
+	return msg + " — " + balanceParens(strings.TrimSpace(bad[i:]))
+}
+
+// balanceParens drops closing parens left without an opener.
+//
+// Authors write the diagnostic as a parenthetical — "… chmod 600 … (сейчас
+// $(stat …) и $(stat …))" — and cutting at the word takes the opening paren
+// with the part that is dropped. The student was then shown a message ending in
+// a stray bracket. Counting in the source is right because a $(…) substitution
+// contributes a matched pair there, whatever its output turns out to be.
+func balanceParens(s string) string {
+	for {
+		open, closed := strings.Count(s, "("), strings.Count(s, ")")
+		if closed <= open || !strings.HasSuffix(s, ")") {
+			return s
+		}
+		s = strings.TrimSpace(strings.TrimSuffix(s, ")"))
+	}
 }

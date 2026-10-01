@@ -54,3 +54,11 @@ sol_ch_dock_lab8_5='docker run -d --name final-worker --network final-net --netw
 sol_ch_dock_lab8_6='docker run -d --name final-api --network final-net --network-alias api -e APP_VERSION=1.0 -e WORKER_URL=http://worker:8080 final-api:1.0 >/dev/null; sleep 2'
 sol_ch_dock_lab8_7='docker run -d --name final-frontend --network final-net --network-alias frontend -p 80:80 final-frontend:1.0 >/dev/null; sleep 2'
 sol_ch_dock_lab8_8='docker rm -f final-frontend final-api final-worker >/dev/null; docker network rm final-net >/dev/null'
+
+# ── express-devops: глава про Docker ──
+# Уроку добавили образ с движком и проверки; до этого он шёл в базовом образе,
+# где бинарника docker нет вообще.
+sol_ch_exp_docker_basics_1='docker run -d --name backend -p 80:80 -v /opt/devops/express-docker-site:/usr/share/nginx/html nginx:alpine >/dev/null; sleep 2'
+sol_ch_exp_docker_basics_2='docker run -d --name worker python:3.12-alpine sleep infinity >/dev/null; sleep 2'
+sol_ch_exp_docker_basics_3='docker stop backend >/dev/null; sleep 1'
+sol_ch_exp_docker_basics_4='docker start backend >/dev/null; sleep 2'

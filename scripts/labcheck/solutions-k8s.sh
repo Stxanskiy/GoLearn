@@ -641,6 +641,8 @@ spec:
 YAML
 kubectl apply -f /root/exec-probe.yaml >/dev/null'
 
+# nginx:alpine, не redis:alpine: redis в офлайн-VM нет, Pod оставался в
+# ImagePullBackOff, и проверка теперь требует статус Running.
 sol_ch_ckad_lab4_4='cat > /root/tcp-probe.yaml <<YAML
 apiVersion: v1
 kind: Pod
@@ -649,14 +651,15 @@ metadata:
 spec:
   containers:
     - name: app
-      image: redis:alpine
+      image: nginx:alpine
       livenessProbe:
         tcpSocket:
-          port: 6379
+          port: 80
         initialDelaySeconds: 5
         periodSeconds: 10
 YAML
-kubectl apply -f /root/tcp-probe.yaml >/dev/null'
+kubectl apply -f /root/tcp-probe.yaml >/dev/null
+kubectl wait --for=condition=Ready pod/tcp-probe --timeout=120s >/dev/null 2>&1'
 
 sol_ch_ckad_lab4_5='kubectl delete pod liveness-pod readiness-pod exec-probe tcp-probe --ignore-not-found --wait >/dev/null 2>&1'
 
@@ -817,3 +820,15 @@ kubectl delete pod strategy-debug --ignore-not-found --wait >/dev/null 2>&1'
 # проверки, что он наблюдательный.
 sol_ch_ckad_lab5_5='kubectl get cronjob hello-cron -o jsonpath="{.spec.schedule}" >/dev/null'
 sol_ch_ckad_lab6_3='kubectl get hpa hpa-app -o jsonpath="{.spec.minReplicas}/{.spec.maxReplicas}" >/dev/null'
+
+# ── express-devops: первый Pod ──
+sol_ch_exp_kuber_lab1_1='kubectl run nginx --image=nginx:alpine >/dev/null && kubectl wait --for=condition=Ready pod/nginx --timeout=180s >/dev/null'
+
+# ── k8s-ckad: Gateway API ──
+# У урока не было ни фикстур, ни проверок, ни даже нужного образа песочницы;
+# CRD Gateway API в k3s не входят и теперь запечены в образ, а setup их ставит.
+sol_ch_ckad_lab9_gateway_api_1='kubectl apply -f /root/gateway-api/backend.yaml >/dev/null && kubectl rollout status deploy/backend --timeout=180s >/dev/null'
+sol_ch_ckad_lab9_gateway_api_2='kubectl apply -f /root/gateway-api/gateway.yaml >/dev/null; for i in $(seq 1 30); do kubectl get gateway lab-gateway -o jsonpath="{.status.conditions[?(@.type==\"Accepted\")].status}" 2>/dev/null | grep -q True && break; sleep 2; done'
+sol_ch_ckad_lab9_gateway_api_3='kubectl apply -f /root/gateway-api/httproute.yaml >/dev/null; for i in $(seq 1 30); do kubectl get httproute route-demo -o jsonpath="{.status.parents[0].conditions[?(@.type==\"ResolvedRefs\")].status}" 2>/dev/null | grep -q True && break; sleep 2; done'
+sol_ch_ckad_lab9_gateway_api_4='for i in $(seq 1 30); do kubectl run probe --rm -i --restart=Never --image=busybox:1.28 -- wget -qO- --header="Host: $(cat /root/gateway-api/expected-host.txt)" http://10.55.0.2/ > /root/gateway_http.txt 2>/dev/null; grep -q "Welcome to nginx" /root/gateway_http.txt && break; sleep 2; done'
+sol_ch_ckad_lab9_gateway_api_5='kubectl delete -f /root/gateway-api/httproute.yaml -f /root/gateway-api/gateway.yaml -f /root/gateway-api/backend.yaml --ignore-not-found --wait >/dev/null 2>&1'

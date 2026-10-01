@@ -245,7 +245,14 @@ sleep 0.2`,
 			1: check(`[ -s /root/demo.pid ] && kill -0 "$(cat /root/demo.pid)" 2>/dev/null && (ss -ltn 2>/dev/null | grep -q ':80 ' || curl -s -o /dev/null http://localhost/)`,
 				"сервер запущен в фоне, PID сохранён, порт 80 слушается",
 				"Запусти в фоне и сохрани PID: cd /opt/devops/process-demo && python3 -m http.server 80 & echo \\$! > /root/demo.pid"),
-			2: check(`! ss -ltn 2>/dev/null | grep -q ':80 ' && ! pgrep -x python3 >/dev/null`,
+			// «Порт свободен» — это и состояние сразу после setup, поэтому проверка
+			// проходила раньше, чем студент успевал что-либо запустить: задание
+			// «останови сервер» стояло зелёным, пока сервер ещё не запускался, и
+			// студент, идущий по порядку, видел противоречие. Теперь нужна улика
+			// того, что сервер жил: PID-файл из задания выше и мёртвый процесс по
+			// этому PID.
+			2: check(`[ -s /root/demo.pid ] && ! kill -0 "$(cat /root/demo.pid)" 2>/dev/null && `+
+				`! ss -ltn 2>/dev/null | grep -q ':80 ' && ! pgrep -x python3 >/dev/null`,
 				"demo-сервер остановлен, порт 80 свободен",
 				"Останови процесс: kill $(cat /root/demo.pid) — затем проверь ss -ltnp | grep :80"),
 			3: check(`[ -z "$(pgrep -f 'sleep 99[9]9')" ]`,
@@ -318,11 +325,21 @@ rm -f /root/mynote.txt`,
 rm -rf /opt/devops/lab13; mkdir -p /opt/devops/lab13
 printf '#!/bin/bash\necho backup done\n' > /opt/devops/lab13/backup.sh
 chmod +x /opt/devops/lab13/backup.sh
-crontab -r >/dev/null 2>&1 || true`,
+crontab -r >/dev/null 2>&1 || true
+rm -f /root/crontab-backup.txt`,
 		Checks: map[int]string{
 			1: check(`crontab -l 2>/dev/null | grep -qE '^\s*0\s+2\s+\*\s+\*\s+\*\s+.*backup\.sh'`,
 				"задача на 02:00 добавлена в crontab",
 				"Добавь строку в crontab (crontab -e): 0 2 * * * /opt/devops/lab13/backup.sh — проверь через crontab -l"),
+			// Второе задание в контенте просило «проверь, что задача добавлена», то
+			// есть ровно то, что проверяет первое, и проверки у него не было вовсе —
+			// оставалась кнопка «Готово». Вместо дубля — то, что действительно
+			// делают с crontab: выгружают его в файл, потому что «crontab -e» хранит
+			// единственную копию, и её потеря тихо уносит все задачи.
+			2: check(`[ -s /root/crontab-backup.txt ] && `+
+				`grep -qE '^\s*0\s+2\s+\*\s+\*\s+\*\s+.*backup\.sh' /root/crontab-backup.txt`,
+				"crontab выгружен в /root/crontab-backup.txt вместе с задачей",
+				"crontab -l > /root/crontab-backup.txt"),
 		},
 	},
 

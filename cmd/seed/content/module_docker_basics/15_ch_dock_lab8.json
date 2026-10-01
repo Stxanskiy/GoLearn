@@ -100,7 +100,7 @@
       "title": "Проследить путь запроса",
       "taskid": "dock_lab8_t9_trace",
       "hint": "",
-      "question_html": "$2a",
+      "question_html": "<p>Стек собран: наружу открыт только frontend, а <code>api</code> и <code>worker</code>\nдоступны лишь внутри сети <code>final-net</code>. Пройди по этому пути руками — это\nединственный способ увидеть, что изоляция действительно работает, а не просто\nнастроена.</p>\n<pre><code># 1. Снаружи доступен только frontend\ncurl -s http://localhost:8080/\n\n# 2. Снаружи к api и worker хода нет — порты не публиковались\ncurl -s --max-time 3 http://localhost:5000/ ; echo \"код выхода: $?\"\n\n# 3. Зато изнутри сети api виден по своему alias\ndocker exec final-frontend curl -s http://api:5000/\n\n# 4. А из api виден worker\ndocker exec final-api curl -s http://worker:8080/\n\n# 5. Кто вообще в этой сети и под какими именами\ndocker network inspect final-net --format '{{range .Containers}}{{.Name}} {{end}}'</code></pre>\n<p>Обрати внимание на два разных «не отвечает». В шаге 2 запрос не доходит потому,\nчто порт не проброшен на хост: контейнер жив, но снаружи его нет. Это не ошибка\nконфигурации, это и есть цель — публикуется ровно одна точка входа.</p>\n<p>Имена <code>api</code> и <code>worker</code> в шагах 3 и 4 разрешает встроенный DNS\nпользовательской сети Docker. В сети <code>bridge</code> по умолчанию его нет, и\nименно поэтому в задании 5 сеть создавалась отдельно: без неё пришлось бы\nпрописывать IP-адреса, которые меняются при каждом перезапуске.</p>",
       "options": [],
       "raw_description": "$2a"
     },
