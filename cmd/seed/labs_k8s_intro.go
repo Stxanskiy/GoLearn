@@ -19,7 +19,18 @@ package main
 const k8sBoot = `set -e
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 kubectl get --raw=/readyz >/dev/null 2>&1 || k8s-start >/dev/null 2>&1 || true
-for i in $(seq 1 60); do kubectl get --raw=/readyz >/dev/null 2>&1 && break; sleep 1; done`
+for i in $(seq 1 60); do kubectl get --raw=/readyz >/dev/null 2>&1 && break; sleep 1; done
+# A setup that cannot reach the cluster has to stop here and say so. It used to
+# carry on: "set -e" then aborted on the first cleanup delete, every heredoc that
+# writes the lesson's manifests was skipped, and because setup runs once per
+# container the lesson stayed empty for the whole session. The student got tasks
+# referring to files that did not exist and checks that answered "the cluster is
+# still coming up" forever — the lab looked broken with nothing to point at.
+kubectl get --raw=/readyz >/dev/null 2>&1 || { echo "k3s did not become ready in 60s" >&2; exit 1; }
+# Cleanup is best-effort by nature: it removes what an earlier attempt may have
+# left behind. Under "set -e" one failure took the whole setup down with it, so
+# it goes through a function that cannot fail.
+kdel() { kubectl delete "$@" --ignore-not-found >/dev/null 2>&1 || true; }`
 
 // kcheck fails with a clear message while the cluster is still coming up.
 func kcheck(cond, good, bad string) string {
@@ -39,7 +50,7 @@ var k8sIntroLabs = map[string]labSpec{
 	"ch-k8si-lab1": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod nginx-pod --ignore-not-found >/dev/null 2>&1
+kdel pod nginx-pod
 rm -f /root/nginx_pod_ip.txt`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pod nginx-pod", "{.spec.containers[0].image}", "nginx:alpine")+` && `+
@@ -62,7 +73,7 @@ rm -f /root/nginx_pod_ip.txt`,
 	"ch-k8si-lab2": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment nginx-deploy --ignore-not-found >/dev/null 2>&1`,
+kdel deployment nginx-deploy`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy nginx-deploy", "{.spec.replicas}", "2")+` && `+
 				jp("get deploy nginx-deploy", "{.spec.template.spec.containers[0].image}", "nginx:alpine"),
@@ -102,7 +113,7 @@ kubectl delete deployment nginx-deploy --ignore-not-found >/dev/null 2>&1`,
 	"ch-k8si-lab2-manifests": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment manifest-web broken-web --ignore-not-found >/dev/null 2>&1
+kdel deployment manifest-web broken-web
 rm -rf /root/manifest-deploy && mkdir -p /root/manifest-deploy
 cat > /root/manifest-deploy/deployment.yaml <<'YEOF'
 apiVersion: apps/v1
@@ -172,7 +183,7 @@ YEOF`,
 	"ch-k8si-lab2-rollout": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment rollout-app --ignore-not-found >/dev/null 2>&1
+kdel deployment rollout-app
 rm -f /root/rollout_history.txt /root/revision1.txt`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy rollout-app", "{.spec.replicas}", "3")+` && `+
@@ -208,7 +219,7 @@ rm -f /root/rollout_history.txt /root/revision1.txt`,
 	"ch-k8si-lab7": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod web-prod web-staging db-prod --ignore-not-found >/dev/null 2>&1`,
+kdel pod web-prod web-staging db-prod`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pod web-prod", "{.metadata.labels.app}", "web")+` && `+
 				jp("get pod web-prod", "{.metadata.labels.env}", "prod")+` && `+
@@ -232,8 +243,8 @@ kubectl delete pod web-prod web-staging db-prod --ignore-not-found >/dev/null 2>
 	"ch-k8si-lab3": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment web-app --ignore-not-found >/dev/null 2>&1
-kubectl delete svc web-svc web-nodeport --ignore-not-found >/dev/null 2>&1
+kdel deployment web-app
+kdel svc web-svc web-nodeport
 rm -f /root/web-nodeport.yaml`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy web-app", "{.status.readyReplicas}", "2"),
@@ -262,9 +273,9 @@ rm -f /root/web-nodeport.yaml`,
 	"ch-k8si-lab8-service-manifests": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment store-web --ignore-not-found >/dev/null 2>&1
-kubectl delete svc store-svc --ignore-not-found >/dev/null 2>&1
-kubectl delete pod store-client --ignore-not-found >/dev/null 2>&1
+kdel deployment store-web
+kdel svc store-svc
+kdel pod store-client
 rm -rf /root/service-manifests && mkdir -p /root/service-manifests
 cat > /root/service-manifests/deployment.yaml <<'YEOF'
 apiVersion: apps/v1
@@ -328,9 +339,9 @@ rm -f /root/store_http.txt`,
 	"ch-k8si-lab-headless-stateful": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete statefulset web-sts --ignore-not-found >/dev/null 2>&1
-kubectl delete deployment web-deploy --ignore-not-found >/dev/null 2>&1
-kubectl delete svc web-svc web-headless --ignore-not-found >/dev/null 2>&1
+kdel statefulset web-sts
+kdel deployment web-deploy
+kdel svc web-svc web-headless
 rm -rf /root/headless-lab && mkdir -p /root/headless-lab
 cat > /root/headless-lab/web-deploy.yaml <<'YEOF'
 apiVersion: apps/v1
@@ -441,9 +452,9 @@ kubectl apply -f /root/headless-lab/web-sts.yaml</code></pre>
 	"ch-k8si-lab4": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete configmap app-config file-config --ignore-not-found >/dev/null 2>&1
-kubectl delete secret db-secret --ignore-not-found >/dev/null 2>&1
-kubectl delete pod cm-pod --ignore-not-found >/dev/null 2>&1
+kdel configmap app-config file-config
+kdel secret db-secret
+kdel pod cm-pod
 rm -f /root/app.conf
 cat > /root/cm-pod.yaml <<'YEOF'
 apiVersion: v1
@@ -495,9 +506,9 @@ YEOF`,
 	"ch-k8si-lab4-manifests": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod manifest-config-app secret-broken-app --ignore-not-found >/dev/null 2>&1
-kubectl delete configmap manifest-config --ignore-not-found >/dev/null 2>&1
-kubectl delete secret manifest-secret --ignore-not-found >/dev/null 2>&1
+kdel pod manifest-config-app secret-broken-app
+kdel configmap manifest-config
+kdel secret manifest-secret
 rm -rf /root/config-manifests && mkdir -p /root/config-manifests
 cat > /root/config-manifests/app-config.yaml <<'YEOF'
 apiVersion: v1
@@ -579,8 +590,8 @@ YEOF`,
 	"ch-k8si-lab6": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod resource-pod too-large-pod --ignore-not-found >/dev/null 2>&1
-kubectl delete deployment limited-web --ignore-not-found >/dev/null 2>&1
+kdel pod resource-pod too-large-pod
+kdel deployment limited-web
 rm -f /root/resource-pod.yaml /root/limited-web.yaml`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pod resource-pod", "{.spec.containers[0].resources.requests.cpu}", "50m")+` && `+
@@ -608,8 +619,8 @@ rm -f /root/resource-pod.yaml /root/limited-web.yaml`,
 	"ch-k8si-lab9-dns": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deployment web-svc-app --ignore-not-found >/dev/null 2>&1
-kubectl delete svc web-svc --ignore-not-found >/dev/null 2>&1`,
+kdel deployment web-svc-app
+kdel svc web-svc`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy web-svc-app", "{.status.readyReplicas}", "2")+` && `+
 				jp("get svc web-svc", "{.spec.selector.app}", "web-svc-app")+` && `+
@@ -623,10 +634,10 @@ kubectl delete svc web-svc --ignore-not-found >/dev/null 2>&1`,
 	"ch-k8si-lab10-ingress": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete ingress store-ingress --ignore-not-found >/dev/null 2>&1
-kubectl delete svc frontend-svc catalog-svc cart-svc --ignore-not-found >/dev/null 2>&1
-kubectl delete deployment frontend catalog cart --ignore-not-found >/dev/null 2>&1
-kubectl delete configmap frontend-content catalog-source cart-source --ignore-not-found >/dev/null 2>&1
+kdel ingress store-ingress
+kdel svc frontend-svc catalog-svc cart-svc
+kdel deployment frontend catalog cart
+kdel configmap frontend-content catalog-source cart-source
 rm -rf /root/ingress-lab && mkdir -p /root/ingress-lab
 cat > /root/ingress-lab/app.yaml <<'YEOF'
 apiVersion: v1

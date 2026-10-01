@@ -87,10 +87,6 @@ func (a *API) getLab(w http.ResponseWriter, r *http.Request) {
 	uid := userFrom(ctx).ID
 	l, m := ref.lesson, ref.module
 
-	if !a.requireCourseAccess(w, r, m.AccessTier) {
-		return
-	}
-
 	passed, err := a.Submissions.PassedTaskIDs(ctx, uid, l.ID)
 	if err != nil {
 		a.internalError(w, "lab: passed tasks", err)
@@ -456,7 +452,16 @@ func (a *API) sandboxError(w http.ResponseWriter, op string, err error) {
 	case errors.Is(err, runner.ErrFileTooLarge):
 		writeError(w, http.StatusRequestEntityTooLarge, codeFileTooLarge, "file exceeds 2 MiB")
 	case errors.Is(err, context.Canceled):
+		// Still write a status. Returning without one makes net/http send an
+		// implicit 200 with an empty body, which a client that did *not* go away —
+		// a cancelled inner context, say — reads as "the file is empty" or "there
+		// are no commits".
 		a.log.Info(op+": client went away", "error", err)
+		writeError(w, http.StatusServiceUnavailable, codeSandboxError, "request cancelled")
+	case errors.Is(err, context.DeadlineExceeded):
+		a.log.Warn(op+": timed out", "error", err)
+		writeError(w, http.StatusGatewayTimeout, codeSandboxError,
+			"песочница не ответила вовремя — попробуй ещё раз")
 	default:
 		a.log.Error(op, "error", err)
 		writeError(w, http.StatusBadGateway, codeSandboxError, err.Error())

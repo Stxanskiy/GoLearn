@@ -96,12 +96,7 @@ func (s *ShellRunner) run(ctx context.Context, script string) (string, int, erro
 		var out bytes.Buffer
 		cmd.Stdout = &out
 		cmd.Stderr = &out
-		err := cmd.Run()
-		exit := 0
-		if ee, ok := err.(*exec.ExitError); ok {
-			exit = ee.ExitCode()
-			err = nil
-		}
+		exit, err := classifyLocalExit(ctx, cmd.Run())
 		return out.String(), exit, err
 	}
 	return s.runSSH(ctx, script)
@@ -122,12 +117,10 @@ func (s *ShellRunner) runSSH(ctx context.Context, remote string) (string, int, e
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	err := cmd.Run()
-	exit := 0
-	if ee, ok := err.(*exec.ExitError); ok {
-		exit = ee.ExitCode()
-		err = nil
-	}
+	// Run first: arguments are evaluated left to right, so passing out.Bytes()
+	// alongside cmd.Run() would hand over an empty buffer.
+	runErr := cmd.Run()
+	exit, err := classifyExit(ctx, out.Bytes(), runErr)
 	return out.String(), exit, err
 }
 
@@ -216,16 +209,40 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	// Courses with their own runtime (Docker, Kubernetes) need elevated
 	// privileges and more headroom than a shell-only lab.
 	opts := s.runOpts(userID, key, image)
+	// The setup script's exit status matters as much as the container's. It used
+	// to be discarded along with its output, and "echo OK" printed either way:
+	// a setup that failed — a tool the image does not carry, a cluster that never
+	// came up — left a container with none of the files the tasks name, every
+	// check failed, and nothing anywhere said why. Setup runs once per container,
+	// so the lesson stayed broken for the whole session.
+	//
+	// Its output is kept on failure: it is the only description of what went
+	// wrong, and it is written by our own fixtures, not by the student.
 	create := fmt.Sprintf(
 		`docker rm -f %s >/dev/null 2>&1; `+
 			`docker run -d --init --name %s --hostname sandbox --network none %s %s sleep infinity >/dev/null || exit 1; `+
-			`if [ -n "%s" ]; then docker exec %s sh -c 'echo %s | base64 -d | bash' >/dev/null 2>&1; fi; `+
+			`if [ -n "%s" ]; then `+
+			`out=$(docker exec %s sh -c 'echo %s | base64 -d | bash' 2>&1) || { echo "GLSETUPFAIL $out"; exit 1; }; `+
+			`fi; `+
 			`echo OK`,
 		c, c, opts, image, b64, c, b64,
 	)
 	out, _, err = s.run(ctx, create)
 	if err != nil {
 		return "", err
+	}
+	if i := strings.Index(out, "GLSETUPFAIL"); i >= 0 {
+		// Drop the container: a half-prepared one is worse than none, because the
+		// next call would find it running and reuse it as if setup had succeeded.
+		_, _, _ = s.run(ctx, fmt.Sprintf(`docker rm -f %s >/dev/null 2>&1; true`, c))
+		detail := strings.TrimSpace(out[i+len("GLSETUPFAIL"):])
+		if len(detail) > 400 {
+			detail = detail[:400] + "…"
+		}
+		if detail == "" {
+			detail = "скрипт завершился с ошибкой без вывода"
+		}
+		return "", fmt.Errorf("подготовка окружения урока не удалась: %s", detail)
 	}
 	if !strings.Contains(out, "OK") {
 		msg := strings.TrimSpace(out)
@@ -420,16 +437,36 @@ find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C so
 	return entries, nil
 }
 
-// FSRead returns up to 512 KB of a file's content.
+// FSRead returns a file's content, up to MaxFileSize.
+//
+// It reports a missing file and an oversized one as such, using the same
+// markers and the same errors as the Firecracker runner. It used to do neither:
+// a missing file came back as empty content with no error, so the editor showed
+// a blank document — and saving that blank document overwrote the real file.
+// Oversized files were silently truncated at 512 KB, with the same consequence
+// on save.
 func (s *ShellRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
 	fb := base64.StdEncoding.EncodeToString([]byte(file))
 	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
-[ -f "$f" ] && head -c 524288 "$f" | base64`, fb)
+[ -f "$f" ] || { echo GLNOFILE; exit 0; }
+[ "$(wc -c < "$f")" -gt %d ] && { echo GLTOOBIG; exit 0; }
+echo GLFILE
+base64 "$f"`, fb, MaxFileSize)
 	out, err := s.fsExec(ctx, userID, key, image, setup, script)
 	if err != nil {
 		return nil, err
 	}
-	return base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out), "\n", ""))
+	switch {
+	case strings.Contains(out, "GLNOFILE"):
+		return nil, ErrFileNotFound
+	case strings.Contains(out, "GLTOOBIG"):
+		return nil, ErrFileTooLarge
+	}
+	i := strings.Index(out, "GLFILE\n")
+	if i < 0 {
+		return nil, fmt.Errorf("не удалось прочитать файл: %s", strings.TrimSpace(out))
+	}
+	return base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(out[i+len("GLFILE\n"):]), "\n", ""))
 }
 
 // FSWrite creates/overwrites a file with content (parent dirs are created).

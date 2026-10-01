@@ -237,12 +237,70 @@ func (v *VMRunner) runHost(ctx context.Context, script string) (string, int, err
 	}
 	cmd := exec.CommandContext(ctx, "ssh", args...)
 	out, err := cmd.CombinedOutput()
-	exit := 0
-	if ee, ok := err.(*exec.ExitError); ok {
-		exit = ee.ExitCode()
-		err = nil
-	}
+	exit, err := classifyExit(ctx, out, err)
 	return string(out), exit, err
+}
+
+// classifyExit separates "the script ran and said no" from "the script never
+// ran". Both used to come back as a plain exit code with a nil error, which is
+// how a dead FC host, a killed container or an expired deadline reached the
+// student as "task not solved" — and got written to their submissions as a
+// failed attempt against a correct answer.
+//
+// ssh reserves 255 for its own failures. A check script could in principle exit
+// 255 too; treating that as a transport error is the safe way round, because
+// the cost of the two mistakes is not symmetric: a retry prompt costs a click,
+// a false "not solved" costs the student their trust in the checker.
+func classifyExit(ctx context.Context, out []byte, err error) (int, error) {
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return -1, fmt.Errorf("sandbox command did not finish: %w", ctxErr)
+	}
+	ee, ok := err.(*exec.ExitError)
+	if !ok {
+		// nil, or something that is not an exit status at all (ssh missing, fork
+		// failure) — both are ours, not the student's.
+		return 0, err
+	}
+	switch code := ee.ExitCode(); {
+	case code < 0:
+		return code, fmt.Errorf("sandbox command was killed before it finished")
+	case code == 255:
+		return code, fmt.Errorf("could not reach the sandbox: %s", firstLine(out))
+	default:
+		return code, nil
+	}
+}
+
+// classifyLocalExit is classifyExit for a command run directly rather than over
+// ssh. 255 carries no special meaning for a local script, so only a killed
+// process and an expired deadline count as failures to run.
+func classifyLocalExit(ctx context.Context, err error) (int, error) {
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return -1, fmt.Errorf("sandbox command did not finish: %w", ctxErr)
+	}
+	ee, ok := err.(*exec.ExitError)
+	if !ok {
+		return 0, err
+	}
+	if code := ee.ExitCode(); code < 0 {
+		return code, fmt.Errorf("sandbox command was killed before it finished")
+	}
+	return ee.ExitCode(), nil
+}
+
+// firstLine keeps an ssh diagnostic short enough to log.
+func firstLine(out []byte) string {
+	s := strings.TrimSpace(string(out))
+	if i := strings.IndexByte(s, '\n'); i >= 0 {
+		s = s[:i]
+	}
+	if len(s) > 200 {
+		s = s[:200] + "…"
+	}
+	if s == "" {
+		s = "no output"
+	}
+	return s
 }
 
 // runHostStdin is runHost with stdin streamed to the script (the script is not piped through bash's stdin).
@@ -261,11 +319,7 @@ func (v *VMRunner) runHostStdin(ctx context.Context, script string, stdin io.Rea
 	)
 	cmd.Stdin = stdin
 	out, err := cmd.CombinedOutput()
-	exit := 0
-	if ee, ok := err.(*exec.ExitError); ok {
-		exit = ee.ExitCode()
-		err = nil
-	}
+	exit, err := classifyExit(ctx, out, err)
 	return string(out), exit, err
 }
 
@@ -638,25 +692,39 @@ func (v *VMRunner) execVM(ctx context.Context, ip, script string) (string, int, 
 
 // Exec runs a user command in the session VM and returns combined output.
 func (v *VMRunner) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
-	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.sessionFor(ctx, userID, key, image, setup)
 	if err != nil {
 		return "", err
 	}
+	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
+	defer cancel()
 	out, _, err := v.execVM(ctx, ip, wrap(command))
 	v.touch(vmSID(userID, key))
 	return out, err
 }
 
+// sessionFor gets the session VM with a deadline that fits booting one.
+//
+// Exec and Check used to put the whole call, boot included, under
+// vmSSHTimeout — 20s against a boot budget of vmBootWait plus the wait for
+// sshd. The first thing a student does on a lesson is press Check, so the first
+// press cut its own VM's boot in half and, through the classification above,
+// reported it as a failed attempt. That is the "sometimes it does not start"
+// they described.
+func (v *VMRunner) sessionFor(ctx context.Context, userID int, key, image, setup string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, vmBootWait+vmSSHTimeout)
+	defer cancel()
+	return v.EnsureSession(ctx, userID, key, image, setup)
+}
+
 // Check runs the task's check script; passed = exit 0.
 func (v *VMRunner) Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error) {
-	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
-	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.sessionFor(ctx, userID, key, image, setup)
 	if err != nil {
 		return false, "", err
 	}
+	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
+	defer cancel()
 	// The exit code flows back through the chain: VM command -> inner ssh -> host
 	// bash -> runHost, so a single exec gives us both output and verdict.
 	out, exit, err := v.execVM(ctx, ip, wrap(checkScript))
@@ -1003,10 +1071,14 @@ func (v *VMRunner) bootWarm(profile string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	if err := v.bootVM(ctx, sess, ""); err != nil {
+		// killVM frees the slot itself, once the host has actually removed the tap.
+		// Freeing it here as well — which this used to do — handed the slot to the
+		// next attempt while the previous one's delayed `gl-tap del gltap<slot>`
+		// was still queued: the new VM created its tap and then watched it
+		// disappear ("Cannot find device gltap0"). teardownLocked carries the same
+		// warning; the warm path was the one place that ignored it, and topUp
+		// retries without a backoff, so it reproduced on every failed warm boot.
 		v.killVM(sess)
-		v.mu.Lock()
-		v.freeSlot[slot] = false
-		v.mu.Unlock()
 		return
 	}
 	v.mu.Lock()
@@ -1029,7 +1101,12 @@ func (v *VMRunner) poolManager() {
 }
 
 func (v *VMRunner) topUp() {
-	for _, profile := range []string{"docker", "k8s"} {
+	// All three profiles, lite included. It used to warm only docker and k8s, so
+	// FC_WARM_LITE was read, started the pool manager, and then did nothing —
+	// every Linux, Git and trainer lesson booted cold, which is the majority of
+	// them. A profile left at 0 is skipped by the warmWant check below anyway, so
+	// listing it here costs nothing when it is off.
+	for _, profile := range []string{"lite", "docker", "k8s"} {
 		for {
 			v.mu.Lock()
 			have := len(v.pool[profile])

@@ -18,7 +18,7 @@ var k8sCkadLabs = map[string]labSpec{
 	"ch-ckad-lab1": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod init-pod sidecar-pod multi-init --ignore-not-found >/dev/null 2>&1`,
+kdel pod init-pod sidecar-pod multi-init`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pod init-pod", "{.spec.initContainers[0].name}", "init-data")+` && `+
 				jp("get pod init-pod", "{.spec.initContainers[0].image}", "nginx:alpine")+` && `+
@@ -43,8 +43,8 @@ kubectl delete pod init-pod sidecar-pod multi-init --ignore-not-found >/dev/null
 	"ch-ckad-lab2": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod pvc-writer-pod pvc-reader-pod emptydir-demo --ignore-not-found >/dev/null 2>&1
-kubectl delete pvc lab-pvc --ignore-not-found >/dev/null 2>&1`,
+kdel pod pvc-writer-pod pvc-reader-pod emptydir-demo
+kdel pvc lab-pvc`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pvc lab-pvc", "{.spec.accessModes[0]}", "ReadWriteOnce")+` && `+
 				jp("get pvc lab-pvc", "{.spec.resources.requests.storage}", "100Mi"),
@@ -64,7 +64,7 @@ kubectl delete pvc lab-pvc --ignore-not-found >/dev/null 2>&1`,
 	"ch-ckad-lab3": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod secure-pod readonly-pod noprivilege-pod --ignore-not-found >/dev/null 2>&1`,
+kdel pod secure-pod readonly-pod noprivilege-pod`,
 		Checks: map[int]string{
 			1: kcheck(`[ "$(kubectl get pod secure-pod -o jsonpath='{.spec.securityContext.runAsUser}{.spec.containers[0].securityContext.runAsUser}' 2>/dev/null)" = 1000 ]`,
 				"secure-pod запускается под runAsUser 1000",
@@ -86,10 +86,10 @@ kubectl delete pod secure-pod readonly-pod noprivilege-pod --ignore-not-found >/
 	"ch-ckad-lab8": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod sa-pod --ignore-not-found >/dev/null 2>&1
-kubectl delete rolebinding pod-reader-binding --ignore-not-found >/dev/null 2>&1
-kubectl delete role pod-reader --ignore-not-found >/dev/null 2>&1
-kubectl delete sa app-sa --ignore-not-found >/dev/null 2>&1`,
+kdel pod sa-pod
+kdel rolebinding pod-reader-binding
+kdel role pod-reader
+kdel sa app-sa`,
 		Checks: map[int]string{
 			1: kcheck(`kubectl get sa app-sa >/dev/null 2>&1`,
 				"ServiceAccount app-sa создан",
@@ -114,7 +114,7 @@ kubectl delete sa app-sa --ignore-not-found >/dev/null 2>&1`,
 	"ch-ckad-lab4": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod liveness-pod readiness-pod exec-probe tcp-probe --ignore-not-found >/dev/null 2>&1`,
+kdel pod liveness-pod readiness-pod exec-probe tcp-probe`,
 		Checks: map[int]string{
 			1: kcheck(jp("get pod liveness-pod", "{.spec.containers[0].livenessProbe.httpGet.path}", "/")+` && `+
 				jp("get pod liveness-pod", "{.spec.containers[0].livenessProbe.httpGet.port}", "80"),
@@ -141,8 +141,8 @@ kubectl delete pod liveness-pod readiness-pod exec-probe tcp-probe --ignore-not-
 	"ch-ckad-lab5": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete job pi-job multi-job manual-run --ignore-not-found >/dev/null 2>&1
-kubectl delete cronjob hello-cron --ignore-not-found >/dev/null 2>&1`,
+kdel job pi-job multi-job manual-run
+kdel cronjob hello-cron`,
 		Checks: map[int]string{
 			1: kcheck(jp("get job pi-job", "{.spec.template.spec.restartPolicy}", "Never")+` && `+
 				`[ "$(kubectl get job pi-job -o jsonpath='{.status.succeeded}' 2>/dev/null)" -ge 1 ] 2>/dev/null`,
@@ -176,8 +176,8 @@ kubectl delete cronjob hello-cron --ignore-not-found >/dev/null 2>&1`,
 	"ch-ckad-lab6": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete hpa hpa-app --ignore-not-found >/dev/null 2>&1
-kubectl delete deployment hpa-app --ignore-not-found >/dev/null 2>&1`,
+kdel hpa hpa-app
+kdel deployment hpa-app`,
 		Descs: map[int]string{
 			1: "Создай Deployment <code>hpa-app</code> на образе <code>nginx:alpine</code> (1 реплика). Он станет целью для HPA. Пример: <code>kubectl create deployment hpa-app --image=nginx:alpine</code>",
 		},
@@ -205,9 +205,9 @@ kubectl delete deployment hpa-app --ignore-not-found >/dev/null 2>&1`,
 	"ch-ckad-lab16-deployment-strategies": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deploy shop-v1 shop-v2 checkout-blue checkout-green --ignore-not-found >/dev/null 2>&1
-kubectl delete svc shop-svc checkout-svc --ignore-not-found >/dev/null 2>&1
-kubectl delete pod strategy-debug --ignore-not-found >/dev/null 2>&1
+kdel deploy shop-v1 shop-v2 checkout-blue checkout-green
+kdel svc shop-svc checkout-svc
+kdel pod strategy-debug
 mkdir -p /root/deploy-strategies
 cat > /root/deploy-strategies/canary-v1.yaml <<'YAML'
 apiVersion: apps/v1
@@ -302,9 +302,9 @@ kubectl run strategy-debug --image=busybox:1.28 --restart=Never --command -- sle
 	"ch-ckad-lab13-debug-startup": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete pod frontend-api worker-api billing-api --ignore-not-found >/dev/null 2>&1
-kubectl delete deploy catalog-api --ignore-not-found >/dev/null 2>&1
-kubectl delete configmap billing-config --ignore-not-found >/dev/null 2>&1
+kdel pod frontend-api worker-api billing-api
+kdel deploy catalog-api
+kdel configmap billing-config
 mkdir -p /root/debug-workloads
 cat > /root/debug-workloads/app-a.yaml <<'YAML'
 # BUG: неверный тег образа — Pod не может стянуть image (офлайн-кластер).
@@ -409,10 +409,10 @@ YAML`,
 	"ch-ckad-lab14-debug-service-config": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-kubectl delete deploy orders-api reports-api profile-api --ignore-not-found >/dev/null 2>&1
-kubectl delete svc orders-svc reports-svc profile-svc --ignore-not-found >/dev/null 2>&1
-kubectl delete configmap orders-config profile-config --ignore-not-found >/dev/null 2>&1
-kubectl delete pod debug-client --ignore-not-found >/dev/null 2>&1
+kdel deploy orders-api reports-api profile-api
+kdel svc orders-svc reports-svc profile-svc
+kdel configmap orders-config profile-config
+kdel pod debug-client
 mkdir -p /root/debug-routing
 cat > /root/debug-routing/app-a.yaml <<'YAML'
 apiVersion: v1
