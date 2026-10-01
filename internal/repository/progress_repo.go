@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/backendraz/golearn/internal/model"
@@ -104,30 +105,63 @@ func (r *ProgressRepo) Overview(ctx context.Context, userID int) (*model.Progres
 		TrainersTot:   3, // overridden by handler
 	}
 
-	_ = r.pool.QueryRow(ctx, `
-		SELECT COUNT(*) FROM lessons l JOIN modules m ON m.id = l.module_id
-		WHERE l.published AND m.published`).Scan(&o.ArticlesTotal)
-	_ = r.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM progress WHERE user_id=$1 AND status IN ('in_progress','completed')`, userID).Scan(&o.ArticlesRead)
-	_ = r.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM progress WHERE user_id=$1 AND quiz_score IS NOT NULL`, userID).Scan(&o.TestsPassed)
-	_ = r.pool.QueryRow(ctx,
-		`SELECT COUNT(DISTINCT task_id) FROM submissions WHERE user_id=$1 AND passed = true`, userID).Scan(&o.TasksSolved)
-	_ = r.pool.QueryRow(ctx, `
-		SELECT COUNT(DISTINCT t.lesson_id) FROM tasks t
-		JOIN lessons l ON l.id = t.lesson_id JOIN modules m ON m.id = l.module_id
-		WHERE l.published AND m.published`).Scan(&o.LabsTotal)
-	_ = r.pool.QueryRow(ctx, `
-		SELECT COUNT(*) FROM (
-			SELECT t.lesson_id,
-			       COUNT(*) total,
-			       COUNT(DISTINCT CASE WHEN s.passed THEN t.id END) passed
-			FROM tasks t
+	// Every count below is a number the student reads as a statement about their
+	// own work, so a failed query must not be reported as a zero. It used to be:
+	// each of these discarded its error, and a database that was merely slow to
+	// answer looked exactly like a student who had done nothing.
+	count := func(dest *int, what, query string, args ...any) error {
+		if err := r.pool.QueryRow(ctx, query, args...).Scan(dest); err != nil {
+			return fmt.Errorf("progress overview: %s: %w", what, err)
+		}
+		return nil
+	}
+
+	for _, q := range []struct {
+		dest  *int
+		what  string
+		query string
+		args  []any
+	}{
+		{&o.ArticlesTotal, "articles total", `
+			SELECT COUNT(*) FROM lessons l JOIN modules m ON m.id = l.module_id
+			WHERE l.published AND m.published`, nil},
+
+		{&o.ArticlesRead, "articles read", `
+			SELECT COUNT(*) FROM progress
+			WHERE user_id=$1 AND status IN ('in_progress','completed')`, []any{userID}},
+
+		{&o.TestsPassed, "tests passed", `
+			SELECT COUNT(*) FROM progress WHERE user_id=$1 AND quiz_score IS NOT NULL`, []any{userID}},
+
+		{&o.TasksSolved, "tasks solved", `
+			SELECT COUNT(DISTINCT task_id) FROM submissions
+			WHERE user_id=$1 AND passed = true`, []any{userID}},
+
+		{&o.LabsTotal, "labs total", `
+			SELECT COUNT(DISTINCT t.lesson_id) FROM tasks t
 			JOIN lessons l ON l.id = t.lesson_id JOIN modules m ON m.id = l.module_id
-			LEFT JOIN submissions s ON s.task_id = t.id AND s.user_id = $1
-			WHERE l.published AND m.published
-			GROUP BY t.lesson_id
-		) x WHERE total > 0 AND passed >= total`, userID).Scan(&o.LabsDone)
+			WHERE l.published AND m.published`, nil},
+
+		// COUNT(DISTINCT t.id), never COUNT(*): the LEFT JOIN produces one row per
+		// submission, so COUNT(*) counted a task the student had attempted three
+		// times as three tasks and made passed >= total unreachable. One retry on
+		// one task was enough to stop a finished lab from ever being counted.
+		{&o.LabsDone, "labs done", `
+			SELECT COUNT(*) FROM (
+				SELECT t.lesson_id,
+				       COUNT(DISTINCT t.id) total,
+				       COUNT(DISTINCT CASE WHEN s.passed THEN t.id END) passed
+				FROM tasks t
+				JOIN lessons l ON l.id = t.lesson_id JOIN modules m ON m.id = l.module_id
+				LEFT JOIN submissions s ON s.task_id = t.id AND s.user_id = $1
+				WHERE l.published AND m.published
+				GROUP BY t.lesson_id
+			) x WHERE total > 0 AND passed >= total`, []any{userID}},
+	} {
+		if err := count(q.dest, q.what, q.query, q.args...); err != nil {
+			return nil, err
+		}
+	}
 
 	// Activity by day (this user's lesson progress + code submissions).
 	rows, err := r.pool.Query(ctx, `
@@ -136,15 +170,20 @@ func (r *ProgressRepo) Overview(ctx context.Context, userID int) (*model.Progres
 			UNION ALL
 			SELECT created_at t FROM submissions WHERE user_id = $1
 		) s GROUP BY 1`, userID)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var day string
-			var c int
-			if err := rows.Scan(&day, &c); err == nil {
-				o.Activity[day] = c
-			}
+	if err != nil {
+		return nil, fmt.Errorf("progress overview: activity: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var day string
+		var c int
+		if err := rows.Scan(&day, &c); err != nil {
+			return nil, fmt.Errorf("progress overview: activity row: %w", err)
 		}
+		o.Activity[day] = c
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("progress overview: activity: %w", err)
 	}
 
 	o.ActiveDays = len(o.Activity)

@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -47,4 +49,41 @@ func (r *QuizAttemptRepo) Count(ctx context.Context, userID, lessonID int) (int,
 	var n int
 	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM quiz_attempts WHERE user_id = $1 AND lesson_id = $2`, userID, lessonID).Scan(&n)
 	return n, err
+}
+
+// Attempt is a stored quiz submission.
+type Attempt struct {
+	Number  int // 1-based, among this user's attempts on this lesson
+	Score   int
+	Total   int
+	Answers []AttemptAnswer
+}
+
+// Latest returns the user's most recent attempt on a lesson's quiz, or nil if
+// they never submitted it.
+//
+// The score is read back rather than recomputed. A student can answer questions
+// they had left blank after submitting, and recomputing would then report a
+// score they never got — the attempt is a record of what happened, so it is the
+// record that is returned.
+func (r *QuizAttemptRepo) Latest(ctx context.Context, userID, lessonID int) (*Attempt, error) {
+	var a Attempt
+	var raw []byte
+	err := r.pool.QueryRow(ctx, `
+		SELECT score, total, answers,
+		       (SELECT COUNT(*) FROM quiz_attempts WHERE user_id = $1 AND lesson_id = $2)
+		FROM quiz_attempts
+		WHERE user_id = $1 AND lesson_id = $2
+		ORDER BY id DESC LIMIT 1`, userID, lessonID).
+		Scan(&a.Score, &a.Total, &raw, &a.Number)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(raw, &a.Answers); err != nil {
+		return nil, err
+	}
+	return &a, nil
 }

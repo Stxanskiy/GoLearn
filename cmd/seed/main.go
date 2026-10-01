@@ -83,10 +83,20 @@ func main() {
 			   tags=EXCLUDED.tags, accent=EXCLUDED.accent, est_minutes=EXCLUDED.est_minutes,
 			   is_trainer=EXCLUDED.is_trainer,
 			   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), modules.cover_image)
+			 WHERE modules.edited_at IS NULL
 			 RETURNING id`,
 			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON,
 			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes, mod.Trainer).Scan(&moduleID)
-		if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// The guard above refused the update: an author edited this course in
+			// the studio. Their version stands — the point of edited_at is that a
+			// deploy does not undo an author's work — so take the id and move on to
+			// the lessons.
+			if err = pool.QueryRow(ctx, `SELECT id FROM modules WHERE slug=$1`, mod.Slug).Scan(&moduleID); err != nil {
+				log.Fatalf("locate edited module %s: %v", mod.Slug, err)
+			}
+			fmt.Printf("Module %s: edited in the studio, left as it is\n", mod.Slug)
+		} else if err != nil {
 			log.Fatalf("upsert module %s: %v", mod.Slug, err)
 		}
 		fmt.Printf("Module %d: %s [%s/%s]\n", mod.Order, mod.Title, track, difficulty)
@@ -179,13 +189,29 @@ func main() {
 					}
 				}
 				if _, err := pool.Exec(ctx,
-					`DELETE FROM quiz_questions WHERE quiz_id=$1 AND source_key <> ALL($2)`,
+					`DELETE FROM quiz_questions
+					 WHERE quiz_id=$1 AND source_key <> '' AND source_key <> ALL($2)`,
 					quizID, keepQuestionKeys); err != nil {
 					log.Fatalf("prune quiz questions of lesson %q: %v", lesson.Slug, err)
 				}
 				fmt.Printf("    Quiz: %d questions\n", len(lesson.Quiz))
-			} else if _, err := pool.Exec(ctx, `DELETE FROM quizzes WHERE lesson_id=$1`, lessonID); err != nil {
-				log.Fatalf("drop quiz of lesson %q: %v", lesson.Slug, err)
+			} else {
+				// The content has no quiz for this lesson. Drop the questions the
+				// seeder put there, but keep any an author added, and only remove the
+				// quiz itself once nothing is left in it: deleting the row cascaded
+				// away every question and every student answer under it.
+				if _, err := pool.Exec(ctx,
+					`DELETE FROM quiz_questions
+					 WHERE source_key <> '' AND quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1)`,
+					lessonID); err != nil {
+					log.Fatalf("prune quiz questions of lesson %q: %v", lesson.Slug, err)
+				}
+				if _, err := pool.Exec(ctx,
+					`DELETE FROM quizzes WHERE lesson_id=$1
+					 AND NOT EXISTS (SELECT 1 FROM quiz_questions q WHERE q.quiz_id = quizzes.id)`,
+					lessonID); err != nil {
+					log.Fatalf("drop quiz of lesson %q: %v", lesson.Slug, err)
+				}
 			}
 			keepTaskKeys := make([]string, 0, len(lesson.Tasks))
 			for ti, t := range lesson.Tasks {
@@ -225,8 +251,14 @@ func main() {
 			}
 			// Only keys that really left the content are removed; everything else keeps
 			// its id, and with it every submission pointing at it.
+			//
+			// source_key <> '' is what keeps the studio out of this. A task an author
+			// adds through the studio has no key in the content, so without that
+			// condition it matched "not named by the content", was deleted on the
+			// next deploy, and took every submission against it along the cascade.
 			if _, err := pool.Exec(ctx,
-				`DELETE FROM tasks WHERE lesson_id=$1 AND source_key <> ALL($2)`,
+				`DELETE FROM tasks
+				 WHERE lesson_id=$1 AND source_key <> '' AND source_key <> ALL($2)`,
 				lessonID, keepTaskKeys); err != nil {
 				log.Fatalf("prune tasks of lesson %q: %v", lesson.Slug, err)
 			}

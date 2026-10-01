@@ -263,4 +263,120 @@ func TestSubmissionsSurviveATaskRefresh(t *testing.T) {
 	if title != "Шаг 1, формулировка поправлена" {
 		t.Errorf("the edit did not land: title is %q", title)
 	}
+
+	// And a task an author added through the studio has no key in the content, so
+	// the prune has to leave it alone. Without that the fix above only covered
+	// the seeder's own tasks: a studio task matched "not named by the content",
+	// was deleted on the next deploy, and took its submissions with it.
+	var studio int
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO tasks (lesson_id, title, order_num, kind, check_script)
+		 VALUES ($1, 'Добавлено в студии', 2, 'shell', 'true') RETURNING id`,
+		lessonID).Scan(&studio); err != nil {
+		t.Fatalf("create studio task: %v", err)
+	}
+	if err := NewSubmissionRepo(pool).Save(ctx, userID, studio, "", "", "", true); err != nil {
+		t.Fatalf("save submission on studio task: %v", err)
+	}
+
+	// Exactly what the seeder issues after upserting a lesson's tasks.
+	if _, err := pool.Exec(ctx,
+		`DELETE FROM tasks
+		 WHERE lesson_id=$1 AND source_key <> '' AND source_key <> ALL($2)`,
+		lessonID, []string{"lab_t1"}); err != nil {
+		t.Fatalf("prune: %v", err)
+	}
+
+	passed, err = NewSubmissionRepo(pool).PassedTaskIDs(ctx, userID, lessonID)
+	if err != nil {
+		t.Fatalf("passed tasks after prune: %v", err)
+	}
+	if !passed[studio] {
+		t.Error("the prune deleted a task created in the studio, and the student's answer with it")
+	}
+	if !passed[first] {
+		t.Error("the prune deleted a task the content still names")
+	}
+
+	// It must still remove what genuinely left the content.
+	var gone int
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO tasks (lesson_id, title, order_num, kind, check_script, source_key)
+		 VALUES ($1, 'Удалённое из контента', 3, 'shell', 'true', 'lab_t_removed') RETURNING id`,
+		lessonID).Scan(&gone); err != nil {
+		t.Fatalf("create removed task: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`DELETE FROM tasks
+		 WHERE lesson_id=$1 AND source_key <> '' AND source_key <> ALL($2)`,
+		lessonID, []string{"lab_t1"}); err != nil {
+		t.Fatalf("second prune: %v", err)
+	}
+	var n int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM tasks WHERE id=$1`, gone).Scan(&n); err != nil {
+		t.Fatalf("count removed task: %v", err)
+	}
+	if n != 0 {
+		t.Error("a task that left the content was not pruned")
+	}
+}
+
+// The dashboard counts a lab as done when every task in it passed. It used to
+// count the rows of a join against submissions instead of the tasks, so a
+// student who got a task right on the second attempt had three "tasks" in a
+// two-task lab and could never reach the total. The visible effect was the one
+// students reported: a lab they had finished never showed as finished.
+func TestOverviewCountsFinishedLabDespiteRetries(t *testing.T) {
+	pool := billingPool(t)
+	ctx := context.Background()
+	userID, lessonID := testUser(t, pool), testLesson(t, pool)
+
+	// Overview only looks at published content, which the helper does not publish.
+	// One statement per Exec: pgx prepares them, and a prepared statement cannot
+	// hold two commands.
+	for _, q := range []string{
+		`UPDATE lessons SET published = true WHERE id = $1`,
+		`UPDATE modules SET published = true
+		 WHERE id = (SELECT module_id FROM lessons WHERE id = $1)`,
+	} {
+		if _, err := pool.Exec(ctx, q, lessonID); err != nil {
+			t.Fatalf("publish test lesson: %v", err)
+		}
+	}
+
+	var taskIDs []int
+	for i := 1; i <= 2; i++ {
+		var id int
+		err := pool.QueryRow(ctx,
+			`INSERT INTO tasks (lesson_id, title, order_num, kind, check_script)
+			 VALUES ($1, 'task', $2, 'shell', 'true') RETURNING id`, lessonID, i).Scan(&id)
+		if err != nil {
+			t.Fatalf("create task %d: %v", i, err)
+		}
+		taskIDs = append(taskIDs, id)
+	}
+
+	subs := NewSubmissionRepo(pool)
+	// Four attempts over two tasks: the shape that used to break the count.
+	for _, passed := range []bool{false, false, true} {
+		if err := subs.Save(ctx, userID, taskIDs[0], "", "", "", passed); err != nil {
+			t.Fatalf("save attempt: %v", err)
+		}
+	}
+	if err := subs.Save(ctx, userID, taskIDs[1], "", "", "", true); err != nil {
+		t.Fatalf("save second task: %v", err)
+	}
+
+	// A user created for this test has done nothing else, so these are exact
+	// numbers rather than deltas, whatever else the database holds.
+	o, err := NewProgressRepo(pool).Overview(ctx, userID)
+	if err != nil {
+		t.Fatalf("overview: %v", err)
+	}
+	if o.LabsDone != 1 {
+		t.Errorf("LabsDone = %d, want 1: every task in the lab passed", o.LabsDone)
+	}
+	if o.TasksSolved != 2 {
+		t.Errorf("TasksSolved = %d, want 2: retries are attempts, not tasks", o.TasksSolved)
+	}
 }

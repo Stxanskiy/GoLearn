@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"sort"
@@ -13,28 +14,29 @@ import (
 
 // fakeContent is in-memory content shared by the fake stores below.
 type fakeContent struct {
-	modules   []model.Module
-	lessons   []model.Lesson
-	specs     []model.Specialization
-	sims      []model.Simulator
-	progress  map[int][]model.Progress // user id → rows
-	labPassed map[int]map[int]bool     // user id → lesson id → all tasks passed
-	overview  model.ProgressOverview
-	cont      *repository.ContinueLesson
-	stats     repository.PlatformStats
-	questions map[int][]model.QuizQuestion // lesson id → quiz questions
-	tasks     map[int][]model.Task         // lesson id → tasks
-	passed    map[int]map[int]bool         // user id → task id → passed
-	saves     []fakeSubmission
-	answers   map[int]map[int]int // user id → question id → selected
-	attempts  []fakeAttempt
-	sandbox   *fakeSandbox
-	code      *fakeCode
-	images    *fakeImages
-	coauthors map[int][]int // module id → co-author user ids
-	reviews   []repository.Review
-	origins   map[int]int // draft row id → live row id
-	nextID    int
+	modules    []model.Module
+	lessons    []model.Lesson
+	specs      []model.Specialization
+	sims       []model.Simulator
+	progress   map[int][]model.Progress // user id → rows
+	labPassed  map[int]map[int]bool     // user id → lesson id → all tasks passed
+	overview   model.ProgressOverview
+	cont       *repository.ContinueLesson
+	stats      repository.PlatformStats
+	questions  map[int][]model.QuizQuestion // lesson id → quiz questions
+	tasks      map[int][]model.Task         // lesson id → tasks
+	passed     map[int]map[int]bool         // user id → task id → passed
+	saves      []fakeSubmission
+	answers    map[int]map[int]int // user id → question id → selected
+	attempts   []fakeAttempt
+	sandbox    *fakeSandbox
+	code       *fakeCode
+	images     *fakeImages
+	coauthors  map[int][]int // module id → co-author user ids
+	reviews    []repository.Review
+	origins    map[int]int  // draft row id → live row id
+	subscribed map[int]bool // user id → has an active subscription
+	nextID     int
 }
 
 type fakeSubmission struct {
@@ -54,6 +56,7 @@ func newFakeContent() *fakeContent {
 		questions: map[int][]model.QuizQuestion{}, tasks: map[int][]model.Task{}, answers: map[int]map[int]int{},
 		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(), code: &fakeCode{},
 		coauthors: map[int][]int{}, nextID: 5000, origins: map[int]int{},
+		subscribed: map[int]bool{},
 	}
 }
 
@@ -74,6 +77,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Drafts:       fakeDrafts{f},
 		Sandbox:      f.sandbox,
 		Code:         f.code,
+		Billing:      fakeBilling{f},
 	}
 	// A typed nil in the interface would look configured, so only set it when present.
 	if f.images != nil {
@@ -411,4 +415,49 @@ func (f fakeQuizAttempts) Count(_ context.Context, userID, lessonID int) (int, e
 		}
 	}
 	return n, nil
+}
+
+func (f fakeQuizAttempts) Latest(_ context.Context, userID, lessonID int) (*repository.Attempt, error) {
+	var last *fakeAttempt
+	n := 0
+	for i := range f.attempts {
+		if f.attempts[i].userID == userID && f.attempts[i].lessonID == lessonID {
+			last = &f.attempts[i]
+			n++
+		}
+	}
+	if last == nil {
+		return nil, nil
+	}
+	return &repository.Attempt{Number: n, Score: last.score, Total: last.total, Answers: last.answers}, nil
+}
+
+// fakeBilling is enough to exercise the subscription gate. Only HasAccess is
+// reachable from the read paths; the rest satisfies the interface.
+type fakeBilling struct{ *fakeContent }
+
+func (f fakeBilling) Current(context.Context, int) (*repository.Subscription, error) { return nil, nil }
+
+func (f fakeBilling) HasAccess(_ context.Context, userID int) (bool, error) {
+	return f.subscribed[userID], nil
+}
+
+func (f fakeBilling) StartPayment(context.Context, int, int, int64, string, string, string) (*repository.Payment, error) {
+	return nil, errors.New("not used in tests")
+}
+
+func (f fakeBilling) SetProviderRef(context.Context, int, string) error { return nil }
+
+func (f fakeBilling) Confirm(context.Context, string, string) (*repository.Subscription, error) {
+	return nil, repository.ErrPaymentNotFound
+}
+
+func (f fakeBilling) SetCourseTier(_ context.Context, moduleID int, tier string) error {
+	for i := range f.modules {
+		if f.modules[i].ID == moduleID {
+			f.modules[i].AccessTier = tier
+			return nil
+		}
+	}
+	return repository.ErrCourseNotFound
 }

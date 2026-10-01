@@ -10,6 +10,7 @@ import (
 	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/content"
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -60,16 +61,24 @@ func (a *API) lessonBySlug(w http.ResponseWriter, r *http.Request) (lessonRef, b
 
 // visible hides draft lessons and courses from everyone except their editors.
 func (a *API) visible(w http.ResponseWriter, r *http.Request, ref lessonRef) (lessonRef, bool) {
-	if ref.lesson.Published && ref.module.Published {
-		return ref, true
+	if !ref.lesson.Published || !ref.module.Published {
+		ok, err := a.canPreview(r.Context(), ref.module)
+		if err != nil {
+			a.internalError(w, "lesson: preview access", err)
+			return lessonRef{}, false
+		}
+		if !ok {
+			writeError(w, http.StatusNotFound, codeNotFound, "lesson not found")
+			return lessonRef{}, false
+		}
 	}
-	ok, err := a.canPreview(r.Context(), ref.module)
-	if err != nil {
-		a.internalError(w, "lesson: preview access", err)
-		return lessonRef{}, false
-	}
-	if !ok {
-		writeError(w, http.StatusNotFound, codeNotFound, "lesson not found")
+	// The subscription gate belongs here, where every lesson is loaded, rather
+	// than in the handlers. It used to sit in two of them — getLesson and
+	// getLab — while the terminal, the checks, the file editor, the web preview,
+	// the quiz and the retry endpoint had none. A lesson id is enough to open a
+	// paid course's terminal, which is both the paywall going round and the most
+	// expensive thing on the host: one Firecracker VM per lesson, out of eight.
+	if !a.requireCourseAccess(w, r, ref.module.AccessTier) {
 		return lessonRef{}, false
 	}
 	return ref, true
@@ -91,10 +100,6 @@ func (a *API) getLesson(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	uid := userFrom(ctx).ID
 	l, m := ref.lesson, ref.module
-
-	if !a.requireCourseAccess(w, r, m.AccessTier) {
-		return
-	}
 
 	siblings, err := a.Lessons.GetByModule(ctx, m.ID)
 	if err != nil {
@@ -279,7 +284,57 @@ func (a *API) lessonQuiz(ctx context.Context, userID, lessonID int) (*apigen.Les
 		}
 		out.Questions = append(out.Questions, pub)
 	}
+
+	// The score the student already earned has to come back with the quiz. It
+	// used to live only in the submit response, so a page reload lost it: the
+	// score badge vanished, the explanations folded away, and "Finish test" went
+	// active again — pressing it recorded a fresh attempt on a quiz they had
+	// already passed. From the student's side the test simply forgot it had been
+	// taken.
+	last, err := a.QuizAttempts.Latest(ctx, userID, lessonID)
+	if err != nil {
+		return nil, err
+	}
+	if last != nil {
+		out.LastAttempt = attemptResult(questions, last)
+	}
 	return out, nil
+}
+
+// attemptResult rebuilds a stored attempt into the same shape submitting one
+// returns, so a reloaded page and a fresh submission render identically.
+func attemptResult(questions []model.QuizQuestion, at *repository.Attempt) *apigen.QuizResult {
+	chosen := make(map[int]*int, len(at.Answers))
+	for i := range at.Answers {
+		chosen[at.Answers[i].QuestionID] = at.Answers[i].Selected
+	}
+	out := &apigen.QuizResult{
+		Attempt: at.Number,
+		Score:   at.Score,
+		Total:   at.Total,
+		Results: make([]apigen.QuizQuestionResult, 0, len(questions)),
+	}
+	if at.Total > 0 {
+		out.Percent = at.Score * 100 / at.Total
+	}
+	for _, q := range questions {
+		res := apigen.QuizQuestionResult{
+			QuestionID:      q.ID,
+			QuestionHTML:    content.Sanitize(q.Question),
+			OptionsHTML:     sanitizeAll(q.Options),
+			CorrectIndex:    q.CorrectIndex,
+			ExplanationHTML: optionalHTML(q.Explanation),
+		}
+		// Selections come from the attempt, not from the current answers: a
+		// question answered after submitting was not part of that attempt.
+		if sel, ok := chosen[q.ID]; ok && sel != nil {
+			v := *sel
+			res.SelectedIndex = &v
+			res.IsCorrect = v == q.CorrectIndex
+		}
+		out.Results = append(out.Results, res)
+	}
+	return out
 }
 
 func sanitizeAll(items []string) []string {

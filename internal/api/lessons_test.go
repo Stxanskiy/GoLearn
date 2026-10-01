@@ -213,3 +213,50 @@ func TestQuizFlow(t *testing.T) {
 		t.Errorf("submit without quiz: %d", w.Code)
 	}
 }
+
+// A student who passed a quiz and comes back later must still see that they
+// passed it. The score lived only in the submit response, so reloading the page
+// lost it: the badge disappeared, the explanations folded away, and "Finish
+// test" went active again — pressing it recorded another attempt on a quiz they
+// had already taken. This is the complaint "tests are not marked as passed".
+func TestQuizResultSurvivesAReload(t *testing.T) {
+	h, c := lessonsFixture(t)
+	c.progress[1] = nil
+
+	w := do(h, http.MethodPost, "/lessons/101/quiz/submit",
+		`{"answers":[{"question_id":1001,"selected_index":1},{"question_id":1002,"selected_index":0}]}`,
+		withCookie(studentToken))
+	if w.Code != http.StatusOK {
+		t.Fatalf("submit: %d %s", w.Code, w.Body)
+	}
+	submitted := decode[apigen.QuizResult](t, w)
+
+	l := decode[apigen.LessonDetail](t, do(h, http.MethodGet, "/courses/linux/lessons/quiz", "", withCookie(studentToken)))
+	if l.Quiz.LastAttempt == nil {
+		t.Fatal("the quiz came back without the attempt the student just submitted")
+	}
+	got := *l.Quiz.LastAttempt
+	// Identical to the submit response: the page must not render differently
+	// depending on whether it was reloaded.
+	if got.Attempt != submitted.Attempt || got.Score != submitted.Score ||
+		got.Total != submitted.Total || got.Percent != submitted.Percent {
+		t.Errorf("reloaded attempt = %+v, submitted = %+v", got, submitted)
+	}
+	if len(got.Results) != len(submitted.Results) {
+		t.Fatalf("results = %d, want %d", len(got.Results), len(submitted.Results))
+	}
+	for i := range got.Results {
+		a, b := got.Results[i], submitted.Results[i]
+		if a.QuestionID != b.QuestionID || a.IsCorrect != b.IsCorrect || a.CorrectIndex != b.CorrectIndex {
+			t.Errorf("result %d = %+v, want %+v", i, a, b)
+		}
+		if (a.SelectedIndex == nil) != (b.SelectedIndex == nil) {
+			t.Errorf("result %d selection = %v, want %v", i, a.SelectedIndex, b.SelectedIndex)
+		}
+	}
+
+	// And a different user, who never submitted, must not be shown an attempt.
+	if l := decode[apigen.LessonDetail](t, do(h, http.MethodGet, "/courses/linux/lessons/quiz", "", withCookie(adminToken))); l.Quiz.LastAttempt != nil {
+		t.Errorf("a user who never submitted has an attempt: %+v", l.Quiz.LastAttempt)
+	}
+}
