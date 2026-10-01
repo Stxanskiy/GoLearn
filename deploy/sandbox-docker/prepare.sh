@@ -10,12 +10,18 @@ cd "$HERE"
 
 PRELOAD=(alpine:3.20 alpine:latest busybox:latest busybox:1.28
          nginx:alpine nginx:latest nginx:1.25-alpine
-         redis:alpine redis:7-alpine python:3.12-alpine postgres:16-alpine
+         redis:alpine redis:7-alpine python:3.12-alpine
+         postgres:15-alpine postgres:16-alpine
          golang:1.21-alpine registry:2)
+# Keep this in step with what the production micro-VMs carry: the harness runs
+# against this container, students run against the VM, and a lab that uses an
+# image only one of them has passes here and hangs there. postgres:15-alpine is
+# here because that is what the VM has.
 # What students are asked to `docker pull` (plus the common ones).
 PULLABLE=(alpine:3.20 alpine:latest busybox:latest busybox:1.28
           nginx:alpine nginx:latest nginx:1.25-alpine
-          redis:alpine redis:7-alpine python:3.12-alpine postgres:16-alpine)
+          redis:alpine redis:7-alpine python:3.12-alpine
+          postgres:15-alpine postgres:16-alpine)
 
 echo "==> pulling images"
 for i in "${PRELOAD[@]}"; do docker pull -q "$i" >/dev/null; done

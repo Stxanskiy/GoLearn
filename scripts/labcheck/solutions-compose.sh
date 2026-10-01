@@ -44,10 +44,10 @@ import re
 p="/root/healthapp/docker-compose.yml"
 s=open(p).read()
 s=s.replace("""  db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     environment:
       POSTGRES_PASSWORD: postgres""","""  db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     environment:
       POSTGRES_PASSWORD: postgres
     healthcheck:
