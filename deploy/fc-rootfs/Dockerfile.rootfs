@@ -22,17 +22,15 @@ RUN curl -fSL --retry 3 https://get.helm.sh/helm-v3.16.3-linux-amd64.tar.gz | ta
 # ── k3s ──
 RUN curl -fSL --retry 3 "https://github.com/k3s-io/k3s/releases/download/v1.30.6%2Bk3s1/k3s" -o /usr/local/bin/k3s && \
     chmod +x /usr/local/bin/k3s
-# ── Gateway API ──
-# k3s brings Traefik but neither the CRDs nor the Gateway provider, and the VM has
-# no network to fetch them at runtime. Both go where k3s applies manifests on
-# startup, so the cluster serves Gateway API from the first boot — enabling the
-# provider later would mean a Helm upgrade and a Traefik restart inside a
-# one-vCPU VM, which a lesson cannot sensibly wait out.
+# ── Gateway API CRDs ──
+# Only the CRDs; Traefik's Gateway provider stays off. See the reasoning in
+# deploy/sandbox-k8s/Dockerfile: enabling it means reinstalling Traefik from
+# inside a lesson, on the critical path of every Kubernetes lab, and the VM has
+# one vCPU. The lesson works with objects and their status instead.
 RUN mkdir -p /var/lib/rancher/k3s/server/manifests && \
     curl -fSL --retry 3 -o /var/lib/rancher/k3s/server/manifests/gateway-api-crds.yaml \
       "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml" && \
     grep -q 'kind: CustomResourceDefinition' /var/lib/rancher/k3s/server/manifests/gateway-api-crds.yaml
-COPY rootfs-extra/traefik-gateway.yaml /var/lib/rancher/k3s/server/manifests/traefik-gateway.yaml
 # ── zsh: plugins + config, make it root's shell ──
 RUN git clone -q --depth=1 https://github.com/zsh-users/zsh-autosuggestions /usr/share/zsh-plugins/zsh-autosuggestions && \
     git clone -q --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting /usr/share/zsh-plugins/zsh-syntax-highlighting && \

@@ -541,23 +541,28 @@ YAML`,
 	"ch-ckad-lab9-gateway-api": {
 		Image: sandboxImageK8s,
 		Setup: k8sBoot + `
-# CRD Gateway API и включённый провайдер Traefik приходят из образа: они лежат в
-# каталоге манифестов k3s и применяются при старте кластера (см.
-# deploy/sandbox-k8s/Dockerfile). Включать провайдер здесь было бы нельзя — это
-# Helm-апгрейд и перезапуск Traefik внутри VM с одним ядром, и лаба столько
-# ждать не может.
+# CRD Gateway API приходят из образа — k3s применяет их при старте кластера (см.
+# deploy/sandbox-k8s/Dockerfile).
+#
+# Контроллера Gateway API здесь нет и не будет: включить провайдер Traefik можно
+# только переустановкой чарта, а это десятки секунд внутри VM с одним ядром, на
+# критическом пути каждого k8s-урока. Поэтому урок построен вокруг объектов и их
+# статуса, а не вокруг живого трафика — и это ровно то, с чего начинается разбор
+# на настоящем кластере: объект без условий в status означает, что его никто не
+# подхватил.
 kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1 || {
   echo "в образе песочницы нет CRD Gateway API — пересобери образ (deploy/sandbox-k8s/prepare.sh)" >&2; exit 1; }
 
-# GatewayClass создаёт сам Traefik, когда провайдер включён. Дождаться его —
-# единственный надёжный признак, что контроллер действительно слушает Gateway API:
-# без этого Gateway просто навсегда останется без условия Accepted.
-for i in $(seq 1 90); do
-  kubectl get gatewayclass -o jsonpath='{.items[*].spec.controllerName}' 2>/dev/null | grep -q 'traefik.io/gateway-controller' && break
-  sleep 2
-done
-GWCLASS=$(kubectl get gatewayclass -o jsonpath='{range .items[?(@.spec.controllerName=="traefik.io/gateway-controller")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | head -1)
-[ -n "$GWCLASS" ] || { echo "Traefik не поднял GatewayClass — провайдер Gateway API выключен в образе" >&2; exit 1; }
+# Свой GatewayClass, чтобы Gateway было на что ссылаться. Контроллер с таким
+# именем не существует — это и показывает урок.
+cat <<'YEOF' | kubectl apply -f - >/dev/null
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: lab-class
+spec:
+  controllerName: example.com/no-such-controller
+YEOF
 
 kdel httproute route-demo
 kdel gateway lab-gateway
@@ -602,13 +607,13 @@ spec:
       targetPort: 80
 YEOF
 
-cat > /root/gateway-api/gateway.yaml <<YEOF
+cat > /root/gateway-api/gateway.yaml <<'YEOF'
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: lab-gateway
 spec:
-  gatewayClassName: $GWCLASS
+  gatewayClassName: lab-class
   listeners:
     - name: http
       protocol: HTTP
@@ -638,26 +643,36 @@ spec:
         - name: backend-svc
           port: 80
 YEOF
-rm -f /root/gateway_http.txt`,
+rm -f /root/gateway_http.txt /root/gateway_status.txt`,
 		Checks: map[int]string{
 			1: kcheck(jp("get deploy backend", "{.status.readyReplicas}", "1")+` && `+
 				`[ -n "$(kubectl get endpoints backend-svc -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null)" ]`,
 				"backend развёрнут, у backend-svc есть endpoints",
 				"kubectl apply -f /root/gateway-api/backend.yaml, затем kubectl rollout status deploy/backend"),
 			2: kcheck(`kubectl get gateway lab-gateway >/dev/null 2>&1 && `+
-				`[ -n "$(kubectl get gatewayclass "$(kubectl get gateway lab-gateway -o jsonpath='{.spec.gatewayClassName}' 2>/dev/null)" -o jsonpath='{.spec.controllerName}' 2>/dev/null | grep traefik)" ] && `+
-				`kubectl get gateway lab-gateway -o jsonpath='{.status.conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True`,
-				"Gateway создан и принят (Accepted=True)",
-				"kubectl apply -f /root/gateway-api/gateway.yaml, затем kubectl describe gateway lab-gateway — ищи conditions"),
+				jp("get gateway lab-gateway", "{.spec.gatewayClassName}", "lab-class")+` && `+
+				jp("get gateway lab-gateway", "{.spec.listeners[0].port}", "80")+` && `+
+				jp("get gateway lab-gateway", "{.spec.listeners[0].hostname}", "store.lab"),
+				"Gateway создан с нужным listener'ом",
+				"kubectl apply -f /root/gateway-api/gateway.yaml — проверь порт и hostname в манифесте"),
 			3: kcheck(`kubectl get httproute route-demo >/dev/null 2>&1 && `+
-				`kubectl get httproute route-demo -o jsonpath='{.status.parents[0].conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True && `+
-				`kubectl get httproute route-demo -o jsonpath='{.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}' 2>/dev/null | grep -q True`,
-				"HTTPRoute принят Gateway и его backend разрешён",
-				"kubectl apply -f /root/gateway-api/httproute.yaml, затем kubectl describe httproute route-demo — смотри Accepted и ResolvedRefs"),
-			4: kcheck(`grep -q 'Welcome to nginx' /root/gateway_http.txt 2>/dev/null`,
-				"ответ получен через Gateway по нужному Host",
-				`Gateway отвечает по имени из expected-host.txt: kubectl run probe --rm -i --restart=Never --image=busybox:1.28 -- wget -qO- --header="Host: store.lab" http://10.55.0.2/ > /root/gateway_http.txt`),
-			5: kcheck(`! kubectl get httproute route-demo >/dev/null 2>&1 && `+
+				jp("get httproute route-demo", "{.spec.parentRefs[0].name}", "lab-gateway")+` && `+
+				jp("get httproute route-demo", "{.spec.hostnames[0]}", "store.lab")+` && `+
+				jp("get httproute route-demo", "{.spec.rules[0].backendRefs[0].name}", "backend-svc"),
+				"HTTPRoute привязан к Gateway и ведёт на backend-svc",
+				"kubectl apply -f /root/gateway-api/httproute.yaml — сверь parentRefs, hostnames и backendRefs"),
+			// Живого трафика через Gateway здесь быть не может: контроллера нет.
+			// Зато проверяемо то, что в реальной жизни и делают первым — читают
+			// статус объекта и видят, что его никто не подхватил.
+			4: kcheck(`[ -s /root/gateway_status.txt ] && `+
+				`grep -q 'lab-gateway' /root/gateway_status.txt && `+
+				`grep -q 'route-demo' /root/gateway_status.txt`,
+				"статус Gateway и HTTPRoute сохранён в /root/gateway_status.txt",
+				"собери статус обоих объектов в файл: { kubectl describe gateway lab-gateway; kubectl describe httproute route-demo; } > /root/gateway_status.txt"),
+			// Файл из задания выше — улика того, что объекты вообще создавались.
+			// Без неё «ресурсов нет» проходило бы на пустом кластере до начала работы.
+			5: kcheck(`[ -s /root/gateway_status.txt ] && `+
+				`! kubectl get httproute route-demo >/dev/null 2>&1 && `+
 				`! kubectl get gateway lab-gateway >/dev/null 2>&1 && `+
 				`! kubectl get deploy backend >/dev/null 2>&1 && `+
 				`! kubectl get svc backend-svc >/dev/null 2>&1`,

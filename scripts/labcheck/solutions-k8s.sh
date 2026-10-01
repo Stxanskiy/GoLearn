@@ -829,8 +829,11 @@ sol_ch_exp_kuber_lab1_1='kubectl run nginx --image=nginx:alpine >/dev/null && ku
 # ── k8s-ckad: Gateway API ──
 # У урока не было ни фикстур, ни проверок, ни даже нужного образа песочницы;
 # CRD Gateway API в k3s не входят и теперь запечены в образ, а setup их ставит.
-sol_ch_ckad_lab9_gateway_api_1='kubectl apply -f /root/gateway-api/backend.yaml >/dev/null && kubectl rollout status deploy/backend --timeout=180s >/dev/null'
-sol_ch_ckad_lab9_gateway_api_2='kubectl apply -f /root/gateway-api/gateway.yaml >/dev/null; for i in $(seq 1 30); do kubectl get gateway lab-gateway -o jsonpath="{.status.conditions[?(@.type==\"Accepted\")].status}" 2>/dev/null | grep -q True && break; sleep 2; done'
-sol_ch_ckad_lab9_gateway_api_3='kubectl apply -f /root/gateway-api/httproute.yaml >/dev/null; for i in $(seq 1 30); do kubectl get httproute route-demo -o jsonpath="{.status.parents[0].conditions[?(@.type==\"ResolvedRefs\")].status}" 2>/dev/null | grep -q True && break; sleep 2; done'
-sol_ch_ckad_lab9_gateway_api_4='for i in $(seq 1 30); do kubectl run probe --rm -i --restart=Never --image=busybox:1.28 -- wget -qO- --header="Host: $(cat /root/gateway-api/expected-host.txt)" http://10.55.0.2/ > /root/gateway_http.txt 2>/dev/null; grep -q "Welcome to nginx" /root/gateway_http.txt && break; sleep 2; done'
+sol_ch_ckad_lab9_gateway_api_1='kubectl apply -f /root/gateway-api/backend.yaml >/dev/null && kubectl rollout status deploy/backend --timeout=300s >/dev/null'
+sol_ch_ckad_lab9_gateway_api_2='kubectl apply -f /root/gateway-api/gateway.yaml >/dev/null'
+sol_ch_ckad_lab9_gateway_api_3='kubectl apply -f /root/gateway-api/httproute.yaml >/dev/null'
+# Контроллера Gateway API в песочнице нет, поэтому ждать условий в статусе
+# бессмысленно: урок как раз о том, что их не будет. Решение просто собирает
+# статус в файл, как это делает студент.
+sol_ch_ckad_lab9_gateway_api_4='{ kubectl describe gateway lab-gateway; kubectl describe httproute route-demo; } > /root/gateway_status.txt'
 sol_ch_ckad_lab9_gateway_api_5='kubectl delete -f /root/gateway-api/httproute.yaml -f /root/gateway-api/gateway.yaml -f /root/gateway-api/backend.yaml --ignore-not-found --wait >/dev/null 2>&1'

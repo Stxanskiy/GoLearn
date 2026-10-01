@@ -97,10 +97,9 @@ docker cp "$cid:/bin/registry" bin/registry >/dev/null
 docker rm "$cid" >/dev/null
 
 # Gateway API CRDs. k3s ships Traefik but not these, so without them the Gateway
-# API lesson has no gatewayclass, no gateway and no httproute to create — the
-# whole lab is "resource type not found" with nothing the student can do about
-# it. The lab's setup applies this file; the sandbox has no network, so it has to
-# be here.
+# API lesson has nothing to create at all — every command answers "resource type
+# not found". k3s applies this file at startup (see Dockerfile); the sandbox has
+# no network, so it has to be baked in.
 GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v1.2.1}"
 echo "==> Gateway API CRDs ($GATEWAY_API_VERSION)"
 curl -fsSL --retry 3 --retry-delay 2 -o bin/gateway-api-crds.yaml \

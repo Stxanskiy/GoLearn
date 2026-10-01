@@ -12,7 +12,7 @@
       "title": "Проверить platform-слой Gateway API",
       "taskid": "k8sgw_lab1_t1_platform",
       "hint": "",
-      "question_html": "<p>Сначала проверь, что в учебном кластере есть Gateway API и Traefik GatewayClass:</p>\n<pre><code>kubectl api-resources --api-group=gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl get gatewayclass</code></pre>\n<pre><code>kubectl describe gatewayclass traefik</code></pre>\n<pre><code>kubectl auth can-i create gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i create httproutes.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get httproutes.gateway.networking.k8s.io</code></pre>\n<p><code>GatewayClass</code> и controller — platform-слой. В этой лабораторной они уже подготовлены, а ты создашь приложение, <code>Gateway</code> и <code>HTTPRoute</code> в своём namespace.</p>",
+      "question_html": "<p>Сначала посмотри, что в кластере вообще есть из Gateway API:</p><pre><code>kubectl api-resources --api-group=gateway.networking.k8s.io\nkubectl get gatewayclass</code></pre><p>Типы объектов есть — CRD установлены. А вот <strong>контроллера Gateway API в этой песочнице нет</strong>, и это сделано намеренно: включить его у Traefik можно только переустановкой чарта, а это десятки секунд внутри виртуальной машины с одним ядром, причём на старте каждого урока по Kubernetes.</p><p>Поэтому лабораторная не про живой трафик, а про то, с чего начинается разбор на настоящем кластере: создать объекты, прочитать их <code>status</code> и увидеть, подхватил ли их кто-нибудь. Объект без условий в статусе — самый частый и самый незаметный вид поломки Gateway API, и узнавать его надо с первого взгляда.</p>",
       "options": [],
       "raw_description": "<p>Сначала проверь, что в учебном кластере есть Gateway API и Traefik GatewayClass:</p>\n<pre><code>kubectl api-resources --api-group=gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl get gatewayclass</code></pre>\n<pre><code>kubectl describe gatewayclass traefik</code></pre>\n<pre><code>kubectl auth can-i create gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get gateways.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i create httproutes.gateway.networking.k8s.io</code></pre>\n<pre><code>kubectl auth can-i get httproutes.gateway.networking.k8s.io</code></pre>\n<p><code>GatewayClass</code> и controller — platform-слой. В этой лабораторной они уже подготовлены, а ты создашь приложение, <code>Gateway</code> и <code>HTTPRoute</code> в своём namespace.</p>"
     },
@@ -70,19 +70,19 @@
     },
     {
       "type": "check",
-      "title": "Проверить Gateway route через HTTP",
+      "title": "Прочитать статус Gateway и HTTPRoute",
       "taskid": "k8sgw_lab1_t6_http_routes",
-      "hint": "<p>Если запрос возвращает 404, сравни <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames[0]</code>. Если ответ 503/502 или пустой, проверь <code>ResolvedRefs</code> и endpoints Service.</p>",
-      "question_html": "<p>Проверь маршрут через HTTP. Если запрос возвращает 404, сравни три места: <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames</code> — они должны совпадать.</p>",
+      "hint": "<p>Фигурные скобки группируют две команды, чтобы их общий вывод ушёл в один файл. Можно и двумя командами — вторая с <code>&gt;&gt;</code>, чтобы дописать, а не затереть.</p>",
+      "question_html": "<p>Собери статус обоих объектов в один файл <code>/root/gateway_status.txt</code>:</p><pre><code>{ kubectl describe gateway lab-gateway\n  kubectl describe httproute route-demo\n} &gt; /root/gateway_status.txt</code></pre><p>Теперь открой файл и найди раздел <code>Status</code> у каждого объекта. У Gateway условий не будет вовсе, у HTTPRoute не будет записи о родителе. Это не ошибка в твоих манифестах — это и означает «контроллер не подхватил объект».</p><p>Сравни с тем, как выглядела бы рабочая картина: у Gateway появились бы <code>Accepted=True</code> и <code>Programmed=True</code>, у HTTPRoute в <code>Status.Parents</code> — ссылка на Gateway с <code>Accepted=True</code> и <code>ResolvedRefs=True</code>. Именно эти четыре условия и смотрят в первую очередь, когда маршрут не работает.</p>",
       "options": [],
       "raw_description": "<p>Проверь маршрут через HTTP. Если запрос возвращает 404, сравни три места: <code>expected-host.txt</code>, <code>Gateway.spec.listeners[0].hostname</code> и <code>HTTPRoute.spec.hostnames</code> — они должны совпадать.</p>"
     },
     {
       "type": "self",
-      "title": "Открыть `Web Preview`",
+      "title": "Почему Web Preview здесь не поможет",
       "taskid": "k8sgw_lab1_t7_web_preview",
       "hint": "",
-      "question_html": "<p>Нажми кнопку <code>Web Preview</code>. Через Gateway должна открыться страница\nприложения — тот же маршрут, который ты до этого проверял через <code>curl</code>, но\nтеперь его проходит браузер.</p>\n<p>Если страница не открывается, не угадывай: сначала посмотри, принял ли Gateway\nадрес и привязался ли к нему маршрут.</p>\n<pre><code>kubectl get gateway\nkubectl get httproute</code></pre>\n<p>Пустой адрес у Gateway означает, что controller его ещё не обработал — такое бывает\nсразу после <code>apply</code>, подожди несколько секунд. А вот\n<code>HTTPRoute</code> без привязки к Gateway сам не исправится: смотри поле\n<code>parentRefs</code> и статус маршрута.</p>",
+      "question_html": "<p>Открывать <code>Web Preview</code> в этой лабораторной нечего: трафик через Gateway никто не проводит. Но backend работает, и в этом стоит убедиться — чтобы точно знать, что проблема в маршрутизации, а не в приложении.</p><pre><code>kubectl run probe --rm -it --restart=Never --image=busybox:1.28 -- wget -qO- http://backend-svc/</code></pre><p>Страница придёт. Значит Service, endpoints и Pod в порядке, а не работает ровно один слой — тот, который должен был бы разобрать Gateway и HTTPRoute.</p><p>Этот приём пригодится и на рабочем кластере: прежде чем копаться в Ingress или Gateway, проверь сервис изнутри. Если изнутри отвечает, а снаружи нет — ищи в маршрутизации и не трогай приложение.</p>",
       "options": [],
       "raw_description": "$2a"
     },
