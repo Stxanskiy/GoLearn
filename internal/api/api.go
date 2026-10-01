@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/backendraz/golearn/internal/billing"
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
 	"github.com/backendraz/golearn/internal/runner"
@@ -129,6 +130,7 @@ type progressStore interface {
 type quizAttemptStore interface {
 	Save(ctx context.Context, userID, lessonID, score, total int, answers []repository.AttemptAnswer) (int, error)
 	Count(ctx context.Context, userID, lessonID int) (int, error)
+	Latest(ctx context.Context, userID, lessonID int) (*repository.Attempt, error)
 }
 
 type quizAnswerStore interface {
@@ -208,6 +210,9 @@ type Stores struct {
 	Code         codeRunner
 	Images       imageStore
 	Billing      billingStore
+	// Robokassa is optional: without credentials checkout falls back to the stub
+	// provider, so development needs no merchant account.
+	Robokassa *billing.Robokassa
 }
 
 // imageStore puts uploaded images into object storage; nil when it is not configured.
@@ -254,6 +259,13 @@ func (a *API) Routes() chi.Router {
 	r.Get("/public/courses/{courseSlug}", a.getCoursePreview)
 	r.Get("/courses/{courseSlug}/cover", a.getCourseCover)
 	r.Get("/specializations/{specSlug}/cover", a.getSpecializationCover)
+
+	// Robokassa's callback is server-to-server: it carries no session cookie and
+	// no Origin, so it lives outside the authenticated group. Its authority comes
+	// from the signature, which the handler checks before anything else. Both
+	// methods are registered because Robokassa can be configured for either.
+	r.Post("/billing/robokassa/result", a.robokassaResult)
+	r.Get("/billing/robokassa/result", a.robokassaResult)
 
 	r.Group(func(r chi.Router) {
 		r.Use(requireUser)

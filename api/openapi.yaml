@@ -216,9 +216,10 @@ paths:
       tags: [billing]
       summary: Start a checkout
       description: |
-        Opens a payment and returns the reference that confirms it. No provider is
-        wired in yet, so `confirm_url` points back at this API and the whole flow
-        is exercisable before any money moves.
+        Opens a payment and returns where to send the student next. With Robokassa
+        configured `confirm_url` is the Robokassa payment page; without it the
+        payment stays on the stub provider and `confirm_url` points back at this
+        API, so the flow is exercisable before any money moves.
       operationId: startCheckout
       responses:
         '201':
@@ -233,8 +234,13 @@ paths:
       tags: [billing]
       summary: Confirm a payment
       description: |
-        Stands in for the provider's webhook. Idempotent on the payment reference:
-        providers replay webhooks, and a replay must not buy another month.
+        Stands in for the provider's webhook while the stub is the provider.
+        Idempotent on the payment reference: providers replay webhooks, and a
+        replay must not buy another month.
+
+        Answers `404` once Robokassa is configured. It has to: a signed-in student
+        can call this with their own reference, and leaving it open next to a real
+        provider hands out free subscriptions.
       operationId: confirmCheckout
       parameters:
         - name: ref
@@ -250,6 +256,95 @@ paths:
         '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /billing/robokassa/result:
+    post:
+      tags: [billing]
+      summary: Robokassa payment callback
+      description: |
+        Robokassa calls this server-to-server when a payment succeeds, and it is
+        the only signal that may grant a subscription — the Success redirect the
+        student's browser arrives on is held by the student and can be forged.
+
+        Form-encoded, and authenticated by `SignatureValue` over
+        `OutSum:InvId:password#2` plus every `Shp_` parameter in name order. The
+        amount is checked against the plan as well, so a valid signature over a
+        smaller sum buys nothing. Unauthenticated by design: Robokassa carries no
+        session cookie.
+
+        The reply must be the literal text `OK<InvId>`; anything else makes
+        Robokassa retry the callback.
+      operationId: robokassaResult
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [OutSum, InvId, SignatureValue]
+              properties:
+                OutSum: { type: string, description: 'Amount, two decimal places.', example: '490.00' }
+                InvId: { type: integer, description: 'Invoice number — the payment row id.' }
+                SignatureValue: { type: string, description: 'MD5 or SHA-256 digest, see description.' }
+      responses:
+        '200':
+          description: Accepted. Body is `OK<InvId>`.
+          content:
+            text/plain:
+              schema: { type: string }
+              example: OK1042
+        '400':
+          description: Malformed form, or an invoice id that is not a positive integer.
+          content:
+            text/plain:
+              schema: { type: string }
+        '403':
+          description: Signature or amount did not match. Nothing is granted.
+          content:
+            text/plain:
+              schema: { type: string }
+        '500':
+          description: |
+            The signature was ours but the payment could not be confirmed. Answered
+            deliberately so Robokassa retries — the usual cause is a callback that
+            overtook its own payment row.
+          content:
+            text/plain:
+              schema: { type: string }
+    get:
+      tags: [billing]
+      summary: Robokassa payment callback (GET)
+      description: |
+        Same as the POST form. Robokassa can be configured to call the Result URL
+        with either method, so both are accepted and verified identically.
+      operationId: robokassaResultGet
+      security: []
+      parameters:
+        - { name: OutSum, in: query, required: true, schema: { type: string } }
+        - { name: InvId, in: query, required: true, schema: { type: integer } }
+        - { name: SignatureValue, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Accepted. Body is `OK<InvId>`.
+          content:
+            text/plain:
+              schema: { type: string }
+        '400':
+          description: Malformed request.
+          content:
+            text/plain:
+              schema: { type: string }
+        '403':
+          description: Signature or amount did not match.
+          content:
+            text/plain:
+              schema: { type: string }
+        '500':
+          description: Could not confirm; Robokassa should retry.
+          content:
+            text/plain:
+              schema: { type: string }
 
   /me/dashboard:
     get:
@@ -1084,12 +1179,20 @@ paths:
       tags: [admin-courses]
       summary: Delete course
       operationId: adminDeleteCourse
-      description: Hard delete; cascades to lessons, quizzes, tasks, submissions and progress. Needs `can_delete`. Deleting a draft discards it.
+      description: |
+        Hard delete; cascades to lessons, quizzes, tasks, submissions and
+        progress. Needs `can_delete`. Deleting a draft discards it.
+
+        A **published** course cannot be deleted: it answers `409
+        draft_required`. Unpublish it first — that step is reversible, and this
+        one takes every student's progress on the course with it. A course under
+        review answers `409 review_pending`.
       responses:
         '204': { description: Deleted. }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ContentConflict' }
 
   /admin/courses/{courseId}/published:
     parameters:
@@ -2907,6 +3010,18 @@ components:
         questions:
           type: array
           items: { $ref: '#/components/schemas/QuizQuestionPublic' }
+        last_attempt:
+          description: |
+            The student's most recent submission of this quiz, or absent if they
+            never submitted it. Carries the same shape as the submit response, so
+            a reloaded page shows the score, the attempt number and the
+            explanations exactly as they looked right after submitting.
+
+            The score is the one that was recorded, not a recomputation: a student
+            may answer questions they had left blank afterwards, and the attempt
+            is a record of what happened.
+          allOf:
+            - $ref: '#/components/schemas/QuizResult'
 
     LessonDetail:
       type: object

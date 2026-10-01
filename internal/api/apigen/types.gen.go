@@ -1452,7 +1452,16 @@ type LessonProgress struct {
 
 // LessonQuiz defines model for LessonQuiz.
 type LessonQuiz struct {
-	Questions []QuizQuestionPublic `json:"questions"`
+	// LastAttempt The student's most recent submission of this quiz, or absent if they
+	// never submitted it. Carries the same shape as the submit response, so
+	// a reloaded page shows the score, the attempt number and the
+	// explanations exactly as they looked right after submitting.
+	//
+	// The score is the one that was recorded, not a recomputation: a student
+	// may answer questions they had left blank afterwards, and the attempt
+	// is a record of what happened.
+	LastAttempt *QuizResult          `json:"last_attempt,omitempty"`
+	Questions   []QuizQuestionPublic `json:"questions"`
 }
 
 // LinkRef defines model for LinkRef.
@@ -2018,6 +2027,25 @@ type ConfirmCheckoutParams struct {
 	Ref string `form:"ref" json:"ref"`
 }
 
+// RobokassaResultGetParams defines parameters for RobokassaResultGet.
+type RobokassaResultGetParams struct {
+	OutSum         string `form:"OutSum" json:"OutSum"`
+	InvID          int    `form:"InvId" json:"InvId"`
+	SignatureValue string `form:"SignatureValue" json:"SignatureValue"`
+}
+
+// RobokassaResultFormdataBody defines parameters for RobokassaResult.
+type RobokassaResultFormdataBody struct {
+	// InvID Invoice number — the payment row id.
+	InvID int `form:"InvId" json:"InvId"`
+
+	// OutSum Amount, two decimal places.
+	OutSum string `form:"OutSum" json:"OutSum"`
+
+	// SignatureValue MD5 or SHA-256 digest, see description.
+	SignatureValue string `form:"SignatureValue" json:"SignatureValue"`
+}
+
 // GetCatalogParams defines parameters for GetCatalog.
 type GetCatalogParams struct {
 	// Spec Specialization slug; the others come back with an empty course list.
@@ -2206,6 +2234,9 @@ type LoginJSONRequestBody LoginJSONBody
 
 // RegisterJSONRequestBody defines body for Register for application/json ContentType.
 type RegisterJSONRequestBody RegisterJSONBody
+
+// RobokassaResultFormdataRequestBody defines body for RobokassaResult for application/x-www-form-urlencoded ContentType.
+type RobokassaResultFormdataRequestBody RobokassaResultFormdataBody
 
 // SaveLessonNotesJSONRequestBody defines body for SaveLessonNotes for application/json ContentType.
 type SaveLessonNotesJSONRequestBody SaveLessonNotesJSONBody

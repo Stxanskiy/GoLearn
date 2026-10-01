@@ -12,6 +12,7 @@ import (
 
 	"github.com/backendraz/golearn/internal/api"
 	"github.com/backendraz/golearn/internal/apidocs"
+	"github.com/backendraz/golearn/internal/billing"
 	"github.com/backendraz/golearn/internal/config"
 	"github.com/backendraz/golearn/internal/migrate"
 	"github.com/backendraz/golearn/internal/obs"
@@ -167,6 +168,19 @@ func main() {
 		Sandbox:      sandbox,
 		Code:         codeRunner,
 		Billing:      billingRepo,
+		Robokassa:    billing.RobokassaFromEnv(),
+	}
+
+	// Say which provider is live at startup. Checkout silently falling back to
+	// the stub is the kind of thing that is only noticed when a student says
+	// they paid and got nothing.
+	switch rk := stores.Robokassa; {
+	case rk == nil:
+		log.Warn("billing: robokassa not configured, checkout uses the stub provider")
+	case rk.Test:
+		log.Info("billing: robokassa in TEST mode", "login", rk.Login)
+	default:
+		log.Warn("billing: robokassa in LIVE mode, real cards will be charged", "login", rk.Login)
 	}
 
 	// Without object storage uploads stay inline data URIs, so the server still runs.

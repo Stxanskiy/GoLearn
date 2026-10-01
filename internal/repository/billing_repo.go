@@ -97,6 +97,25 @@ func (r *BillingRepo) StartPayment(ctx context.Context, userID, months int, amou
 	return &p, nil
 }
 
+// SetProviderRef records the identifier the provider will quote back.
+//
+// Robokassa's invoice number has to be a positive integer unique to the shop,
+// and the payment row's own id is the only such number we have — but it does
+// not exist until the row is inserted. So the row is created without a
+// reference and given one here.
+func (r *BillingRepo) SetProviderRef(ctx context.Context, paymentID int, ref string) error {
+	tag, err := r.pool.Exec(ctx,
+		`UPDATE payments SET provider_ref = $2 WHERE id = $1 AND status = 'pending'`,
+		paymentID, ref)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrPaymentNotFound
+	}
+	return nil
+}
+
 // Confirm marks a payment paid and extends the subscription by its months.
 //
 // It is safe to call twice with the same reference: a payment already marked
