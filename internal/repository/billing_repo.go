@@ -162,6 +162,11 @@ func (r *BillingRepo) Confirm(ctx context.Context, provider, ref string) (*Subsc
 		VALUES ($1, 'active', now(), now() + make_interval(months => $2), $3, $4)
 		ON CONFLICT (user_id) WHERE status = 'active'
 		DO UPDATE SET expires_at = subscriptions.expires_at + make_interval(months => $2),
+		              -- Also the provider: extending a subscription left it naming
+		              -- whoever was paid the first time, so a renewal through a real
+		              -- provider still reported the one before it.
+		              provider = EXCLUDED.provider,
+		              provider_ref = EXCLUDED.provider_ref,
 		              updated_at = now()
 		RETURNING id, status, started_at, expires_at, provider`,
 		userID, months, provider, ref).
