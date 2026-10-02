@@ -43,6 +43,24 @@ jobs:
         with:
           go-version-file: go.mod
 
+      # The spec defines the types, so a stale types.gen.go means the handlers
+      # compile against a contract that no longer exists. Nothing enforced this
+      # before; it stayed in sync by hand.
+      - name: OpenAPI types are up to date
+        run: |
+          go generate ./internal/api/apigen
+          git diff --exit-code -- internal/api/apigen
+
+      # api/redocly.yaml was committed but never run. Switching it on found two
+      # descriptions truncated by an unquoted comma inside a YAML flow mapping,
+      # which had also planted junk properties in two schemas.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lint OpenAPI spec
+        run: npx --yes @redocly/cli@2 lint --config api/redocly.yaml api/openapi.yaml
+
       - name: Build
         run: go build ./...
 

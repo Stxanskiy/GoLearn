@@ -1,5 +1,21 @@
 extends:
   - recommended
+
 rules:
+  # Every used tag must be declared, every schema/response/requestBody must be
+  # referenced, and every operation must resolve a security scheme. These three
+  # caught a dead `IconUpload` request body and two tags (`admin`, `billing`)
+  # that 24 operations used without declaring.
+  operation-tag-defined: error
+  no-unused-components: error
+  security-defined: error
+
+  # Which 4xx an operation returns is checked in Go instead, by
+  # TestStatusCodeContract — it asserts the specific codes the server actually
+  # answers (401, 402, 403, 404, 415, 500) rather than "at least one 4xx".
+  # Redocly's version would only fail on GET /auth/config, which is a single
+  # writeJSON with no error path at all.
   operation-4xx-response: off
+
+  # WebSocket upgrades answer 101 and never 2xx.
   operation-2xx-response: off

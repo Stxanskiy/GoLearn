@@ -954,7 +954,7 @@ type Category = string
 
 // Checkout defines model for Checkout.
 type Checkout struct {
-	// AmountMinor Minor units
+	// AmountMinor Minor units, never a float.
 	AmountMinor int64  `json:"amount_minor"`
 	ConfirmURL  string `json:"confirm_url"`
 	Currency    string `json:"currency"`
@@ -1678,7 +1678,7 @@ type SpecializationWithCourses struct {
 	// Courses Ordered by progress: `in_progress` first (newest activity first), then `not_started`, then `completed`. Courses of the same status keep the curriculum order. Narrowed by the catalog query parameters.
 	Courses []CourseCard `json:"courses"`
 
-	// CoursesDone Completed courses of the whole specialization
+	// CoursesDone Completed courses of the whole specialization, never narrowed by the filter.
 	CoursesDone int `json:"courses_done"`
 
 	// CoverURL Always `/api/v1/specializations/{slug}/cover`; 16:9.
@@ -1814,6 +1814,9 @@ type ContentConflict = Error
 // Forbidden defines model for Forbidden.
 type Forbidden = Error
 
+// InternalError defines model for InternalError.
+type InternalError = Error
+
 // InvalidCredentials defines model for InvalidCredentials.
 type InvalidCredentials = Error
 
@@ -1841,11 +1844,17 @@ type SandboxError = Error
 // SandboxNotRunning defines model for SandboxNotRunning.
 type SandboxNotRunning = Error
 
+// SandboxTimeout defines model for SandboxTimeout.
+type SandboxTimeout = Error
+
 // SlugTaken defines model for SlugTaken.
 type SlugTaken = Error
 
 // StorageDisabled defines model for StorageDisabled.
 type StorageDisabled = Error
+
+// SubscriptionRequired defines model for SubscriptionRequired.
+type SubscriptionRequired = Error
 
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = Error

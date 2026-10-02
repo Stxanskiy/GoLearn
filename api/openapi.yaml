@@ -16,6 +16,12 @@ info:
     - Errors always use the `Error` schema with a stable machine `code`; user-facing
       text is localized on the frontend by `code`, `message` is for logs only.
     - Unauthenticated requests get `401`, never a redirect; malformed JSON gets `400 malformed_json`.
+    - An unexpected server-side failure gets `500 internal_error` and is possible on any
+      operation; the message is for logs, never for the user.
+    - A known path called with an unsupported method gets `405 method_not_allowed`. It is a
+      router-level answer, so it is stated here once rather than on every operation.
+    - A lesson in a course whose access tier the session does not cover gets
+      `402 subscription_required` — see `GET /billing/subscription`.
     - Mutating requests (POST/PUT/PATCH/DELETE) must come from an allowed origin
       (`Origin` / `Sec-Fetch-Site`), otherwise `403 csrf_rejected`.
     - Request bodies are `application/json` unless stated otherwise, otherwise `415 unsupported_media_type`.
@@ -68,6 +74,10 @@ tags:
     description: Simulator management.
   - name: admin-users
     description: User management.
+  - name: admin
+    description: Operations shared by the whole admin surface.
+  - name: billing
+    description: Subscription, checkout and access tiers.
 
 security:
   - session: []
@@ -87,6 +97,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/AuthConfig' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /auth/login:
     post:
       tags: [auth]
@@ -118,8 +129,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
         '429': { $ref: '#/components/responses/RateLimited' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /auth/register:
     post:
       tags: [auth]
@@ -157,6 +170,7 @@ paths:
         '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '429': { $ref: '#/components/responses/RateLimited' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /auth/logout:
     post:
       tags: [auth]
@@ -167,6 +181,8 @@ paths:
       responses:
         '204': { description: 'Session deleted, cookie cleared.' }
 
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── me ─────────────────────────────
   /me:
     get:
@@ -181,6 +197,7 @@ paths:
               schema: { $ref: '#/components/schemas/Me' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /me/profile:
     get:
       tags: [me]
@@ -194,6 +211,7 @@ paths:
               schema: { $ref: '#/components/schemas/Profile' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /me/subscription:
     get:
       tags: [billing]
@@ -211,6 +229,7 @@ paths:
               schema: { $ref: '#/components/schemas/Subscription' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /billing/checkout:
     post:
       tags: [billing]
@@ -229,6 +248,8 @@ paths:
               schema: { $ref: '#/components/schemas/Checkout' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /billing/confirm:
     post:
       tags: [billing]
@@ -255,8 +276,10 @@ paths:
               schema: { $ref: '#/components/schemas/Subscription' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /billing/robokassa/result:
     post:
       tags: [billing]
@@ -362,6 +385,7 @@ paths:
               schema: { $ref: '#/components/schemas/Dashboard' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── public ─────────────────────────────
   /public/landing:
     parameters:
@@ -393,6 +417,7 @@ paths:
               schema: { $ref: '#/components/schemas/Landing' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /public/catalog:
     get:
       tags: [public]
@@ -414,6 +439,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Catalog' }
 
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /public/specializations/{specSlug}:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -433,6 +460,7 @@ paths:
               schema: { $ref: '#/components/schemas/SpecializationWithCourses' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /public/courses/{courseSlug}:
     parameters:
       - $ref: '#/components/parameters/CourseSlug'
@@ -452,6 +480,7 @@ paths:
               schema: { $ref: '#/components/schemas/CoursePreview' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── catalog ─────────────────────────────
   /catalog:
     get:
@@ -477,6 +506,8 @@ paths:
               schema: { $ref: '#/components/schemas/Catalog' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /specializations/{specSlug}:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -494,6 +525,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /specializations/{specSlug}/cover:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -511,6 +543,7 @@ paths:
         '302': { description: Redirect to an external cover URL. }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /courses/{courseSlug}:
     parameters:
       - $ref: '#/components/parameters/CourseSlug'
@@ -528,6 +561,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /courses/{courseSlug}/cover:
     parameters:
       - $ref: '#/components/parameters/CourseSlug'
@@ -545,6 +579,7 @@ paths:
         '302': { description: Redirect to an external cover URL. }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── lessons ─────────────────────────────
   /courses/{courseSlug}/lessons/{lessonSlug}:
     parameters:
@@ -565,8 +600,10 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/LessonDetail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/visit:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -582,8 +619,11 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/LessonProgress' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/complete:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -599,6 +639,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/LessonProgress' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
           description: '`completion_derived` — quiz/lab lessons complete via their checks.'
@@ -606,6 +648,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/notes:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -625,9 +668,13 @@ paths:
       responses:
         '204': { description: Saved. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── quiz ─────────────────────────────
   /lessons/{lessonId}/quiz/answers:
     parameters:
@@ -652,8 +699,12 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/QuizAnswerResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [quiz]
       summary: Reset quiz attempt
@@ -662,8 +713,11 @@ paths:
       responses:
         '204': { description: Attempt reset. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/quiz/submit:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -692,9 +746,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/QuizResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── labs ─────────────────────────────
   /lessons/{lessonId}/lab:
     parameters:
@@ -711,8 +769,10 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Lab' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/lab/session:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -728,7 +788,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/SandboxSession' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [labs]
       summary: Stop lab session
@@ -737,8 +799,11 @@ paths:
       responses:
         '204': { description: Teardown started. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/lab/retry:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -750,8 +815,11 @@ paths:
       responses:
         '204': { description: Lab reset. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /lessons/{lessonId}/lab/terminal:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -768,9 +836,11 @@ paths:
       responses:
         '101': { description: Switching protocols. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
   /lessons/{lessonId}/lab/git-graph:
@@ -788,9 +858,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/GitGraph' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   /lessons/{lessonId}/lab/fs/entries:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -808,11 +882,14 @@ paths:
               schema: { $ref: '#/components/schemas/LabDirListing' }
         '400': { $ref: '#/components/responses/PathOutsideJail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/SandboxNotRunning' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   /lessons/{lessonId}/lab/fs/content:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -829,6 +906,7 @@ paths:
             application/octet-stream: { schema: { type: string, format: binary } }
         '400': { $ref: '#/components/responses/PathOutsideJail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
         '413':
           description: '`file_too_large`.'
@@ -836,8 +914,10 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '409': { $ref: '#/components/responses/SandboxNotRunning' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
     put:
       tags: [labs]
       summary: Write lab file
@@ -851,6 +931,8 @@ paths:
         '204': { description: Written. }
         '400': { $ref: '#/components/responses/PathOutsideJail' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '413':
           description: '`file_too_large`.'
@@ -858,9 +940,11 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '409': { $ref: '#/components/responses/SandboxNotRunning' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   /lessons/{lessonId}/lab/preview/{port}:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -881,7 +965,9 @@ paths:
           content:
             '*/*': { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
   /lessons/{lessonId}/lab/preview/{port}/{path}:
@@ -910,7 +996,9 @@ paths:
           content:
             '*/*': { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
   /tasks/{taskId}/check:
@@ -928,6 +1016,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/TaskCheckResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
           description: '`task_not_auto_checked` — use `POST /tasks/{taskId}/done`.'
@@ -935,9 +1025,11 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   /tasks/{taskId}/done:
     parameters:
       - $ref: '#/components/parameters/TaskId'
@@ -953,6 +1045,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/TaskCheckResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
           description: '`task_auto_checked` — the task must pass its check.'
@@ -960,6 +1054,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /tasks/{taskId}/run:
     parameters:
       - $ref: '#/components/parameters/TaskId'
@@ -983,16 +1078,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/RunResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
           description: '`task_not_code`.'
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   # ───────────────────────────── trainers ─────────────────────────────
   /playground/run:
     post:
@@ -1012,10 +1112,14 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/RunResult' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '502': { $ref: '#/components/responses/SandboxError' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   /git-trainer/session:
     get:
       tags: [trainers]
@@ -1028,6 +1132,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/SandboxSession' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [trainers]
       summary: Reset git trainer
@@ -1037,6 +1142,8 @@ paths:
         '204': { description: Reset. }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /git-trainer/terminal:
     parameters:
       - $ref: '#/components/parameters/TermCols'
@@ -1050,6 +1157,9 @@ paths:
       responses:
         '101': { description: Switching protocols. }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
   /git-trainer/git-graph:
@@ -1065,8 +1175,11 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/GitGraph' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '502': { $ref: '#/components/responses/SandboxError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+        '504': { $ref: '#/components/responses/SandboxTimeout' }
   # ───────────────────────────── simulators ─────────────────────────────
   /simulators:
     get:
@@ -1083,6 +1196,7 @@ paths:
                 items: { $ref: '#/components/schemas/SimulatorSummary' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /simulators/{simSlug}:
     parameters:
       - $ref: '#/components/parameters/SimSlug'
@@ -1100,6 +1214,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: courses ─────────────────────────────
   /admin/courses:
     get:
@@ -1117,6 +1232,7 @@ paths:
                 items: { $ref: '#/components/schemas/AdminCourseRow' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       tags: [admin-courses]
       summary: Create course
@@ -1136,8 +1252,10 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/SlugTaken' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1154,6 +1272,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
     put:
       tags: [admin-courses]
       summary: Update course
@@ -1174,7 +1293,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ContentConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-courses]
       summary: Delete course
@@ -1194,6 +1315,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ContentConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/published:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1210,6 +1332,8 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/access-tier:
     patch:
       tags: [admin, billing]
@@ -1236,6 +1360,8 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/move:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1251,6 +1377,8 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/cover:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1269,6 +1397,8 @@ paths:
         '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-courses]
       summary: Delete course cover
@@ -1281,6 +1411,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/authors:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1297,6 +1428,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       tags: [admin-courses]
       summary: Add co-author
@@ -1327,8 +1459,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/authors/{userId}:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1344,6 +1478,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/owner:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1372,8 +1507,10 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/draft:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1404,6 +1541,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-courses]
       summary: Discard course draft
@@ -1415,6 +1553,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/draft/changes:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1433,6 +1572,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/export:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1451,6 +1591,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: lessons ─────────────────────────────
   /admin/courses/{courseId}/lessons:
     parameters:
@@ -1474,8 +1615,10 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ContentConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1492,6 +1635,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
     put:
       tags: [admin-lessons]
       summary: Update lesson
@@ -1511,7 +1655,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ContentConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-lessons]
       summary: Delete lesson
@@ -1524,6 +1670,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/published:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1540,6 +1687,8 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/draft:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1568,6 +1717,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/move:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1583,6 +1733,9 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/duplicate:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1602,6 +1755,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/questions:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1624,9 +1778,11 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/questions/{questionId}:
     parameters:
       - name: questionId
@@ -1651,9 +1807,11 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-lessons]
       summary: Delete question
@@ -1665,6 +1823,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/lessons/{lessonId}/tasks:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -1687,9 +1846,11 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/tasks/{taskId}:
     parameters:
       - $ref: '#/components/parameters/TaskId'
@@ -1711,9 +1872,11 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-lessons]
       summary: Delete task
@@ -1726,6 +1889,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/review:
     parameters:
       - $ref: '#/components/parameters/CourseId'
@@ -1751,8 +1915,10 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/reviews:
     get:
       tags: [admin-reviews]
@@ -1778,6 +1944,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/reviews/{reviewId}:
     parameters:
       - $ref: '#/components/parameters/ReviewId'
@@ -1793,6 +1960,7 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/reviews/{reviewId}/approve:
     parameters:
       - $ref: '#/components/parameters/ReviewId'
@@ -1815,8 +1983,10 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/reviews/{reviewId}/reject:
     parameters:
       - $ref: '#/components/parameters/ReviewId'
@@ -1844,8 +2014,10 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/ReviewConflict' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/uploads/images:
     post:
       tags: [admin-content]
@@ -1863,6 +2035,8 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/StorageDisabled' }
 
   /admin/content/preview:
@@ -1894,6 +2068,9 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: import ─────────────────────────────
   /admin/import/preview:
     post:
@@ -1914,8 +2091,10 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/SlugTaken' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/import:
     post:
       tags: [admin-import]
@@ -1940,12 +2119,14 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/ContentConflict' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422':
           description: '`validation_failed` or `import_blocked` (see `details.issues`).'
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: specializations ─────────────────────────────
   /admin/specializations:
     get:
@@ -1963,6 +2144,7 @@ paths:
                 items: { $ref: '#/components/schemas/AdminSpecialization' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       tags: [admin-specializations]
       summary: Create specialization
@@ -1988,8 +2170,10 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/SlugTaken' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/specializations/{specSlug}:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -2012,7 +2196,9 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-specializations]
       summary: Delete specialization
@@ -2029,6 +2215,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/specializations/{specSlug}/published:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -2044,6 +2231,8 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/specializations/{specSlug}/move:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -2059,6 +2248,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/specializations/{specSlug}/cover:
     parameters:
       - $ref: '#/components/parameters/SpecSlug'
@@ -2075,6 +2267,8 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-specializations]
       summary: Delete specialization cover
@@ -2086,6 +2280,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: simulators ─────────────────────────────
   /admin/simulators:
     get:
@@ -2103,6 +2298,7 @@ paths:
                 items: { $ref: '#/components/schemas/AdminSimulatorRow' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       tags: [admin-simulators]
       summary: Create simulator
@@ -2122,8 +2318,10 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/SlugTaken' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/simulators/{simSlug}:
     parameters:
       - $ref: '#/components/parameters/SimSlug'
@@ -2141,6 +2339,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
     put:
       tags: [admin-simulators]
       summary: Update simulator
@@ -2160,7 +2359,9 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-simulators]
       summary: Delete simulator
@@ -2172,6 +2373,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/simulators/{simSlug}/published:
     parameters:
       - $ref: '#/components/parameters/SimSlug'
@@ -2187,6 +2389,8 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/simulators/{simSlug}/move:
     parameters:
       - $ref: '#/components/parameters/SimSlug'
@@ -2202,6 +2406,9 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
   # ───────────────────────────── admin: users ─────────────────────────────
   /admin/users:
     get:
@@ -2224,6 +2431,8 @@ paths:
               schema: { $ref: '#/components/schemas/AdminUserPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     post:
       tags: [admin-users]
       summary: Create user
@@ -2254,8 +2463,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/users/{userId}:
     parameters:
       - $ref: '#/components/parameters/UserId'
@@ -2292,6 +2503,9 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
     delete:
       tags: [admin-users]
       summary: Delete user
@@ -2308,6 +2522,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/users/{userId}/password:
     parameters:
       - $ref: '#/components/parameters/UserId'
@@ -2330,8 +2545,10 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '422': { $ref: '#/components/responses/ValidationFailed' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
 components:
   securitySchemes:
     session:
@@ -2450,18 +2667,6 @@ components:
             required: [direction]
             properties:
               direction: { type: string, enum: [up, down] }
-    IconUpload:
-      required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            required: [file]
-            properties:
-              file:
-                type: string
-                format: binary
-                description: 'Icon: PNG, WebP or SVG, square (tolerance 2%), at least 128 px a side, max 4 MiB. Transparent background expected. Raster icons are stored downscaled to 256x256 PNG.'
     CoverUpload:
       required: true
       content:
@@ -2561,12 +2766,34 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     SandboxDisabled:
-      description: '`sandbox_disabled`.'
+      description: |
+        `sandbox_disabled` — lab sandboxes are switched off on this instance.
+
+        Sandbox-backed operations also answer `503 sandbox_error` when the client
+        disconnects mid-request and the call into the sandbox is cancelled.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     SandboxNotRunning:
       description: '`sandbox_not_running` — open the terminal first.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SubscriptionRequired:
+      description: |
+        `subscription_required` — the lesson belongs to a course whose access tier the
+        current session does not cover. Applies to every lesson, lab, quiz and task
+        operation, not only to reading the lesson.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SandboxTimeout:
+      description: '`sandbox_error` — the sandbox did not answer in time.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalError:
+      description: '`internal_error` — unexpected server-side failure.'
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -2699,7 +2926,7 @@ components:
       properties:
         payment_id: { type: integer }
         provider_ref: { type: string }
-        amount_minor: { type: integer, format: int64, description: Minor units, never a float. }
+        amount_minor: { type: integer, format: int64, description: 'Minor units, never a float.' }
         currency: { type: string }
         months: { type: integer }
         confirm_url: { type: string }
@@ -2856,7 +3083,7 @@ components:
                 curriculum order. Narrowed by the catalog query parameters.
               type: array
               items: { $ref: '#/components/schemas/CourseCard' }
-            courses_done: { type: integer, description: Completed courses of the whole specialization, never narrowed by the filter. }
+            courses_done: { type: integer, description: 'Completed courses of the whole specialization, never narrowed by the filter.' }
 
     Catalog:
       type: object
