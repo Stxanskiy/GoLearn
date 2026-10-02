@@ -65,7 +65,9 @@ the server needs no restart.
 Migrations run automatically on startup (`internal/migrate`, tracked in the
 `schema_migrations` table) — no manual psql step. A migration is identified by
 its full file name, so never rename one that has shipped; `025` exists twice
-(`025_billing`, `025_trainer_flag`) for that reason — the next one is `027`.
+(`025_billing`, `025_trainer_flag`) for that reason. Take the next number from
+`ls migrations/ | tail -1` rather than from this file — the latest is `030`, so
+the next one is `031`.
 
 ## Tests
 ```bash
