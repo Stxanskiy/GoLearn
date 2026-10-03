@@ -64,7 +64,7 @@ func (r *SpecRepo) Get(ctx context.Context, slug string) (*model.Specialization,
 func (r *SpecRepo) Upsert(ctx context.Context, s model.Specialization) error {
 	_, err := r.pool.Exec(ctx,
 		`INSERT INTO specializations (slug, name, description, order_num, cover_image, published, owner_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name,
 		   description=EXCLUDED.description, order_num=EXCLUDED.order_num,
 		   cover_image=COALESCE(NULLIF(EXCLUDED.cover_image,''), specializations.cover_image),
