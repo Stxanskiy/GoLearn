@@ -2836,7 +2836,7 @@ components:
       enum: [theory, quiz, lab, sim, sql]
     TaskKind:
       type: string
-      enum: [shell, go]
+      enum: [shell, go, python]
     ContentFormat:
       type: string
       enum: [md, html]
@@ -3343,7 +3343,7 @@ components:
         glossary:
           type: array
           items: { $ref: '#/components/schemas/GlossaryItem' }
-        starter_code: { type: string, description: Go tasks only. }
+        starter_code: { type: string, description: Code tasks only (kind `go` or `python`). }
         check_mode:
           type: string
           enum: [auto, tests, manual]
@@ -3409,6 +3409,12 @@ components:
       type: object
       required: [code]
       properties:
+        language:
+          allOf: [{ $ref: '#/components/schemas/TaskKind' }]
+          description: |
+            Which runtime to use. Omitted means `go`, which is what the
+            playground ran before other languages existed. For a task run the
+            language comes from the task's `kind` and this field is ignored.
         code: { type: string, maxLength: 65536 }
         stdin: { type: string }
 

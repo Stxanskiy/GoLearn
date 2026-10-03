@@ -162,12 +162,6 @@ type sandbox interface {
 	Reset(ctx context.Context, userID int, key string) error
 }
 
-// codeRunner runs Go playground and code-task programs.
-type codeRunner interface {
-	Run(ctx context.Context, code, stdin string) (*runner.Result, error)
-	RunWithTests(ctx context.Context, code string, tests []struct{ Input, Expected string }) (*runner.RunResult, error)
-}
-
 type specStore interface {
 	ListPublished(ctx context.Context) ([]model.Specialization, error)
 	Get(ctx context.Context, slug string) (*model.Specialization, error)
@@ -207,7 +201,6 @@ type Stores struct {
 	Reviews      reviewStore
 	Drafts       draftStore
 	Sandbox      sandbox
-	Code         codeRunner
 	Images       imageStore
 	Billing      billingStore
 	// Robokassa is optional: without credentials checkout falls back to the stub

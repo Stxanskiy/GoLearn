@@ -71,7 +71,6 @@ func main() {
 	courseRepo := repository.NewCourseRepo(pool, moduleRepo, lessonRepo)
 	simRepo := repository.NewSimRepo(pool)
 	quizAttemptRepo := repository.NewQuizAttemptRepo(pool)
-	codeRunner := runner.New()
 	// Two lab backends: Firecracker micro-VMs when an FC host is configured, plain
 	// containers otherwise (SANDBOX_LOCAL runs them on this machine's Docker).
 	vmRunner := runner.NewVMRunner()
@@ -166,7 +165,6 @@ func main() {
 		Reviews:      repository.NewReviewRepo(pool),
 		Drafts:       repository.NewDraftRepo(pool),
 		Sandbox:      sandbox,
-		Code:         codeRunner,
 		Billing:      billingRepo,
 		Robokassa:    billing.RobokassaFromEnv(),
 	}

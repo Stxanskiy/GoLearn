@@ -143,7 +143,7 @@ func (a *API) getLab(w http.ResponseWriter, r *http.Request) {
 			hints := content.Render(t.Format, t.Hints)
 			lt.HintsHTML = &hints
 		}
-		if t.Kind == "go" && t.StarterCode != "" {
+		if runner.SupportsLang(t.Kind) && t.StarterCode != "" {
 			code := t.StarterCode
 			lt.StarterCode = &code
 		}
@@ -160,7 +160,7 @@ func checkMode(t model.Task) string {
 	switch {
 	case t.Kind == "shell" && t.CheckScript != "":
 		return "auto"
-	case t.Kind == "go" && len(t.TestCases) > 0:
+	case runner.SupportsLang(t.Kind) && len(t.TestCases) > 0:
 		return "tests"
 	default:
 		return "manual"

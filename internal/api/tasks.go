@@ -10,6 +10,7 @@ import (
 	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/lab"
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/runner"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -136,8 +137,11 @@ func (a *API) runTaskCode(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if t.Kind != "go" {
+	if !runner.SupportsLang(t.Kind) {
 		writeError(w, http.StatusConflict, codeTaskNotCode, "task is not a code task")
+		return
+	}
+	if !a.requireSandbox(w) {
 		return
 	}
 	body, ok := a.runRequest(w, r)
@@ -145,15 +149,20 @@ func (a *API) runTaskCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
+	target, err := a.codeTarget(ctx, t.LessonID)
+	if err != nil {
+		a.internalError(w, "run: sandbox config", err)
+		return
+	}
 	if len(t.TestCases) == 0 {
-		a.runCode(w, r, body)
+		a.runCode(w, r, t.Kind, target, body)
 		return
 	}
 	tests := make([]struct{ Input, Expected string }, 0, len(t.TestCases))
 	for _, tc := range t.TestCases {
 		tests = append(tests, struct{ Input, Expected string }{tc.Input, tc.ExpectedOutput})
 	}
-	res, err := a.Code.RunWithTests(ctx, body.Code, tests)
+	res, err := runner.RunProgramWithTests(ctx, a.Sandbox, t.Kind, target, body.Code, tests)
 	if err != nil {
 		a.sandboxError(w, "run tests", err)
 		return
@@ -180,9 +189,31 @@ func (a *API) runTaskCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) runPlayground(w http.ResponseWriter, r *http.Request) {
-	if body, ok := a.runRequest(w, r); ok {
-		a.runCode(w, r, body)
+	body, ok := a.runRequest(w, r)
+	if !ok {
+		return
 	}
+	// Language is optional so existing clients keep working; empty means Go,
+	// which is what the playground ran before Python was added.
+	lang := "go"
+	if body.Language != nil && *body.Language != "" {
+		lang = string(*body.Language)
+		if !runner.SupportsLang(lang) {
+			writeValidation(w, map[string]string{"language": fieldInvalidValue})
+			return
+		}
+	}
+	if !a.requireSandbox(w) {
+		return
+	}
+	// The playground has no lesson, so it gets a session of its own on the base
+	// image — one per user, like any other sandbox session.
+	target := runner.Target{
+		UserID: userFrom(r.Context()).ID,
+		Key:    lab.PlaygroundKey,
+		Image:  lab.PlaygroundImage,
+	}
+	a.runCode(w, r, lang, target, body)
 }
 
 // runRequest decodes and validates a code run request, applying the per-user rate limit.
@@ -206,12 +237,27 @@ func (a *API) runRequest(w http.ResponseWriter, r *http.Request) (apigen.RunRequ
 	return body, true
 }
 
-func (a *API) runCode(w http.ResponseWriter, r *http.Request, body apigen.RunRequest) {
+// codeTarget resolves whose sandbox a program runs in: the same session as the
+// lesson's shell lab, so a code task and a terminal task share one sandbox.
+func (a *API) codeTarget(ctx context.Context, lessonID int) (runner.Target, error) {
+	image, setup, err := a.Lessons.LessonSandbox(ctx, lessonID)
+	if err != nil {
+		return runner.Target{}, err
+	}
+	return runner.Target{
+		UserID: userFrom(ctx).ID,
+		Key:    lab.Key(lessonID),
+		Image:  image,
+		Setup:  setup,
+	}, nil
+}
+
+func (a *API) runCode(w http.ResponseWriter, r *http.Request, lang string, target runner.Target, body apigen.RunRequest) {
 	stdin := ""
 	if body.Stdin != nil {
 		stdin = *body.Stdin
 	}
-	res, err := a.Code.Run(r.Context(), body.Code, stdin)
+	res, err := runner.RunProgram(r.Context(), a.Sandbox, lang, target, body.Code, stdin)
 	if err != nil {
 		a.sandboxError(w, "run", err)
 		return

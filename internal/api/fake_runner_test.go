@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +20,8 @@ type fakeSandbox struct {
 	sessions  map[string]runner.SessionInfo
 	files     map[string][]byte
 	execOut   string
+	runOut    string // stdout a program run should report
+	runErr    string // stderr a program run should report
 	checkPass bool
 	checkErr  error
 	preview   struct {
@@ -75,6 +79,16 @@ func (f *fakeSandbox) Exec(_ context.Context, userID int, key, _, _, command str
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.execs = append(f.execs, sid(userID, key)+"|"+command)
+	// A program run asks for the report runner.RunProgram parses; answer in that
+	// shape so the tests go through the real parsing instead of around it.
+	if strings.Contains(command, ".gl_stdout") {
+		b := base64.StdEncoding.EncodeToString
+		out := f.runOut
+		if out == "" {
+			out = "42"
+		}
+		return "O:" + b([]byte(out)) + "\nE:" + b([]byte(f.runErr)) + "\nC:0\n", nil
+	}
 	return f.execOut, nil
 }
 
@@ -139,25 +153,4 @@ func newFakePTY() *fakePTY {
 		_ = p.outW.Close()
 	}()
 	return p
-}
-
-type fakeCode struct {
-	lastCode string
-}
-
-func (f *fakeCode) Run(_ context.Context, code, stdin string) (*runner.Result, error) {
-	f.lastCode = code
-	return &runner.Result{Output: "out:" + stdin, ExitCode: 0}, nil
-}
-
-func (f *fakeCode) RunWithTests(_ context.Context, code string, tests []struct{ Input, Expected string }) (*runner.RunResult, error) {
-	f.lastCode = code
-	res := &runner.RunResult{AllPassed: true}
-	for _, tc := range tests {
-		actual := "42"
-		passed := actual == tc.Expected
-		res.AllPassed = res.AllPassed && passed
-		res.TestResults = append(res.TestResults, runner.TestResult{Input: tc.Input, Expected: tc.Expected, Actual: actual, Passed: passed})
-	}
-	return res, nil
 }

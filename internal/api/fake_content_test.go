@@ -30,7 +30,6 @@ type fakeContent struct {
 	answers    map[int]map[int]int // user id → question id → selected
 	attempts   []fakeAttempt
 	sandbox    *fakeSandbox
-	code       *fakeCode
 	images     *fakeImages
 	coauthors  map[int][]int // module id → co-author user ids
 	reviews    []repository.Review
@@ -54,7 +53,7 @@ func newFakeContent() *fakeContent {
 	return &fakeContent{
 		progress: map[int][]model.Progress{}, labPassed: map[int]map[int]bool{},
 		questions: map[int][]model.QuizQuestion{}, tasks: map[int][]model.Task{}, answers: map[int]map[int]int{},
-		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(), code: &fakeCode{},
+		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(),
 		coauthors: map[int][]int{}, nextID: 5000, origins: map[int]int{},
 		subscribed: map[int]bool{},
 	}
@@ -76,7 +75,6 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Reviews:      fakeReviews{f},
 		Drafts:       fakeDrafts{f},
 		Sandbox:      f.sandbox,
-		Code:         f.code,
 		Billing:      fakeBilling{f},
 	}
 	// A typed nil in the interface would look configured, so only set it when present.

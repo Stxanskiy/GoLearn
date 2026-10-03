@@ -443,14 +443,17 @@ func (e TaskDifficulty) Valid() bool {
 
 // Defines values for TaskKind.
 const (
-	TaskKindGo    TaskKind = "go"
-	TaskKindShell TaskKind = "shell"
+	TaskKindGo     TaskKind = "go"
+	TaskKindPython TaskKind = "python"
+	TaskKindShell  TaskKind = "shell"
 )
 
 // Valid indicates whether the value is a known member of the TaskKind enum.
 func (e TaskKind) Valid() bool {
 	switch e {
 	case TaskKindGo:
+		return true
+	case TaskKindPython:
 		return true
 	case TaskKindShell:
 		return true
@@ -1349,7 +1352,7 @@ type LabTask struct {
 	Kind            TaskKind         `json:"kind"`
 	Passed          bool             `json:"passed"`
 
-	// StarterCode Go tasks only.
+	// StarterCode Code tasks only (kind `go` or `python`).
 	StarterCode *string `json:"starter_code,omitempty"`
 	Title       string  `json:"title"`
 }
@@ -1579,8 +1582,13 @@ type Role string
 
 // RunRequest defines model for RunRequest.
 type RunRequest struct {
-	Code  string  `json:"code"`
-	Stdin *string `json:"stdin,omitempty"`
+	Code string `json:"code"`
+
+	// Language Which runtime to use. Omitted means `go`, which is what the
+	// playground ran before other languages existed. For a task run the
+	// language comes from the task's `kind` and this field is ignored.
+	Language *TaskKind `json:"language,omitempty"`
+	Stdin    *string   `json:"stdin,omitempty"`
 }
 
 // RunResult defines model for RunResult.

@@ -12,6 +12,13 @@ import (
 // Key names the sandbox session shared by a lesson's terminal, steps and checks.
 func Key(lessonID int) string { return fmt.Sprintf("l%d", lessonID) }
 
+// Playground sandbox: one per user, not tied to a lesson. Runs on the base
+// image, which carries both toolchains the code runner supports.
+const (
+	PlaygroundKey   = "play"
+	PlaygroundImage = "golearn/sandbox:latest"
+)
+
 // Git trainer sandbox: one repo per user.
 const (
 	GitTrainerKey   = "git"

@@ -286,7 +286,7 @@ func TestRunCode(t *testing.T) {
 		return do(h, http.MethodPost, path, body, withCookie(studentToken))
 	}
 
-	w := post("/tasks/950/run", `{"code":"package main"}`)
+	w := post("/tasks/950/run", `{"code":"package main\nimport \"fmt\"\nfunc main() { fmt.Println(1) }"}`)
 	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), "SECRET_EXPECTED") || strings.Contains(w.Body.String(), "expected") {
 		t.Fatalf("run tests: %d %s", w.Code, w.Body)
 	}
@@ -304,7 +304,7 @@ func TestRunCode(t *testing.T) {
 	if w := post("/playground/run", `{"code":"  "}`); w.Code != http.StatusUnprocessableEntity {
 		t.Errorf("empty code: %d", w.Code)
 	}
-	if r := decode[apigen.RunResult](t, post("/playground/run", `{"code":"package main","stdin":"hi"}`)); r.Output != "out:hi" || r.TestResults != nil {
+	if r := decode[apigen.RunResult](t, post("/playground/run", `{"code":"package main\nimport \"fmt\"\nfunc main() { fmt.Println(1) }","stdin":"hi"}`)); r.Output != "42" || r.TestResults != nil {
 		t.Errorf("playground = %+v", r)
 	}
 }
