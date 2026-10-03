@@ -56,6 +56,12 @@ func (p *PortConn) Close() error {
 // happened to arrive.
 const portRelay = `import socket,sys,threading
 s=socket.create_connection(('127.0.0.1',%d),10)
+# The 10 above is the CONNECT timeout, but create_connection leaves it on the
+# socket for every later operation too. A VNC server sends nothing while the
+# picture is still, so recv would time out after ten idle seconds and take the
+# whole relay down with it — which looked exactly like the window closing by
+# itself. Blocking from here on.
+s.settimeout(None)
 def up():
     try:
         while True:
