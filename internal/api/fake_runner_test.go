@@ -15,16 +15,20 @@ import (
 
 // fakeSandbox records sandbox calls; a session exists once EnsureSession ran or running() was set.
 type fakeSandbox struct {
-	mu        sync.Mutex
-	enabled   bool
-	sessions  map[string]runner.SessionInfo
-	files     map[string][]byte
-	execOut   string
-	runOut    string // stdout a program run should report
-	runErr    string // stderr a program run should report
-	checkPass bool
-	checkErr  error
-	preview   struct {
+	mu            sync.Mutex
+	enabled       bool
+	sessions      map[string]runner.SessionInfo
+	files         map[string][]byte
+	execOut       string
+	dialedPort    int
+	dialErr       error
+	sandboxWrites *io.PipeWriter
+	sandboxReads  *io.PipeReader
+	runOut        string // stdout a program run should report
+	runErr        string // stderr a program run should report
+	checkPass     bool
+	checkErr      error
+	preview       struct {
 		body   []byte
 		ct     string
 		status int
@@ -90,6 +94,26 @@ func (f *fakeSandbox) Exec(_ context.Context, userID int, key, _, _, command str
 		return "O:" + b([]byte(out)) + "\nE:" + b([]byte(f.runErr)) + "\nC:0\n", nil
 	}
 	return f.execOut, nil
+}
+
+// DialPort hands back a real pipe pair, so a test can push bytes in from the
+// "sandbox" side and read what the relay sent back. The window relay carries a
+// binary protocol, and the thing worth proving is that it does not touch it.
+func (f *fakeSandbox) DialPort(_ string, port int) (*runner.PortConn, error) {
+	f.mu.Lock()
+	f.dialedPort = port
+	f.mu.Unlock()
+	if f.dialErr != nil {
+		return nil, f.dialErr
+	}
+	toBrowser, fromSandbox := io.Pipe() // sandbox writes -> relay reads
+	toSandbox, fromBrowser := io.Pipe() // relay writes -> test reads
+	f.sandboxWrites = fromSandbox
+	f.sandboxReads = toSandbox
+	return runner.NewPortConn(toBrowser, fromBrowser, func() {
+		_ = toBrowser.Close()
+		_ = fromBrowser.Close()
+	}), nil
 }
 
 func (f *fakeSandbox) Check(context.Context, int, string, string, string, string) (bool, string, error) {

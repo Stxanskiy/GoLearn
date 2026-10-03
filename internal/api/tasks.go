@@ -154,6 +154,12 @@ func (a *API) runTaskCode(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "run: sandbox config", err)
 		return
 	}
+	// A windowed task has no output to collect: the program keeps running and
+	// the browser attaches to it over /lessons/{id}/lab/window.
+	if runner.IsWindowed(t.Kind) {
+		a.startWindow(w, r, taskRun{kind: t.Kind, target: target, code: body.Code})
+		return
+	}
 	if len(t.TestCases) == 0 {
 		a.runCode(w, r, t.Kind, target, body)
 		return

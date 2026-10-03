@@ -1593,13 +1593,19 @@ type RunRequest struct {
 
 // RunResult defines model for RunResult.
 type RunResult struct {
-	AllPassed    *bool            `json:"all_passed,omitempty"`
-	Errors       string           `json:"errors"`
-	ExitCode     int              `json:"exit_code"`
-	LessonStatus *ProgressStatus  `json:"lesson_status,omitempty"`
-	Output       string           `json:"output"`
-	TestResults  *[]RunTestResult `json:"test_results,omitempty"`
-	TimedOut     bool             `json:"timed_out"`
+	AllPassed    *bool           `json:"all_passed,omitempty"`
+	Errors       string          `json:"errors"`
+	ExitCode     int             `json:"exit_code"`
+	LessonStatus *ProgressStatus `json:"lesson_status,omitempty"`
+	Output       string          `json:"output"`
+
+	// Running Windowed tasks only (`kind: python-gui`). True when the program
+	// started and its window is up; the browser then attaches to
+	// `GET /lessons/{lessonId}/lab/window`. False means it failed before
+	// showing anything, and `errors` says why.
+	Running     *bool            `json:"running,omitempty"`
+	TestResults *[]RunTestResult `json:"test_results,omitempty"`
+	TimedOut    bool             `json:"timed_out"`
 }
 
 // RunTestResult defines model for RunTestResult.

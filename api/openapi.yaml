@@ -843,6 +843,34 @@ paths:
         '500': { $ref: '#/components/responses/InternalError' }
         '503': { $ref: '#/components/responses/SandboxDisabled' }
 
+  /lessons/{lessonId}/lab/window:
+    parameters:
+      - $ref: '#/components/parameters/LessonId'
+    get:
+      tags: [labs]
+      summary: Watch a windowed program
+      operationId: openLabWindow
+      description: |
+        WebSocket upgrade carrying RFB (VNC) in binary frames, both ways,
+        untouched — a noVNC client connects to this directly.
+
+        The program the student ran is its own VNC server: Qt's VNC platform
+        plugin ships inside the PyQt6 wheel, so `QT_QPA_PLATFORM=vnc` makes the
+        process listen on 5900 itself, with no X server and nothing else running
+        in the sandbox. Start the program first with
+        `POST /tasks/{taskId}/run` on a task whose `kind` is `python-gui`; this
+        endpoint only relays to it.
+      x-websocket: window  # binary RFB frames, no framing of our own
+      responses:
+        '101': { description: Switching protocols. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/SubscriptionRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/SandboxDisabled' }
+
   /lessons/{lessonId}/lab/git-graph:
     parameters:
       - $ref: '#/components/parameters/LessonId'
@@ -3427,6 +3455,13 @@ components:
         exit_code: { type: integer }
         timed_out: { type: boolean }
         all_passed: { type: boolean }
+        running:
+          type: boolean
+          description: |
+            Windowed tasks only (`kind: python-gui`). True when the program
+            started and its window is up; the browser then attaches to
+            `GET /lessons/{lessonId}/lab/window`. False means it failed before
+            showing anything, and `errors` says why.
         lesson_status: { $ref: '#/components/schemas/ProgressStatus' }
         test_results:
           type: array

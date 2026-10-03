@@ -42,6 +42,10 @@ var langs = map[string]langSpec{
 // Languages the code runner can execute, for validation elsewhere.
 func Languages() []string { return []string{"go", "python", "python-gui"} }
 
+// IsWindowed reports whether a program of this kind opens a window instead of
+// printing and exiting.
+func IsWindowed(lang string) bool { return langs[lang].gui }
+
 // SupportsLang reports whether code of this kind can be run.
 func SupportsLang(lang string) bool { _, ok := langs[lang]; return ok }
 

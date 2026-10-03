@@ -12,6 +12,10 @@ import (
 // Key names the sandbox session shared by a lesson's terminal, steps and checks.
 func Key(lessonID int) string { return fmt.Sprintf("l%d", lessonID) }
 
+// WindowPort is where a windowed program serves its own VNC. It is Qt's
+// default and the student's program never chooses it, so one constant is enough.
+const WindowPort = 5900
+
 // Playground sandbox: one per user, not tied to a lesson. Runs on the base
 // image, which carries both toolchains the code runner supports.
 const (

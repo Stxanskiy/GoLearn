@@ -28,6 +28,10 @@ type Engine interface {
 	EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error)
 	OpenPTY(handle string, cols, rows int) (*PTYSession, error)
 
+	// DialPort opens a byte pipe to a TCP port inside the session: how a
+	// windowed program's VNC reaches the browser. No PTY — the stream is binary.
+	DialPort(handle string, port int) (*PortConn, error)
+
 	Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error)
 	Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error)
 	Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error)

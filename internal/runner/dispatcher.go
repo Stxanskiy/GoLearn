@@ -93,6 +93,13 @@ func (d *Dispatcher) OpenPTY(handle string, cols, rows int) (*PTYSession, error)
 	return d.Shell.OpenPTY(handle, cols, rows)
 }
 
+func (d *Dispatcher) DialPort(handle string, port int) (*PortConn, error) {
+	if strings.HasPrefix(handle, "vm:") {
+		return d.VM.DialPort(strings.TrimPrefix(handle, "vm:"), port)
+	}
+	return d.Shell.DialPort(handle, port)
+}
+
 func (d *Dispatcher) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
 	return d.pick().Exec(ctx, userID, key, image, setup, command)
 }
