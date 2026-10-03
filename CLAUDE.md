@@ -2,7 +2,7 @@
 
 ## What This Is
 An LMS for learning **DevOps**: Linux, Git, Docker, Kubernetes, Helm — theory,
-quizzes and hands-on labs in a real terminal. Deployed at `learn.prod-factory.ru`
+quizzes and hands-on labs in a real terminal. Deployed at `tot.prod-factory.ru`
 (see `deploy/berg/README.md`).
 
 Course content is JSON in `cmd/seed/content/`, compiled into the seeder with
