@@ -1,0 +1,37 @@
+{
+  "n": 7,
+  "id": "pyqt6_data_07",
+  "title": "Вставка и удаление строк",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Менять состав данных так, чтобы представление не рассыпалось.</p>\n<h2>Разбираем</h2><ul>\n<li>beginInsertRows и endInsertRows</li>\n<li>beginRemoveRows и endRemoveRows</li>\n<li>что будет, если изменить список напрямую</li>\n<li>обновление представления</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Добавить строку через модель.</li>\n<li>Удалить выделенную строку.</li>\n<li>Изменить список в обход модели и объяснить, что пошло не так.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Добавить строку через модель",
+      "taskid": "pyqt6_data_07_t1",
+      "hint": "",
+      "question_html": "<p>Добавить строку через модель.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Удалить выделенную строку",
+      "taskid": "pyqt6_data_07_t2",
+      "hint": "",
+      "question_html": "<p>Удалить выделенную строку.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Изменить список в обход модели и объяснить, что пошло не так",
+      "taskid": "pyqt6_data_07_t3",
+      "hint": "",
+      "question_html": "<p>Изменить список в обход модели и объяснить, что пошло не так.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

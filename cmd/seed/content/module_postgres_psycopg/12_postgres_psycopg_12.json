@@ -1,0 +1,29 @@
+{
+  "n": 12,
+  "id": "postgres_psycopg_12",
+  "title": "Фабрики строк",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Перестать обращаться к полям по номеру.</p>\n<h2>Разбираем</h2><ul>\n<li>проблема row[3]</li>\n<li>dict_row</li>\n<li>class_row и dataclass</li>\n<li>что выбрать в своём проекте</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Получить строки в виде словарей.</li>\n<li>Получить строки сразу в виде объектов своего класса.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Получить строки в виде словарей",
+      "taskid": "postgres_psycopg_12_t1",
+      "hint": "",
+      "question_html": "<p>Получить строки в виде словарей.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Получить строки сразу в виде объектов своего класса",
+      "taskid": "postgres_psycopg_12_t2",
+      "hint": "",
+      "question_html": "<p>Получить строки сразу в виде объектов своего класса.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

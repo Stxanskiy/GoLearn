@@ -97,7 +97,7 @@ func CourseCoverSVG(m model.Module) string {
 // It used to stamp the section's emoji in the middle; icons are gone from the
 // product, and a banner reads better without one glyph blown up to 320px.
 func SpecCoverSVG(s model.Specialization) string {
-	key := map[string]string{"devops": "DevOps", "golang": "Golang", "security": "Security", "database": "Database"}[s.Slug]
+	key := map[string]string{"devops": "DevOps", "golang": "Golang", "security": "Security", "database": "Database", "python": "Python"}[s.Slug]
 	from, to := Gradient(key)
 	var b strings.Builder
 	svgOpen(&b, from, to)

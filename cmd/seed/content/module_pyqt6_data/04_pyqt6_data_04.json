@@ -1,0 +1,29 @@
+{
+  "n": 4,
+  "id": "pyqt6_data_04",
+  "title": "Своя модель: rowCount и data",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Написать модель поверх своих объектов.</p>\n<h2>Разбираем</h2><ul>\n<li>наследование от QAbstractTableModel</li>\n<li>rowCount и columnCount</li>\n<li>data и роли</li>\n<li>Qt.ItemDataRole.DisplayRole</li>\n<li>что вернуть для неизвестной роли</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Сделать модель поверх списка объектов Student.</li>\n<li>Проверить модель без окна, из обычного скрипта.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Сделать модель поверх списка объектов Student",
+      "taskid": "pyqt6_data_04_t1",
+      "hint": "",
+      "question_html": "<p>Сделать модель поверх списка объектов Student.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Проверить модель без окна, из обычного скрипта",
+      "taskid": "pyqt6_data_04_t2",
+      "hint": "",
+      "question_html": "<p>Проверить модель без окна, из обычного скрипта.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

@@ -1,0 +1,21 @@
+{
+  "n": 3,
+  "id": "pyqt6_data_03",
+  "title": "QTableView и модель",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Разделить данные и отображение.</p>\n<h2>Разбираем</h2><ul>\n<li>что такое модель и представление</li>\n<li>QTableView</li>\n<li>готовая модель QStandardItemModel</li>\n<li>одни данные в двух представлениях</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Показать те же данные через QTableView и готовую модель.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Показать те же данные через QTableView и готовую модель",
+      "taskid": "pyqt6_data_03_t1",
+      "hint": "",
+      "question_html": "<p>Показать те же данные через QTableView и готовую модель.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

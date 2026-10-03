@@ -1,0 +1,135 @@
+{
+  "id": "module_demo_exam",
+  "title": "Демоэкзамен: сборка и критерии",
+  "meta": {
+    "id": "module_demo_exam",
+    "userId": "",
+    "title": "Демоэкзамен: сборка и критерии",
+    "description": "Как подойти к экзамену: разложить задание, спланировать время, собрать приложение по знакомой схеме и не потерять баллы на мелочах.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "advanced",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "demo_exam_01",
+      "title": "Как устроен демоэкзамен",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_02",
+      "title": "Разложить задание на части",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_03",
+      "title": "Критерии оценки и что за ними стоит",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_04",
+      "title": "Планирование времени",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_05",
+      "title": "Скелет приложения",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_06",
+      "title": "Схема базы по заданию",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_07",
+      "title": "Интерфейс по заданию",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_08",
+      "title": "Документирование",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_09",
+      "title": "Типовые провалы",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    },
+    {
+      "id": "demo_exam_10",
+      "title": "Сквозной прогон",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_demo_exam",
+      "userProgress": []
+    }
+  ]
+}

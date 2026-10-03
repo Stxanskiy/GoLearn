@@ -1,0 +1,12 @@
+{
+  "n": 21,
+  "id": "pfs_21",
+  "title": "Финальная лабораторная: игра «угадай число»",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

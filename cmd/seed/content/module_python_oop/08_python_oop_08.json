@@ -1,0 +1,29 @@
+{
+  "n": 8,
+  "id": "python_oop_08",
+  "title": "Наследование",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Переиспользовать общее поведение.</p>\n<h2>Разбираем</h2><ul>\n<li>базовый и производный класс</li>\n<li>переопределение метода</li>\n<li>super()</li>\n<li>isinstance</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Класс Person и наследники Student и Teacher.</li>\n<li>Переопределить __str__ в наследнике.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Класс Person и наследники Student и Teacher",
+      "taskid": "python_oop_08_t1",
+      "hint": "",
+      "question_html": "<p>Класс Person и наследники Student и Teacher.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Переопределить __str__ в наследнике",
+      "taskid": "python_oop_08_t2",
+      "hint": "",
+      "question_html": "<p>Переопределить __str__ в наследнике.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

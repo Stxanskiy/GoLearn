@@ -25,6 +25,7 @@ type labSpec struct {
 
 // labFixtures maps module slug -> lesson slug -> lab definition.
 var labFixtures = map[string]map[string]labSpec{
+	"python-first-steps":     pythonFirstStepsLabs,
 	"linux-start":            linuxStartLabs,
 	"linux-core":             linuxCoreLabs,
 	"linux-advanced":         linuxAdvancedLabs,

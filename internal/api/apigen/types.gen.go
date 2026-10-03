@@ -443,9 +443,10 @@ func (e TaskDifficulty) Valid() bool {
 
 // Defines values for TaskKind.
 const (
-	TaskKindGo     TaskKind = "go"
-	TaskKindPython TaskKind = "python"
-	TaskKindShell  TaskKind = "shell"
+	TaskKindGo        TaskKind = "go"
+	TaskKindPython    TaskKind = "python"
+	TaskKindPythonGui TaskKind = "python-gui"
+	TaskKindShell     TaskKind = "shell"
 )
 
 // Valid indicates whether the value is a known member of the TaskKind enum.
@@ -454,6 +455,8 @@ func (e TaskKind) Valid() bool {
 	case TaskKindGo:
 		return true
 	case TaskKindPython:
+		return true
+	case TaskKindPythonGui:
 		return true
 	case TaskKindShell:
 		return true
@@ -871,22 +874,27 @@ type AdminSpecializationInput struct {
 
 // AdminTask defines model for AdminTask.
 type AdminTask struct {
-	CheckScript  string         `json:"check_script"`
-	Description  string         `json:"description"`
-	Difficulty   TaskDifficulty `json:"difficulty"`
-	Format       ContentFormat  `json:"format"`
-	Glossary     []GlossaryItem `json:"glossary"`
-	Hints        string         `json:"hints"`
-	ID           int            `json:"id"`
-	Kind         TaskKind       `json:"kind"`
-	LessonID     int            `json:"lesson_id"`
-	OrderNum     int            `json:"order_num"`
-	SandboxImage string         `json:"sandbox_image"`
-	SetupScript  string         `json:"setup_script"`
-	Solution     string         `json:"solution"`
-	StarterCode  string         `json:"starter_code"`
-	TestCases    []TestCase     `json:"test_cases"`
-	Title        string         `json:"title"`
+	CheckScript string         `json:"check_script"`
+	Description string         `json:"description"`
+	Difficulty  TaskDifficulty `json:"difficulty"`
+	Format      ContentFormat  `json:"format"`
+	Glossary    []GlossaryItem `json:"glossary"`
+	Hints       string         `json:"hints"`
+	ID          int            `json:"id"`
+
+	// Kind How a task is worked and run. `shell` is a terminal lab; `go` and
+	// `python` are code tasks with an editor, run to completion with their
+	// output compared against test cases; `python-gui` opens a window instead
+	// and is watched over `GET /lessons/{lessonId}/lab/window`.
+	Kind         TaskKind   `json:"kind"`
+	LessonID     int        `json:"lesson_id"`
+	OrderNum     int        `json:"order_num"`
+	SandboxImage string     `json:"sandbox_image"`
+	SetupScript  string     `json:"setup_script"`
+	Solution     string     `json:"solution"`
+	StarterCode  string     `json:"starter_code"`
+	TestCases    []TestCase `json:"test_cases"`
+	Title        string     `json:"title"`
 }
 
 // AdminTaskInput defines model for AdminTaskInput.
@@ -897,7 +905,12 @@ type AdminTaskInput struct {
 	Format      ContentFormat   `json:"format"`
 	Glossary    *[]GlossaryItem `json:"glossary,omitempty"`
 	Hints       *string         `json:"hints,omitempty"`
-	Kind        TaskKind        `json:"kind"`
+
+	// Kind How a task is worked and run. `shell` is a terminal lab; `go` and
+	// `python` are code tasks with an editor, run to completion with their
+	// output compared against test cases; `python-gui` opens a window instead
+	// and is watched over `GET /lessons/{lessonId}/lab/window`.
+	Kind TaskKind `json:"kind"`
 
 	// SandboxImage Shell tasks: one of the lab images, e.g. `golearn/sandbox:latest`.
 	SandboxImage *string     `json:"sandbox_image,omitempty"`
@@ -1349,8 +1362,13 @@ type LabTask struct {
 	Glossary        []GlossaryItem   `json:"glossary"`
 	HintsHTML       *string          `json:"hints_html,omitempty"`
 	ID              int              `json:"id"`
-	Kind            TaskKind         `json:"kind"`
-	Passed          bool             `json:"passed"`
+
+	// Kind How a task is worked and run. `shell` is a terminal lab; `go` and
+	// `python` are code tasks with an editor, run to completion with their
+	// output compared against test cases; `python-gui` opens a window instead
+	// and is watched over `GET /lessons/{lessonId}/lab/window`.
+	Kind   TaskKind `json:"kind"`
+	Passed bool     `json:"passed"`
 
 	// StarterCode Code tasks only (kind `go` or `python`).
 	StarterCode *string `json:"starter_code,omitempty"`
@@ -1750,7 +1768,10 @@ type TaskCheckResult struct {
 // TaskDifficulty defines model for TaskDifficulty.
 type TaskDifficulty string
 
-// TaskKind defines model for TaskKind.
+// TaskKind How a task is worked and run. `shell` is a terminal lab; `go` and
+// `python` are code tasks with an editor, run to completion with their
+// output compared against test cases; `python-gui` opens a window instead
+// and is watched over `GET /lessons/{lessonId}/lab/window`.
 type TaskKind string
 
 // TestCase defines model for TestCase.

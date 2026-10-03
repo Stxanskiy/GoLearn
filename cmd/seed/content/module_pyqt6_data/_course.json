@@ -1,0 +1,168 @@
+{
+  "id": "module_pyqt6_data",
+  "title": "PyQt6 и данные",
+  "meta": {
+    "id": "module_pyqt6_data",
+    "userId": "",
+    "title": "PyQt6 и данные",
+    "description": "Таблицы, модели, сортировка и фильтрация, связка интерфейса с базой и долгие операции, которые не должны замораживать окно.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "advanced",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "pyqt6_data_01",
+      "title": "QTableWidget: быстрый путь",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_02",
+      "title": "Почему QTableWidget скоро станет мешать",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_03",
+      "title": "QTableView и модель",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_04",
+      "title": "Своя модель: rowCount и data",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_05",
+      "title": "Заголовки и флаги",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_06",
+      "title": "Редактирование: setData",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_07",
+      "title": "Вставка и удаление строк",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_08",
+      "title": "Сортировка и фильтрация через прокси",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_09",
+      "title": "Модель поверх базы данных",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_10",
+      "title": "Долгие операции и замороженное окно",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_11",
+      "title": "Ошибки базы в интерфейсе",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_12",
+      "title": "Приложение по слоям",
+      "type": "chapter",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    },
+    {
+      "id": "pyqt6_data_13",
+      "title": "Проект: справочник с базой",
+      "type": "chapter",
+      "task_id": null,
+      "position": 13,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_pyqt6_data",
+      "userProgress": []
+    }
+  ]
+}

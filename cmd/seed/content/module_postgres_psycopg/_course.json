@@ -1,0 +1,179 @@
+{
+  "id": "module_postgres_psycopg",
+  "title": "PostgreSQL и psycopg3",
+  "meta": {
+    "id": "module_postgres_psycopg",
+    "userId": "",
+    "title": "PostgreSQL и psycopg3",
+    "description": "База данных и работа с ней из Python: SQL с нуля, подключение через psycopg3, параметры запросов, транзакции и отдельный слой доступа к данным.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "intermediate",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "postgres_psycopg_01",
+      "title": "Зачем база, а не файл",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_02",
+      "title": "Таблицы, типы, первичный ключ",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_03",
+      "title": "INSERT и SELECT",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_04",
+      "title": "WHERE, ORDER BY, LIMIT",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_05",
+      "title": "UPDATE и DELETE",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_06",
+      "title": "Связи и внешний ключ",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_07",
+      "title": "JOIN",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_08",
+      "title": "Подключение из Python",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_09",
+      "title": "Курсор и получение результата",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_10",
+      "title": "Параметры запроса",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_11",
+      "title": "Транзакции и откат",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_12",
+      "title": "Фабрики строк",
+      "type": "chapter",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_13",
+      "title": "Слой доступа к данным",
+      "type": "chapter",
+      "task_id": null,
+      "position": 13,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    },
+    {
+      "id": "postgres_psycopg_14",
+      "title": "Проект: CRUD из консоли",
+      "type": "chapter",
+      "task_id": null,
+      "position": 14,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_postgres_psycopg",
+      "userProgress": []
+    }
+  ]
+}

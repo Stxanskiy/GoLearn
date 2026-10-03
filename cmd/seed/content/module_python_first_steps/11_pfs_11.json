@@ -1,0 +1,254 @@
+{
+  "n": 11,
+  "id": "pfs_11",
+  "title": "Лабораторная 3: ввод и преобразование типов",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Что лежит в переменной после ввода",
+      "taskid": "pfs_lab3_q1",
+      "hint": "",
+      "question_html": "<p>Пользователь ввёл <code>19</code>. Что напечатает вторая строка?</p><pre><code class=\"language-python\">age = input(\"Сколько тебе лет? \")\nprint(type(age))\n</code></pre>",
+      "options": [
+        {
+          "text": "<code>&lt;class 'int'&gt;</code>",
+          "correct": false,
+          "explanation": "Цифры на экране выглядят как число, но <code>input</code> ничего не преобразует — он отдаёт набранное как есть."
+        },
+        {
+          "text": "<code>&lt;class 'str'&gt;</code>",
+          "correct": true,
+          "explanation": "Верно. <code>input</code> возвращает строку всегда, даже если ввели одни цифры."
+        },
+        {
+          "text": "<code>&lt;class 'float'&gt;</code>",
+          "correct": false,
+          "explanation": "Дробное появилось бы только после <code>float</code>, и то здесь цифры целые."
+        },
+        {
+          "text": "<code>19</code>",
+          "correct": false,
+          "explanation": "Значение напечатал бы <code>print(age)</code>. Мы просили тип."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Сумма вышла не суммой",
+      "taskid": "pfs_lab3_q2",
+      "hint": "",
+      "question_html": "<p>На вход подали <code>10</code> и <code>20</code>. Что напечатает программа?</p><pre><code class=\"language-python\">a = input()\nb = input()\nprint(a + b)\n</code></pre>",
+      "options": [
+        {
+          "text": "<code>30</code>",
+          "correct": false,
+          "explanation": "Тридцать получилось бы у чисел. Оба значения пришли текстом, и <code>+</code> их склеил."
+        },
+        {
+          "text": "<code>1020</code>",
+          "correct": true,
+          "explanation": "Верно. Это склейка двух строк. Ошибки нет, поэтому заметить такое можно только по неверному результату."
+        },
+        {
+          "text": "<code>TypeError</code>",
+          "correct": false,
+          "explanation": "Ошибку даёт смешивание текста с числом. Здесь оба значения текст, склейка разрешена."
+        },
+        {
+          "text": "<code>10 20</code>",
+          "correct": false,
+          "explanation": "Пробел между значениями ставит <code>print</code> с запятой, а тут склейка."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Дробное число текстом",
+      "taskid": "pfs_lab3_q3",
+      "hint": "",
+      "question_html": "<p>Что произойдёт при <code>print(int(\"3.14\"))</code>?</p>",
+      "options": [
+        {
+          "text": "Напечатает <code>3</code>",
+          "correct": false,
+          "explanation": "Отрезать дробную часть <code>int</code> умеет у настоящего числа: <code>int(3.14)</code> даст 3. Здесь в кавычках текст, и точка делает его непригодным."
+        },
+        {
+          "text": "Напечатает <code>3.14</code>",
+          "correct": false,
+          "explanation": "Это вернул бы <code>float(\"3.14\")</code>. <code>int</code> дробное не принимает."
+        },
+        {
+          "text": "<code>ValueError</code>",
+          "correct": true,
+          "explanation": "Верно. Тип подходящий, а значение не годится — в конце сообщения будет <code>'3.14'</code>."
+        },
+        {
+          "text": "<code>TypeError</code>",
+          "correct": false,
+          "explanation": "<code>TypeError</code> означает «такое я не умею вообще». Строку <code>int</code> принимает, поэтому ошибка про значение, а не про тип."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Нажали Enter, ничего не набрав",
+      "taskid": "pfs_lab3_q4",
+      "hint": "",
+      "question_html": "<p>Пользователь нажал Enter, не введя ни одного символа. Что будет?</p><pre><code class=\"language-python\">age = int(input(\"Возраст: \"))\nprint(age)\n</code></pre>",
+      "options": [
+        {
+          "text": "В <code>age</code> ляжет ноль",
+          "correct": false,
+          "explanation": "Python не угадывает, что ты имел в виду ноль: пустая строка в число не превращается."
+        },
+        {
+          "text": "<code>ValueError</code>, в кавычках пусто",
+          "correct": true,
+          "explanation": "Верно. <code>input</code> вернул пустую строку, и <code>int(\"\")</code> падает — в конце сообщения будут две кавычки без ничего между ними."
+        },
+        {
+          "text": "<code>EOFError</code>",
+          "correct": false,
+          "explanation": "<code>EOFError</code> возникает, когда ввод кончился совсем. Здесь ввод был — пустая строка; это разные вещи."
+        },
+        {
+          "text": "Программа подождёт ввода ещё раз",
+          "correct": false,
+          "explanation": "<code>input</code> ждёт один Enter. Нажали — значение получено, пусть и пустое."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Вопросов больше, чем данных",
+      "taskid": "pfs_lab3_q5",
+      "hint": "",
+      "question_html": "<p>Программа запущена так, что на вход подали ровно две строки. Что будет?</p><pre><code class=\"language-python\">a = input(\"Первое: \")\nb = input(\"Второе: \")\nc = input(\"Третье: \")\n</code></pre>",
+      "options": [
+        {
+          "text": "Третий <code>input</code> упадёт с <code>EOFError</code>",
+          "correct": true,
+          "explanation": "Верно. Первые два отработали, третьему читать нечего. Номер строки в сообщении покажет, какой именно вызов остался без данных."
+        },
+        {
+          "text": "Все три отработают, в <code>c</code> будет пусто",
+          "correct": false,
+          "explanation": "Пустая строка получается, когда нажали Enter. Здесь входные данные кончились, читать нечего вообще."
+        },
+        {
+          "text": "<code>ValueError</code>",
+          "correct": false,
+          "explanation": "<code>ValueError</code> — про непригодное значение. Здесь значения нет совсем."
+        },
+        {
+          "text": "Программа подождёт ввода с клавиатуры",
+          "correct": false,
+          "explanation": "Вход подменён, клавиатуры у программы нет — ждать нечего."
+        }
+      ]
+    },
+    {
+      "type": "self",
+      "title": "Первый вопрос пользователю",
+      "taskid": "pfs_lab3_t1",
+      "hint": "",
+      "question_html": "<p>Создай <code>/root/hi.py</code>: спроси имя и поздоровайся. Приглашение напиши с пробелом на конце, чтобы ввод не прилипал к вопросу. Потом убери приглашение совсем и запусти снова — выпиши, что видит человек и почему решит, что программа зависла.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть, что реально пришло",
+      "taskid": "pfs_lab3_t2",
+      "hint": "<p>Без <code>repr</code> на экране было бы просто <code>19</code> — и не отличить от числа.</p>",
+      "question_html": "<p>Спроси число и напечатай про него две вещи: значение через <code>repr</code> и тип через <code>type</code>. Введи <code>19</code>. Объясни, что именно показывают кавычки в выводе <code>repr</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Увидеть ошибку своими глазами",
+      "taskid": "pfs_lab3_t3",
+      "hint": "",
+      "question_html": "<p>Спроси возраст и напечатай, сколько будет через год, не делая никакого преобразования. Запусти. Выпиши тип ошибки и то, какие два типа Python отказался соединять.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Починить преобразованием",
+      "taskid": "pfs_lab3_t4",
+      "hint": "<p>Запись <code>int(input(...))</code> читается изнутри наружу.</p>",
+      "question_html": "<p>Теперь почини ту же программу через <code>int</code>. Затем перепиши её в два шага: сначала ввод в переменную, потом преобразование отдельной строкой. Напечатай введённое <strong>до</strong> преобразования и скажи, чем второй вариант удобнее при разборе.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Сумма двух введённых чисел",
+      "taskid": "pfs_lab3_t5",
+      "hint": "",
+      "question_html": "<p>Создай <code>/root/sum.py</code>: спроси два числа и напечатай сумму. Сначала напиши без преобразования и введи 10 и 20 — получится не то. Выпиши результат, объясни его и только потом исправь.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Лишние пробелы",
+      "taskid": "pfs_lab3_t6",
+      "hint": "",
+      "question_html": "<p>Спроси город, напечатай его длину и сам город в квадратных скобках. Введи название с пробелами впереди и позади. Потом добавь <code>strip</code> и повтори тот же ввод. Объясни, зачем в выводе квадратные скобки.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "int, float и round",
+      "taskid": "pfs_lab3_t7",
+      "hint": "<p>Режим диалога — <code>python3</code> без имени файла, выход <code>exit()</code>.</p>",
+      "question_html": "<p>В режиме диалога проверь четыре вещи подряд: <code>int(\"3.14\")</code>, <code>float(\"3.14\")</code>, <code>int(3.99)</code> и <code>round(3.99)</code>. Выпиши, что получилось в каждом случае, и объясни двумя фразами: почему первое падает, а третье нет, и чем <code>int</code> отличается от <code>round</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Пустой ввод",
+      "taskid": "pfs_lab3_t8",
+      "hint": "",
+      "question_html": "<p>Спроси имя и напечатай его длину. Нажми Enter, ничего не набрав: ошибки не будет, выпиши длину. Теперь оберни тот же ввод в <code>int</code> и повтори пустой Enter — выпиши тип ошибки и то, что стоит в кавычках в конце сообщения.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "EOFError: посчитай вызовы",
+      "taskid": "pfs_lab3_t9",
+      "hint": "<p>Правило короткое: <code>EOFError</code> — значит <code>input</code> вызвался больше раз, чем есть входных строк.</p>",
+      "question_html": "<p>Создай <code>/root/three.py</code> с тремя вопросами и выводом всех трёх ответов. Запусти так, подав на вход только две строки:</p><pre><code class=\"language-bash\">printf '10\\n20\\n' | python3 /root/three.py\n</code></pre><p>Выпиши номер строки из сообщения и скажи, какой именно вызов остался без данных.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Что спрашивать числом, а что текстом",
+      "taskid": "pfs_lab3_t10",
+      "hint": "<p>Проверка простая: если с этим не собираются считать — это текст.</p>",
+      "question_html": "<p>Создай <code>/root/card.py</code>: спроси имя, год рождения и номер телефона с ведущим нулём. Каждое значение читай тем способом, который ему подходит, и напечатай всё обратно. Затем проверь в диалоге <code>int(\"007\")</code> и объясни, почему номер телефона числом не делают.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Разобрать поломку: тихая склейка",
+      "taskid": "pfs_lab3_t11",
+      "hint": "<p>Напечатай <code>repr</code> и <code>type</code> обоих значений перед сложением.</p>",
+      "question_html": "<p>В <code>/root/task_broken4.py</code> программа спрашивает два числа и печатает их сумму. Сообщения об ошибке не будет, а результат неверный. Запусти, введи 10 и 20, объясни полученное число и найди строку, где потеряно преобразование.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Разобрать поломку: преобразовали не то",
+      "taskid": "pfs_lab3_t12",
+      "hint": "",
+      "question_html": "<p>В <code>/root/task_broken5.py</code> программа спрашивает имя и город и падает с <code>ValueError</code> сразу после первого вопроса. Назови по сообщению, какое значение не удалось превратить в число, объясни, зачем его вообще пытались превратить, и почини.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

@@ -1,0 +1,29 @@
+{
+  "n": 2,
+  "id": "postgres_psycopg_02",
+  "title": "Таблицы, типы, первичный ключ",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Описать, где будут лежать данные.</p>\n<h2>Разбираем</h2><ul>\n<li>CREATE TABLE</li>\n<li>основные типы: integer, text, varchar, boolean, date, numeric</li>\n<li>NOT NULL</li>\n<li>первичный ключ и зачем он</li>\n<li>автоинкремент через serial или identity</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Создать таблицу студентов.</li>\n<li>Посмотреть структуру таблицы.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Создать таблицу студентов",
+      "taskid": "postgres_psycopg_02_t1",
+      "hint": "",
+      "question_html": "<p>Создать таблицу студентов.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Посмотреть структуру таблицы",
+      "taskid": "postgres_psycopg_02_t2",
+      "hint": "",
+      "question_html": "<p>Посмотреть структуру таблицы.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

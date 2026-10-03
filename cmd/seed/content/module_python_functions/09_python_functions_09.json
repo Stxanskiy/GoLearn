@@ -1,0 +1,29 @@
+{
+  "n": 9,
+  "id": "python_functions_09",
+  "title": "Свой модуль",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Разложить программу по файлам.</p>\n<h2>Разбираем</h2><ul>\n<li>функции в отдельном файле</li>\n<li>импорт своего файла</li>\n<li>почему при импорте выполняется весь файл</li>\n<li>блок if __name__ == &quot;__main__&quot;</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Вынести свои функции в файл helpers.py и импортировать их.</li>\n<li>Добавить в helpers.py печать при импорте и убрать её через __main__.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Вынести свои функции в файл helpers.py и импортировать их",
+      "taskid": "python_functions_09_t1",
+      "hint": "",
+      "question_html": "<p>Вынести свои функции в файл helpers.py и импортировать их.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Добавить в helpers.py печать при импорте и убрать её через __main__",
+      "taskid": "python_functions_09_t2",
+      "hint": "",
+      "question_html": "<p>Добавить в helpers.py печать при импорте и убрать её через __main__.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

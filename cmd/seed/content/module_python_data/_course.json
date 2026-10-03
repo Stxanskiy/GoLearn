@@ -1,0 +1,190 @@
+{
+  "id": "module_python_data",
+  "title": "Python: данные и циклы",
+  "meta": {
+    "id": "module_python_data",
+    "userId": "",
+    "title": "Python: данные и циклы",
+    "description": "Хранить много значений сразу и обрабатывать их: списки, словари, цикл for, работа со строками. Отсюда начинается код, который делает что-то полезное.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "beginner",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "python_data_01",
+      "title": "Список: много значений под одним именем",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_02",
+      "title": "Индексы: достать один элемент",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_03",
+      "title": "Срезы: достать часть списка",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_04",
+      "title": "Методы списка: добавить, удалить, отсортировать",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_05",
+      "title": "Цикл for: пройти по всему",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_06",
+      "title": "range: последовательность чисел",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_07",
+      "title": "enumerate и перебор с номером",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_08",
+      "title": "break, continue и else у цикла",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_09",
+      "title": "Вложенные циклы",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_10",
+      "title": "Строки подробно: методы",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_11",
+      "title": "f-строки: подставить значения в текст",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_12",
+      "title": "Кортеж: список, который нельзя менять",
+      "type": "chapter",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_13",
+      "title": "Словарь: значение по ключу",
+      "type": "chapter",
+      "task_id": null,
+      "position": 13,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_14",
+      "title": "Перебор словаря",
+      "type": "chapter",
+      "task_id": null,
+      "position": 14,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    },
+    {
+      "id": "python_data_15",
+      "title": "Проект: телефонная книга",
+      "type": "chapter",
+      "task_id": null,
+      "position": 15,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_data",
+      "userProgress": []
+    }
+  ]
+}

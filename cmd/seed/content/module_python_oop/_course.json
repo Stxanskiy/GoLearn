@@ -1,0 +1,157 @@
+{
+  "id": "module_python_oop",
+  "title": "Python: объекты и структура проекта",
+  "meta": {
+    "id": "module_python_oop",
+    "userId": "",
+    "title": "Python: объекты и структура проекта",
+    "description": "Классы, объекты и то, как раскладывать проект по файлам. Нужно, чтобы приложение с интерфейсом и базой не превратилось в один файл на тысячу строк.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "intermediate",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "python_oop_01",
+      "title": "Зачем объекты",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_02",
+      "title": "class и экземпляр",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_03",
+      "title": "__init__ и атрибуты",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_04",
+      "title": "Методы: действия объекта",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_05",
+      "title": "Свойства и инкапсуляция",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_06",
+      "title": "Магические методы",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_07",
+      "title": "dataclasses",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_08",
+      "title": "Наследование",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_09",
+      "title": "Композиция вместо наследования",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_10",
+      "title": "Аннотации типов",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_11",
+      "title": "Структура проекта и окружение",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    },
+    {
+      "id": "python_oop_12",
+      "title": "Проект: модель предметной области",
+      "type": "chapter",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_oop",
+      "userProgress": []
+    }
+  ]
+}

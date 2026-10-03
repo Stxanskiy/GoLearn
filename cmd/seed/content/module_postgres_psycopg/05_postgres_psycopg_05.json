@@ -1,0 +1,37 @@
+{
+  "n": 5,
+  "id": "postgres_psycopg_05",
+  "title": "UPDATE и DELETE",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Менять и удалять данные, не теряя лишнего.</p>\n<h2>Разбираем</h2><ul>\n<li>UPDATE с WHERE</li>\n<li>что будет, если забыть WHERE</li>\n<li>DELETE с WHERE</li>\n<li>как проверить перед изменением</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Перевести студента в другую группу.</li>\n<li>Удалить одну запись.</li>\n<li>Выполнить SELECT с тем же условием перед UPDATE и объяснить, зачем.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Перевести студента в другую группу",
+      "taskid": "postgres_psycopg_05_t1",
+      "hint": "",
+      "question_html": "<p>Перевести студента в другую группу.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Удалить одну запись",
+      "taskid": "postgres_psycopg_05_t2",
+      "hint": "",
+      "question_html": "<p>Удалить одну запись.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Выполнить SELECT с тем же условием перед UPDATE и объяснить, зачем",
+      "taskid": "postgres_psycopg_05_t3",
+      "hint": "",
+      "question_html": "<p>Выполнить SELECT с тем же условием перед UPDATE и объяснить, зачем.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

@@ -25,6 +25,17 @@ var curriculum = map[string][]string{
 		"k8s-ckad",             // оркестрация: продвинутая практика
 		"helm",                 // пакетирование и деплой в кластер
 	},
+	"python": {
+		"python-first-steps", // запустить код, переменные, условия, первый цикл
+		"python-data",        // списки, словари, строки, цикл for
+		"python-functions",   // функции, модули, файлы, исключения
+		"python-oop",         // классы и структура проекта
+		"python-quality",     // тесты, отладчик, линтер — то, за что ставят баллы
+		"postgres-psycopg",   // SQL и доступ к базе из кода
+		"pyqt6-start",        // окна, виджеты, сигналы, валидация
+		"pyqt6-data",         // модели, таблицы, база в интерфейсе, потоки
+		"demo-exam",          // сборка и критерии
+	},
 	"security": {
 		"security-offense",
 		"security-defense",
@@ -40,8 +51,10 @@ var curriculum = map[string][]string{
 // the shared band of the trainers, whatever specialization they belong to.
 var specBand = map[string]int{
 	"devops": 100,
+	"python": 200,
 	// database остаётся без курсов: SQL убран, но полоса номеров сохранена,
 	// чтобы вернувшийся курс встал на своё место, а не в конец devops.
+	// Полоса 200 занята направлением python (миграция 031).
 	"database": 300,
 	"security": 400,
 	"gym":      500,
@@ -52,6 +65,8 @@ func specForTrack(track string) string {
 	switch track {
 	case "devops":
 		return "devops"
+	case "python":
+		return "python"
 	case "database":
 		return "database"
 	case "security", "security-offense", "security-defense":

@@ -1,0 +1,146 @@
+{
+  "id": "module_python_quality",
+  "title": "Python: качество кода",
+  "meta": {
+    "id": "module_python_quality",
+    "userId": "",
+    "title": "Python: качество кода",
+    "description": "То, за что на демоэкзамене ставят баллы: читаемость, тесты, отладка, единый стиль. Отдельный курс, а не пара абзацев в конце.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "intermediate",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "python_quality_01",
+      "title": "Что проверяющий называет грамотным кодом",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_02",
+      "title": "Имена",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_03",
+      "title": "Первый тест на pytest",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_04",
+      "title": "assert и что именно проверять",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_05",
+      "title": "Параметризация тестов",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_06",
+      "title": "Фикстуры",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_07",
+      "title": "Отладчик вместо print",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_08",
+      "title": "Линтер и форматтер",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_09",
+      "title": "Читать чужой код и чужие ошибки",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_10",
+      "title": "Когда рефакторить",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    },
+    {
+      "id": "python_quality_11",
+      "title": "Проект: привести в порядок свой код",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_quality",
+      "userProgress": []
+    }
+  ]
+}

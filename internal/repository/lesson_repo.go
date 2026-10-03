@@ -297,9 +297,15 @@ func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, 
 // every distinct task setup script (in task order) and the image is the first
 // non-empty one — all fixture files exist before the student's first command.
 func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (image string, setup string, err error) {
+	// Not just shell tasks: a code task names its own image too (a Qt lesson
+	// cannot run in the base sandbox), and before this it was skipped here, so
+	// the session came up on whatever SANDBOX_IMAGE happened to be. The setup
+	// script still only ever comes from tasks that have one — a code task has
+	// none, so it contributes nothing to the concatenation.
 	rows, err := r.pool.Query(ctx, `
 		SELECT sandbox_image, setup_script FROM tasks
-		WHERE lesson_id = $1 AND kind = 'shell' ORDER BY order_num, id`, lessonID)
+		WHERE lesson_id = $1 AND (kind = 'shell' OR sandbox_image <> '')
+		ORDER BY order_num, id`, lessonID)
 	if err != nil {
 		return "", "", err
 	}

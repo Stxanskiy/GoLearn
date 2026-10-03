@@ -1,0 +1,47 @@
+{
+  "id": "module_pyqt6_start",
+  "title": "PyQt6: первое приложение",
+  "meta": {
+    "id": "module_pyqt6_start",
+    "userId": "",
+    "title": "PyQt6: первое приложение",
+    "description": "Окна, виджеты, лейауты, сигналы и слоты, диалоги и валидация.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "intermediate",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "qt_01",
+      "title": "Первое окно",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "module_pyqt6_start",
+      "userProgress": []
+    },
+    {
+      "id": "qt_02",
+      "title": "Лабораторная 1: первое окно",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": true,
+      "courseId": "module_pyqt6_start",
+      "userProgress": []
+    }
+  ]
+}

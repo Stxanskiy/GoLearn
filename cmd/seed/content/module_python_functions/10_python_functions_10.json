@@ -1,0 +1,37 @@
+{
+  "n": 10,
+  "id": "python_functions_10",
+  "title": "Чтение файла",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Взять данные не из input, а с диска.</p>\n<h2>Разбираем</h2><ul>\n<li>open и режим чтения</li>\n<li>конструкция with и зачем она</li>\n<li>read против readlines против цикла по файлу</li>\n<li>лишний перевод строки и strip</li>\n<li>файла нет: FileNotFoundError</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Прочитать файл со списком имён и напечатать каждое.</li>\n<li>Посчитать количество строк в файле.</li>\n<li>Прочитать несуществующий файл и прочитать ошибку.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Прочитать файл со списком имён и напечатать каждое",
+      "taskid": "python_functions_10_t1",
+      "hint": "",
+      "question_html": "<p>Прочитать файл со списком имён и напечатать каждое.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Посчитать количество строк в файле",
+      "taskid": "python_functions_10_t2",
+      "hint": "",
+      "question_html": "<p>Посчитать количество строк в файле.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Прочитать несуществующий файл и прочитать ошибку",
+      "taskid": "python_functions_10_t3",
+      "hint": "",
+      "question_html": "<p>Прочитать несуществующий файл и прочитать ошибку.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

@@ -1,0 +1,29 @@
+{
+  "n": 3,
+  "id": "python_oop_03",
+  "title": "__init__ и атрибуты",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Передать данные в объект при создании.</p>\n<h2>Разбираем</h2><ul>\n<li>что такое __init__ и когда он вызывается</li>\n<li>self: что это и почему первый</li>\n<li>атрибуты экземпляра</li>\n<li>обращение к атрибуту через точку</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Класс Student с ФИО и группой.</li>\n<li>Создать три объекта и напечатать их поля.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Класс Student с ФИО и группой",
+      "taskid": "python_oop_03_t1",
+      "hint": "",
+      "question_html": "<p>Класс Student с ФИО и группой.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Создать три объекта и напечатать их поля",
+      "taskid": "python_oop_03_t2",
+      "hint": "",
+      "question_html": "<p>Создать три объекта и напечатать их поля.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

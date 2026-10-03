@@ -1,0 +1,37 @@
+{
+  "n": 4,
+  "id": "python_data_04",
+  "title": "Методы списка: добавить, удалить, отсортировать",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Менять список после создания.</p>\n<h2>Разбираем</h2><ul>\n<li>append и insert</li>\n<li>remove и pop</li>\n<li>sort и sorted — в чём разница</li>\n<li>reverse</li>\n<li>in: проверить наличие</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Собрать список покупок через append по одному элементу.</li>\n<li>Удалить из списка один элемент двумя разными способами.</li>\n<li>Отсортировать список имён и объяснить, чем sort отличается от sorted.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Собрать список покупок через append по одному элементу",
+      "taskid": "python_data_04_t1",
+      "hint": "",
+      "question_html": "<p>Собрать список покупок через append по одному элементу.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Удалить из списка один элемент двумя разными способами",
+      "taskid": "python_data_04_t2",
+      "hint": "",
+      "question_html": "<p>Удалить из списка один элемент двумя разными способами.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Отсортировать список имён и объяснить, чем sort отличается от sorted",
+      "taskid": "python_data_04_t3",
+      "hint": "",
+      "question_html": "<p>Отсортировать список имён и объяснить, чем sort отличается от sorted.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

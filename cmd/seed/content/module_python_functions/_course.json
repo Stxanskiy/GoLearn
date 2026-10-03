@@ -1,0 +1,168 @@
+{
+  "id": "module_python_functions",
+  "title": "Python: функции, файлы, ошибки",
+  "meta": {
+    "id": "module_python_functions",
+    "userId": "",
+    "title": "Python: функции, файлы, ошибки",
+    "description": "Разбить программу на части, которые можно переиспользовать и проверять. Работа с файлами и обработка исключений — после этого курса код перестаёт быть одним длинным скриптом.",
+    "imageUrl": null,
+    "image": null,
+    "type": "course",
+    "price": 0,
+    "isPublished": false,
+    "isFreeCourse": false,
+    "isInDevelopment": true,
+    "adminOnly": false,
+    "difficulty": "beginner",
+    "durationHours": 0,
+    "categoryId": null,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "chapter_list": [
+    {
+      "id": "python_functions_01",
+      "title": "Зачем функции",
+      "type": "chapter",
+      "task_id": null,
+      "position": 1,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_02",
+      "title": "def: объявить свою функцию",
+      "type": "chapter",
+      "task_id": null,
+      "position": 2,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_03",
+      "title": "Аргументы: передать данные внутрь",
+      "type": "chapter",
+      "task_id": null,
+      "position": 3,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_04",
+      "title": "return: вернуть результат",
+      "type": "chapter",
+      "task_id": null,
+      "position": 4,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_05",
+      "title": "Значения по умолчанию",
+      "type": "chapter",
+      "task_id": null,
+      "position": 5,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_06",
+      "title": "Область видимости",
+      "type": "chapter",
+      "task_id": null,
+      "position": 6,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_07",
+      "title": "Списковые включения",
+      "type": "chapter",
+      "task_id": null,
+      "position": 7,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_08",
+      "title": "Модули: взять готовое",
+      "type": "chapter",
+      "task_id": null,
+      "position": 8,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_09",
+      "title": "Свой модуль",
+      "type": "chapter",
+      "task_id": null,
+      "position": 9,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_10",
+      "title": "Чтение файла",
+      "type": "chapter",
+      "task_id": null,
+      "position": 10,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_11",
+      "title": "Запись файла",
+      "type": "chapter",
+      "task_id": null,
+      "position": 11,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_12",
+      "title": "try и except: обработка ошибок",
+      "type": "chapter",
+      "task_id": null,
+      "position": 12,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    },
+    {
+      "id": "python_functions_13",
+      "title": "Проект: заметки в файле",
+      "type": "chapter",
+      "task_id": null,
+      "position": 13,
+      "isPublished": true,
+      "isFree": false,
+      "courseId": "module_python_functions",
+      "userProgress": []
+    }
+  ]
+}

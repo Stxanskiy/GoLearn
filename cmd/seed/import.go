@@ -68,12 +68,29 @@ type pkOption struct {
 }
 
 type pkTask struct {
-	Type         string     `json:"type"` // quiz | check
+	Type         string     `json:"type"` // quiz | check | self | code
 	Title        string     `json:"title"`
 	TaskID       string     `json:"taskid"`
 	Hint         string     `json:"hint"`
 	QuestionHTML string     `json:"question_html"`
 	Options      []pkOption `json:"options"`
+
+	// Code tasks: solved in the editor on the page rather than in a terminal.
+	// Lang is the task kind the runner dispatches on ("python", "python-gui",
+	// "go"); the window kind starts a program that opens a window instead of
+	// printing. Image is needed because a Qt lesson cannot run in the base
+	// sandbox.
+	Lang        string   `json:"lang"`
+	StarterCode string   `json:"starter_code"`
+	Image       string   `json:"image"`
+	Tests       []pkTest `json:"tests"`
+}
+
+// pkTest is one input/expected pair: the student's program runs with Input on
+// stdin and its stdout is compared with Expected.
+type pkTest struct {
+	Input    string `json:"input"`
+	Expected string `json:"expected"`
 }
 
 type pkChapter struct {
@@ -96,6 +113,7 @@ type importSpec struct {
 	Difficulty string
 	Category   string
 	Trainer    bool   // practice-only course, listed under trainers
+	Draft      bool   // seed it unpublished; the author publishes it when it is ready
 	Image      string // force this sandbox image on all shell tasks (empty = auto)
 }
 
@@ -116,6 +134,19 @@ func importedModules() []M {
 		{Dir: "module_k8s_intro", Slug: "k8s-intro", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes"},
 		{Dir: "module_k8s_ckad", Slug: "k8s-ckad", Track: "devops", Difficulty: "advanced", Category: "Kubernetes", Image: sandboxImageK8s},
 		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes", Image: sandboxImageK8s},
+		// ── Python section: с нуля до демонстрационного экзамена ──
+		// Курсы 1–5 идут в базовом образе: в нём уже есть python3 и python3-venv.
+		// Курсам 6–9 нужен образ с PostgreSQL и колёсами PyQt6 — его ещё нет,
+		// поэтому Image им пока не задан (см. tmp/python-demo-exam-plan.md).
+		{Dir: "module_python_first_steps", Slug: "python-first-steps", Track: "python", Difficulty: "beginner", Category: "Python", Draft: true},
+		{Dir: "module_python_data", Slug: "python-data", Track: "python", Difficulty: "beginner", Category: "Python", Draft: true},
+		{Dir: "module_python_functions", Slug: "python-functions", Track: "python", Difficulty: "beginner", Category: "Python", Draft: true},
+		{Dir: "module_python_oop", Slug: "python-oop", Track: "python", Difficulty: "intermediate", Category: "Python", Draft: true},
+		{Dir: "module_python_quality", Slug: "python-quality", Track: "python", Difficulty: "intermediate", Category: "Python", Draft: true},
+		{Dir: "module_postgres_psycopg", Slug: "postgres-psycopg", Track: "python", Difficulty: "intermediate", Category: "PostgreSQL", Draft: true},
+		{Dir: "module_pyqt6_start", Slug: "pyqt6-start", Track: "python", Difficulty: "intermediate", Category: "PyQt6", Draft: true},
+		{Dir: "module_pyqt6_data", Slug: "pyqt6-data", Track: "python", Difficulty: "advanced", Category: "PyQt6", Draft: true},
+		{Dir: "module_demo_exam", Slug: "demo-exam", Track: "python", Difficulty: "advanced", Category: "Python", Draft: true},
 		// ── Database section ──
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
 		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
@@ -197,6 +228,7 @@ func buildModule(s importSpec) (M, error) {
 		Difficulty:  s.Difficulty,
 		Category:    s.Category,
 		Trainer:     s.Trainer,
+		Draft:       s.Draft,
 		// CoverImage intentionally empty: covers are SVG placeholders until the
 		// admin sets real ones (user request).
 	}
@@ -263,6 +295,8 @@ func buildModule(s importSpec) (M, error) {
 				task := toShellTask(t, ch.VMImage)
 				task.SelfCheck = true
 				l.Tasks = append(l.Tasks, task)
+			case "code":
+				l.Tasks = append(l.Tasks, toCodeTask(t))
 			}
 		}
 
@@ -323,6 +357,35 @@ func toShellTask(t pkTask, vmImage string) T {
 		SandboxImage: img,
 		// check_script intentionally empty: platform-side validator is not in the
 		// static export. Lab runs in a real terminal; auto-check added per task later.
+	}
+}
+
+// toCodeTask builds a task solved in the editor. Unlike a shell task it carries
+// no check script: a code task is checked by running it against its test cases,
+// and a windowed one is not auto-checked at all — the student looks at the
+// window.
+func toCodeTask(t pkTask) T {
+	lang := t.Lang
+	if lang == "" {
+		lang = "python"
+	}
+	tests := make([]TestCase, 0, len(t.Tests))
+	for _, tc := range t.Tests {
+		tests = append(tests, TestCase{Input: tc.Input, ExpectedOutput: tc.Expected})
+	}
+	return T{
+		SourceKey:    strings.TrimSpace(t.TaskID),
+		Title:        t.Title,
+		Description:  t.QuestionHTML,
+		Hints:        t.Hint,
+		Difficulty:   "medium",
+		Kind:         lang,
+		StarterCode:  t.StarterCode,
+		SandboxImage: t.Image,
+		TestCases:    tests,
+		// A window task has nothing to compare, so it is the student's own call
+		// that it is done — the same contract as a "self" task.
+		SelfCheck: lang == "python-gui" || len(tests) == 0,
 	}
 }
 

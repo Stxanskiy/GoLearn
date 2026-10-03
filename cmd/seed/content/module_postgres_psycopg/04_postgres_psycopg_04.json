@@ -1,0 +1,37 @@
+{
+  "n": 4,
+  "id": "postgres_psycopg_04",
+  "title": "WHERE, ORDER BY, LIMIT",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Выбирать не всё, а нужное.</p>\n<h2>Разбираем</h2><ul>\n<li>условия в WHERE</li>\n<li>AND, OR, NOT</li>\n<li>LIKE для поиска по тексту</li>\n<li>IS NULL</li>\n<li>сортировка</li>\n<li>ограничение количества</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Найти студентов одной группы.</li>\n<li>Отсортировать по фамилии.</li>\n<li>Найти всех, чья фамилия начинается на заданную букву.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Найти студентов одной группы",
+      "taskid": "postgres_psycopg_04_t1",
+      "hint": "",
+      "question_html": "<p>Найти студентов одной группы.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Отсортировать по фамилии",
+      "taskid": "postgres_psycopg_04_t2",
+      "hint": "",
+      "question_html": "<p>Отсортировать по фамилии.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Найти всех, чья фамилия начинается на заданную букву",
+      "taskid": "postgres_psycopg_04_t3",
+      "hint": "",
+      "question_html": "<p>Найти всех, чья фамилия начинается на заданную букву.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

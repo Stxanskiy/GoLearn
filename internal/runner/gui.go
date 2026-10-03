@@ -114,7 +114,7 @@ func parseGUI(raw string) *GUIResult {
 	}
 
 	res.Output = truncate(unb64(out.String()), maxOutputSize)
-	res.Errors = truncate(unb64(errs.String()), maxOutputSize)
+	res.Errors = truncate(dropQtNoise(unb64(errs.String())), maxOutputSize)
 
 	// No window and nothing on stderr: the wait ran out. Say which it was,
 	// because "nothing happened" is the least useful thing to show a student.
@@ -123,6 +123,28 @@ func parseGUI(raw string) *GUIResult {
 			"Проверь, что в конце есть app.exec() — без него программа завершается сразу."
 	}
 	return res
+}
+
+// dropQtNoise removes what Qt itself says on startup. "QVncServer created on
+// port 5900" is the library announcing our own plumbing; showing it to a
+// student under the heading "Errors" would teach them to ignore that panel,
+// which is the one place their traceback appears.
+func dropQtNoise(s string) string {
+	if s == "" {
+		return ""
+	}
+	var kept []string
+	for _, line := range strings.Split(s, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "QVncServer created on port") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	out := strings.Join(kept, "\n")
+	if strings.TrimSpace(out) == "" {
+		return ""
+	}
+	return out
 }
 
 // StopGUI kills a running window program. Called when the student leaves the

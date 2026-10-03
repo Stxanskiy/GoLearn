@@ -1,0 +1,37 @@
+{
+  "n": 8,
+  "id": "python_functions_08",
+  "title": "Модули: взять готовое",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Не писать то, что уже написано.</p>\n<h2>Разбираем</h2><ul>\n<li>что такое модуль и стандартная библиотека</li>\n<li>import и from ... import</li>\n<li>random, math, datetime на простых примерах</li>\n<li>где смотреть, что умеет модуль</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Сделать так, чтобы игра «угадай число» загадывала случайное.</li>\n<li>Напечатать текущую дату.</li>\n<li>Посчитать корень числа через math.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Сделать так, чтобы игра «угадай число» загадывала случайное",
+      "taskid": "python_functions_08_t1",
+      "hint": "",
+      "question_html": "<p>Сделать так, чтобы игра «угадай число» загадывала случайное.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Напечатать текущую дату",
+      "taskid": "python_functions_08_t2",
+      "hint": "",
+      "question_html": "<p>Напечатать текущую дату.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Посчитать корень числа через math",
+      "taskid": "python_functions_08_t3",
+      "hint": "",
+      "question_html": "<p>Посчитать корень числа через math.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

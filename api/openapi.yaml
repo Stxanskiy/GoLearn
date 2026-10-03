@@ -2864,7 +2864,12 @@ components:
       enum: [theory, quiz, lab, sim, sql]
     TaskKind:
       type: string
-      enum: [shell, go, python]
+      description: |
+        How a task is worked and run. `shell` is a terminal lab; `go` and
+        `python` are code tasks with an editor, run to completion with their
+        output compared against test cases; `python-gui` opens a window instead
+        and is watched over `GET /lessons/{lessonId}/lab/window`.
+      enum: [shell, go, python, python-gui]
     ContentFormat:
       type: string
       enum: [md, html]

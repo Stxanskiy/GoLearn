@@ -1,0 +1,12 @@
+{
+  "n": 22,
+  "id": "pfs_22",
+  "title": "Итоговый квиз курса",
+  "type": "chapter",
+  "isFree": true,
+  "kind": "tasks",
+  "content_html": "",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": null
+}

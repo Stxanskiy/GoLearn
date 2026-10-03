@@ -1,0 +1,29 @@
+{
+  "n": 8,
+  "id": "postgres_psycopg_08",
+  "title": "Подключение из Python",
+  "type": "chapter",
+  "isFree": false,
+  "kind": "tasks",
+  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Выполнить тот же SQL из кода.</p>\n<h2>Разбираем</h2><ul>\n<li>установка psycopg</li>\n<li>строка подключения и откуда её брать</li>\n<li>connect и закрытие соединения</li>\n<li>почему пароль не пишут в коде</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Подключиться к базе из Python и выполнить SELECT.</li>\n<li>Вынести параметры подключения в переменные окружения.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "tasks": [
+    {
+      "type": "self",
+      "title": "Подключиться к базе из Python и выполнить SELECT",
+      "taskid": "postgres_psycopg_08_t1",
+      "hint": "",
+      "question_html": "<p>Подключиться к базе из Python и выполнить SELECT.</p>",
+      "options": []
+    },
+    {
+      "type": "self",
+      "title": "Вынести параметры подключения в переменные окружения",
+      "taskid": "postgres_psycopg_08_t2",
+      "hint": "",
+      "question_html": "<p>Вынести параметры подключения в переменные окружения.</p>",
+      "options": []
+    }
+  ],
+  "vm_image": null,
+  "vm_init": null
+}

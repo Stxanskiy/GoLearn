@@ -103,6 +103,12 @@ func CategoryIcon(cat string) string {
 		return "🐹"
 	case "Database":
 		return "🗄️"
+	case "Python":
+		return "🐍"
+	case "PyQt6":
+		return "🪟"
+	case "PostgreSQL":
+		return "🐘"
 	case "Security":
 		return "🛡️"
 	default:
