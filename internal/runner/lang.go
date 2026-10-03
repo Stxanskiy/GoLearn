@@ -19,15 +19,28 @@ const (
 type langSpec struct {
 	file string
 	run  string
+	// gui marks a language whose program opens a window instead of printing and
+	// exiting. Those are started detached and watched for a port (see gui.go);
+	// they cannot be run to completion, so RunProgram refuses them.
+	gui  bool
+	port int
 }
 
 var langs = map[string]langSpec{
 	"go":     {file: "main.go", run: "go run main.go"},
 	"python": {file: "main.py", run: "python3 main.py"},
+	// Qt's own VNC platform plugin: the student's program becomes the VNC
+	// server, so showing a window costs one process and no display stack.
+	"python-gui": {
+		file: "main.py",
+		run:  "QT_QPA_PLATFORM=vnc:size=800x600 python3 main.py",
+		gui:  true,
+		port: 5900,
+	},
 }
 
 // Languages the code runner can execute, for validation elsewhere.
-func Languages() []string { return []string{"go", "python"} }
+func Languages() []string { return []string{"go", "python", "python-gui"} }
 
 // SupportsLang reports whether code of this kind can be run.
 func SupportsLang(lang string) bool { _, ok := langs[lang]; return ok }
@@ -150,7 +163,7 @@ var allowedImports = map[string]bool{
 }
 
 func validateCode(lang, code string) error {
-	if lang == "python" {
+	if lang == "python" || lang == "python-gui" {
 		return validatePython(code)
 	}
 	if !strings.Contains(code, "package main") {

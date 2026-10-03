@@ -61,6 +61,10 @@ func RunProgram(ctx context.Context, e CodeSandbox, lang string, t Target, code,
 	if !ok {
 		return &Result{Errors: fmt.Sprintf("Запуск кода для %q не поддерживается.", lang)}, nil
 	}
+	if spec.gui {
+		// A window program never exits; it is started by StartGUI instead.
+		return nil, fmt.Errorf("%q opens a window and cannot be run to completion", lang)
+	}
 	if len(code) > maxCodeSize {
 		return &Result{Errors: "Программа слишком большая (максимум 64 КБ)."}, nil
 	}
@@ -78,7 +82,10 @@ func RunProgram(ctx context.Context, e CodeSandbox, lang string, t Target, code,
 	// `; ` and not `&& `: the exit code of a program that failed is the point.
 	script := fmt.Sprintf(
 		"cd %s; %s < %s > %s 2> %s; printf '%%s' $? > %s; "+
-			"printf 'O:'; base64 %s; printf 'E:'; base64 %s; printf 'C:'; cat %s; printf '\\n'",
+			// Each marker on its own line: an empty file makes base64 print nothing
+			// at all, not even a newline, so markers would run together as "O:E:..."
+			// and the parser would file stderr under stdout.
+			"printf 'O:\\n'; base64 %s; printf 'E:\\n'; base64 %s; printf 'C:\\n'; cat %s; printf '\\n'",
 		codeDir, spec.run, inFile, outFile, errFile, codeFile,
 		outFile, errFile, codeFile)
 

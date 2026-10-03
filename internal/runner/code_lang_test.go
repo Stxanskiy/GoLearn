@@ -171,6 +171,32 @@ func TestParseRunTolerance(t *testing.T) {
 		}
 	})
 
+	// The bug this guards: an empty file makes base64 print nothing at all, so
+	// `printf 'O:'; base64 f; printf 'E:'` ran the markers together into "O:E:..."
+	// and stderr was filed under stdout. A program that prints nothing and fails
+	// is the commonest case there is, and the fake sandbox never produced it.
+	t.Run("программа ничего не вывела, но упала", func(t *testing.T) {
+		raw := "O:\nE:" + b([]byte("SyntaxError: invalid syntax\n")) + "\nC:1\n"
+		res := parseRun(raw)
+		if res.Output != "" {
+			t.Errorf("output must stay empty, got %q", res.Output)
+		}
+		if !strings.Contains(res.Errors, "SyntaxError") {
+			t.Errorf("errors = %q, the traceback must not land in output", res.Errors)
+		}
+		if res.ExitCode != 1 {
+			t.Errorf("exit = %d, want 1", res.ExitCode)
+		}
+	})
+
+	t.Run("маркеры слиплись — старый формат не должен пройти молча", func(t *testing.T) {
+		// What the old script produced for an empty stdout.
+		res := parseRun("O:E:" + b([]byte("boom\n")) + "\nC:1\n")
+		if strings.Contains(res.Output, "boom") {
+			t.Error("stderr must never be reported as program output")
+		}
+	})
+
 	t.Run("пустой ответ песочницы — это ошибка песочницы", func(t *testing.T) {
 		res := parseRun("")
 		if res.Errors == "" {
