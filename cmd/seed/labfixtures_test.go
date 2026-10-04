@@ -33,3 +33,21 @@ func TestStudentFailDoesNotLeaveAStrayBracket(t *testing.T) {
 		t.Errorf("plain solution text = %q", got)
 	}
 }
+
+// A task whose expectation already ends in a dash — "права на secrets.env — 600" —
+// used to get the live value joined on with a second one: "— 600 — сейчас 644".
+// A student re-doing the lab read the trailing number as the answer being asked
+// for and went hunting for a bug in a task that was correct.
+func TestStudentFailSeparatesExpectationFromCurrentState(t *testing.T) {
+	got := studentFail("права на secrets.env — 600", "chmod 600 … (сейчас $(stat -c '%a' f))")
+
+	if strings.Contains(got, "— сейчас") || strings.Contains(got, "— Сейчас") {
+		t.Errorf("живое значение всё ещё висит на втором тире: %q", got)
+	}
+	if !strings.Contains(got, "600. Сейчас") {
+		t.Errorf("ожидание и текущее состояние не разделены: %q", got)
+	}
+	if strings.Count(got, "—") != 1 {
+		t.Errorf("в сообщении больше одного тире, читается двусмысленно: %q", got)
+	}
+}

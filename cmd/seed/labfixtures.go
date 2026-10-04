@@ -10,7 +10,10 @@ package main
 //   - Checks: a script per task, keyed by the task's 1-based position; exit 0
 //     means solved. Checks print a short hint on failure, so a red result tells
 //     the student what is still missing.
-import "strings"
+import (
+	"strings"
+	"unicode"
+)
 
 type labSpec struct {
 	// Image overrides the sandbox image for this lesson (empty -> the default
@@ -159,7 +162,16 @@ func studentFail(good, bad string) string {
 	if i < 0 || !strings.Contains(bad[i:], "$(") {
 		return msg
 	}
-	return msg + " — " + balanceParens(strings.TrimSpace(bad[i:]))
+	diag := balanceParens(strings.TrimSpace(bad[i:]))
+	// A period, not a second dash. The expectation usually ends in a dash of its
+	// own ("права на secrets.env — 600"), and joining the live value with another
+	// one produced "— 600 — сейчас 644": a student re-doing the lab read the last
+	// number as the answer being asked for and went looking for the bug in the
+	// task. The current state is a separate sentence.
+	if r := []rune(diag); len(r) > 0 {
+		diag = string(unicode.ToUpper(r[0])) + string(r[1:])
+	}
+	return msg + ". " + diag
 }
 
 // balanceParens drops closing parens left without an opener.

@@ -268,7 +268,16 @@ mkdir -p /opt/devops/netlab
 printf '<html><body><h1>Linux network tools lab</h1></body></html>\n' > /opt/devops/netlab/index.html
 pkill -x python3 >/dev/null 2>&1 || true
 (cd /opt/devops/netlab && setsid python3 -m http.server 80 >/var/log/netlab.log 2>&1 &)
-sleep 0.5
+# Wait for the port rather than guess at it. The server starts in a backgrounded
+# subshell, so its exit status never reaches this script: a half-second sleep
+# both raced a loaded host and, when the server failed outright, let setup report
+# success for a lab whose every task then had nothing to talk to.
+ready=
+for _ in $(seq 1 50); do
+  if curl -fsS -o /dev/null http://127.0.0.1/ 2>/dev/null; then ready=1; break; fi
+  sleep 0.1
+done
+[ -n "$ready" ] || { echo "HTTP-сервер лабораторной не поднялся на порту 80:"; cat /var/log/netlab.log 2>/dev/null; exit 1; }
 rm -f /root/http_page.html /root/http_status.txt`,
 		Checks: map[int]string{
 			1: check(`grep -q 'Linux network tools lab' /root/http_page.html 2>/dev/null && grep -q '200' /root/http_status.txt 2>/dev/null`,
