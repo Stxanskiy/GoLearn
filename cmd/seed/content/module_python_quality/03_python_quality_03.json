@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Проверять код кодом, а не глазами.</p>\n<h2>Разбираем</h2><ul>\n<li>зачем тесты, если можно просто запустить</li>\n<li>установка и запуск pytest</li>\n<li>файл test_*.py и функция test_*</li>\n<li>что показывает вывод pytest</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Написать один тест на функцию из своего модуля.</li>\n<li>Сломать функцию и посмотреть на отчёт.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Написать один тест на функцию из своего модуля",
       "taskid": "python_quality_03_t1",
       "hint": "",
-      "question_html": "<p>Написать один тест на функцию из своего модуля.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Сломать функцию и посмотреть на отчёт",
       "taskid": "python_quality_03_t2",
       "hint": "",
-      "question_html": "<p>Сломать функцию и посмотреть на отчёт.</p>",
+      "question_html": "",
       "options": []
     }
   ],

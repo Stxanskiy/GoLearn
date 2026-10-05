@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Подготовить данные для теста один раз.</p>\n<h2>Разбираем</h2><ul>\n<li>что такое фикстура</li>\n<li>подготовка и уборка</li>\n<li>conftest.py</li>\n<li>временный файл в тестах через tmp_path</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Написать фикстуру с готовым объектом.</li>\n<li>Протестировать запись в файл через tmp_path.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Написать фикстуру с готовым объектом",
       "taskid": "python_quality_06_t1",
       "hint": "",
-      "question_html": "<p>Написать фикстуру с готовым объектом.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Протестировать запись в файл через tmp_path",
       "taskid": "python_quality_06_t2",
       "hint": "",
-      "question_html": "<p>Протестировать запись в файл через tmp_path.</p>",
+      "question_html": "",
       "options": []
     }
   ],

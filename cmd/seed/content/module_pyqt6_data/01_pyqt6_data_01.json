@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Показать таблицу за десять минут.</p>\n<h2>Разбираем</h2><ul>\n<li>QTableWidget и QTableWidgetItem</li>\n<li>заголовки столбцов</li>\n<li>добавление и удаление строк</li>\n<li>чтение значения из ячейки</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Показать список студентов в QTableWidget.</li>\n<li>Добавить строку по нажатию кнопки.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Показать список студентов в QTableWidget",
       "taskid": "pyqt6_data_01_t1",
       "hint": "",
-      "question_html": "<p>Показать список студентов в QTableWidget.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Добавить строку по нажатию кнопки",
       "taskid": "pyqt6_data_01_t2",
       "hint": "",
-      "question_html": "<p>Добавить строку по нажатию кнопки.</p>",
+      "question_html": "",
       "options": []
     }
   ],

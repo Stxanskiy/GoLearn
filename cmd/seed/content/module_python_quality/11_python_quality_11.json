@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Пройти по собственному проекту с чеклистом.</p>\n<h2>Разбираем</h2><ul>\n<li>тесты на ключевые функции</li>\n<li>линтер без замечаний</li>\n<li>осмысленные имена</li>\n<li>README: как запустить</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Привести проект заметок в состояние, которое не стыдно сдать.</li>\n<li>Написать README с инструкцией запуска.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Привести проект заметок в состояние, которое не стыдно сдать",
       "taskid": "python_quality_11_t1",
       "hint": "",
-      "question_html": "<p>Привести проект заметок в состояние, которое не стыдно сдать.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Написать README с инструкцией запуска",
       "taskid": "python_quality_11_t2",
       "hint": "",
-      "question_html": "<p>Написать README с инструкцией запуска.</p>",
+      "question_html": "",
       "options": []
     }
   ],

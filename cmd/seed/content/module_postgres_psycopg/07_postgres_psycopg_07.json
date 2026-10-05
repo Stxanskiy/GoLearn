@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Собрать данные из двух таблиц в один результат.</p>\n<h2>Разбираем</h2><ul>\n<li>INNER JOIN</li>\n<li>LEFT JOIN и зачем он</li>\n<li>условие соединения</li>\n<li>псевдонимы таблиц</li>\n<li>COUNT и GROUP BY на простом примере</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Вывести студентов вместе с названием группы.</li>\n<li>Посчитать количество студентов в каждой группе.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Вывести студентов вместе с названием группы",
       "taskid": "postgres_psycopg_07_t1",
       "hint": "",
-      "question_html": "<p>Вывести студентов вместе с названием группы.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Посчитать количество студентов в каждой группе",
       "taskid": "postgres_psycopg_07_t2",
       "hint": "",
-      "question_html": "<p>Посчитать количество студентов в каждой группе.</p>",
+      "question_html": "",
       "options": []
     }
   ],

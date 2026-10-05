@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Оформить так, чтобы работу было видно.</p>\n<h2>Разбираем</h2><ul>\n<li>README: как запустить</li>\n<li>комментарии там, где они нужны</li>\n<li>аннотации типов как документация</li>\n<li>что писать о зависимостях и окружении</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Написать README для своего проекта.</li>\n<li>Проверить, что по README проект запускается с нуля.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Написать README для своего проекта",
       "taskid": "demo_exam_08_t1",
       "hint": "",
-      "question_html": "<p>Написать README для своего проекта.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Проверить, что по README проект запускается с нуля",
       "taskid": "demo_exam_08_t2",
       "hint": "",
-      "question_html": "<p>Проверить, что по README проект запускается с нуля.</p>",
+      "question_html": "",
       "options": []
     }
   ],

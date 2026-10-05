@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Перестать писать __init__ руками.</p>\n<h2>Разбираем</h2><ul>\n<li>декоратор dataclass</li>\n<li>что он генерирует</li>\n<li>значения по умолчанию</li>\n<li>когда dataclass подходит, а когда нужен обычный класс</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Переписать Student как dataclass.</li>\n<li>Сравнить объём кода до и после.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Переписать Student как dataclass",
       "taskid": "python_oop_07_t1",
       "hint": "",
-      "question_html": "<p>Переписать Student как dataclass.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Сравнить объём кода до и после",
       "taskid": "python_oop_07_t2",
       "hint": "",
-      "question_html": "<p>Сравнить объём кода до и после.</p>",
+      "question_html": "",
       "options": []
     }
   ],

@@ -12,27 +12,27 @@
       "title": "Значение или связь",
       "taskid": "pfs_lab2_q1",
       "hint": "",
-      "question_html": "<p>Что напечатает эта программа?</p><pre><code class=\"language-python\">x = 10\ny = x + 5\nx = 100\nprint(y)\n</code></pre>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>105</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Так было бы, если <code>y</code> пересчитывался при каждом изменении <code>x</code>. Переменная запоминает результат, а не формулу."
+          "explanation": ""
         },
         {
-          "text": "<code>15</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. В <code>y</code> легло значение на момент вычисления — <code>10 + 5</code>. Замена <code>x</code> его не касается."
+          "explanation": ""
         },
         {
-          "text": "<code>115</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Складывать сотню с пятнадцатью программа нигде не просила."
+          "explanation": ""
         },
         {
-          "text": "<code>100</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Это значение <code>x</code>, а печатаем мы <code>y</code>."
+          "explanation": ""
         }
       ]
     },
@@ -41,27 +41,27 @@
       "title": "Два деления сразу",
       "taskid": "pfs_lab2_q2",
       "hint": "",
-      "question_html": "<p>Что напечатает эта программа?</p><pre><code class=\"language-python\">total_minutes = 200\nprint(total_minutes // 60, total_minutes % 60)\n</code></pre>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>3 20</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. <code>//</code> дал целые часы, <code>%</code> — остаток в минутах: три часа это 180, значит осталось 20."
+          "explanation": ""
         },
         {
-          "text": "<code>3.33 20</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Дробное даёт обычное деление <code>/</code>. <code>//</code> возвращает целое."
+          "explanation": ""
         },
         {
-          "text": "<code>20 3</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Порядок обратный: первым напечатано то, что слева, то есть результат <code>//</code>."
+          "explanation": ""
         },
         {
-          "text": "<code>3 40</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Сорок — не остаток. Проверь: 3 умножить на 60 это 180, до 200 не хватает двадцати."
+          "explanation": ""
         }
       ]
     },
@@ -70,27 +70,27 @@
       "title": "Где здесь среднее",
       "taskid": "pfs_lab2_q3",
       "hint": "",
-      "question_html": "<p>Что напечатает эта программа?</p><pre><code class=\"language-python\">first = 80\nsecond = 90\nprint(first + second / 2)\n</code></pre>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>85.0</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Это настоящее среднее, но для него нужны скобки: <code>(first + second) / 2</code>. Без них деление выполняется раньше сложения."
+          "explanation": ""
         },
         {
-          "text": "<code>125.0</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Сначала 90 разделилось на 2, потом к 80 прибавилось 45. Сообщения об ошибке нет — программа просто считает не то."
+          "explanation": ""
         },
         {
-          "text": "<code>125</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Значение угадано, а тип нет: <code>/</code> всегда даёт дробное, поэтому в конце <code>.0</code>."
+          "explanation": ""
         },
         {
-          "text": "<code>85</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Не сходится ни значение, ни тип."
+          "explanation": ""
         }
       ]
     },
@@ -99,27 +99,27 @@
       "title": "Один знак, две операции",
       "taskid": "pfs_lab2_q4",
       "hint": "",
-      "question_html": "<p>Что напечатает <code>print(\"7\" + \"3\")</code>?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>10</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Десять получилось бы у чисел. В кавычках это текст, и <code>+</code> для текста означает склейку."
+          "explanation": ""
         },
         {
-          "text": "<code>73</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Два текста соединились в один, никакого сложения не было."
+          "explanation": ""
         },
         {
-          "text": "<code>TypeError</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Ошибку даёт смешивание текста с числом — <code>\"7\" + 3</code>. Здесь оба значения текст, операция разрешена."
+          "explanation": ""
         },
         {
-          "text": "<code>7 3</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Пробел между значениями ставит <code>print</code> с запятой. Здесь запятой нет."
+          "explanation": ""
         }
       ]
     },
@@ -128,27 +128,27 @@
       "title": "Операция выполнилась, значение то же",
       "taskid": "pfs_lab2_q5",
       "hint": "",
-      "question_html": "<p>Что напечатает эта программа?</p><pre><code class=\"language-python\">name = \"анна\"\nname.upper()\nprint(name)\n</code></pre>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>АННА</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Так было бы при <code>name = name.upper()</code>. Без присваивания новое значение никуда не попало."
+          "explanation": ""
         },
         {
-          "text": "<code>анна</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. <code>upper</code> вернул новую строку, её никто не принял, и она исчезла. Ошибки при этом нет — это тихая ошибка."
+          "explanation": ""
         },
         {
-          "text": "<code>TypeError</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Вызвать операцию и не использовать результат язык разрешает, так что ошибки не будет."
+          "explanation": ""
         },
         {
-          "text": "Ничего",
+          "text": "",
           "correct": false,
-          "explanation": "<code>print</code> вызван и значение в <code>name</code> есть — вывод будет."
+          "explanation": ""
         }
       ]
     },
@@ -157,15 +157,15 @@
       "title": "Одно значение в одном месте",
       "taskid": "pfs_lab2_t1",
       "hint": "",
-      "question_html": "<p>Создай <code>/root/ticket.py</code>: цена билета лежит в переменной, ниже три строки — цена за один билет, за два и за три. Потом поменяй цену <strong>в одном месте</strong> и запусти снова. Убедись, что изменились все три строки.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Прибавить к самому себе",
       "taskid": "pfs_lab2_t2",
-      "hint": "<p>Длинная запись — <code>count = count + 1</code>, короткая — <code>count += 1</code>.</p>",
-      "question_html": "<p>В <code>/root/count.py</code> заведи счётчик со значением 5. Прибавь к нему единицу длинной записью и напечатай, затем прибавь ещё раз короткой записью и напечатай снова. Объясни, почему второе число на два больше исходного.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -173,15 +173,15 @@
       "title": "Переменная не хранит формулу",
       "taskid": "pfs_lab2_t3",
       "hint": "",
-      "question_html": "<p>Заведи цену и итог за две штуки, напечатай итог. Ниже поменяй цену и напечатай итог ещё раз, больше ничего не меняя. Объясни, почему второе число такое же, и допиши одну строку, после которой оно станет верным.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Два разных NameError",
       "taskid": "pfs_lab2_t4",
-      "hint": "<p>В одном случае имя в сообщении не совпадает с тем, что ты создавал, в другом — совпадает.</p>",
-      "question_html": "<p>Напечатай переменную, сделав опечатку в её имени. Запусти, прочитай имя в сообщении побуквенно. Потом опечатку исправь, но перенеси <code>print</code> выше присваивания и запусти снова. Выпиши, чем два сообщения отличаются и как по сообщению отличить опечатку от неверного порядка строк.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -189,23 +189,23 @@
       "title": "Три деления",
       "taskid": "pfs_lab2_t5",
       "hint": "",
-      "question_html": "<p>В <code>/root/div.py</code> напечатай три строки с подписями: <code>17 / 5</code>, <code>17 // 5</code> и <code>17 % 5</code>. Объясни одной фразой, что означают второе и третье число. Потом проверь, что даёт <code>10 % 2</code> и <code>11 % 2</code>, и скажи, как по остатку понять, что число чётное.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Часы и минуты",
       "taskid": "pfs_lab2_t6",
-      "hint": "<p>Целые часы даёт одно деление, остаток — другое.</p>",
-      "question_html": "<p>Создай <code>/root/minutes.py</code>: общее число минут в переменной, вывод вида <code>3 ч 20 мин</code>. Прогони на 200, а затем на 59, 60 и 61 — именно на этих значениях видно, правильно ли посчитано.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Запятая вместо точки",
       "taskid": "pfs_lab2_t7",
-      "hint": "<p>Круглые скобки в выводе означают, что значений несколько.</p>",
-      "question_html": "<p>Запиши цену как <code>149,99</code> и напечатай её. Сообщения об ошибке не будет: выпиши, что оказалось на экране и почему это признак беды, а не мелочь. Потом исправь на точку и сравни вывод.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -213,23 +213,23 @@
       "title": "Скобки решают",
       "taskid": "pfs_lab2_t8",
       "hint": "",
-      "question_html": "<p>Заведи два балла, 80 и 90, и напечатай две строки: <code>first + second / 2</code> и <code>(first + second) / 2</code>. Скажи, какая из них средний балл, и объясни, почему скобки стоит ставить даже там, где без них правильно.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Склейка против запятой",
       "taskid": "pfs_lab2_t9",
-      "hint": "<p>У склейки есть длина, потому что это новое значение. У <code>print</code> с запятой измерять нечего.</p>",
-      "question_html": "<p>Собери полное имя из двух переменных склейкой через <code>+</code>, не забыв про пробел, и напечатай. Затем напечатай те же две переменные через запятую — на экране почти одно и то же. Измерь длину склейки через <code>len</code>, потом измерь длину <code>\"раз\\nдва\"</code> и объясни, почему там семь, а не восемь.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Рамка из повторения",
       "taskid": "pfs_lab2_t10",
-      "hint": "<p>Повторить текст можно умножением на число.</p>",
-      "question_html": "<p>Создай <code>/root/report.py</code>: ширина в переменной, затем строка из знаков <code>=</code> нужной ширины, заголовок и снова такая же строка. Поменяй ширину в одном месте и запусти снова.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -237,23 +237,23 @@
       "title": "Куда девался результат",
       "taskid": "pfs_lab2_t11",
       "hint": "",
-      "question_html": "<p>Заведи имя строчными буквами, вызови у него <code>upper</code> отдельной строкой и напечатай имя. Ни ошибки, ни изменения не будет — объясни, куда ушёл результат, и почини одной правкой.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Разобрать поломку: текст вместо числа",
       "taskid": "pfs_lab2_t12",
-      "hint": "<p>Начинай с последней строки сообщения: что с чем не соединилось.</p>",
-      "question_html": "<p>В <code>/root/task_broken2.py</code> программа считает стоимость двух билетов и падает с <code>TypeError</code>. Не меняя код, назови по сообщению: какое из значений оказалось текстом, под каким знаком стоят стрелочки и чего язык отказался делать. Только после этого почини — так, чтобы на экране была сумма, а не склейка цифр.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Разобрать поломку: упало не там, где сломано",
       "taskid": "pfs_lab2_t13",
-      "hint": "<p>Посмотри, не занято ли где-то имя встроенной команды.</p>",
-      "question_html": "<p>В <code>/root/task_broken3.py</code> пять строк, и падает последняя: <code>TypeError: 'int' object is not callable</code>. Найди строку, которая всё испортила, объясни, почему сообщение указало не на неё, и почини.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     }
   ],

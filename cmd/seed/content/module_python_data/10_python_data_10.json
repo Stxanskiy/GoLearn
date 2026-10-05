@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Обрабатывать текст так, как это нужно в реальных задачах.</p>\n<h2>Разбираем</h2><ul>\n<li>upper, lower, strip</li>\n<li>split и join</li>\n<li>replace</li>\n<li>find и in</li>\n<li>startswith и endswith</li>\n<li>строка неизменяема — метод возвращает новую</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Привести введённое имя к виду «Иванов» из «  иванов  ».</li>\n<li>Разрезать строку с числами через запятую и посчитать сумму.</li>\n<li>Проверить, похоже ли введённое на адрес почты.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Привести введённое имя к виду «Иванов» из «  иванов  »",
       "taskid": "python_data_10_t1",
       "hint": "",
-      "question_html": "<p>Привести введённое имя к виду «Иванов» из «  иванов  ».</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Разрезать строку с числами через запятую и посчитать сумму",
       "taskid": "python_data_10_t2",
       "hint": "",
-      "question_html": "<p>Разрезать строку с числами через запятую и посчитать сумму.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -28,7 +28,7 @@
       "title": "Проверить, похоже ли введённое на адрес почты",
       "taskid": "python_data_10_t3",
       "hint": "",
-      "question_html": "<p>Проверить, похоже ли введённое на адрес почты.</p>",
+      "question_html": "",
       "options": []
     }
   ],

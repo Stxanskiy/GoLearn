@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Положить данные и достать их обратно.</p>\n<h2>Разбираем</h2><ul>\n<li>INSERT с перечислением столбцов</li>\n<li>вставка нескольких строк</li>\n<li>SELECT со звёздочкой и с перечислением</li>\n<li>как читать вывод</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Вставить пять студентов.</li>\n<li>Выбрать всех.</li>\n<li>Выбрать только ФИО и группу.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Вставить пять студентов",
       "taskid": "postgres_psycopg_03_t1",
       "hint": "",
-      "question_html": "<p>Вставить пять студентов.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Выбрать всех",
       "taskid": "postgres_psycopg_03_t2",
       "hint": "",
-      "question_html": "<p>Выбрать всех.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -28,7 +28,7 @@
       "title": "Выбрать только ФИО и группу",
       "taskid": "postgres_psycopg_03_t3",
       "hint": "",
-      "question_html": "<p>Выбрать только ФИО и группу.</p>",
+      "question_html": "",
       "options": []
     }
   ],

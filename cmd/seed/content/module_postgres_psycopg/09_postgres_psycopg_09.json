@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Забрать данные из запроса в Python.</p>\n<h2>Разбираем</h2><ul>\n<li>что такое курсор</li>\n<li>execute</li>\n<li>fetchone, fetchall, перебор курсором</li>\n<li>что приходит в виде кортежа</li>\n<li>commit: почему без него данных нет</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Прочитать всех студентов и напечатать их.</li>\n<li>Вставить студента, забыть commit и объяснить, почему запись исчезла.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Прочитать всех студентов и напечатать их",
       "taskid": "postgres_psycopg_09_t1",
       "hint": "",
-      "question_html": "<p>Прочитать всех студентов и напечатать их.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Вставить студента, забыть commit и объяснить, почему запись исчезла",
       "taskid": "postgres_psycopg_09_t2",
       "hint": "",
-      "question_html": "<p>Вставить студента, забыть commit и объяснить, почему запись исчезла.</p>",
+      "question_html": "",
       "options": []
     }
   ],

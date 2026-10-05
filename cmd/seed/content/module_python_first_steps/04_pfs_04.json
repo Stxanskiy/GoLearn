@@ -12,27 +12,27 @@
       "title": "Вывод в файле и в диалоге",
       "taskid": "pfs_lab1_q1",
       "hint": "",
-      "question_html": "<p>В файл <code>calc.py</code> записана одна строка: <code>7 * 6</code>. Что напечатает <code>python3 calc.py</code>?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>42</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Так было бы в режиме диалога. В файле результат выражения никто не выводит."
+          "explanation": ""
         },
         {
-          "text": "Ничего",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Python умножит и отбросит результат: в файле вывод надо просить через <code>print</code>."
+          "explanation": ""
         },
         {
-          "text": "<code>7 * 6</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Это напечаталось бы, если взять выражение в кавычки."
+          "explanation": ""
         },
         {
-          "text": "<code>SyntaxError</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Строка корректна, это обычное выражение."
+          "explanation": ""
         }
       ]
     },
@@ -41,27 +41,27 @@
       "title": "Текст без кавычек",
       "taskid": "pfs_lab1_q2",
       "hint": "",
-      "question_html": "<p>Что произойдёт при запуске <code>print(Привет)</code>?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "Напечатает <code>Привет</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Без кавычек Python ищет величину с таким именем, а не печатает слово."
+          "explanation": ""
         },
         {
-          "text": "<code>NameError</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Без кавычек это имя, а имени <code>Привет</code> не существует."
+          "explanation": ""
         },
         {
-          "text": "<code>SyntaxError</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Запись синтаксически допустима — ошибка возникнет уже при выполнении."
+          "explanation": ""
         },
         {
-          "text": "Напечатает пустую строку",
+          "text": "",
           "correct": false,
-          "explanation": "Пустую строку даёт <code>print()</code> без аргументов."
+          "explanation": ""
         }
       ]
     },
@@ -70,27 +70,27 @@
       "title": "Какая это ошибка",
       "taskid": "pfs_lab1_q3",
       "hint": "",
-      "question_html": "<p>Программа вывела слово <code>старт</code>, а затем сообщение об ошибке. Что про эту ошибку известно точно?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "Она синтаксическая",
+          "text": "",
           "correct": false,
-          "explanation": "При синтаксической ошибке не выводится ничего: файл не был прочитан до конца."
+          "explanation": ""
         },
         {
-          "text": "Она возникла при выполнении",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Раз вывод был, файл прочитан целиком и программа запускалась."
+          "explanation": ""
         },
         {
-          "text": "Ошибка в первой строке",
+          "text": "",
           "correct": false,
-          "explanation": "Первая строка как раз сработала — она и напечатала <code>старт</code>."
+          "explanation": ""
         },
         {
-          "text": "Файл не найден",
+          "text": "",
           "correct": false,
-          "explanation": "Тогда не было бы вывода вообще."
+          "explanation": ""
         }
       ]
     },
@@ -99,27 +99,27 @@
       "title": "Где искать незакрытую скобку",
       "taskid": "pfs_lab1_q4",
       "hint": "",
-      "question_html": "<p>Сообщение указывает на строку 10. Где искать потерянную скобку?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "Только в строке 10",
+          "text": "",
           "correct": false,
-          "explanation": "Открытая скобка позволяет выражению тянуться дальше, поэтому виновата строка выше."
+          "explanation": ""
         },
         {
-          "text": "В строке 10 и выше неё",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. Python спотыкается там, где начинается новое выражение, а не там, где потеряна скобка."
+          "explanation": ""
         },
         {
-          "text": "В строке 11",
+          "text": "",
           "correct": false,
-          "explanation": "Ниже указанной строки интерпретатор ещё не читал."
+          "explanation": ""
         },
         {
-          "text": "В первой строке файла",
+          "text": "",
           "correct": false,
-          "explanation": "Не обязательно в первой — смотреть надо вверх от указанной."
+          "explanation": ""
         }
       ]
     },
@@ -128,27 +128,27 @@
       "title": "Кавычки меняют смысл",
       "taskid": "pfs_lab1_q5",
       "hint": "",
-      "question_html": "<p>Что выведут две строки подряд: <code>print(\"3 + 4\")</code> и <code>print(3 + 4)</code>?</p>",
+      "question_html": "",
       "options": [
         {
-          "text": "<code>7</code> и <code>7</code>",
+          "text": "",
           "correct": false,
-          "explanation": "В кавычках вычисления не происходит."
+          "explanation": ""
         },
         {
-          "text": "<code>3 + 4</code> и <code>7</code>",
+          "text": "",
           "correct": true,
-          "explanation": "Верно. В кавычках это текст и выводится как есть; без кавычек выражение считается."
+          "explanation": ""
         },
         {
-          "text": "<code>3 + 4</code> и <code>3 + 4</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Вторая строка без кавычек — значит выражение, и оно вычислится."
+          "explanation": ""
         },
         {
-          "text": "<code>7</code> и <code>3 + 4</code>",
+          "text": "",
           "correct": false,
-          "explanation": "Наоборот: кавычки в первой строке."
+          "explanation": ""
         }
       ]
     },
@@ -156,24 +156,24 @@
       "type": "self",
       "title": "Версия интерпретатора",
       "taskid": "pfs_lab1_t1",
-      "hint": "<p>Команда <code>python3</code> с ключом <code>--version</code>.</p>",
-      "question_html": "<p>Узнай версию Python в этой песочнице. Запиши первые два числа версии — они определяют, какие возможности языка доступны.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Запустить готовый файл",
       "taskid": "pfs_lab1_t2",
-      "hint": "<p>Прочитать файл — <code>cat</code>. Запустить — <code>python3</code> с именем файла.</p>",
-      "question_html": "<p>В каталоге <code>/root</code> лежит <code>hello.py</code>. Сначала посмотри его содержимое, не запуская, затем запусти. Объясни, чем отличался вывод в двух случаях.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Своя первая строка",
       "taskid": "pfs_lab1_t3",
-      "hint": "<p>Редактор — <code>nano</code>. Сохранить Ctrl+O и Enter, выйти Ctrl+X.</p>",
-      "question_html": "<p>Создай файл <code>/root/me.py</code>, который печатает твоё имя. Запусти и убедись, что имя появилось.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -181,31 +181,31 @@
       "title": "Три строки",
       "taskid": "pfs_lab1_t4",
       "hint": "",
-      "question_html": "<p>Допиши <code>/root/me.py</code> так, чтобы он печатал три строки: имя, город и год рождения — каждую на своей строке.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Три значения одной командой",
       "taskid": "pfs_lab1_t5",
-      "hint": "<p>Несколько значений передают через запятую.</p>",
-      "question_html": "<p>Создай <code>/root/one.py</code>, который печатает те же три значения, но <strong>одной</strong> командой <code>print</code>. Посмотри, что оказалось между ними, хотя ты этого не писал.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Свой разделитель",
       "taskid": "pfs_lab1_t6",
-      "hint": "<p>За разделитель отвечает <code>sep</code>.</p>",
-      "question_html": "<p>Переделай <code>/root/one.py</code> так, чтобы значения разделялись не пробелом, а знаком <code>|</code>.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Разделить вывод на блоки",
       "taskid": "pfs_lab1_t7",
-      "hint": "<p>Пустую строку даёт <code>print</code> без аргументов.</p>",
-      "question_html": "<p>Создай <code>/root/blocks.py</code>: две строки текста, пустая строка, ещё две строки. Запусти и убедись, что просвет виден.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -213,31 +213,31 @@
       "title": "Вычисление внутри print",
       "taskid": "pfs_lab1_t8",
       "hint": "",
-      "question_html": "<p>Создай <code>/root/math.py</code>, который печатает результат умножения 365 на 24. Проверь, что вывелось число, а не само выражение.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Текст или выражение",
       "taskid": "pfs_lab1_t9",
-      "hint": "<p>Разница в кавычках.</p>",
-      "question_html": "<p>В тот же файл добавь строку, которая печатает <code>365 * 24</code> как текст. Запусти и объясни, почему две соседние строки дали разный результат.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Сломать кавычку",
       "taskid": "pfs_lab1_t10",
-      "hint": "<p>Ищи в сообщении слово <code>unterminated</code>.</p>",
-      "question_html": "<p>Намеренно убери закрывающую кавычку в одной из своих программ и запусти. Выпиши тип ошибки и то, что сказал Python. Затем почини.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Сломать скобку",
       "taskid": "pfs_lab1_t11",
-      "hint": "<p>Номер в сообщении, скорее всего, будет больше. Объясни, почему.</p>",
-      "question_html": "<p>Теперь убери закрывающую скобку в середине файла, где после неё есть ещё строки. Сравни номер строки в сообщении с номером строки, которую ты на самом деле сломал.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     },
     {
@@ -245,15 +245,15 @@
       "title": "Определить тип ошибки по выводу",
       "taskid": "pfs_lab1_t12",
       "hint": "",
-      "question_html": "<p>Создай файл из трёх строк: <code>print(\"старт\")</code>, затем строка с ошибкой на твой выбор, затем <code>print(\"финиш\")</code>. Запусти. По тому, что успело вывестись, определи, синтаксическая это ошибка или ошибка выполнения — и проверь себя по наличию слова <code>Traceback</code>.</p>",
+      "question_html": "",
       "options": []
     },
     {
       "type": "self",
       "title": "Разобрать чужую поломку",
       "taskid": "pfs_lab1_t13",
-      "hint": "<p>Начинай с последней строки сообщения, а не с первой.</p>",
-      "question_html": "<p>В <code>/root/task_broken.py</code> лежит программа с одной ошибкой. Не меняя код, по сообщению определи: тип ошибки, настоящий номер сломанной строки и причину. Только после этого почини.</p>",
+      "hint": "",
+      "question_html": "",
       "options": []
     }
   ],

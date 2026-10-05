@@ -5,14 +5,14 @@
   "type": "chapter",
   "isFree": false,
   "kind": "tasks",
-  "content_html": "<div class=\"lesson-skeleton\">\n<p><strong>Цель урока.</strong> Сделать объект удобным в печати и сравнении.</p>\n<h2>Разбираем</h2><ul>\n<li>__str__ для человека и __repr__ для разработчика</li>\n<li>__eq__ для сравнения</li>\n<li>__len__</li>\n<li>что печатается без __str__</li>\n</ul>\n<h2>Задания</h2><ol>\n<li>Добавить __str__ и напечатать объект.</li>\n<li>Сравнить два объекта до и после __eq__.</li>\n</ol>\n<p><em>Это скелет урока. Текст будет написан после того, как структура согласована.</em></p>\n</div>",
+  "content_html": "",
   "tasks": [
     {
       "type": "self",
       "title": "Добавить __str__ и напечатать объект",
       "taskid": "python_oop_06_t1",
       "hint": "",
-      "question_html": "<p>Добавить __str__ и напечатать объект.</p>",
+      "question_html": "",
       "options": []
     },
     {
@@ -20,7 +20,7 @@
       "title": "Сравнить два объекта до и после __eq__",
       "taskid": "python_oop_06_t2",
       "hint": "",
-      "question_html": "<p>Сравнить два объекта до и после __eq__.</p>",
+      "question_html": "",
       "options": []
     }
   ],
