@@ -11,6 +11,7 @@
 # such checks break.
 #
 #   glpg start                         start the cluster; root gets a superuser role
+#   glpg fixhosts                      make the hostname resolve (quiet sudo)
 #   glpg run   DB B64SQL               run SQL, stop at the first error (setups)
 #   glpg q     DB B64SQL               print the result: tuples only, unaligned, '|'
 #   glpg state DB B64SQL               run SQL in a rolled-back transaction and
@@ -44,8 +45,23 @@ count() { if [ -z "$1" ]; then echo 0; else printf '%s\n' "$1" | wc -l; fi; }
 cmd=${1:-}
 shift || true
 
+# fixhosts makes the sandbox's own hostname resolve. With --network none Docker
+# leaves it out of /etc/hosts, and every `sudo -u postgres …` the course teaches
+# then starts with "unable to resolve host" — harmless, but a beginner reads it
+# as the command having failed.
+fixhosts() {
+	local h
+	h=$(hostname 2>/dev/null) || return 0
+	grep -qw -- "$h" /etc/hosts 2>/dev/null || echo "127.0.1.1 $h" >> /etc/hosts 2>/dev/null || true
+}
+
 case "$cmd" in
+fixhosts)
+	fixhosts
+	;;
+
 start)
+	fixhosts
 	VER=$(ls /etc/postgresql 2>/dev/null | head -1)
 	[ -n "$VER" ] || { echo "PostgreSQL не установлен" >&2; exit 1; }
 	pg_ctlcluster "$VER" main start >/dev/null 2>&1 || true
