@@ -14,6 +14,7 @@ source "$HERE/solutions.sh"
 source "$HERE/solutions-docker.sh"
 source "$HERE/solutions-compose.sh"
 source "$HERE/solutions-k8s.sh"
+source "$HERE/solutions-pg.sh"
 source "$HERE/observational.sh"
 PSQL=(docker compose -f "$ROOT/docker-compose.yml" exec -T db psql -U golearn -d golearn -tAF'|')
 

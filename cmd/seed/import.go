@@ -97,6 +97,9 @@ type importSpec struct {
 	Category   string
 	Trainer    bool   // practice-only course, listed under trainers
 	Image      string // force this sandbox image on all shell tasks (empty = auto)
+	// Draft seeds the course unpublished, so content still being written reaches
+	// production hidden; an admin publishes it when it is ready.
+	Draft bool
 }
 
 // importedModules builds GoLearn modules from embedded parser content.
@@ -117,6 +120,7 @@ func importedModules() []M {
 		{Dir: "module_k8s_ckad", Slug: "k8s-ckad", Track: "devops", Difficulty: "advanced", Category: "Kubernetes", Image: sandboxImageK8s},
 		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes", Image: sandboxImageK8s},
 		// ── Database section ──
+		{Dir: "course_pg_start", Slug: "pg-start", Track: "database", Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
 		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
 		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "devops", Trainer: true, Difficulty: "intermediate", Category: "Linux"},
@@ -197,6 +201,7 @@ func buildModule(s importSpec) (M, error) {
 		Difficulty:  s.Difficulty,
 		Category:    s.Category,
 		Trainer:     s.Trainer,
+		Draft:       s.Draft,
 		// CoverImage intentionally empty: covers are SVG placeholders until the
 		// admin sets real ones (user request).
 	}

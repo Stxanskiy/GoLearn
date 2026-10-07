@@ -75,8 +75,8 @@ func main() {
 		var moduleID int
 		err := pool.QueryRow(ctx,
 			`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
-			   category, label, tags, cover_image, accent, est_minutes, is_trainer, source)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'seed')
+			   category, label, tags, cover_image, accent, est_minutes, is_trainer, published, source)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'seed')
 			 ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title, description=EXCLUDED.description,
 			   track=EXCLUDED.track, difficulty=EXCLUDED.difficulty,
 			   prerequisites=EXCLUDED.prerequisites, category=EXCLUDED.category, label=EXCLUDED.label,
@@ -86,7 +86,11 @@ func main() {
 			 WHERE modules.edited_at IS NULL
 			 RETURNING id`,
 			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON,
-			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes, mod.Trainer).Scan(&moduleID)
+			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes, mod.Trainer,
+			// A draft course arrives hidden. Only the first insert decides this: the
+			// update leaves published alone, so publishing stays an admin's act and a
+			// later seed neither hides a course nor releases one.
+			!mod.Draft).Scan(&moduleID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			// The guard above refused the update: an author edited this course in
 			// the studio. Their version stands — the point of edited_at is that a
@@ -296,6 +300,7 @@ type M struct {
 	Accent                   string   // gradient key; empty -> by category
 	EstMinutes               int      // 0 -> derived from lesson count
 	Trainer                  bool     // practice-only course, listed under trainers
+	Draft                    bool     // first seeded unpublished; an admin publishes it
 	Lessons                  []L
 }
 type L struct {
