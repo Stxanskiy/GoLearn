@@ -36,7 +36,12 @@ package main
 // is read back after an INSERT that leaves the column out: SELECT 1/(x IS NOT
 // NULL)::int fails with 22012 when it stays empty, ln((x = want)::int) with
 // 2201E when it is something else — non-constant on purpose, because the
-// planner folds a constant 1/0 and fails before reading a row.
+// planner folds a constant 1/0 and fails before reading a row. One thing
+// behaviour cannot show on the day of the check is a default of created_at
+// written as a ready date ('2026-10-09', or 'today', which becomes one when
+// the table is made): that one rule reads the default's text
+// (pgsLab8FixedDate). agent_id and closed_at must have no default at all:
+// left out, they stay empty.
 //
 // Trial rows use ids from 30001 (OVERRIDING SYSTEM VALUE, which a serial
 // column ignores and a GENERATED ALWAYS one needs; small enough for a
@@ -191,10 +196,21 @@ func pgsLab8Row(table string, base [][2]string, set ...string) string {
 // draw. pg_get_serial_sequence finds the sequence of serial and identity alike
 // (NULL for an id without one, when there is nothing to put back), and
 // pg_sequences says where it stood: last_value is NULL before its first use.
+//
+// A student who typed the ids of the data task by hand (INSERT … (id, …)
+// VALUES (1, …)) leaves the sequence behind the rows, and the draw would hit
+// their row 1 — "the database does not number rows" about a table that does.
+// So the sequence first moves past the largest id in the table, and the
+// setval at the end puts it back. The move runs as dynamic SQL, parsed only
+// when there is a sequence: max(id) of an id with no number type and no
+// sequence (uuid, say) would not parse.
 func pgsLab8KeepSeq(table, sql string) string {
 	return "CREATE TEMP TABLE gl_seq AS SELECT s.seq, p.last_value, p.start_value " +
 		"FROM (SELECT pg_get_serial_sequence('" + table + "', 'id') AS seq) s " +
 		"LEFT JOIN pg_sequences p ON format('%I.%I', p.schemaname, p.sequencename) = s.seq; " +
+		"DO $gl$ BEGIN IF (SELECT seq FROM gl_seq) IS NOT NULL THEN EXECUTE " +
+		"'SELECT setval(g.seq, x.m) FROM gl_seq g, (SELECT max(id)::bigint AS m FROM " + table + ") x " +
+		"WHERE x.m >= coalesce(g.last_value + 1, g.start_value)'; END IF; END $gl$; " +
 		sql + "; SELECT setval(seq, coalesce(last_value, start_value), last_value IS NOT NULL) FROM gl_seq WHERE seq IS NOT NULL"
 }
 
@@ -224,13 +240,13 @@ var pgsLab8ClientRules = []pgsLab8Rule{
 		say: "правильного клиента — с именем, email и телефоном +7 912 345-67-89 — в clients добавить не получается: посмотри на таблицу, \\d clients",
 		by: map[string]string{
 			"22P02": "правильные значения не записываются в столбцы clients — проверь типы: телефон вида +7 912 345-67-89 должен записываться",
-			"22001": "правильные значения не помещаются в столбцы clients — проверь типы: телефон вида +7 912 345-67-89 должен записываться",
+			"22001": "правильные значения не помещаются в столбцы clients — проверь типы: имя, email и телефон вида +7 912 345-67-89 должны записываться целиком",
 			"23514": "правильного клиента — с именем, email и телефоном +7 912 345-67-89 — не пропускают твои правила CHECK: посмотри на них, \\d clients",
 		}},
 	{sql: pgsLab8KeepSeq("clients", pgsLab8Client("id", "-")+"; "+pgsLab8Client(pgsLab8With(pgsLab8Client2, "id", "-")...)), want: pgsLab8OK,
 		say: "двух клиентов без id в clients добавить не получается: посмотри на таблицу, \\d clients",
 		by: map[string]string{
-			"23502": "клиента без номера id база не принимает — номер должна ставить сама база, как во всех таблицах курса",
+			"23502": "клиента без номера id база не принимает — а номер клиента, как сказано в задании, ставит сама база",
 			"23505": "двух клиентов, добавленных без id, база не принимает — номер id должна ставить сама база, каждому свой",
 		}},
 	{sql: pgsLab8Client("phone", "NULL"), want: pgsLab8OK,
@@ -267,13 +283,14 @@ var pgsLab8AgentRules = []pgsLab8Rule{
 		say: "правильного сотрудника — с именем, email и отметкой true в is_active — в agents добавить не получается: посмотри на таблицу, \\d agents",
 		by: map[string]string{
 			"42804": "в is_active не записывается значение true — подумай, какой тип хранит «да» или «нет»",
-			"22P02": "в is_active не записывается значение true — подумай, какой тип хранит «да» или «нет»",
+			"22P02": "правильные значения не записываются в столбцы agents — проверь типы: имя и email — это текст",
+			"22001": "правильные значения не помещаются в столбцы agents — проверь типы: имя, email и значение true в is_active должны записываться целиком",
 			"23514": "правильного сотрудника — с именем, email и отметкой true в is_active — не пропускают твои правила CHECK: посмотри на них, \\d agents",
 		}},
 	{sql: pgsLab8KeepSeq("agents", pgsLab8Agent("id", "-")+"; "+pgsLab8Agent(pgsLab8With(pgsLab8Agent2, "id", "-")...)), want: pgsLab8OK,
 		say: "двух сотрудников без id в agents добавить не получается: посмотри на таблицу, \\d agents",
 		by: map[string]string{
-			"23502": "сотрудника без номера id база не принимает — номер должна ставить сама база, как во всех таблицах курса",
+			"23502": "сотрудника без номера id база не принимает — а номер сотрудника, как сказано в задании, ставит сама база",
 			"23505": "двух сотрудников, добавленных без id, база не принимает — номер id должна ставить сама база, каждому свой",
 		}},
 	{sql: pgsLab8Agent("is_active", "false"), want: pgsLab8OK,
@@ -287,7 +304,7 @@ var pgsLab8AgentRules = []pgsLab8Rule{
 			"23502": "сотрудника без is_active база не принимает — а по требованиям база сама отмечает нового сотрудника работающим",
 			"22012": "у сотрудника, добавленного без is_active, отметка остаётся пустой — а по требованиям база сама отмечает нового сотрудника работающим",
 			"2201E": "сотрудник, добавленный без is_active, получается неработающим — а по требованиям новый сотрудник работает",
-			"42804": "в is_active хранится не «да» или «нет» — подумай, какой тип для этого нужен",
+			"42804": "в is_active хранится текст, а не «да» или «нет» — подумай, какой тип хранит ровно эти два значения",
 		}},
 	{sql: pgsLab8Agent("is_active", "NULL"), want: pgsLab8NotNull,
 		say: "сотрудника с пустой отметкой is_active база принимает — а работает сотрудник или нет, по требованиям известно всегда"},
@@ -347,6 +364,21 @@ func pgsLab8Default(col, value, read string, by map[string]string) pgsLab8Rule {
 	}
 }
 
+// pgsLab8Leads is r made the lead of group (see pgsLab8Rule).
+func pgsLab8Leads(group string, r pgsLab8Rule) pgsLab8Rule {
+	r.group, r.lead = group, true
+	return r
+}
+
+// pgsLab8FixedDate is SQL failing with 22012 when the default of created_at
+// is a ready date: '2026-10-09', or 'today', which the database turns into
+// the date of the day the table was made. Today such a default gives today's
+// date, and the rule on the default cannot tell it from current_date; the
+// default's own text can (pg_get_expr prints it as '2026-10-09'::date).
+const pgsLab8FixedDate = "SELECT 1/(NOT EXISTS (SELECT 1 FROM pg_attrdef d JOIN pg_attribute a " +
+	"ON a.attrelid = d.adrelid AND a.attnum = d.adnum WHERE d.adrelid = 'tickets'::regclass " +
+	"AND a.attname = 'created_at' AND pg_get_expr(d.adbin, d.adrelid) ~ '^''.*''::'))::int"
+
 var pgsLab8TicketRules = []pgsLab8Rule{
 	// What has to go in. The trial ticket's only empty column is closed_at.
 	{sql: pgsLab8Ticket(), want: pgsLab8OK, gate: true,
@@ -354,8 +386,9 @@ var pgsLab8TicketRules = []pgsLab8Rule{
 		by: map[string]string{
 			"23502": "обращение без даты закрытия (пустой closed_at) база не принимает — а пока обращение не закрыто, этой даты по требованиям нет",
 			"23503": "обращение от клиента из clients сотруднику из agents база не принимает — проверь, куда ведут ссылки: client_id — на clients (id), agent_id — на agents (id)",
-			"23514": "правильное новое обращение — open, normal, ещё не закрытое — не проходит твои правила CHECK: проверь списки значений priority и status",
+			"23514": "правильное новое обращение — open, normal, пришло 2026-10-01, ещё не закрытое — не проходит твои правила CHECK: посмотри на них, \\d tickets",
 			"22P02": "правильные значения не записываются в столбцы tickets — проверь их типы",
+			"22001": "правильные значения не помещаются в столбцы tickets — проверь их типы",
 			"22007": "правильные значения не записываются в столбцы tickets — проверь их типы",
 			"42804": "правильные значения не записываются в столбцы tickets — проверь их типы",
 		}},
@@ -366,11 +399,19 @@ var pgsLab8TicketRules = []pgsLab8Rule{
 	{sql: pgsLab8KeepSeq("tickets", pgsLab8Ticket("id", "-")+"; "+pgsLab8Ticket("id", "-", "subject", "'Проверка 2'")), want: pgsLab8OK,
 		say: "два обращения без id в tickets добавить не получается: посмотри на таблицу, \\d tickets",
 		by: map[string]string{
-			"23502": "обращение без номера id база не принимает — номер должна ставить сама база, как во всех таблицах курса",
+			"23502": "обращение без номера id база не принимает — а номер обращения, как сказано в задании, ставит сама база",
 			"23505": "двух обращений, добавленных без id, база не принимает — номер id должна ставить сама база, каждому свой",
 		}},
-	{sql: pgsLab8Ticket("agent_id", "NULL"), want: pgsLab8OK,
+	{sql: pgsLab8Ticket("agent_id", "NULL"), want: pgsLab8OK, group: "agent", lead: true,
 		say: "новое обращение без сотрудника (пустой agent_id) база не принимает — а по требованиям обращение приходит ни на кого не назначенным"},
+	// Left out, the two columns stay empty: a default on either — closed_at
+	// copied from the line of created_at, say — closes a ticket or assigns it
+	// the moment it comes, and only the data task would show it, as a row
+	// that differs from what the student typed.
+	{sql: pgsLab8Ticket("agent_id", "-") + "; SELECT 1/(agent_id IS NULL)::int FROM tickets WHERE id = 30001", want: pgsLab8OK, group: "agent",
+		say: "обращению, у которого не указан сотрудник, база ставит сотрудника сама — а по требованиям обращение приходит ни на кого не назначенным: значение по умолчанию у agent_id не нужно"},
+	{sql: pgsLab8Ticket("closed_at", "-") + "; SELECT 1/(closed_at IS NULL)::int FROM tickets WHERE id = 30001", want: pgsLab8OK,
+		say: "обращению, у которого не указана дата закрытия, база ставит её сама — а пока обращение не закрыто, этой даты по требованиям нет: значение по умолчанию у closed_at не нужно"},
 	// Who it is from and who handles it.
 	{sql: pgsLab8Ticket("client_id", "-"), want: pgsLab8NotNull,
 		say: "обращение без клиента (client_id не указан) база принимает — а по требованиям обращение всегда от клиента",
@@ -392,7 +433,7 @@ var pgsLab8TicketRules = []pgsLab8Rule{
 	{sql: pgsLab8Ticket("priority", "'High'"), want: pgsLab8BadValue,
 		say: "важность 'High' с большой буквы база принимает — а допустимы только low, normal и high, именно так, маленькими буквами"},
 	{sql: pgsLab8Ticket("priority", "NULL"), want: pgsLab8NotNull,
-		say: "обращение с пустой важностью (priority) база принимает — а важность у обращения по требованиям есть всегда"},
+		say: "обращение с пустой важностью (priority) база принимает — а важность у обращения по требованиям есть всегда (список значений в CHECK пустое значение не запрещает)"},
 	pgsLab8Default("priority", "'normal'", "priority::text", map[string]string{
 		"23502": "обращение, у которого не указана важность, база не принимает — а по требованиям такое обращение получает важность normal",
 		"22012": "у обращения, добавленного без важности, она остаётся пустой — а по требованиям она становится normal",
@@ -411,7 +452,7 @@ var pgsLab8TicketRules = []pgsLab8Rule{
 	{sql: pgsLab8Ticket("status", "'Open'"), want: pgsLab8BadValue,
 		say: "состояние 'Open' с большой буквы база принимает — а допустимы только open, in_progress и closed, именно так, маленькими буквами"},
 	{sql: pgsLab8Ticket("status", "NULL"), want: pgsLab8NotNull,
-		say: "обращение с пустым состоянием (status) база принимает — а состояние у обращения по требованиям есть всегда"},
+		say: "обращение с пустым состоянием (status) база принимает — а состояние у обращения по требованиям есть всегда (список значений в CHECK пустое значение не запрещает)"},
 	pgsLab8Default("status", "'open'", "status::text", map[string]string{
 		"23502": "обращение, у которого не указано состояние, база не принимает — а по требованиям новое обращение получает состояние open",
 		"22012": "у обращения, добавленного без состояния, оно остаётся пустым — а по требованиям новое обращение — open",
@@ -425,18 +466,23 @@ var pgsLab8TicketRules = []pgsLab8Rule{
 		say: "в created_at сохраняется не только дата, но и время — а по требованиям это дата"},
 	{sql: pgsLab8Ticket("created_at", "NULL"), want: pgsLab8NotNull,
 		say: "обращение с пустой датой created_at база принимает — а дата, когда обращение пришло, по требованиям есть всегда"},
-	pgsLab8Default("created_at", "current_date", "created_at::date", map[string]string{
+	pgsLab8Leads("created", pgsLab8Default("created_at", "current_date", "created_at::date", map[string]string{
 		"23502": "обращение, у которого не указана дата created_at, база не принимает — а по требованиям её ставит сама база: сегодняшнюю",
 		"22012": "у обращения, добавленного без created_at, дата остаётся пустой — а по требованиям база ставит сегодняшнюю",
 		"2201E": "у обращения, добавленного без created_at, дата получается не сегодняшняя — а по требованиям база ставит сегодняшнюю",
-	}),
+	})),
+	{sql: pgsLab8FixedDate, want: pgsLab8OK, group: "created",
+		say: "значение по умолчанию у created_at — готовая дата: и завтра, и через месяц база поставит её же, а по требованиям — каждый раз сегодняшнюю"},
 	// The date it was closed.
 	{sql: pgsLab8Ticket("status", "'closed'", "closed_at", "'17 марта'"), want: pgsLab8BadDate, group: "closed",
 		say: "в closed_at можно записать текст «17 марта» — а там должна храниться дата"},
 	{sql: pgsLab8Ticket("status", "'closed'", "closed_at", "'2026-10-02 15:30'") +
 		"; SELECT ln((closed_at::text = '2026-10-02')::int) FROM tickets WHERE id = 30001", want: pgsLab8OK, group: "closed",
 		say: "в closed_at сохраняется не только дата, но и время — а по требованиям это дата"},
-	{sql: pgsLab8Ticket("status", "'closed'", "created_at", "'2026-10-05'", "closed_at", "'2026-10-01'"), want: pgsLab8Check,
+	// Not in the group: with the rule on the two dates turned round, the lead
+	// fails and this one says how. 22P02 is an ENUM without closed, which the
+	// lead has already named; nothing about the dates can be told then.
+	{sql: pgsLab8Ticket("status", "'closed'", "created_at", "'2026-10-05'", "closed_at", "'2026-10-01'"), want: []string{"23514", "22P02"},
 		say: "обращение, закрытое раньше, чем оно пришло, база принимает — а по требованиям так нельзя. Это правило про два столбца сразу"},
 	{sql: pgsLab8Ticket("status", "'closed'", "created_at", "'2026-10-05'", "closed_at", "'2026-10-05'"), want: pgsLab8OK, group: "closed",
 		say: "обращение, закрытое в тот же день, когда оно пришло, база не принимает — а по требованиям так можно"},
@@ -650,11 +696,17 @@ func pgsLab8Emails(people []pgsLab8Person) string {
 }
 
 // pgsLab8PersonConds are the SQL conditions on a row of clients (phone) or
-// agents (is_active true) that make it person p, by column.
+// agents (is_active true) that make it person p, by column. A phone that has
+// to be empty says so: an empty string and NULL look the same in psql, and
+// "не совпадает: phone" about a cell that looks empty leaves a student stuck.
 func pgsLab8PersonConds(table string, p pgsLab8Person) [][2]string {
 	c := [][2]string{{"full_name", "full_name = " + pgsLab8Lit(p.name)}}
 	if table == "clients" {
-		c = append(c, [2]string{"phone", "phone::text IS NOT DISTINCT FROM " + pgsLab8Lit(p.phone)})
+		label := "phone"
+		if p.phone == "" {
+			label = "phone (телефона нет — там должно быть пусто, NULL; две кавычки '''' — это не пусто, а текст без букв)"
+		}
+		c = append(c, [2]string{label, "phone::text IS NOT DISTINCT FROM " + pgsLab8Lit(p.phone)})
 	} else {
 		c = append(c, [2]string{"is_active", "is_active::text = 'true'"})
 	}

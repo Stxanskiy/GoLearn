@@ -4,18 +4,28 @@ package main
 //
 // Lessons 13 and 14 teach foreign keys and the rules NOT NULL, DEFAULT, UNIQUE
 // and CHECK; here the student takes pereplet from state S3 to S6 of the course
-// plan. The setup is the catalog the way lab 5 leaves it — five authors, nine
-// books with ids 1-9, the sequence past the duplicate lab 5 deleted — with one
-// trap: «Идиот», repriced in lab 5, costs 0.00 ("someone zeroed it while
-// repricing"), so ADD CHECK (price > 0) fails until the student finds the row
-// and gives it back its price — the order lesson 14 teaches. books has no
-// author_id yet; the task gives the book → author table, the ids the student
-// looks up with SELECT.
+// plan.
+//
+// The catalog runs through labs 4-7 as one story, so the setup is lab 5's
+// setup with every reference solution of lab 5 applied: eight authors and
+// fourteen books, inserted without ids in lab 5's order, so ids 1-14 are the
+// ones a student who did lab 5 as asked has, and books_id_seq goes on past the
+// intern's duplicate lab 5 deleted (id 15). On top of that comes one change,
+// named in the lab's introduction: someone repricing the catalog zeroed the
+// price of «Идиот» (715.00 after lab 5), so ADD CHECK (price > 0) fails until
+// the student finds the row and gives it back its price — the order lesson 14
+// teaches. The task does not name the book: finding it is the point.
+//
+// books has no author_id yet; task 1 gives the books of each author, the ids
+// the student looks up with SELECT. Антон Чехов has no book in the catalog
+// (lab 4 added him "before his books arrive"), which one quiz puts to use: an
+// author without books can be deleted, one with books cannot.
 //
 // Tasks: author_id with a foreign key, filled in for every book; the catalog's
-// rules; customers, orders and order_items as in S6; and the first order — a
-// customer, her order and two items, in that order, each row pointing at the
-// one before.
+// rules — books' and authors.full_name NOT NULL, so the lab ends in S6 as the
+// course plan has it and lab 7 starts from; customers, orders and order_items
+// as in S6; and the first order — a customer, her order and two items, in that
+// order, each row pointing at the one before.
 //
 // The checks look at what the tables do, never at what their rules are called:
 //   - a rule is tested by trying to break it in a transaction that is rolled
@@ -46,8 +56,10 @@ package main
 //     so when customers or orders cannot take one.
 //
 // The quizzes have one answer once the task they name is done: \d authors
-// shows "Referenced by", deleting Gogol (three books point at him) fails with
-// a foreign key error, and the order of task 6 has status new.
+// shows "Referenced by"; inside BEGIN, deleting Chekhov (no books) answers
+// DELETE 1 and then deleting Dostoevsky (three books point at him) fails with a
+// foreign key error, and the ROLLBACK the quiz ends with brings Chekhov back;
+// and the order of task 6 has status new.
 //
 // Reference solutions: scripts/labcheck/solutions-pg-lab6.sh.
 
@@ -62,10 +74,10 @@ func init() {
 		Setup: pgSetup(pgFresh("pereplet") + pgRun("pereplet", pgsLab6Schema)),
 		Checks: map[int]string{
 			1: check(pgsLab6AuthorDone,
-				"в books есть столбец author_id integer со ссылкой на authors (id), у всех 9 книг проставлен их автор",
+				"в books есть столбец author_id integer со ссылкой на authors (id), у всех "+strconv.Itoa(len(pgsLab6Books))+" книг проставлен их автор",
 				"Сейчас: "+pgsLab6AuthorNow),
 			2: check(pgsLab6RulesDone,
-				"у книги с обнулённой ценой снова 671.00; в books title и price обязательны, цена больше нуля, in_stock обязателен и по умолчанию true",
+				"у книги с обнулённой ценой снова "+pgsLab6Books[pgsLab6Zeroed-1].price+"; в books title и price обязательны, цена больше нуля, in_stock обязателен и по умолчанию true; в authors full_name обязателен",
 				"Сейчас: "+pgsLab6RulesNow),
 			3: check(pgsLab6Customers.done(),
 				"в базе pereplet есть таблица customers со столбцами и правилами из задания",
@@ -77,22 +89,27 @@ func init() {
 				"в базе pereplet есть таблица order_items: две обязательные ссылки, quantity больше нуля, пара order_id + book_id не повторяется",
 				"Сейчас: "+pgsLab6Items.now()),
 			6: check(pgTrue("pereplet", pgsLab6Order),
-				"записан первый заказ: покупатель Анна Смирнова (anna.smirnova@example.com, Москва), один её заказ со статусом new, в нём «Евгений Онегин» × 2 и «Ревизор» × 1",
+				"записан первый заказ: покупатель Анна Смирнова (anna.smirnova@example.com, Москва), один её заказ со статусом new, в нём "+pgsLab6ItemsText,
 				"Сейчас: "+pgsLab6OrderNow),
 		},
 	}
 }
 
-// pgsLab6Authors are lab 5's authors; ids 1-5 in this order.
+// pgsLab6Authors are the authors as lab 4 adds them and lab 5 leaves them;
+// ids 1-8 in this order.
 var pgsLab6Authors = []struct {
-	name string
-	year int
+	name    string
+	year    int
+	country string
 }{
-	{"Александр Пушкин", 1799},
-	{"Николай Гоголь", 1809},
-	{"Фёдор Достоевский", 1821},
-	{"Лев Толстой", 1828},
-	{"Антон Чехов", 1860},
+	{"Иван Крылов", 1769, "Россия"},
+	{"Александр Пушкин", 1799, "Россия"},
+	{"Фёдор Достоевский", 1821, "Россия"},
+	{"Жюль Верн", 1828, "Франция"},
+	{"Антон Чехов", 1860, "Россия"}, // no books: the delete quiz
+	{"Лев Толстой", 1828, "Россия"},
+	{"Марк Твен", 1835, "США"},
+	{"Артур Конан Дойл", 1859, "Великобритания"},
 }
 
 // pgsLab6Book is a row of the catalog. price is the true price; author is the
@@ -105,21 +122,31 @@ type pgsLab6Book struct {
 	author       string
 }
 
-// pgsLab6Books is the catalog lab 5 leaves; a row's id is its place in the list.
+// pgsLab6Books is the catalog lab 5 leaves — its setup with every reference
+// solution applied; a row's id is its place in the list.
 var pgsLab6Books = []pgsLab6Book{
-	{"Евгений Онегин", "495.00", 320, true, 1833, "Александр Пушкин"},
-	{"Мёртвые души", "520.00", 416, true, 1842, "Николай Гоголь"},
-	{"Анна Каренина", "780.00", 864, true, 1878, "Лев Толстой"},
-	{"Дама с собачкой", "210.00", 48, false, 1899, "Антон Чехов"},
-	{"Капитанская дочка", "340.00", 176, true, 1836, "Александр Пушкин"},
-	{"Шинель", "190.00", 64, false, 1842, "Николай Гоголь"},
-	{"Идиот", "671.00", 640, true, 1869, "Фёдор Достоевский"}, // zeroed by the setup
-	{"Ревизор", "280.00", 144, true, 1836, "Николай Гоголь"},
-	{"Человек в футляре", "160.00", 32, false, 1898, "Антон Чехов"},
+	{"Басни", "240.00", 224, true, 1809, "Иван Крылов"},
+	{"Евгений Онегин", "460.00", 320, true, 1833, "Александр Пушкин"}, // lab 5: new price
+	{"Капитанская дочка", "210.00", 192, false, 1836, "Александр Пушкин"},
+	{"Повести Белкина", "190.00", 160, false, 1831, "Александр Пушкин"},
+	{"Идиот", "715.00", 640, true, 1869, "Фёдор Достоевский"}, // lab 5: +10 %; zeroed by the setup
+	{"Братья Карамазовы", "990.00", 992, false, 1880, "Фёдор Достоевский"},
+	{"Белые ночи", "150.00", 96, false, 1848, "Фёдор Достоевский"},
+	{"Таинственный остров", "1350.00", 704, true, 1875, "Жюль Верн"},
+	{"Вокруг света за восемьдесят дней", "360.00", 320, false, 1872, "Жюль Верн"},
+	{"Дети капитана Гранта", "560.00", 672, true, 1868, "Жюль Верн"},
+	{"Собака Баскервилей", "450.00", 256, true, 1902, "Артур Конан Дойл"},
+	{"Приключения Тома Сойера", "380.00", 288, false, 1876, "Марк Твен"},
+	{"Анна Каренина", "870.00", 864, true, 1878, "Лев Толстой"}, // lab 5: filled in
+	{"Затерянный мир", "430.00", 320, true, 1912, "Артур Конан Дойл"},
 }
 
+// pgsLab6SeqBooks is books_id_seq as lab 5 leaves it: its setup inserted a
+// fifteenth row, the intern's duplicate, which its last task deleted.
+const pgsLab6SeqBooks = 15
+
 // pgsLab6Zeroed is the id of the book whose price the setup sets to 0.00.
-const pgsLab6Zeroed = 7
+const pgsLab6Zeroed = 5
 
 // pgsLab6SetupPrice is a book's price as the setup writes it.
 func pgsLab6SetupPrice(id int) string {
@@ -129,12 +156,12 @@ func pgsLab6SetupPrice(id int) string {
 	return pgsLab6Books[id-1].price
 }
 
-// pgsLab6Schema is state S3 with lab 5's catalog. Lab 5 deleted the duplicate
-// with id 10, so the student's next book would get 11.
+// pgsLab6Schema is state S3 with the catalog lab 5 leaves, the zeroed price
+// aside. setval runs inside a DO block, which prints nothing.
 var pgsLab6Schema = func() string {
 	authors := make([]string, len(pgsLab6Authors))
 	for i, a := range pgsLab6Authors {
-		authors[i] = "    ('" + a.name + "', " + strconv.Itoa(a.year) + ", 'Россия')"
+		authors[i] = "    ('" + a.name + "', " + strconv.Itoa(a.year) + ", '" + a.country + "')"
 	}
 	books := make([]string, len(pgsLab6Books))
 	for i, b := range pgsLab6Books {
@@ -159,7 +186,7 @@ INSERT INTO authors (full_name, birth_year, country) VALUES
 ` + strings.Join(authors, ",\n") + `;
 INSERT INTO books (title, price, page_count, in_stock, published_year) VALUES
 ` + strings.Join(books, ",\n") + `;
-ALTER SEQUENCE books_id_seq RESTART WITH ` + strconv.Itoa(len(pgsLab6Books)+2) + `;
+DO $$ BEGIN PERFORM setval('books_id_seq', ` + strconv.Itoa(pgsLab6SeqBooks) + `); END $$;
 `
 }()
 
@@ -260,7 +287,7 @@ const pgsLab6AuthorRefs = "(SELECT string_agg(c.confrelid::regclass::text, ', ')
 
 // pgsLab6AuthorOnDelete is SQL true when that reference has an ON DELETE
 // action (CASCADE, SET NULL …): deleting an author then goes through, which
-// the check — and the quiz about deleting Gogol — expect to fail.
+// the check — and the quiz about deleting Dostoevsky — expect to fail.
 const pgsLab6AuthorOnDelete = "EXISTS (SELECT 1 FROM pg_constraint c " +
 	"JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey) " +
 	"WHERE c.contype = 'f' AND c.conrelid = to_regclass('books') AND a.attname = 'author_id' AND c.confdeltype NOT IN ('a', 'r'))"
@@ -276,9 +303,10 @@ var pgsLab6AuthorDone = pgHasCol("pereplet", "books", "author_id", "integer") + 
 		"LEFT JOIN authors a ON a.id = b.author_id WHERE a.full_name IS DISTINCT FROM m.author)")
 
 // pgsLab6AuthorNow: the column and where it leads (read from the catalog, so
-// the query runs whether or not author_id is there), then — only when it is —
-// the books without an author or with another one, which the task's table
-// names anyway, and books gone from the catalog.
+// the query runs whether or not author_id is there) — with a column to redo,
+// the way lesson 6 teaches: drop it and add it again —, then, only when it is
+// there, the books without an author or with another one, which the task's
+// table names anyway, and books gone from the catalog.
 var pgsLab6AuthorNow = pgsLab6Now("SELECT CASE "+
 	"WHEN to_regclass('books') IS NULL THEN 'в базе pereplet нет таблицы books — нажми «Пересоздать»' "+
 	"WHEN ("+pgColType("books", "author_id")+") IS NULL THEN 'в books нет столбца author_id; столбцы books: ' || "+pgsLab6Shown("books")+" "+
@@ -286,9 +314,10 @@ var pgsLab6AuthorNow = pgsLab6Now("SELECT CASE "+
 	"CASE WHEN ("+pgColType("books", "author_id")+") <> 'integer' THEN ', а нужен тип integer' ELSE '' END || "+
 	"CASE WHEN "+pgsLab6AuthorRefs+" IS NULL THEN ', но ни на что не ссылается: нужна ссылка REFERENCES authors (id)' "+
 	"WHEN "+pgsLab6AuthorRefs+" <> 'authors' THEN ', ссылается на ' || "+pgsLab6AuthorRefs+" || ', а нужно на authors (id)' "+
-	"WHEN "+pgsLab6AuthorOnDelete+" THEN ', ссылается на authors, но с ON DELETE: так база разрешает удалить автора, у которого есть книги — "+
-	"убери ссылку (DROP CONSTRAINT, имя есть в \\d books) и добавь заново, без ON DELETE' "+
-	"ELSE ', ссылается на authors' END END") +
+	"WHEN "+pgsLab6AuthorOnDelete+" THEN ', ссылается на authors, но с ON DELETE: так база разрешает удалить автора, у которого есть книги' "+
+	"ELSE ', ссылается на authors' END || "+
+	"CASE WHEN ("+pgColType("books", "author_id")+") <> 'integer' OR "+pgsLab6AuthorRefs+" IS NULL OR "+pgsLab6AuthorRefs+" <> 'authors' OR "+pgsLab6AuthorOnDelete+" "+
+	"THEN ' — чтобы переделать столбец, удали его (ALTER TABLE books DROP COLUMN author_id;), добавь заново, как в задании, и снова проставь номера' ELSE '' END END") +
 	pgVal("pereplet", "SELECT coalesce('; ' || nullif(concat_ws('; ', "+
 		"(SELECT 'без автора (author_id пустой): ' || count(*) || ' из "+strconv.Itoa(len(pgsLab6Books))+" книг' FROM books b JOIN "+pgsLab6Map+" ON m.title = b.title "+
 		"WHERE b.author_id IS NULL HAVING count(*) > 0), "+
@@ -318,13 +347,14 @@ var pgsLab6Moved = func() string {
 var pgsLab6Price = "SELECT coalesce((SELECT price = " + pgsLab6Books[pgsLab6Zeroed-1].price + " FROM books WHERE id = " +
 	strconv.Itoa(pgsLab6Zeroed) + "), false) AND NOT EXISTS (" + pgsLab6Moved + ")"
 
-// pgsLab6BookRules are task 2's rules, each tried on the first book. A
-// positive price has to go in too: the rule is "more than zero", no stricter.
+// pgsLab6CatalogRules are task 2's rules, each tried on the first book (the
+// last one on the first author). A positive price has to go in too: the rule
+// is "more than zero", no stricter.
 // The default of in_stock is evaluated rather than read off an inserted book:
 // a book added with title and price only would also need every other column
 // of the student's books to be optional, and the task does not forbid making,
 // say, author_id NOT NULL. With no default at all, EXECUTE of NULL fails.
-var pgsLab6BookRules = []pgsLab6Rule{
+var pgsLab6CatalogRules = []pgsLab6Rule{
 	{"UPDATE books SET title = NULL WHERE id = (SELECT min(id) FROM books)", "23502", "title может быть пустым: нужен NOT NULL"},
 	{"UPDATE books SET price = NULL WHERE id = (SELECT min(id) FROM books)", "23502", "price может быть пустым: нужен NOT NULL"},
 	{"UPDATE books SET price = 0 WHERE id = (SELECT min(id) FROM books)", "23514", "цену 0 база принимает: нужно правило CHECK, что цена больше нуля"},
@@ -334,9 +364,10 @@ var pgsLab6BookRules = []pgsLab6Rule{
 		"EXECUTE 'SELECT ' || (SELECT pg_get_expr(d.adbin, d.adrelid) FROM pg_attrdef d JOIN pg_attribute a ON a.attrelid = d.adrelid AND a.attnum = d.adnum " +
 		"WHERE d.adrelid = 'books'::regclass AND a.attname = 'in_stock') INTO v; " +
 		"PERFORM 1 / (v IS TRUE)::int; END $$", "00000", "книга, добавленная без in_stock, получает не true: нужен DEFAULT true"},
+	{"UPDATE authors SET full_name = NULL WHERE id = (SELECT min(id) FROM authors)", "23502", "в authors full_name может быть пустым: нужен NOT NULL"},
 }
 
-var pgsLab6RulesDone = pgTrue("pereplet", pgsLab6Price) + " && " + pgsLab6Rejects("", pgsLab6BookRules)
+var pgsLab6RulesDone = pgTrue("pereplet", pgsLab6Price) + " && " + pgsLab6Rejects("", pgsLab6CatalogRules)
 
 // pgsLab6RulesNow: the zeroed price — without naming the book while it is
 // still zero: finding it is part of the task — other prices that moved, then
@@ -353,7 +384,7 @@ var pgsLab6RulesNow = func() string {
 		"ELSE 'цена исправлена' END, "+
 		"(SELECT 'цена изменилась и у других книг: ' || string_agg(m.title, ', ' ORDER BY m.id) || ' — нажми «Пересоздать»' "+
 		"FROM ("+pgsLab6Moved+") m))") +
-		pgsLab6IfTable("books", pgsLab6Broken("", "", false, pgsLab6BookRules)) +
+		pgsLab6IfTable("books", pgsLab6Broken("", "", false, pgsLab6CatalogRules)) +
 		pgsLab6Tx
 }()
 
@@ -518,6 +549,35 @@ var pgsLab6Items = pgsLab6Table{
 
 // ---- task 6: the first order ----
 
+// pgsLab6OrderItems are the books of task 6's order and how many of each:
+// both in stock, the second the one lab 5 learned the details of.
+var pgsLab6OrderItems = []struct {
+	title string
+	qty   int
+}{
+	{"Евгений Онегин", 2},
+	{"Анна Каренина", 1},
+}
+
+// pgsLab6ItemsText is the order's items for the student: «…» × 2 и «…» × 1.
+var pgsLab6ItemsText = func() string {
+	s := make([]string, len(pgsLab6OrderItems))
+	for i, it := range pgsLab6OrderItems {
+		s[i] = "«" + it.title + "» × " + strconv.Itoa(it.qty)
+	}
+	return strings.Join(s, " и ")
+}()
+
+// pgsLab6ItemsOK is SQL true when the order's items (CTE i) are exactly the
+// task's.
+var pgsLab6ItemsOK = func() string {
+	conds := []string{"(SELECT count(*) FROM i) = " + strconv.Itoa(len(pgsLab6OrderItems))}
+	for _, it := range pgsLab6OrderItems {
+		conds = append(conds, "EXISTS (SELECT 1 FROM i WHERE title = '"+it.title+"' AND quantity = "+strconv.Itoa(it.qty)+")")
+	}
+	return "(" + strings.Join(conds, " AND ") + ")"
+}()
+
 // pgsLab6Anna is the customer of task 6, found by email; the CTEs give her
 // rows (c), her orders (o) and their items with the book titles (i).
 const pgsLab6Anna = "WITH c AS (SELECT id, full_name, city FROM customers WHERE email = 'anna.smirnova@example.com'), " +
@@ -525,13 +585,11 @@ const pgsLab6Anna = "WITH c AS (SELECT id, full_name, city FROM customers WHERE 
 	"i AS (SELECT b.title, x.quantity FROM order_items x JOIN o ON x.order_id = o.id JOIN books b ON b.id = x.book_id) "
 
 // pgsLab6Order is SQL true when Anna is there once with her name and city,
-// with one order of status new holding exactly the two items of the task.
-const pgsLab6Order = pgsLab6Anna + "SELECT (SELECT count(*) FROM c) = 1 " +
+// with one order of status new holding exactly the items of the task.
+var pgsLab6Order = pgsLab6Anna + "SELECT (SELECT count(*) FROM c) = 1 " +
 	"AND EXISTS (SELECT 1 FROM c WHERE full_name = 'Анна Смирнова' AND city = 'Москва') " +
 	"AND (SELECT count(*) FROM o) = 1 AND EXISTS (SELECT 1 FROM o WHERE status = 'new') " +
-	"AND (SELECT count(*) FROM i) = 2 " +
-	"AND EXISTS (SELECT 1 FROM i WHERE title = 'Евгений Онегин' AND quantity = 2) " +
-	"AND EXISTS (SELECT 1 FROM i WHERE title = 'Ревизор' AND quantity = 1)"
+	"AND " + pgsLab6ItemsOK
 
 // pgsLab6OrderNow walks the order the student builds it in: the customer, her
 // order, its items — and stops at the first step that is not there yet.
@@ -547,9 +605,7 @@ var pgsLab6OrderNow = `$(glpg q pereplet ` + b64(pgsLab6Anna+"SELECT CASE "+
 	"ELSE 'у покупателя заказов: ' || (SELECT count(*) FROM o) || ', а нужен один — лишний удали, сначала его позиции' END, "+
 	"(SELECT 'у заказа статус ' || quote_nullable(status) || ', а должен быть new: не указывай status, его поставит база' FROM o "+
 	"WHERE (SELECT count(*) FROM o) = 1 AND status IS DISTINCT FROM 'new'), "+
-	"CASE WHEN (SELECT count(*) FROM o) = 1 AND NOT (SELECT (SELECT count(*) FROM i) = 2 "+
-	"AND EXISTS (SELECT 1 FROM i WHERE title = 'Евгений Онегин' AND quantity = 2) "+
-	"AND EXISTS (SELECT 1 FROM i WHERE title = 'Ревизор' AND quantity = 1)) "+
+	"CASE WHEN (SELECT count(*) FROM o) = 1 AND NOT "+pgsLab6ItemsOK+" "+
 	"THEN coalesce('в заказе: ' || (SELECT string_agg('«' || title || '» × ' || quantity, ', ' ORDER BY title) FROM i) || ' — а в задании другое', "+
 	"'в заказе пока нет позиций') END) END") +
 	` || echo 'не получилось прочитать таблицы customers, orders и order_items — если их ещё нет, сначала сдай задания про них')` +
