@@ -1,0 +1,11 @@
+{
+  "n": 2,
+  "id": "ch_pgq_02_where",
+  "title": "Фильтрация: WHERE",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Фильтрация: WHERE\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- сравнения, `AND`, `OR`, `NOT` и скобки\n- `BETWEEN`, `IN`, `LIKE` и `ILIKE`\n- `NULL` в условиях: `IS NULL` и трёхзначная логика\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

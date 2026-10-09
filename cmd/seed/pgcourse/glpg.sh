@@ -11,6 +11,7 @@
 # such checks break.
 #
 #   glpg start                         start the cluster; root gets a superuser role
+#                                      (no database named root: lessons name theirs)
 #   glpg fixhosts                      make the hostname resolve (quiet sudo)
 #   glpg run   DB B64SQL               run SQL, stop at the first error (setups)
 #   glpg q     DB B64SQL               print the result: tuples only, unaligned, '|'
@@ -70,10 +71,11 @@ start)
 		sleep 0.2
 	done
 	su postgres -c 'psql -X -tAc "SELECT 1"' >/dev/null 2>&1 || { echo "сервер PostgreSQL не запустился" >&2; exit 1; }
+	# The same user the first lab has the student create: a superuser role for
+	# root, and no database of that name — the lessons always name the database
+	# (psql pereplet), so a bare `psql` behaves here as it did in that lab.
 	su postgres -c "psql -X -tAc \"SELECT 1 FROM pg_roles WHERE rolname='root'\"" | grep -q 1 \
 		|| su postgres -c "psql -X -qc \"CREATE ROLE root SUPERUSER LOGIN CREATEDB CREATEROLE\"" >/dev/null
-	su postgres -c "psql -X -tAc \"SELECT 1 FROM pg_database WHERE datname='root'\"" | grep -q 1 \
-		|| su postgres -c "createdb -O root root" >/dev/null
 	;;
 
 run)

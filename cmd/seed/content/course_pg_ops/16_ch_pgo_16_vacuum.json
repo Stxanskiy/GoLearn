@@ -1,0 +1,11 @@
+{
+  "n": 16,
+  "id": "ch_pgo_16_vacuum",
+  "title": "Обслуживание: VACUUM и ANALYZE",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Обслуживание: VACUUM и ANALYZE\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- мёртвые строки и разбухание таблиц\n- autovacuum и его настройка\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -26,7 +26,9 @@ var curriculum = map[string][]string{
 		"helm",                 // пакетирование и деплой в кластер
 	},
 	"database": {
-		"pg-start", // установка, psql, своя база магазина с нуля
+		"pg-start", // установка, psql, таблицы и данные — с нуля
+		"pg-sql",   // запросы: фильтры, группировки, JOIN, окна
+		"pg-ops",   // эксплуатация: доступы, бэкапы, скорость, реплики
 	},
 	"security": {
 		"security-offense",
@@ -36,6 +38,7 @@ var curriculum = map[string][]string{
 		"gym-linux-start",
 		"gym-linux-troubleshoot",
 		"gym-git",
+		"gym-sql",
 	},
 }
 

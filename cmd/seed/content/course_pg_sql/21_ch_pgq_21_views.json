@@ -1,0 +1,11 @@
+{
+  "n": 21,
+  "id": "ch_pgq_21_views",
+  "title": "Представления",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Представления\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- `VIEW` и `MATERIALIZED VIEW`\n- зачем они: отчёты и ограничение доступа\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

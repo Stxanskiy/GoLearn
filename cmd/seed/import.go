@@ -121,10 +121,13 @@ func importedModules() []M {
 		{Dir: "module_helm", Slug: "helm", Track: "devops", Difficulty: "intermediate", Category: "Kubernetes", Image: sandboxImageK8s},
 		// ── Database section ──
 		{Dir: "course_pg_start", Slug: "pg-start", Track: "database", Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
+		{Dir: "course_pg_sql", Slug: "pg-sql", Track: "database", Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
+		{Dir: "course_pg_ops", Slug: "pg-ops", Track: "database", Difficulty: "intermediate", Category: "PostgreSQL", Draft: true},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
 		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
 		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "devops", Trainer: true, Difficulty: "intermediate", Category: "Linux"},
 		{Dir: "gym_git", Slug: "gym-git", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Git"},
+		{Dir: "gym_sql", Slug: "gym-sql", Track: "database", Trainer: true, Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
 	}
 	var mods []M
 	for _, s := range specs {

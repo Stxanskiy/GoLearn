@@ -4,6 +4,5 @@
 
 # Lab 1 (ch-pgs-lab1): installing PostgreSQL.
 sol_ch_pgs_lab1_1='apt update && apt install -y postgresql'
-sol_ch_pgs_lab1_2='pg_lsclusters > /root/status.txt'
-sol_ch_pgs_lab1_3='sudo -u postgres psql -c "SELECT version();" > /root/version.txt'
-sol_ch_pgs_lab1_4='sudo -u postgres createdb pereplet'
+sol_ch_pgs_lab1_2='sudo -u postgres createuser --superuser root'
+sol_ch_pgs_lab1_3='printf "CREATE DATABASE pereplet;\n" | psql postgres'

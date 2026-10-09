@@ -1,0 +1,11 @@
+{
+  "n": 8,
+  "id": "ch_pgq_08_group",
+  "title": "Агрегаты и группировка",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Агрегаты и группировка\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- `count`, `sum`, `avg`, `min`, `max`\n- `GROUP BY` и правило столбцов в `SELECT`\n- `HAVING` против `WHERE`, `FILTER`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

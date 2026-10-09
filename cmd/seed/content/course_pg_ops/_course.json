@@ -1,0 +1,140 @@
+{
+  "id": "course_pg_ops",
+  "title": "PostgreSQL для DevOps: эксплуатация",
+  "meta": {
+    "title": "PostgreSQL для DevOps: эксплуатация",
+    "description": "Третий курс пути: отвечаешь за базу в продакшене. Как устроен сервер, настройка, пользователи и доступы, транзакции, индексы, обслуживание, бэкапы, репликация, Docker и мониторинг — с инцидентами в настоящем терминале."
+  },
+  "chapter_list": [
+    {
+      "id": "ch_pgo_01_inside",
+      "title": "Как устроен PostgreSQL изнутри",
+      "position": 1
+    },
+    {
+      "id": "ch_pgo_lab1",
+      "title": "Лабораторная 1: осмотр живого сервера",
+      "position": 2
+    },
+    {
+      "id": "ch_pgo_03_config",
+      "title": "Конфигурация сервера",
+      "position": 3
+    },
+    {
+      "id": "ch_pgo_lab2",
+      "title": "Лабораторная 2: настраиваем сервер",
+      "position": 4
+    },
+    {
+      "id": "ch_pgo_05_roles",
+      "title": "Пользователи, роли и права",
+      "position": 5
+    },
+    {
+      "id": "ch_pgo_06_hba",
+      "title": "Аутентификация: pg_hba.conf",
+      "position": 6
+    },
+    {
+      "id": "ch_pgo_lab3",
+      "title": "Лабораторная 3: доступы для приложения и аналитика",
+      "position": 7
+    },
+    {
+      "id": "ch_pgo_lab4",
+      "title": "Лабораторная 4: инцидент «Приложение не может подключиться»",
+      "position": 8
+    },
+    {
+      "id": "ch_pgo_09_quiz",
+      "title": "Проверка: роли и доступ",
+      "position": 9
+    },
+    {
+      "id": "ch_pgo_10_tx",
+      "title": "Транзакции и конкурентный доступ",
+      "position": 10
+    },
+    {
+      "id": "ch_pgo_lab5",
+      "title": "Лабораторная 5: транзакции",
+      "position": 11
+    },
+    {
+      "id": "ch_pgo_lab6",
+      "title": "Лабораторная 6: инцидент «Всё зависло»",
+      "position": 12
+    },
+    {
+      "id": "ch_pgo_13_indexes",
+      "title": "Индексы",
+      "position": 13
+    },
+    {
+      "id": "ch_pgo_14_explain",
+      "title": "EXPLAIN и поиск медленных запросов",
+      "position": 14
+    },
+    {
+      "id": "ch_pgo_lab7",
+      "title": "Лабораторная 7: ускоряем медленные запросы",
+      "position": 15
+    },
+    {
+      "id": "ch_pgo_16_vacuum",
+      "title": "Обслуживание: VACUUM и ANALYZE",
+      "position": 16
+    },
+    {
+      "id": "ch_pgo_lab8",
+      "title": "Лабораторная 8: обслуживание",
+      "position": 17
+    },
+    {
+      "id": "ch_pgo_18_backup",
+      "title": "Резервное копирование",
+      "position": 18
+    },
+    {
+      "id": "ch_pgo_lab9",
+      "title": "Лабораторная 9: бэкап и восстановление",
+      "position": 19
+    },
+    {
+      "id": "ch_pgo_lab10",
+      "title": "Лабораторная 10: восстановление на момент времени",
+      "position": 20
+    },
+    {
+      "id": "ch_pgo_21_replication",
+      "title": "Репликация и отказоустойчивость",
+      "position": 21
+    },
+    {
+      "id": "ch_pgo_lab11",
+      "title": "Лабораторная 11: поднимаем реплику",
+      "position": 22
+    },
+    {
+      "id": "ch_pgo_23_docker",
+      "title": "PostgreSQL в Docker",
+      "position": 23
+    },
+    {
+      "id": "ch_pgo_24_monitoring",
+      "title": "Мониторинг",
+      "position": 24
+    },
+    {
+      "id": "ch_pgo_25_oncall",
+      "title": "Финальный проект «Дежурство»",
+      "position": 25
+    },
+    {
+      "id": "ch_pgo_26_final",
+      "title": "Итоговая проверка и что дальше",
+      "position": 26
+    }
+  ]
+}

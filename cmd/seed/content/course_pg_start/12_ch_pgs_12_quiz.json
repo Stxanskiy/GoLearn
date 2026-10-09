@@ -1,0 +1,11 @@
+{
+  "n": 12,
+  "id": "ch_pgs_12_quiz",
+  "title": "Проверка: таблицы и данные",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Проверка: таблицы и данные\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в проверке\n\n- типы данных и как их выбирать\n- `INSERT`, `SELECT`, `UPDATE`, `DELETE` и роль `WHERE`\n- чтение ошибок PostgreSQL\n- `NULL` и `IS NULL`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

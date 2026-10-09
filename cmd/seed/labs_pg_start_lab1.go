@@ -14,8 +14,11 @@ package main
 // lesson about pg_ctlcluster and clusters; with starts allowed, apt brings the
 // server up the way it does on an ordinary Ubuntu server.
 //
-// root has no role in this lab (the lesson connects with sudo -u postgres), so
-// the checks ask the server as the postgres OS user (pgsLab1AsPostgres).
+// The lesson has the student connect once with sudo -u postgres and then create
+// a superuser role for root, after which a plain `psql pereplet` works; the
+// later labs' pgSetup leaves root the same role. Until that role exists root
+// cannot ask the server anything, so the checks ask as the postgres OS user
+// (pgsLab1AsPostgres).
 //
 // Reference solutions: scripts/labcheck/solutions-pg.sh.
 
@@ -27,19 +30,16 @@ func init() {
 			1: check(pgsLab1Installed,
 				"PostgreSQL установлен",
 				"Сейчас: пакет postgresql-16 — $(dpkg-query -W -f='${Status}' postgresql-16 2>/dev/null | grep -v not-installed | grep . || echo 'не установлен')"),
-			// The file alone could be typed by hand; the server has to be up too.
-			2: check(`[ "$(pg_lsclusters -h 16 main 2>/dev/null | awk '{print $4}')" = online ] && grep -qE '^[[:space:]]*16[[:space:]]+main[[:space:]]+5432[[:space:]]+online([[:space:]]|$)' /root/status.txt 2>/dev/null`,
-				"сервер работает, а в /root/status.txt сохранён вывод pg_lsclusters со статусом online",
-				"Сейчас: сервер — $(pg_lsclusters -h 16 main 2>/dev/null | awk '{print $4}' | grep . || echo 'не найден'), в /root/status.txt — $(grep -qE '[[:space:]]online([[:space:]]|$)' /root/status.txt 2>/dev/null && echo 'есть строка со статусом online' || { [ -s /root/status.txt ] && echo 'нет строки со статусом online' || echo 'файла нет или он пустой'; })"),
-			// version() prints "PostgreSQL 16.15 (Ubuntu …)". psql --version
-			// prints "psql (PostgreSQL) 16.15", so it does not pass: the task is
-			// to ask the server, not the client.
-			3: check(pgsLab1Ver+` && grep -qF "PostgreSQL $v " /root/version.txt 2>/dev/null`,
-				"в /root/version.txt сохранён ответ сервера на SELECT version();",
-				"Сейчас в /root/version.txt: $( (grep -m1 '[^[:space:]]' /root/version.txt 2>/dev/null || echo 'файла нет или он пустой') | cut -c1-80)"),
-			4: check(`[ "`+pgsLab1AsPostgres("SELECT count(*) FROM pg_database WHERE datname = 'pereplet'")+`" = 1 ]`,
-				"база pereplet создана",
-				"Сейчас баз на сервере: "+pgsLab1AsPostgres("SELECT string_agg(datname, ', ' ORDER BY datname) FROM pg_database")),
+			// LOGIN as well as SUPERUSER: CREATE ROLE without LOGIN makes a
+			// superuser psql still cannot connect as.
+			2: check(`[ "`+pgsLab1AsPostgres("SELECT rolsuper AND rolcanlogin FROM pg_roles WHERE rolname = 'root'")+`" = t ]`,
+				"в PostgreSQL есть пользователь root с правами администратора",
+				"Сейчас пользователь root — "+pgsLab1AsPostgres(pgsLab1RoleSQL)),
+			// The owner shows who created the database: root, connected with a
+			// plain psql. One made with sudo -u postgres belongs to postgres.
+			3: check(`[ "`+pgsLab1AsPostgres("SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = 'pereplet'")+`" = root ]`,
+				"база pereplet создана пользователем root (через psql, без sudo)",
+				"Сейчас: "+pgsLab1AsPostgres("SELECT coalesce((SELECT 'база pereplet есть, но её создал пользователь ' || pg_get_userbyid(datdba) FROM pg_database WHERE datname = 'pereplet'), 'базы pereplet нет')")),
 		},
 	}
 }
@@ -57,12 +57,14 @@ chmod +x /usr/sbin/policy-rc.d
 // pgsLab1Installed is a condition: the server package is installed.
 const pgsLab1Installed = `[ "$(dpkg-query -W -f='${Status}' postgresql-16 2>/dev/null)" = 'install ok installed' ]`
 
-// pgsLab1Ver sets v to the installed server's major.minor (16.15), read from the
-// package rather than written down, so the check survives a point release.
-const pgsLab1Ver = `f=$(dpkg-query -W -f='${Version}' postgresql-16 2>/dev/null) && f=${f#*:} && v=${f%%-*} && [ -n "$v" ]`
+// pgsLab1RoleSQL describes root's role in words, or says there is none.
+const pgsLab1RoleSQL = "SELECT coalesce((SELECT CASE " +
+	"WHEN NOT rolcanlogin THEN 'есть, но не может подключаться (нет LOGIN)' " +
+	"WHEN NOT rolsuper THEN 'есть, но не администратор (нет --superuser)' " +
+	"ELSE 'есть' END FROM pg_roles WHERE rolname = 'root'), 'не создан')"
 
 // pgsLab1AsPostgres is a substitution printing a query's value as the postgres
 // OS user, the only one the server knows in this lab.
 func pgsLab1AsPostgres(sql string) string {
-	return `$(runuser -u postgres -- /usr/local/bin/glpg q postgres ` + b64(sql) + ` 2>/dev/null || echo 'сервер не отвечает')`
+	return `$(runuser -u postgres -- /usr/local/bin/glpg q postgres ` + b64(sql) + ` 2>/dev/null || echo 'нет ответа от сервера: PostgreSQL установлен и запущен?')`
 }

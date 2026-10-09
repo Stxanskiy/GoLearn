@@ -1,0 +1,11 @@
+{
+  "n": 1,
+  "id": "ch_gsql_lab1",
+  "title": "Лёгкий уровень: SELECT, WHERE, ORDER BY",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Лёгкий уровень: SELECT, WHERE, ORDER BY\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в лабораторной\n\n- десять задач на выборку, фильтры и сортировку\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

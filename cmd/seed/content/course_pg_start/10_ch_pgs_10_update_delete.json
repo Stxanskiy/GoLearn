@@ -1,0 +1,11 @@
+{
+  "n": 10,
+  "id": "ch_pgs_10_update_delete",
+  "title": "Меняем и удаляем данные: UPDATE, DELETE и WHERE",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Меняем и удаляем данные: UPDATE, DELETE и WHERE\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- `UPDATE … SET … WHERE`: поменять цену, отметить «нет в наличии»\n- `DELETE … WHERE`: удалить ошибочную запись\n- почему `UPDATE` и `DELETE` без `WHERE` опасны и как себя страховать: сначала `SELECT` с тем же условием\n- пустые значения `NULL` и проверка `IS NULL`\n- черновик изменений: `BEGIN` … `ROLLBACK` / `COMMIT`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

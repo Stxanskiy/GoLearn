@@ -1,0 +1,11 @@
+{
+  "n": 1,
+  "id": "ch_pgo_01_inside",
+  "title": "Как устроен PostgreSQL изнутри",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Как устроен PostgreSQL изнутри\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- процессы сервера: что видно в `ps`\n- кластер в Ubuntu: `pg_lsclusters`, `pg_ctlcluster`, systemd\n- где лежат данные, конфиги и журнал\n- журнал предзаписи (WAL) и MVCC простыми словами\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

@@ -19,8 +19,15 @@ func TestPgStartLabs(t *testing.T) {
 	if mod == nil {
 		t.Fatal("pg-start is not imported")
 	}
-	if !mod.Draft {
-		t.Error("pg-start must stay a draft until it is published by an admin")
+	// The whole path is seeded hidden: placeholders and lessons under review
+	// must not reach students on a deploy.
+	for _, m := range mods {
+		switch m.Slug {
+		case "pg-start", "pg-sql", "pg-ops", "gym-sql":
+			if !m.Draft {
+				t.Errorf("%s must stay a draft until an admin publishes it", m.Slug)
+			}
+		}
 	}
 	lessons := map[string]L{}
 	keys := map[string]string{}

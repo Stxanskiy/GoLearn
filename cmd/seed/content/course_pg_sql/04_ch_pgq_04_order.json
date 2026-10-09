@@ -1,0 +1,11 @@
+{
+  "n": 4,
+  "id": "ch_pgq_04_order",
+  "title": "Сортировка и ограничение: ORDER BY и LIMIT",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Сортировка и ограничение: ORDER BY и LIMIT\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- сортировка по нескольким столбцам, `DESC`, `NULLS LAST`\n- `LIMIT` и `OFFSET`, постраничный вывод\n- почему `LIMIT` без `ORDER BY` возвращает случайные строки\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}
