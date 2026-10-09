@@ -177,8 +177,13 @@ func (a *API) startCheckout(w http.ResponseWriter, r *http.Request) {
 	user := userFrom(r.Context())
 
 	var req checkoutRequest
-	if !decodeJSON(w, r, &req) {
-		return
+	// The body is optional, as the spec says: a client that only wants the
+	// monthly plan may send nothing. Requiring one would have broken every
+	// caller written before plans existed.
+	if r.ContentLength != 0 {
+		if !decodeJSON(w, r, &req) {
+			return
+		}
 	}
 	// An absent plan means the monthly one: that is what the only caller asked
 	// for before plans existed, and silently charging for the lifetime plan

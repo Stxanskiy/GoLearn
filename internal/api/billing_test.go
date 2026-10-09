@@ -128,3 +128,19 @@ func TestRobokassaReturnDoesNotClaimAnUncheckedPayment(t *testing.T) {
 		t.Errorf("fail return = %d %q", w.Code, w.Header().Get("Location"))
 	}
 }
+
+// The spec says the checkout body is optional, and it has to actually be
+// optional: a caller written before plans existed sends nothing, and must
+// still get the monthly plan rather than a 400.
+func TestCheckoutWithoutABodyBuysTheMonth(t *testing.T) {
+	users, c := storefront()
+	h := newTestAPIWith(t, users, c)
+
+	// The fake store refuses to open a payment, so the furthest this can get is
+	// the 500 from that — which is proof it passed validation. A rejected plan
+	// would have stopped at 400.
+	w := do(h, http.MethodPost, "/billing/checkout", "", withCookie(studentToken))
+	if w.Code == http.StatusBadRequest || w.Code == http.StatusUnsupportedMediaType {
+		t.Fatalf("an empty body was refused: %d %s", w.Code, w.Body)
+	}
+}
