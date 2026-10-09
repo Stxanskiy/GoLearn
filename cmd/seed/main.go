@@ -15,6 +15,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// stepPos is where a question or a task sits among ALL of a lesson's steps.
+//
+// Questions and tasks live in two tables and used to be numbered from one in
+// each, so a lesson that the author wrote as task-question-task came out as
+// every question followed by every work step. The importer now carries the
+// position from the single ordered list in the source; pos is that. Content
+// that predates it, and anything built by the studio, has none - those fall
+// back to the position within their own list, which is what they had before.
+func stepPos(pos, idx int) int {
+	if pos > 0 {
+		return pos
+	}
+	return idx + 1
+}
+
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
@@ -192,7 +207,7 @@ func main() {
 						   option_explanations=EXCLUDED.option_explanations,
 						   correct_index=EXCLUDED.correct_index, explanation=EXCLUDED.explanation,
 						   order_num=EXCLUDED.order_num`,
-						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, qi+1, key); err != nil {
+						quizID, q.Question, optJSON, oexplJSON, q.Correct, q.Explanation, stepPos(q.Pos, qi), key); err != nil {
 						log.Fatalf("quiz question of lesson %q: %v", lesson.Slug, err)
 					}
 				}
@@ -253,7 +268,7 @@ func main() {
 					   starter_code=EXCLUDED.starter_code, kind=EXCLUDED.kind,
 					   sandbox_image=EXCLUDED.sandbox_image, setup_script=EXCLUDED.setup_script,
 					   check_script=EXCLUDED.check_script`,
-					lessonID, t.Title, t.Description, t.Hints, t.Solution, ti+1, tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript, key); err != nil {
+					lessonID, t.Title, t.Description, t.Hints, t.Solution, stepPos(t.Pos, ti), tDiff, glossaryJSON, testCasesJSON, t.StarterCode, kind, t.SandboxImage, t.SetupScript, t.CheckScript, key); err != nil {
 					log.Fatalf("task %q of lesson %q: %v", t.Title, lesson.Slug, err)
 				}
 			}
@@ -320,6 +335,12 @@ type L struct {
 	Tasks                []T
 }
 type Q struct {
+	// Pos is the question's place among *all* of the lesson's steps, questions
+	// and tasks together. The source keeps them in one ordered list; the
+	// importer splits that list in two, and without a shared position the
+	// author's sequence is lost. 0 means "not set" and falls back to the
+	// position within the quiz.
+	Pos                   int
 	Question, Explanation string
 	Options               []string
 	OptionExpl            []string // per-option explanation (parallel to Options)
@@ -334,6 +355,8 @@ type TestCase struct {
 	ExpectedOutput string `json:"expected_output"`
 }
 type T struct {
+	// Pos is the task's place among *all* of the lesson's steps; see Q.Pos.
+	Pos                                 int
 	Title, Description, Hints, Solution string
 	// SourceKey is the task's identity in the content ("lnav_lab1_t2_pwd"). The
 	// seeder updates a task in place by it instead of deleting and re-inserting,

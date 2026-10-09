@@ -299,7 +299,7 @@ func (a *API) lessonQuiz(ctx context.Context, userID, lessonID int) (*apigen.Les
 	}
 	out := &apigen.LessonQuiz{Questions: make([]apigen.QuizQuestionPublic, 0, len(questions))}
 	for _, q := range questions {
-		pub := apigen.QuizQuestionPublic{ID: q.ID, QuestionHTML: content.Sanitize(q.Question), OptionsHTML: sanitizeAll(q.Options)}
+		pub := apigen.QuizQuestionPublic{ID: q.ID, Step: q.OrderNum, QuestionHTML: content.Sanitize(q.Question), OptionsHTML: sanitizeAll(q.Options)}
 		if sel, ok := answers[q.ID]; ok {
 			res := answerResult(q, sel, true)
 			pub.Answer = &res

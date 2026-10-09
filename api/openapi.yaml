@@ -3285,9 +3285,16 @@ components:
 
     QuizQuestionPublic:
       type: object
-      required: [id, question_html, options_html]
+      required: [id, question_html, options_html, step]
       properties:
         id: { type: integer }
+        step:
+          type: integer
+          description: |
+            Place among ALL of the lesson's steps, questions and tasks together.
+            The two come from separate endpoints but the author wrote them as one
+            sequence - task, then the question checking it, then the next task -
+            so interleave both lists by this to show the lesson as written.
         question_html: { type: string }
         options_html:
           type: array
@@ -3399,9 +3406,16 @@ components:
 
     LabTask:
       type: object
-      required: [id, title, kind, description_html, glossary, check_mode, passed]
+      required: [id, title, kind, description_html, glossary, check_mode, passed, step]
       properties:
         id: { type: integer }
+        step:
+          type: integer
+          description: |
+            Place among ALL of the lesson's steps, questions and tasks together.
+            The two come from separate endpoints but the author wrote them as one
+            sequence - task, then the question checking it, then the next task -
+            so interleave both lists by this to show the lesson as written.
         title: { type: string }
         kind: { $ref: '#/components/schemas/TaskKind' }
         description_html: { type: string }

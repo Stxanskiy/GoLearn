@@ -1395,7 +1395,13 @@ type LabTask struct {
 
 	// StarterCode Code tasks only (kind `go` or `python`).
 	StarterCode *string `json:"starter_code,omitempty"`
-	Title       string  `json:"title"`
+
+	// Step Place among ALL of the lesson's steps, questions and tasks together.
+	// The two come from separate endpoints but the author wrote them as one
+	// sequence - task, then the question checking it, then the next task -
+	// so interleave both lists by this to show the lesson as written.
+	Step  int    `json:"step"`
+	Title string `json:"title"`
 }
 
 // LabTaskCheckMode `auto` → POST /check, `tests` → POST /run, `manual` → POST /done.
@@ -1581,6 +1587,12 @@ type QuizQuestionPublic struct {
 	ID           int               `json:"id"`
 	OptionsHTML  []string          `json:"options_html"`
 	QuestionHTML string            `json:"question_html"`
+
+	// Step Place among ALL of the lesson's steps, questions and tasks together.
+	// The two come from separate endpoints but the author wrote them as one
+	// sequence - task, then the question checking it, then the next task -
+	// so interleave both lists by this to show the lesson as written.
+	Step int `json:"step"`
 }
 
 // QuizQuestionResult defines model for QuizQuestionResult.

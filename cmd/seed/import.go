@@ -289,20 +289,33 @@ func buildModule(s importSpec) (M, error) {
 			l.Kind = "theory"
 		}
 
-		for _, t := range ch.Tasks {
+		// The source keeps questions and tasks in ONE ordered list, and the author
+		// interleaved them on purpose: a task, then the question that checks it,
+		// then the next task. Splitting that list into l.Quiz and l.Tasks loses
+		// the sequence - each is then numbered from one, independently, and the
+		// lesson reads as "all the questions, then all the work". Carry the
+		// position in the source list through both so the order survives.
+		for pos, t := range ch.Tasks {
+			at := pos + 1
 			switch t.Type {
 			case "quiz":
 				if q, ok := toQuiz(t); ok {
+					q.Pos = at
 					l.Quiz = append(l.Quiz, q)
 				}
 			case "check":
-				l.Tasks = append(l.Tasks, toShellTask(t, ch.VMImage))
+				task := toShellTask(t, ch.VMImage)
+				task.Pos = at
+				l.Tasks = append(l.Tasks, task)
 			case "self":
 				task := toShellTask(t, ch.VMImage)
 				task.SelfCheck = true
+				task.Pos = at
 				l.Tasks = append(l.Tasks, task)
 			case "code":
-				l.Tasks = append(l.Tasks, toCodeTask(t))
+				task := toCodeTask(t)
+				task.Pos = at
+				l.Tasks = append(l.Tasks, task)
 			}
 		}
 

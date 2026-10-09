@@ -132,6 +132,7 @@ func (a *API) getLab(w http.ResponseWriter, r *http.Request) {
 	for _, t := range ref.tasks {
 		lt := apigen.LabTask{
 			ID:              t.ID,
+			Step:            t.OrderNum,
 			Title:           t.Title,
 			Kind:            apigen.TaskKind(t.Kind),
 			DescriptionHTML: content.Render(t.Format, t.Description),
