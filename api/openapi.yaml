@@ -3251,6 +3251,13 @@ components:
           format: date-time
           description: Newest lesson activity of the current user in this course; null when untouched.
         is_trainer: { type: boolean, description: Practice-only course; listed under trainers instead of the catalog. }
+        access_tier:
+          type: string
+          enum: [free, subscription]
+          description: |
+            Whether the subscription covers this course. Optional so a client
+            built against an older spec keeps working: absent must be read as
+            `free`, which is also the database default.
 
     SpecializationWithCourses:
       allOf:
@@ -3918,6 +3925,13 @@ components:
         order_num: { type: integer }
         published: { type: boolean }
         is_trainer: { type: boolean, description: Practice-only course; listed under trainers instead of the catalog. }
+        access_tier:
+          type: string
+          enum: [free, subscription]
+          description: |
+            Whether the subscription covers this course. Changed through
+            `PATCH /admin/courses/{courseId}/access-tier`, not through the course
+            body: what the subscription is worth is not an author's decision.
         source: { type: string, enum: [seed, admin] }
         owner:
           oneOf: [{ $ref: '#/components/schemas/AuthorRef' }, { type: 'null' }]

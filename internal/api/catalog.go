@@ -251,7 +251,20 @@ func courseCard(c catalog.Course) apigen.CourseCard {
 		EstMinutes:       c.EstMinutes,
 		Status:           apigen.ProgressStatus(c.Status),
 		LastActivity:     nilTime(c.LastActivity),
+		AccessTier:       accessTier(c.Module.AccessTier),
 	}
+}
+
+// accessTier reports what the subscription covers. Courses predating the tier
+// column read as empty, and empty has to mean free — the default in the schema
+// and the only safe reading, since guessing "paid" would lock content nobody
+// meant to lock.
+func accessTier(tier string) *apigen.CourseCardAccessTier {
+	t := apigen.CourseCardAccessTier(tier)
+	if tier != "subscription" {
+		t = apigen.CourseCardAccessTier("free")
+	}
+	return &t
 }
 
 // nilTime maps the zero activity timestamp of an untouched course to JSON null.

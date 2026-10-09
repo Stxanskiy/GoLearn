@@ -27,6 +27,24 @@ func (e AccessTierAccessTier) Valid() bool {
 	}
 }
 
+// Defines values for AdminCourseAccessTier.
+const (
+	AdminCourseAccessTierFree         AdminCourseAccessTier = "free"
+	AdminCourseAccessTierSubscription AdminCourseAccessTier = "subscription"
+)
+
+// Valid indicates whether the value is a known member of the AdminCourseAccessTier enum.
+func (e AdminCourseAccessTier) Valid() bool {
+	switch e {
+	case AdminCourseAccessTierFree:
+		return true
+	case AdminCourseAccessTierSubscription:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminCourseSource.
 const (
 	AdminCourseSourceAdmin AdminCourseSource = "admin"
@@ -39,6 +57,24 @@ func (e AdminCourseSource) Valid() bool {
 	case AdminCourseSourceAdmin:
 		return true
 	case AdminCourseSourceSeed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminCourseRowAccessTier.
+const (
+	AdminCourseRowAccessTierFree         AdminCourseRowAccessTier = "free"
+	AdminCourseRowAccessTierSubscription AdminCourseRowAccessTier = "subscription"
+)
+
+// Valid indicates whether the value is a known member of the AdminCourseRowAccessTier enum.
+func (e AdminCourseRowAccessTier) Valid() bool {
+	switch e {
+	case AdminCourseRowAccessTierFree:
+		return true
+	case AdminCourseRowAccessTierSubscription:
 		return true
 	default:
 		return false
@@ -132,6 +168,24 @@ func (e CourseAccessLevel) Valid() bool {
 	case CourseAccessLevelCoauthor:
 		return true
 	case CourseAccessLevelOwner:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CourseCardAccessTier.
+const (
+	CourseCardAccessTierFree         CourseCardAccessTier = "free"
+	CourseCardAccessTierSubscription CourseCardAccessTier = "subscription"
+)
+
+// Valid indicates whether the value is a known member of the CourseCardAccessTier enum.
+func (e CourseCardAccessTier) Valid() bool {
+	switch e {
+	case CourseCardAccessTierFree:
+		return true
+	case CourseCardAccessTierSubscription:
 		return true
 	default:
 		return false
@@ -669,6 +723,11 @@ type AdminCourse struct {
 	// Access What the current user may do with the course.
 	Access CourseAccess `json:"access"`
 
+	// AccessTier Whether the subscription covers this course. Changed through
+	// `PATCH /admin/courses/{courseId}/access-tier`, not through the course
+	// body: what the subscription is worth is not an author's decision.
+	AccessTier *AdminCourseAccessTier `json:"access_tier,omitempty"`
+
 	// Category Stored value; empty when derived.
 	Category        string `json:"category"`
 	CoverPreviewURL string `json:"cover_preview_url"`
@@ -713,6 +772,11 @@ type AdminCourse struct {
 	Title  string            `json:"title"`
 	Track  string            `json:"track"`
 }
+
+// AdminCourseAccessTier Whether the subscription covers this course. Changed through
+// `PATCH /admin/courses/{courseId}/access-tier`, not through the course
+// body: what the subscription is worth is not an author's decision.
+type AdminCourseAccessTier string
 
 // AdminCourseSource defines model for AdminCourse.Source.
 type AdminCourseSource string
@@ -771,6 +835,11 @@ type AdminCourseRow struct {
 	// Access What the current user may do with the course.
 	Access CourseAccess `json:"access"`
 
+	// AccessTier Whether the subscription covers this course. Changed through
+	// `PATCH /admin/courses/{courseId}/access-tier`, not through the course
+	// body: what the subscription is worth is not an author's decision.
+	AccessTier *AdminCourseRowAccessTier `json:"access_tier,omitempty"`
+
 	// Category Stored value; empty when derived.
 	Category        string `json:"category"`
 	CoverPreviewURL string `json:"cover_preview_url"`
@@ -817,6 +886,11 @@ type AdminCourseRow struct {
 	Title  string               `json:"title"`
 	Track  string               `json:"track"`
 }
+
+// AdminCourseRowAccessTier Whether the subscription covers this course. Changed through
+// `PATCH /admin/courses/{courseId}/access-tier`, not through the course
+// body: what the subscription is worth is not an author's decision.
+type AdminCourseRowAccessTier string
 
 // AdminCourseRowSource defines model for AdminCourseRow.Source.
 type AdminCourseRowSource string
@@ -1147,6 +1221,11 @@ type CourseAuthors struct {
 
 // CourseCard defines model for CourseCard.
 type CourseCard struct {
+	// AccessTier Whether the subscription covers this course. Optional so a client
+	// built against an older spec keeps working: absent must be read as
+	// `free`, which is also the database default.
+	AccessTier *CourseCardAccessTier `json:"access_tier,omitempty"`
+
 	// Category Explicit or derived catalog category (DevOps, Linux, Docker, Kubernetes, Git, Database, Golang, Security, …).
 	Category Category `json:"category"`
 
@@ -1174,6 +1253,11 @@ type CourseCard struct {
 	Tags             []string       `json:"tags"`
 	Title            string         `json:"title"`
 }
+
+// CourseCardAccessTier Whether the subscription covers this course. Optional so a client
+// built against an older spec keeps working: absent must be read as
+// `free`, which is also the database default.
+type CourseCardAccessTier string
 
 // CourseDetail defines model for CourseDetail.
 type CourseDetail struct {

@@ -509,6 +509,17 @@ func toAuthorRef(u repository.User) apigen.AuthorRef {
 	return apigen.AuthorRef{ID: u.ID, Name: u.Name, Email: openapi_types.Email(u.Email)}
 }
 
+// adminAccessTier reports the tier for the studio. Anything that is not
+// explicitly the paid tier reads as free — the schema default, and the only
+// safe reading of an empty column.
+func adminAccessTier(tier string) *apigen.AdminCourseAccessTier {
+	t := apigen.AdminCourseAccessTier("free")
+	if tier == "subscription" {
+		t = apigen.AdminCourseAccessTier("subscription")
+	}
+	return &t
+}
+
 // toAdminCourse describes a course or draft m of the live course.
 func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLevel, review *apigen.ReviewRequest) apigen.AdminCourse {
 	out := apigen.AdminCourse{
@@ -519,6 +530,7 @@ func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLe
 		HasCustomCover:  m.CoverImage != "",
 		CoverPreviewURL: coverURL("courses", m.Slug, m.CoverImage),
 		CreatedAt:       m.CreatedAt,
+		AccessTier:      adminAccessTier(m.AccessTier),
 	}
 	if out.Tags == nil {
 		out.Tags = []string{}
