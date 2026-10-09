@@ -38,6 +38,11 @@ rows() { # rows DB [psql source args...]
 		psql_ -A -t -F'|' -P null='∅' -d "$db" "$@"
 }
 
+# checkopts bounds the queries checks make. A student can hold a lock in an
+# open transaction (BEGIN; then ALTER TABLE, and no COMMIT yet); without a
+# lock_timeout every check on that table would wait out the runner's 20 s.
+checkopts='-c lock_timeout=3s -c statement_timeout=10s'
+
 normalize() { sed -e 's/[[:space:]]*$//' | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'; }
 
 cols() { head -n1 | awk -F'|' 'NF { print NF; exit } END { if (!NR) print 0 }'; }
@@ -96,7 +101,7 @@ run)
 	;;
 
 q)
-	psql_ -A -t -F'|' -d "$1" -c "$(decode "$2")" 2>/dev/null
+	PGOPTIONS=$checkopts psql_ -A -t -F'|' -d "$1" -c "$(decode "$2")" 2>/dev/null
 	;;
 
 state)
@@ -104,7 +109,7 @@ state)
 	# the aborted transaction cannot overwrite its code with 25P02; closing the
 	# connection rolls the transaction back either way.
 	err=$({ echo 'BEGIN;'; decode "$2"; echo ';'; echo 'ROLLBACK;'; } \
-		| psql -X -q -v ON_ERROR_STOP=1 -v VERBOSITY=sqlstate -d "$1" -f - 2>&1 >/dev/null)
+		| PGOPTIONS=$checkopts psql -X -q -v ON_ERROR_STOP=1 -v VERBOSITY=sqlstate -d "$1" -f - 2>&1 >/dev/null)
 	code=$(printf '%s\n' "$err" | grep -oE 'ERROR:  [0-9A-Z]{5}' | head -1 | awk '{print $2}')
 	echo "${code:-00000}"
 	;;

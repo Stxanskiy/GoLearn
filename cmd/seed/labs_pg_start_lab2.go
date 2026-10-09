@@ -4,20 +4,26 @@ package main
 //
 // The server looks the way lab 1 leaves it — root is a superuser, pereplet is
 // empty — plus two databases a colleague brought over from the shop's old
-// server, both owned by postgres: archive (one table, old_orders, for the student to find with \c
-// and \dt) and old_shop (to be dropped). The quiz answers come from what psql
-// shows on this state and do not change with the tasks: the port in \conninfo,
-// archive's owner in \l, the table in archive, the "invalid command \l;" error.
+// server, both owned by postgres: archive (one table, old_orders, for the
+// student to find with \c and \dt) and old_shop (to be dropped). The quiz
+// answers come from what psql shows on this state and do not change with the
+// tasks: the port in \conninfo, archive's owner in \l, the table in archive,
+// the "invalid command \l;" error.
 //
 // The tasks leave state behind, so they are checked by it: a database sandbox
-// owned by root (CREATE DATABASE from the student's own psql), old_shop gone,
-// and archive_2025 owned by postgres (the OWNER clause, found in \h CREATE
+// owned by root (CREATE DATABASE from the student's own psql), old_shop gone
+// while pereplet and archive — which the task says to leave alone — stay, and
+// archive_2025 owned by postgres (the OWNER clause, found in \h CREATE
 // DATABASE). The setup's databases carry a description (COMMENT ON DATABASE,
 // seen only in \l+), and the checks recognise them by it as well as by name,
 // so renaming one is not taken for creating or dropping a database: old_shop
 // renamed is still there, and archive renamed to archive_2025 is not new.
 //
-// Reference solutions: scripts/labcheck/solutions-pg-lab2.sh.
+// This is the lab where the student drops databases, so one of them may drop
+// postgres, the database every check connects to. The diagnostic then says so
+// (pgsLab2Now) instead of reporting a server that is in fact running.
+//
+// Reference solutions: scripts/labcheck/solutions-pg.sh.
 
 func init() {
 	pgStartLabs["ch-pgs-lab2"] = labSpec{
@@ -27,8 +33,8 @@ func init() {
 			1: check(pgTrue("postgres", pgsLab2NewDB("sandbox", "root")),
 				"база sandbox создана, её владелец — root",
 				"Сейчас: "+pgsLab2Now(pgsLab2DBState("sandbox", "root"))),
-			2: check(pgIs("postgres", "SELECT count(*) FROM pg_database WHERE datname = 'old_shop' OR "+pgsLab2Origin+" = 'old_shop'", "0"),
-				"база old_shop удалена",
+			2: check(pgTrue("postgres", pgsLab2Dropped),
+				"база old_shop удалена, а pereplet и archive на месте",
 				"Сейчас: "+pgsLab2Now(pgsLab2OldShopState)),
 			3: check(pgTrue("postgres", pgsLab2NewDB("archive_2025", "postgres")),
 				"база archive_2025 создана, её владелец — postgres",
@@ -102,15 +108,34 @@ func pgsLab2DBState(name, owner string) string {
 		"'базы " + name + " нет; есть базы: ' || (SELECT string_agg(datname, ', ' ORDER BY datname) FROM pg_database WHERE NOT datistemplate))"
 }
 
+// pgsLab2Dropped is the SQL for "old_shop is gone, under its own name or any
+// other, and pereplet and archive, which the task says to leave alone, are
+// still there".
+const pgsLab2Dropped = "SELECT NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'old_shop' OR " + pgsLab2Origin + " = 'old_shop')" +
+	" AND (SELECT count(*) FROM pg_database WHERE datname IN ('pereplet', 'archive')) = 2"
+
 // pgsLab2OldShopState says whether old_shop is still there, under its own name
-// or another.
+// or another, and whether a database the task says to leave alone went with it.
 const pgsLab2OldShopState = "SELECT coalesce((SELECT CASE WHEN datname = 'old_shop' THEN 'база old_shop ещё есть' " +
 	"ELSE 'базы old_shop нет, но она не удалена, а переименована в ' || datname END " +
 	"FROM pg_database WHERE datname = 'old_shop' OR " + pgsLab2Origin + " = 'old_shop' " +
-	"ORDER BY datname <> 'old_shop' LIMIT 1), 'база old_shop удалена')"
+	"ORDER BY datname <> 'old_shop' LIMIT 1), " +
+	"(SELECT CASE count(*) " +
+	"WHEN 1 THEN 'база old_shop удалена, но вместе с ней пропала база ' || min(n) || ', а её трогать было нельзя — нажми «Пересоздать»' " +
+	"WHEN 2 THEN 'база old_shop удалена, но вместе с ней пропали базы archive и pereplet, а их трогать было нельзя — нажми «Пересоздать»' END " +
+	"FROM unnest(ARRAY['archive', 'pereplet']) AS n WHERE n NOT IN (SELECT datname FROM pg_database)), " +
+	"'база old_shop удалена')"
 
-// pgsLab2Now is a substitution printing a query's value for a diagnostic, or
-// saying the server does not answer.
+// pgsLab2Now is a substitution printing a query's value for a diagnostic. When
+// the query cannot run, it asks template1 (which cannot be dropped) why: the
+// postgres database is gone, or the server is down.
 func pgsLab2Now(sql string) string {
-	return `$(glpg q postgres ` + b64(sql) + ` || echo 'сервер PostgreSQL не отвечает — проверь pg_lsclusters')`
+	return `$(glpg q postgres ` + b64(sql) + ` || glpg q template1 ` + b64(pgsLab2NoPostgres) +
+		` || echo 'сервер PostgreSQL не отвечает — проверь pg_lsclusters')`
 }
+
+// pgsLab2NoPostgres explains a check that could not connect to postgres while
+// the server answers.
+const pgsLab2NoPostgres = "SELECT CASE WHEN EXISTS (SELECT 1 FROM pg_database WHERE datname = 'postgres') " +
+	"THEN 'проверка не смогла подключиться к базе postgres' " +
+	"ELSE 'нет служебной базы postgres, а проверка подключается к ней — создай её заново (CREATE DATABASE postgres;) или нажми «Пересоздать»' END"
