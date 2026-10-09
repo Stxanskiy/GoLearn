@@ -61,7 +61,7 @@ package main
 // foreign key error, and the ROLLBACK the quiz ends with brings Chekhov back;
 // and the order of task 6 has status new.
 //
-// Reference solutions: scripts/labcheck/solutions-pg-lab6.sh.
+// Reference solutions: scripts/labcheck/solutions-pg.sh.
 
 import (
 	"strconv"
@@ -303,8 +303,9 @@ var pgsLab6AuthorDone = pgHasCol("pereplet", "books", "author_id", "integer") + 
 		"LEFT JOIN authors a ON a.id = b.author_id WHERE a.full_name IS DISTINCT FROM m.author)")
 
 // pgsLab6AuthorNow: the column and where it leads (read from the catalog, so
-// the query runs whether or not author_id is there) — with a column to redo,
-// the way lesson 6 teaches: drop it and add it again —, then, only when it is
+// the query runs whether or not author_id is there) — a missing reference is
+// added to the column as lesson 14 shows (ADD FOREIGN KEY), a wrong column is
+// redone the way lesson 6 teaches: drop it and add it again —, then, only when it is
 // there, the books without an author or with another one, which the task's
 // table names anyway, and books gone from the catalog.
 var pgsLab6AuthorNow = pgsLab6Now("SELECT CASE "+
@@ -316,7 +317,9 @@ var pgsLab6AuthorNow = pgsLab6Now("SELECT CASE "+
 	"WHEN "+pgsLab6AuthorRefs+" <> 'authors' THEN ', ссылается на ' || "+pgsLab6AuthorRefs+" || ', а нужно на authors (id)' "+
 	"WHEN "+pgsLab6AuthorOnDelete+" THEN ', ссылается на authors, но с ON DELETE: так база разрешает удалить автора, у которого есть книги' "+
 	"ELSE ', ссылается на authors' END || "+
-	"CASE WHEN ("+pgColType("books", "author_id")+") <> 'integer' OR "+pgsLab6AuthorRefs+" IS NULL OR "+pgsLab6AuthorRefs+" <> 'authors' OR "+pgsLab6AuthorOnDelete+" "+
+	"CASE WHEN ("+pgColType("books", "author_id")+") = 'integer' AND "+pgsLab6AuthorRefs+" IS NULL "+
+	"THEN ' — ссылку можно добавить к готовому столбцу, как в уроке «Ограничения»: ALTER TABLE books ADD FOREIGN KEY (author_id) REFERENCES authors (id);' "+
+	"WHEN ("+pgColType("books", "author_id")+") <> 'integer' OR "+pgsLab6AuthorRefs+" <> 'authors' OR "+pgsLab6AuthorOnDelete+" "+
 	"THEN ' — чтобы переделать столбец, удали его (ALTER TABLE books DROP COLUMN author_id;), добавь заново, как в задании, и снова проставь номера' ELSE '' END END") +
 	pgVal("pereplet", "SELECT coalesce('; ' || nullif(concat_ws('; ', "+
 		"(SELECT 'без автора (author_id пустой): ' || count(*) || ' из "+strconv.Itoa(len(pgsLab6Books))+" книг' FROM books b JOIN "+pgsLab6Map+" ON m.title = b.title "+

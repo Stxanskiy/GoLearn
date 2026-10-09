@@ -47,7 +47,7 @@ package main
 // syntax, \o with \pset format csv. Eight books of the catalog are in stock,
 // at eight different prices, so ORDER BY price has one order.
 //
-// Reference solutions: scripts/labcheck/solutions-pg-lab7.sh.
+// Reference solutions: scripts/labcheck/solutions-pg.sh.
 
 import (
 	"sort"

@@ -85,7 +85,7 @@ package main
 // agent_id may be empty; their answers follow from lessons 13, 14 and 18, not
 // from data.
 //
-// Reference solutions: scripts/labcheck/solutions-pg-lab8.sh.
+// Reference solutions: scripts/labcheck/solutions-pg.sh.
 
 import (
 	"bytes"
