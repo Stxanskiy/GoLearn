@@ -2,10 +2,359 @@
   "n": 20,
   "id": "ch_pgs_20_final",
   "title": "Итоговая проверка и что дальше",
-  "kind": "lesson",
+  "kind": "tasks",
   "format": "md",
-  "content_html": "# Итоговая проверка и что дальше\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в проверке\n\n- итоговые вопросы по всему курсу\n- шпаргалка по psql и SQL из курса\n- что изучать дальше: курс «SQL-запросы в PostgreSQL»\n",
-  "tasks": [],
+  "content_html": "# Итоговая проверка и что дальше\n\nТы прошёл весь курс: от «что такое таблица» до своей базы, собранной из файла. Здесь 12 вопросов по всему курсу: пара — про таблицы и данные, остальные — про ключи, ограничения, загрузку CSV и проектирование. Почти в каждом вопросе есть SQL-команда, ответ сервера или схема таблицы: прочитай внимательно и реши, что ответит сервер, что не так в схеме или какое правило нужно.\n\nТерминал не нужен: всё для ответа есть в самом вопросе. Подсматривать в уроки можно — особенно в разделы «Частые ошибки». После ответа появится объяснение: прочитай его, даже если ответил верно.\n\n## Что дальше\n\n### Что ты теперь умеешь\n\n- ставить PostgreSQL на Ubuntu, проверять, что сервер работает, и подключаться к нему: `psql pereplet`;\n- работать в psql: смотреть базы, таблицы и их устройство (`\\l`, `\\dt`, `\\d`), переключаться между базами (`\\c`), искать ответ в справке (`\\?`, `\\h`);\n- создавать и менять таблицы с подходящими типами: `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`;\n- добавлять, находить, сортировать, менять и удалять данные: `INSERT`, `SELECT`, `WHERE`, `ORDER BY`, `UPDATE`, `DELETE`;\n- страховать опасные изменения черновиком: `BEGIN`, `COMMIT`, `ROLLBACK`;\n- связывать таблицы ключами — «один ко многим» и «многие ко многим»;\n- защищать данные правилами: `NOT NULL`, `DEFAULT`, `UNIQUE`, `CHECK`;\n- загружать данные из CSV и выгружать отчёты в файл: `\\copy`;\n- проектировать базу по требованиям и собирать её из файла: `\\i`.\n\n### Следующий курс: «SQL-запросы в PostgreSQL»\n\nПока ты задаёшь базе простые вопросы: «книги дешевле 500 рублей», «у кого книги на руках». Второй курс пути научит отвечать запросами на настоящие вопросы магазина — на той же базе «Переплёта», которую ты построил. Ты научишься:\n\n- **соединять таблицы** одним запросом — `JOIN`: книга вместе с именем автора, заказ вместе с email покупателя. Сейчас для этого нужно два запроса;\n- **считать итоги и группировать** — `count`, `sum`, `GROUP BY`: сколько заказов в каждом статусе, какая выручка в каждом месяце;\n- **искать точнее**: «или» (`OR`), поиск по части названия (`LIKE`);\n- **работать с датами, числами и текстом**: сколько дней прошло с регистрации покупателя, как округлить цену;\n- **строить сложные отчёты по шагам** — запрос внутри запроса;\n- **составлять рейтинги**: три самые продаваемые книги в каждом жанре, рост выручки от месяца к месяцу.\n\nПомнишь запрос из первого урока — сколько книг продали за март, с `JOIN` и `sum`? После второго курса ты напишешь такой сам.\n\n### Для DevOps: «PostgreSQL для DevOps: эксплуатация»\n\nЭтот курс — для тех, кто будет отвечать за сервер, на котором живёт база. В первом уроке был список того, что с базой нужно уметь: развернуть, защитить, бэкапить, мониторить, обновлять. Здесь ты научишься именно этому. База «Переплёта» начинает работать по-настоящему, с живыми покупателями, и отвечаешь за неё ты:\n\n- как сервер PostgreSQL устроен внутри и как его настраивать;\n- пользователи и права: кому можно только читать, кому — менять данные, кто и откуда может подключиться;\n- что бывает, когда двое меняют одни и те же данные, и что делать, если «всё зависло»;\n- индексы: как ускорить медленный запрос;\n- резервные копии и восстановление из них;\n- реплика — вторая копия сервера на случай аварии, PostgreSQL в Docker и мониторинг — наблюдение за сервером.\n\nРабота — в настоящем терминале, с поломками, которые нужно найти и починить, как на дежурстве. Этот курс можно начинать сразу после первого, если ты знаешь основы Linux; курс «SQL-запросы в PostgreSQL» желателен, но не обязателен.\n",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Слишком дорогая книга",
+      "taskid": "pgs_q20_t1_overflow",
+      "hint": "",
+      "question_html": "<p>Антиквар предложил «Переплёту» прижизненное издание «Евгения Онегина» за полтора миллиона рублей. Цена в таблице <code>books</code> — <code>numeric(8,2)</code>. Стажёр добавляет книгу в каталог:</p><pre>INSERT INTO books (title, price) VALUES ('Евгений Онегин, 1833 год', 1500000.00);</pre><p>Что ответит сервер?</p>",
+      "options": [
+        {
+          "text": "<code>INSERT 0 1</code>: книга добавлена, цена записана как есть — <code>1500000.00</code>",
+          "correct": false,
+          "explanation": "Нет: в <code>numeric(8,2)</code> всего восемь цифр, и две из них — после точки. До точки помещается не больше шести цифр, самое большое число — <code>999999.99</code>. А в полутора миллионах семь цифр."
+        },
+        {
+          "text": "<code>INSERT 0 1</code>: цена урезана до самой большой, какая помещается, — <code>999999.99</code>",
+          "correct": false,
+          "explanation": "Нет: база не подменяет одно число другим. Округлить она может только лишние знаки после точки: <code>1234.567</code> станет <code>1234.57</code>. А если не помещается целая часть, база отказывает."
+        },
+        {
+          "text": "<code>ERROR:  numeric field overflow</code>: число не помещается в <code>numeric(8,2)</code>",
+          "correct": true,
+          "explanation": "Верно: <code>numeric(8,2)</code> вмещает числа до <code>999999.99</code>, а <code>1500000.00</code> больше. Сервер отказал, и книга не добавлена: ни округлять, ни урезать такое число база не станет."
+        },
+        {
+          "text": "<code>ERROR:  invalid input syntax for type numeric</code>: в числе слишком много цифр",
+          "correct": false,
+          "explanation": "Нет: эта ошибка бывает, когда вместо числа пришёл текст, например <code>'пятьсот пятьдесят'</code>. <code>1500000.00</code> — правильно записанное число, просто слишком большое для этого столбца. Такая ошибка называется <code>numeric field overflow</code> — «число не помещается»."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Самая толстая книга",
+      "taskid": "pgs_q20_t2_nulls",
+      "hint": "",
+      "question_html": "<p>В таблице <code>books</code> четыре книги:</p><pre> id |       title        | page_count\n----+--------------------+------------\n  1 | Мастер и Маргарита |        480\n  2 | Собачье сердце     |        160\n  3 | Анна Каренина      |\n  4 | Идиот              |        640\n(4 rows)</pre><p>Менеджер ищет самую толстую книгу:</p><pre>SELECT title, page_count FROM books ORDER BY page_count DESC;</pre><p>Какая книга окажется в первой строке ответа?</p>",
+      "options": [
+        {
+          "text": "«Анна Каренина»: у неё не указано число страниц",
+          "correct": true,
+          "explanation": "Верно: при сортировке по убыванию (<code>DESC</code>) пустые значения <code>NULL</code> идут <strong>первыми</strong>. Самая толстая из книг с известным числом страниц — «Идиот», он будет второй строкой. Чтобы пустые не мешали, добавь условие <code>WHERE page_count IS NOT NULL</code>."
+        },
+        {
+          "text": "«Идиот»: в нём больше всего страниц — 640",
+          "correct": false,
+          "explanation": "Нет: так было бы, если бы число страниц было указано у всех книг. С <code>DESC</code> пустые значения <code>NULL</code> встают в начало, поэтому первой выйдет «Анна Каренина», а «Идиот» — второй."
+        },
+        {
+          "text": "«Собачье сердце»: в нём меньше всего страниц — 160",
+          "correct": false,
+          "explanation": "Нет: <code>DESC</code> — сортировка по убыванию, от большего к меньшему, поэтому «Собачье сердце» будет последним. А первой выйдет «Анна Каренина»: с <code>DESC</code> пустые значения идут первыми."
+        },
+        {
+          "text": "Никакая: из-за пустого значения сервер ответит ошибкой",
+          "correct": false,
+          "explanation": "Нет: столбец с <code>NULL</code> сортировать можно, ошибки не будет. Пустые значения просто встают в одно место: с <code>DESC</code> — в начало, без <code>DESC</code> — в конец."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Куда положить ссылку",
+      "taskid": "pgs_q20_t3_link",
+      "hint": "",
+      "question_html": "<p>«Переплёт» начинает учитывать поставщиков: у таблицы <code>suppliers</code> номер — <code>id serial PRIMARY KEY</code>. Каждую книгу привозит <strong>один</strong> поставщик, а у поставщика <strong>много</strong> книг.</p><p>Как связать книги с поставщиками?</p>",
+      "options": [
+        {
+          "text": "В <code>suppliers</code> добавить столбец <code>book_id integer REFERENCES books (id)</code>",
+          "correct": false,
+          "explanation": "Нет: ссылка живёт в таблице, где «много», а «много» здесь — книги. В <code>book_id</code> у поставщика поместится номер только одной книги, а книг у него много."
+        },
+        {
+          "text": "В <code>books</code> добавить столбец <code>supplier_id integer REFERENCES suppliers (id)</code>",
+          "correct": true,
+          "explanation": "Верно: у поставщика много книг, поэтому ссылка — в <code>books</code>: каждая книга знает своего поставщика. Тип — <code>integer</code>, как у <code>id</code> в <code>suppliers</code>, а <code>REFERENCES</code> не даст сослаться на поставщика, которого нет."
+        },
+        {
+          "text": "В <code>books</code> добавить столбец <code>supplier_id serial REFERENCES suppliers (id)</code>",
+          "correct": false,
+          "explanation": "Нет: место верное, а тип — нет. <code>serial</code> значит «база сама ставит номера по порядку»: первая книга получит 1, вторая — 2, кто бы их ни привёз. А в ссылке должен быть номер нужного поставщика — его ставишь ты, поэтому тип <code>integer</code>."
+        },
+        {
+          "text": "В <code>suppliers</code> добавить столбец <code>book_ids text</code>: номера книг через запятую",
+          "correct": false,
+          "explanation": "Нет: в ячейке — одно значение. Список <code>'1, 5, 7'</code> база не проверит внешним ключом, и искать по нему неудобно. Ссылку кладут в таблицу, где «много», — в <code>books</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Книга без автора",
+      "taskid": "pgs_q20_t4_noauthor",
+      "hint": "",
+      "question_html": "<p>В каталоге «Переплёта» ссылка книги на автора описана так:</p><pre>author_id integer REFERENCES authors (id)</pre><p>Автор «Слова о полку Игореве» неизвестен, поэтому стажёр добавляет книгу без него — только название и цену:</p><pre>INSERT INTO books (title, price) VALUES ('Слово о полку Игореве', 350.00);</pre><p>Что ответит сервер?</p>",
+      "options": [
+        {
+          "text": "<code>ERROR:  … violates foreign key constraint \"books_author_id_fkey\"</code>: в <code>authors</code> нет автора с пустым номером",
+          "correct": false,
+          "explanation": "Нет: внешний ключ проверяет заполненную ссылку — есть ли автор с таким номером. Пустое значение <code>NULL</code> значит «ни на кого не ссылается», проверять здесь нечего."
+        },
+        {
+          "text": "<code>ERROR:  null value in column \"author_id\" … violates not-null constraint</code>",
+          "correct": false,
+          "explanation": "Нет: у <code>author_id</code> нет <code>NOT NULL</code>. <code>REFERENCES</code> сам по себе не делает ссылку обязательной — он только следит, чтобы заполненная ссылка вела на существующую строку."
+        },
+        {
+          "text": "<code>INSERT 0 1</code>: книга добавлена, а в <code>author_id</code> база сама поставила 1",
+          "correct": false,
+          "explanation": "Нет: у <code>author_id</code> нет <code>DEFAULT</code>, поэтому подставлять в него базе нечего. Столбец, которого нет в <code>INSERT</code>, останется пустым — <code>NULL</code>."
+        },
+        {
+          "text": "<code>INSERT 0 1</code>: книга добавлена, <code>author_id</code> у неё пустой — <code>NULL</code>",
+          "correct": true,
+          "explanation": "Верно: пустая ссылка разрешена — <code>NULL</code> значит «ни на кого не ссылается». Если бы автор был нужен всегда, к ссылке добавили бы <code>NOT NULL</code>: <code>author_id integer NOT NULL REFERENCES authors (id)</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Та же книга второй раз",
+      "taskid": "pgs_q20_t5_pair",
+      "hint": "",
+      "question_html": "<p>Стажёр спроектировал выдачи для школьной библиотеки по-своему: вместо отдельного номера <code>id</code> ключом сделал пару «книга — ученик», как в <code>book_genres</code>:</p><pre>CREATE TABLE loans (\n    book_id     integer NOT NULL REFERENCES books (id),\n    student_id  integer NOT NULL REFERENCES students (id),\n    issued_on   date NOT NULL DEFAULT current_date,\n    due_on      date NOT NULL,\n    returned_on date,\n    PRIMARY KEY (book_id, student_id)\n);</pre><p>В сентябре Миша (ученик № 1) брал книгу № 1 и вернул её:</p><pre> book_id | student_id | issued_on  |   due_on   | returned_on\n---------+------------+------------+------------+-------------\n       1 |          1 | 2025-09-08 | 2025-09-22 | 2025-09-19\n(1 row)</pre><p>Сегодня Миша снова берёт ту же книгу:</p><pre>INSERT INTO loans (book_id, student_id, due_on) VALUES (1, 1, current_date + 14);</pre><p>Что ответит сервер?</p>",
+      "options": [
+        {
+          "text": "<code>INSERT 0 1</code>: в <code>loans</code> теперь две выдачи — сентябрьская и сегодняшняя",
+          "correct": false,
+          "explanation": "Нет: пара <code>(book_id, student_id)</code> — первичный ключ, а ключ не повторяется. Пару <code>(1, 1)</code> уже заняла сентябрьская выдача, вторую такую строку база не примет."
+        },
+        {
+          "text": "<code>ERROR:  duplicate key value violates unique constraint \"loans_pkey\"</code>",
+          "correct": true,
+          "explanation": "Верно: <code>DETAIL:  Key (book_id, student_id)=(1, 1) already exists.</code> Пара годится в ключ для <code>book_genres</code>: книга либо относится к жанру, либо нет. А выдача — событие, которое повторяется: тот же ученик может взять ту же книгу ещё раз. Поэтому у выдачи свой номер — <code>id serial PRIMARY KEY</code>."
+        },
+        {
+          "text": "<code>INSERT 0 1</code>: новая строка заменила сентябрьскую, ведь пара та же",
+          "correct": false,
+          "explanation": "Нет: <code>INSERT</code> только добавляет строки и никогда не меняет те, что уже есть. Встретив занятую пару, база отказывает с ошибкой <code>duplicate key</code>."
+        },
+        {
+          "text": "<code>ERROR:  … violates foreign key constraint</code>: книга № 1 занята сентябрьской выдачей",
+          "correct": false,
+          "explanation": "Нет: внешний ключ проверяет только, что книга № 1 и ученик № 1 существуют, — а они есть. Мешает первичный ключ: пара <code>(1, 1)</code> в <code>loans</code> уже записана."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Пустой статус",
+      "taskid": "pgs_q20_t6_default",
+      "hint": "",
+      "question_html": "<p>В таблице заказов статус описан так:</p><pre>status text NOT NULL DEFAULT 'new'\n       CHECK (status IN ('new', 'paid', 'shipped', 'cancelled'))</pre><p>Программа сайта добавляет заказ, а если статус не выбран, передаёт пустое значение:</p><pre>INSERT INTO orders (customer_id, status) VALUES (3, NULL);</pre><p>Покупатель № 3 в базе есть. Что ответит сервер?</p>",
+      "options": [
+        {
+          "text": "<code>INSERT 0 1</code>: вместо пустого значения база сама подставит <code>'new'</code> из <code>DEFAULT</code>",
+          "correct": false,
+          "explanation": "Нет: <code>DEFAULT</code> срабатывает, только когда столбца <strong>нет</strong> в списке <code>INSERT</code>. Здесь <code>status</code> в списке есть, и значение для него указано — <code>NULL</code>. Его база и пытается записать."
+        },
+        {
+          "text": "<code>INSERT 0 1</code>: заказ добавлен, а статус у него остался пустым — <code>NULL</code>",
+          "correct": false,
+          "explanation": "Нет: у <code>status</code> есть <code>NOT NULL</code>, пустым он быть не может. Такую строку база не примет."
+        },
+        {
+          "text": "<code>ERROR:  new row … violates check constraint \"orders_status_check\"</code>",
+          "correct": false,
+          "explanation": "Нет: сервер ругается не на правило со списком статусов. Значение пустое, а столбец обязательный, поэтому ошибка другая: <code>violates not-null constraint</code>."
+        },
+        {
+          "text": "<code>ERROR:  null value in column \"status\" … violates not-null constraint</code>",
+          "correct": true,
+          "explanation": "Верно: <code>status</code> указан в <code>INSERT</code>, поэтому <code>DEFAULT</code> не сработал, а явный <code>NULL</code> не пропустил <code>NOT NULL</code>. Чтобы получить <code>'new'</code>, программа должна просто не упоминать <code>status</code>: <code>INSERT INTO orders (customer_id) VALUES (3);</code>"
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Правило не добавляется",
+      "taskid": "pgs_q20_t7_check",
+      "hint": "",
+      "question_html": "<p>Директор просит, чтобы число страниц у книги всегда было больше нуля. Ты добавляешь правило в готовую таблицу:</p><pre>ALTER TABLE books ADD CHECK (page_count &gt; 0);</pre><p>Сервер отвечает:</p><pre>ERROR:  check constraint \"books_page_count_check\" of relation \"books\" is violated by some row</pre><p>Каким запросом найти <strong>все</strong> строки, которые мешают добавить правило?</p>",
+      "options": [
+        {
+          "text": "<code>SELECT id, title, page_count FROM books WHERE page_count &lt;= 0;</code>",
+          "correct": true,
+          "explanation": "Верно: правило нарушают строки, где число страниц <strong>не</strong> больше нуля — то есть меньше нуля или равно ему. Возьми условие правила и переверни его. Исправь эти строки через <code>UPDATE</code> и повтори <code>ALTER TABLE</code>."
+        },
+        {
+          "text": "<code>SELECT id, title, page_count FROM books WHERE page_count &gt; 0;</code>",
+          "correct": false,
+          "explanation": "Нет: это как раз строки, которые правилу подходят. Мешают остальные — где число страниц меньше нуля или равно ему."
+        },
+        {
+          "text": "<code>SELECT id, title, page_count FROM books WHERE page_count &lt; 0;</code>",
+          "correct": false,
+          "explanation": "Нет: этот запрос пропустит книги, у которых записано <code>0</code> страниц. А ноль тоже не больше нуля и мешает правилу. Нужно <code>&lt;= 0</code>."
+        },
+        {
+          "text": "<code>\\d books</code>",
+          "correct": false,
+          "explanation": "Нет: <code>\\d</code> показывает устройство таблицы — столбцы, типы, правила, — но не сами строки. Строки, которые мешают, ищут запросом <code>SELECT</code> с перевёрнутым условием правила."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Правила для промокодов",
+      "taskid": "pgs_q20_t8_promo",
+      "hint": "",
+      "question_html": "<p>«Переплёт» запускает промокоды. В таблице будут столбцы <code>code</code> (код), <code>discount</code> (скидка в процентах) и <code>is_active</code> (действует ли промокод). Требования такие:</p><ul><li>у каждого промокода есть код, например <code>AUTUMN10</code>, и коды не повторяются;</li><li>скидка — от 5 до 50 процентов, указывать её обязательно;</li><li>новый промокод сразу действует, если при добавлении не сказано иное.</li></ul><p>Какое описание столбцов выполняет все три требования?</p>",
+      "options": [
+        {
+          "text": "<code>code text NOT NULL, discount integer NOT NULL CHECK (discount BETWEEN 5 AND 50), is_active boolean NOT NULL DEFAULT true</code>",
+          "correct": false,
+          "explanation": "Нет: у <code>code</code> нет <code>UNIQUE</code>, и база примет два промокода <code>AUTUMN10</code>. <code>NOT NULL</code> запрещает только пустое значение, а повторы запрещает <code>UNIQUE</code>."
+        },
+        {
+          "text": "<code>code text NOT NULL UNIQUE, discount integer NOT NULL CHECK (discount &gt; 0), is_active boolean NOT NULL DEFAULT true</code>",
+          "correct": false,
+          "explanation": "Нет: правило <code>discount &gt; 0</code> пропустит скидку и 70, и 100 процентов. Чтобы скидка была от 5 до 50, нужно <code>CHECK (discount BETWEEN 5 AND 50)</code>."
+        },
+        {
+          "text": "<code>code text NOT NULL UNIQUE, discount integer NOT NULL CHECK (discount BETWEEN 5 AND 50), is_active boolean NOT NULL DEFAULT true</code>",
+          "correct": true,
+          "explanation": "Верно: код обязателен и не повторяется (<code>NOT NULL UNIQUE</code>), скидка обязательна и только от 5 до 50 (<code>NOT NULL CHECK (...)</code>), а если про <code>is_active</code> ничего не сказали, база сама поставит <code>true</code>."
+        },
+        {
+          "text": "<code>code text NOT NULL UNIQUE, discount integer NOT NULL CHECK (discount BETWEEN 5 AND 50), is_active boolean NOT NULL DEFAULT false</code>",
+          "correct": false,
+          "explanation": "Нет: с <code>DEFAULT false</code> новый промокод будет, наоборот, выключен, пока его не включат отдельно. По требованиям нужно <code>DEFAULT true</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Запятая в названии",
+      "taskid": "pgs_q20_t9_comma",
+      "hint": "",
+      "question_html": "<p>Менеджер прислал файл <code>/root/publishers3.csv</code>:</p><pre>name,city,founded_year\nРосмэн,Москва,1992\nМанн, Иванов и Фербер,Москва,2005\nРечь,Санкт-Петербург,1998</pre><p>Ты загружаешь его в таблицу издательств:</p><pre>pereplet=# \\copy publishers (name, city, founded_year) FROM '/root/publishers3.csv' WITH (FORMAT csv, HEADER)\nERROR:  extra data after last expected column\nCONTEXT:  COPY publishers, line 3: \"Манн, Иванов и Фербер,Москва,2005\"</pre><p>Что не так и как это исправить?</p>",
+      "options": [
+        {
+          "text": "Разделитель в файле — точка с запятой, как у русского Excel: добавь <code>DELIMITER ';'</code>",
+          "correct": false,
+          "explanation": "Нет: значения в файле разделены запятыми, как обычно. С <code>DELIMITER ';'</code> psql не нашёл бы в строках ни одной точки с запятой и ответил бы <code>missing data for column \"city\"</code>."
+        },
+        {
+          "text": "В названии издательства есть запятая: возьми это название в двойные кавычки",
+          "correct": true,
+          "explanation": "Верно: в строке 3 psql насчитал четыре значения — «Манн», «Иванов и Фербер», «Москва» и «2005», — а столбцов в команде три. Отсюда «лишние данные после последнего столбца». Значение с запятой внутри берут в двойные кавычки — строка станет такой: <code>\"Манн, Иванов и Фербер\",Москва,2005</code>. В таблицу кавычки не попадут."
+        },
+        {
+          "text": "Строку заголовка psql принял за данные: убери из команды <code>HEADER</code>",
+          "correct": false,
+          "explanation": "Нет: <code>HEADER</code> как раз велит пропустить заголовок. Без него psql попробует положить слово <code>founded_year</code> в числовой столбец и ответит другой ошибкой. А <code>CONTEXT</code> указывает на строку 3 — строку с «Манн, Иванов и Фербер»."
+        },
+        {
+          "text": "В файле нет номеров издательств: допиши <code>id</code> в начало списка столбцов",
+          "correct": false,
+          "explanation": "Нет: номеров в файле нет, поэтому и в списке <code>id</code> не нужен — номера поставит база. С <code>id</code> в списке psql положил бы «Росмэн» в числовой столбец <code>id</code> и ответил ошибкой."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Загрузка без списка столбцов",
+      "taskid": "pgs_q20_t10_columns",
+      "hint": "",
+      "question_html": "<p>Таблица издательств и файл <code>/root/publishers.csv</code> для неё:</p><pre>CREATE TABLE publishers (\n    id           serial PRIMARY KEY,\n    name         text NOT NULL UNIQUE,\n    city         text,\n    founded_year integer\n);</pre><pre>name,city,founded_year\nАзбука,Санкт-Петербург,1995\nЭксмо,Москва,1991\nСамокат,Москва,2003</pre><p>Стажёр загружает файл и получает ошибку:</p><pre>pereplet=# \\copy publishers FROM '/root/publishers.csv' WITH (FORMAT csv, HEADER)\nERROR:  invalid input syntax for type integer: \"Азбука\"\nCONTEXT:  COPY publishers, line 2, column id: \"Азбука\"</pre><p>Что не так в команде?</p>",
+      "options": [
+        {
+          "text": "Во второй строке файла опечатка: название «Азбука» нужно исправить в файле",
+          "correct": false,
+          "explanation": "Нет: «Азбука» — правильное название. Беда в том, куда psql его положил: в <code>CONTEXT</code> написано <code>column id</code> — в числовой столбец номера."
+        },
+        {
+          "text": "Нужно убрать <code>HEADER</code>: тогда psql прочитает заголовок и поймёт, где какой столбец",
+          "correct": false,
+          "explanation": "Нет: <code>HEADER</code> только велит пропустить первую строку, названия из заголовка psql не читает. Без <code>HEADER</code> он попробует положить в <code>id</code> слово <code>name</code> — ошибка будет та же, только в строке 1."
+        },
+        {
+          "text": "В таблицу с <code>serial</code> файл не загрузить: <code>id</code> нужно сделать <code>integer</code>",
+          "correct": false,
+          "explanation": "Нет: в таблицу с <code>serial</code> загружать можно — номера база поставит сама, как при <code>INSERT</code>. <code>integer PRIMARY KEY</code> без <code>serial</code> нужен, только когда номера приходят в самом файле."
+        },
+        {
+          "text": "Не указан список столбцов: «Азбука» попала в первый столбец таблицы — <code>id</code>",
+          "correct": true,
+          "explanation": "Верно: без списка psql считает, что в файле все столбцы таблицы по порядку, начиная с <code>id</code>. Перечисли после имени таблицы столбцы так, как они идут в файле: <code>\\copy publishers (name, city, founded_year) FROM '/root/publishers.csv' WITH (FORMAT csv, HEADER)</code>. Номера в <code>id</code> база поставит сама."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Что не так в схеме клуба",
+      "taskid": "pgs_q20_t11_age",
+      "hint": "",
+      "question_html": "<p>Для книжного клуба «Переплёта» стажёр спроектировал таблицу участников. По требованиям в клуб принимают с 14 лет:</p><pre>CREATE TABLE club_members (\n    id        serial PRIMARY KEY,\n    full_name text NOT NULL,\n    phone     text NOT NULL UNIQUE,\n    age       integer NOT NULL CHECK (age &gt;= 14)\n);</pre><p>Что в этой схеме стоит исправить?</p>",
+      "options": [
+        {
+          "text": "<code>phone</code> должен быть <code>integer</code>: номер телефона — это число",
+          "correct": false,
+          "explanation": "Нет: телефон — это текст, хоть в нём и цифры. В нём бывают <code>+</code>, скобки и дефисы, а складывать и сравнивать телефоны никто не будет. Поэтому <code>text</code> здесь верно."
+        },
+        {
+          "text": "<code>full_name</code> нужно сделать <code>UNIQUE</code>, чтобы участники не повторялись",
+          "correct": false,
+          "explanation": "Нет: у разных людей бывают одинаковые имена — вторую Анну Смирнову база тогда не пустит. А от повторов уже защищает <code>UNIQUE</code> у телефона."
+        },
+        {
+          "text": "Вместо возраста <code>age</code> нужно хранить дату рождения: <code>birth_date date</code>",
+          "correct": true,
+          "explanation": "Верно: возраст меняется каждый год, и через год все значения в <code>age</code> устареют. Дата рождения не меняется никогда, а возраст по ней можно посчитать запросом. Храни то, что не устаревает."
+        },
+        {
+          "text": "У одного столбца нельзя ставить и <code>NOT NULL</code>, и <code>CHECK</code>: оставь одно",
+          "correct": false,
+          "explanation": "Нет: ограничения можно сочетать сколько угодно. У цены в «Переплёте» тоже стоят вместе <code>NOT NULL</code> и <code>CHECK (price &gt; 0)</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Файл сработал только один раз",
+      "taskid": "pgs_q20_t12_order",
+      "hint": "",
+      "question_html": "<p>Файл <code>/root/fitness.sql</code> создаёт базу фитнес-клуба:</p><pre>-- Фитнес-клуб: клиенты и их посещения.\nDROP TABLE IF EXISTS clients;\nDROP TABLE IF EXISTS visits;\n\nCREATE TABLE clients (\n    id        serial PRIMARY KEY,\n    full_name text NOT NULL,\n    phone     text NOT NULL UNIQUE\n);\n\nCREATE TABLE visits (\n    id         serial PRIMARY KEY,\n    client_id  integer NOT NULL REFERENCES clients (id),\n    visited_on date NOT NULL DEFAULT current_date\n);</pre><p>Первый запуск <code>\\i /root/fitness.sql</code> прошёл без ошибок, а второй ответил так:</p><pre>fitness=# \\i /root/fitness.sql\npsql:/root/fitness.sql:2: ERROR:  cannot drop table clients because other objects depend on it\nDETAIL:  constraint visits_client_id_fkey on table visits depends on table clients\nHINT:  Use DROP ... CASCADE to drop the dependent objects too.\nDROP TABLE\npsql:/root/fitness.sql:9: ERROR:  relation \"clients\" already exists\nCREATE TABLE</pre><p>Что не так в файле?</p>",
+      "options": [
+        {
+          "text": "Таблицы удаляются не в том порядке: сначала нужно удалять <code>visits</code>, потом <code>clients</code>",
+          "correct": true,
+          "explanation": "Верно: <code>visits</code> ссылается на <code>clients</code>, и пока она есть, база не даёт удалить <code>clients</code>. При первом запуске таблиц ещё не было, удалять было нечего, — поэтому ошибка появилась только сейчас. Удаляют в обратном порядке: сначала ту, что ссылается, потом ту, на которую ссылаются."
+        },
+        {
+          "text": "Таблицы создаются не в том порядке: <code>visits</code> нужно создавать раньше <code>clients</code>",
+          "correct": false,
+          "explanation": "Нет: порядок создания верный — сначала таблица, на которую ссылаются. Если создать <code>visits</code> первой, сервер ответит <code>relation \"clients\" does not exist</code>: ссылаться ещё не на что."
+        },
+        {
+          "text": "<code>DROP TABLE IF EXISTS</code> срабатывает только при первом запуске, потом таблицы удаляют вручную",
+          "correct": false,
+          "explanation": "Нет: <code>DROP TABLE IF EXISTS</code> срабатывает при каждом запуске — ради этого его и пишут. Таблицу <code>visits</code> он и во второй раз удалил — в ответе есть <code>DROP TABLE</code>. Не удалилась только <code>clients</code>: на неё ещё ссылалась <code>visits</code>."
+        },
+        {
+          "text": "В описании <code>clients</code> ошибка — поэтому сервер ругается на строку 9",
+          "correct": false,
+          "explanation": "Нет: ошибка на строке 9 — следствие первой. <code>clients</code> не удалилась на строке 2, поэтому создать её заново нельзя — она уже есть. Исправляй всегда первую ошибку."
+        }
+      ]
+    }
+  ],
   "vm_image": null,
   "vm_init": ""
 }
