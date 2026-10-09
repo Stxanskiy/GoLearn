@@ -50,7 +50,14 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        # AWS's mirror of the Docker official image, not Docker Hub itself.
+        # GitHub's runners share outbound addresses, so an anonymous pull from
+        # Docker Hub lands on a rate limit that has nothing to do with this
+        # repository's traffic - run 30 died on
+        # "toomanyrequests: You have reached your unauthenticated pull rate
+        # limit" before a single test ran. The mirror is the same image, needs
+        # no credentials, and is not rate limited for anonymous pulls.
+        image: public.ecr.aws/docker/library/postgres:16
         env:
           POSTGRES_USER: golearn
           POSTGRES_PASSWORD: golearn
