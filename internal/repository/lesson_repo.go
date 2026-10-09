@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/runner"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -292,11 +293,14 @@ func (r *LessonRepo) GetTasks(ctx context.Context, lessonID int) ([]model.Task, 
 	return tasks, rows.Err()
 }
 
-// LessonSandbox returns the image and setup script for a lesson's shell lab.
+// LessonSandbox returns what a lesson's lab asks its sandbox to be: the image
+// and setup script, and the machine size if the lesson states one.
+//
 // The whole lab shares one container, so the setup is the concatenation of
 // every distinct task setup script (in task order) and the image is the first
 // non-empty one — all fixture files exist before the student's first command.
-func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (image string, setup string, err error) {
+// The size comes from the lesson rather than its tasks: one lab, one machine.
+func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (spec runner.Spec, err error) {
 	// Not just shell tasks: a code task names its own image too (a Qt lesson
 	// cannot run in the base sandbox), and before this it was skipped here, so
 	// the session came up on whatever SANDBOX_IMAGE happened to be. The setup
@@ -307,16 +311,17 @@ func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (image str
 		WHERE lesson_id = $1 AND (kind = 'shell' OR sandbox_image <> '')
 		ORDER BY order_num, id`, lessonID)
 	if err != nil {
-		return "", "", err
+		return runner.Spec{}, err
 	}
 	defer rows.Close()
 
 	seen := make(map[string]bool)
+	var image string
 	var parts []string
 	for rows.Next() {
 		var img, s string
 		if err := rows.Scan(&img, &s); err != nil {
-			return "", "", err
+			return runner.Spec{}, err
 		}
 		if image == "" {
 			image = img
@@ -326,7 +331,19 @@ func (r *LessonRepo) LessonSandbox(ctx context.Context, lessonID int) (image str
 			parts = append(parts, s)
 		}
 	}
-	return image, strings.Join(parts, "\n"), rows.Err()
+	if err := rows.Err(); err != nil {
+		return runner.Spec{}, err
+	}
+	out := runner.Spec{Image: image, Setup: strings.Join(parts, "\n")}
+	// 0/0 when the lesson states nothing, which the runner reads as "use the
+	// profile's size" - exactly what every lesson got before these columns.
+	err = r.pool.QueryRow(ctx,
+		`SELECT vm_cpus, vm_mem_mib FROM lessons WHERE id = $1`, lessonID).
+		Scan(&out.CPUs, &out.MemMiB)
+	if err != nil {
+		return runner.Spec{}, err
+	}
+	return out, nil
 }
 
 // ── Admin: quiz question CRUD ──

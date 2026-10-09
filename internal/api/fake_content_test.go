@@ -9,6 +9,7 @@ import (
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
+	"github.com/backendraz/golearn/internal/runner"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -211,8 +212,8 @@ func (f fakeLessons) GetTaskByID(_ context.Context, taskID int) (*model.Task, er
 	return nil, pgx.ErrNoRows
 }
 
-func (f fakeLessons) LessonSandbox(_ context.Context, lessonID int) (string, string, error) {
-	return "golearn/sandbox:latest", fmt.Sprintf("setup-%d", lessonID), nil
+func (f fakeLessons) LessonSandbox(_ context.Context, lessonID int) (runner.Spec, error) {
+	return runner.Spec{Image: "golearn/sandbox:latest", Setup: fmt.Sprintf("setup-%d", lessonID)}, nil
 }
 
 type fakeProgress struct{ *fakeContent }

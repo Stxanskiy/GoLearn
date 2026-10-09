@@ -29,7 +29,7 @@ func TestShellRunnerLocal(t *testing.T) {
 	defer cancel()
 	defer func() { _ = s.Reset(context.Background(), uid, key) }()
 
-	if _, err := s.EnsureSession(ctx, uid, key, "golearn/sandbox:latest", "echo hi > /root/setup.txt"); err != nil {
+	if _, err := s.EnsureSession(ctx, uid, key, Spec{Image: "golearn/sandbox:latest", Setup: "echo hi > /root/setup.txt"}); err != nil {
 		t.Fatalf("EnsureSession: %v", err)
 	}
 	if !s.HasSession(uid, key) {
@@ -40,24 +40,24 @@ func TestShellRunnerLocal(t *testing.T) {
 		t.Errorf("Session = %+v, %v", info, ok)
 	}
 
-	out, err := s.Exec(ctx, uid, key, "golearn/sandbox:latest", "", "cat /root/setup.txt")
+	out, err := s.Exec(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"}, "cat /root/setup.txt")
 	if err != nil || !strings.Contains(out, "hi") {
 		t.Errorf("setup script did not run: out=%q err=%v", out, err)
 	}
 
-	passed, _, err := s.Check(ctx, uid, key, "golearn/sandbox:latest", "", "test -f /root/setup.txt")
+	passed, _, err := s.Check(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"}, "test -f /root/setup.txt")
 	if err != nil || !passed {
 		t.Errorf("Check = %v, %v", passed, err)
 	}
 
-	if err := s.FSWrite(ctx, uid, key, "golearn/sandbox:latest", "", "/root/note.txt", []byte("written")); err != nil {
+	if err := s.FSWrite(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"}, "/root/note.txt", []byte("written")); err != nil {
 		t.Fatalf("FSWrite: %v", err)
 	}
-	data, err := s.FSRead(ctx, uid, key, "golearn/sandbox:latest", "", "/root/note.txt")
+	data, err := s.FSRead(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"}, "/root/note.txt")
 	if err != nil || string(data) != "written" {
 		t.Errorf("FSRead = %q, %v", data, err)
 	}
-	entries, err := s.FSList(ctx, uid, key, "golearn/sandbox:latest", "", "/root")
+	entries, err := s.FSList(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"}, "/root")
 	if err != nil {
 		t.Fatalf("FSList: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestShellRunnerLocal(t *testing.T) {
 	}
 
 	// The interactive terminal is what a student actually opens.
-	handle, err := s.EnsureSession(ctx, uid, key, "golearn/sandbox:latest", "")
+	handle, err := s.EnsureSession(ctx, uid, key, Spec{Image: "golearn/sandbox:latest"})
 	if err != nil {
 		t.Fatalf("EnsureSession (pty): %v", err)
 	}

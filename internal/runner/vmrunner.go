@@ -57,14 +57,18 @@ type VMRunner struct {
 	memMiB  int // docker profile: an engine runs inside the guest
 	memLite int // shell-only lessons (Linux, Git, SQL, trainers)
 	memK8s  int // Kubernetes VMs need more RAM (k3s)
-	maxVMs  int
+	// Ceilings for what a lesson may ask for. FC_MAX_VMS of these run at once,
+	// so the cap is what keeps one lab definition from exhausting the host.
+	maxMemMiB int
+	maxVCPUs  int
+	maxVMs    int
 
 	mu       sync.Mutex
 	sessions map[string]*vmSession // sid -> session
 	booting  map[string]*vmBoot    // sid -> boot in flight (see EnsureSession)
 	// bringUpHook stands in for bringUp so the coordination in EnsureSession can
 	// be tested without a Firecracker host. nil everywhere but in tests.
-	bringUpHook func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error)
+	bringUpHook func(ctx context.Context, sid string, userID int, key string, spec Spec) (string, error)
 	// killHook stands in for the host side of killVM for the same reason. The
 	// bookkeeping around it still runs, which is the part worth testing.
 	killHook func(*vmSession)
@@ -107,10 +111,13 @@ type vmSession struct {
 	profile string // "docker" | "k8s" — which golden this VM booted from
 	slot    int
 	ip      string
-	work    string // host work dir (stored so a re-keyed warm VM tears down correctly)
-	tap     string
-	started time.Time
-	last    time.Time
+	// What the lesson asked for, 0 when it asked for nothing. Kept on the
+	// session because bootVM sizes the machine and only sees this struct.
+	reqCPUs, reqMemMiB int
+	work               string // host work dir (stored so a re-keyed warm VM tears down correctly)
+	tap                string
+	started            time.Time
+	last               time.Time
 }
 
 // profileOf returns the pool profile for a sandbox image.
@@ -118,6 +125,20 @@ type vmSession struct {
 // the golden rootfs and, just as importantly, the VM size: "lite" lessons (Linux,
 // Git, SQL, the trainers) only run shell tools, while "docker" and "k8s" carry an
 // engine or a cluster inside the guest.
+// clampInt keeps a requested size inside what the host can afford.
+func clampInt(v, lo, hi int) int {
+	if hi < lo {
+		hi = lo
+	}
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
 func profileOf(image string) string {
 	switch {
 	case strings.Contains(image, "sandbox-k8s"):
@@ -132,6 +153,9 @@ func profileOf(image string) string {
 }
 
 const (
+	// vmMinMemMiB is below what the golden rootfs boots in; asking for less is a
+	// typo, and honouring it would hang the lab instead of failing it.
+	vmMinMemMiB  = 256
 	vmSSHTimeout = 20 * time.Second
 	vmBootWait   = 40 * time.Second // budget for boot + sshd + setup
 )
@@ -150,6 +174,8 @@ func NewVMRunner() *VMRunner {
 		memMiB:    atoiDefault(shellEnv("FC_MEM_MIB", "1024"), 1024),
 		memLite:   atoiDefault(shellEnv("FC_MEM_LITE", "512"), 512),
 		memK8s:    atoiDefault(shellEnv("FC_MEM_K8S", "1536"), 1536),
+		maxMemMiB: atoiDefault(shellEnv("FC_MAX_MEM_MIB", "4096"), 4096),
+		maxVCPUs:  atoiDefault(shellEnv("FC_MAX_VCPUS", "2"), 2),
 		maxVMs:    atoiDefault(shellEnv("FC_MAX_VMS", "8"), 8),
 	}
 	v.bin = shellEnv("FC_BIN", v.dir+"/bin/firecracker")
@@ -413,7 +439,7 @@ func (v *VMRunner) allocSlot() int {
 
 // EnsureSession boots (or returns) the user's VM for this lesson and returns its IP.
 // One VM per user at a time: any other VM the user has is torn down first.
-func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error) {
+func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key string, spec Spec) (string, error) {
 	if !v.enabled {
 		return "", fmt.Errorf("VM-песочница отключена")
 	}
@@ -459,7 +485,7 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 		if up == nil {
 			up = v.bringUp
 		}
-		b.ip, b.err = up(bootCtx, sid, userID, key, image, setup)
+		b.ip, b.err = up(bootCtx, sid, userID, key, spec)
 		cancel()
 		close(b.done)
 		v.mu.Lock()
@@ -472,7 +498,7 @@ func (v *VMRunner) EnsureSession(ctx context.Context, userID int, key, image, se
 // bringUp creates the session: it frees whatever else the user holds, takes a
 // warm VM if one matches, and otherwise boots a fresh one. Only ever called with
 // this sid claimed in v.booting, so it cannot race another bring-up of its own.
-func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
+func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key string, spec Spec) (string, error) {
 	// A student opening a lab in the first seconds after a deploy would otherwise
 	// race the startup sweep, which deletes sessions/* wholesale.
 	if v.swept != nil {
@@ -482,7 +508,7 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 			return "", ctx.Err()
 		}
 	}
-	profile := profileOf(image)
+	profile := profileOf(spec.Image)
 
 	// One-at-a-time: drop any other VM this user holds, then try the warm pool.
 	//
@@ -501,12 +527,12 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 	// A pre-booted warm VM of the right profile → hand it out instantly, then just
 	// apply the lesson setup (no cp, no boot, no k3s wait).
 	if warm := v.takeWarmLocked(profile); warm != nil {
-		warm.sid, warm.userID, warm.key, warm.image = sid, userID, key, image
+		warm.sid, warm.userID, warm.key, warm.image = sid, userID, key, spec.Image
 		warm.started, warm.last = time.Now(), time.Now()
 		v.sessions[sid] = warm
 		v.mu.Unlock()
 		v.signalRefill()
-		if err := v.applySetup(ctx, warm, setup); err != nil {
+		if err := v.applySetup(ctx, warm, spec.Setup); err != nil {
 			v.teardown(sid)
 			return "", err
 		}
@@ -523,7 +549,8 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 	// Свой каталог на попытку (bootGen) — чтобы отменённая попытка не удалила
 	// каталог следующей.
 	sess := &vmSession{
-		sid: sid, userID: userID, key: key, image: image,
+		sid: sid, userID: userID, key: key, image: spec.Image,
+		reqCPUs: spec.CPUs, reqMemMiB: spec.MemMiB,
 		slot: slot, ip: vmIP(slot), profile: profile,
 		tap:     vmTap(slot),
 		work:    fmt.Sprintf("%s/sessions/%s-%d", v.dir, sid, bootGen.Add(1)),
@@ -532,7 +559,7 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key, ima
 	v.sessions[sid] = sess
 	v.mu.Unlock()
 
-	if err := v.bootVM(ctx, sess, setup); err != nil {
+	if err := v.bootVM(ctx, sess, spec.Setup); err != nil {
 		v.mu.Lock()
 		v.teardownLocked(sid)
 		v.mu.Unlock()
@@ -640,6 +667,21 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
 			v.dir, v.vmkey, vmip)
 	}
+	// A lesson may ask for its own size. The profile picked the golden rootfs
+	// above and that stays - the image decides what is installed, which cannot be
+	// changed at boot - but memory and CPU are per-VM numbers Firecracker takes
+	// straight from the machine config, so an author can say what their lab needs
+	// instead of living with one of three sizes.
+	//
+	// Clamped, not trusted: FC_MAX_VMS of these run at once on one host, so an
+	// unbounded request is a way to take the box down with a content edit.
+	if s.reqMemMiB > 0 {
+		mem = clampInt(s.reqMemMiB, vmMinMemMiB, v.maxMemMiB)
+	}
+	if s.reqCPUs > 0 {
+		vcpus = clampInt(s.reqCPUs, 1, v.maxVCPUs)
+	}
+
 	// nopv is what keeps an idle VM from burning a full host core.
 	//
 	// The cause was never ACPI. With KVM paravirtualisation on, the guest never
@@ -777,8 +819,8 @@ func (v *VMRunner) execVM(ctx context.Context, ip, script string) (string, int, 
 }
 
 // Exec runs a user command in the session VM and returns combined output.
-func (v *VMRunner) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
-	ip, err := v.sessionFor(ctx, userID, key, image, setup)
+func (v *VMRunner) Exec(ctx context.Context, userID int, key string, spec Spec, command string) (string, error) {
+	ip, err := v.sessionFor(ctx, userID, key, spec)
 	if err != nil {
 		return "", err
 	}
@@ -797,15 +839,15 @@ func (v *VMRunner) Exec(ctx context.Context, userID int, key, image, setup, comm
 // press cut its own VM's boot in half and, through the classification above,
 // reported it as a failed attempt. That is the "sometimes it does not start"
 // they described.
-func (v *VMRunner) sessionFor(ctx context.Context, userID int, key, image, setup string) (string, error) {
+func (v *VMRunner) sessionFor(ctx context.Context, userID int, key string, spec Spec) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, vmBootWait+vmSSHTimeout)
 	defer cancel()
-	return v.EnsureSession(ctx, userID, key, image, setup)
+	return v.EnsureSession(ctx, userID, key, spec)
 }
 
 // Check runs the task's check script; passed = exit 0.
-func (v *VMRunner) Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error) {
-	ip, err := v.sessionFor(ctx, userID, key, image, setup)
+func (v *VMRunner) Check(ctx context.Context, userID int, key string, spec Spec, checkScript string) (bool, string, error) {
+	ip, err := v.sessionFor(ctx, userID, key, spec)
 	if err != nil {
 		return false, "", err
 	}
@@ -822,10 +864,10 @@ func (v *VMRunner) Check(ctx context.Context, userID int, key, image, setup, che
 }
 
 // Preview fetches one HTTP resource from a server the student started inside the VM.
-func (v *VMRunner) Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error) {
+func (v *VMRunner) Preview(ctx context.Context, userID int, key string, spec Spec, port int, path string) ([]byte, string, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.EnsureSession(ctx, userID, key, spec)
 	if err != nil {
 		return nil, "", 0, err
 	}
@@ -896,10 +938,10 @@ var (
 // MaxFileSize is the largest file the editor reads or writes.
 const MaxFileSize = 2 << 20
 
-func (v *VMRunner) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
+func (v *VMRunner) FSList(ctx context.Context, userID int, key string, spec Spec, dir string) ([]FSEntry, error) {
 	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
 	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.EnsureSession(ctx, userID, key, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -910,10 +952,10 @@ func (v *VMRunner) FSList(ctx context.Context, userID int, key, image, setup, di
 	return entries, err
 }
 
-func (v *VMRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
+func (v *VMRunner) FSRead(ctx context.Context, userID int, key string, spec Spec, file string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
 	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.EnsureSession(ctx, userID, key, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -924,10 +966,10 @@ func (v *VMRunner) FSRead(ctx context.Context, userID int, key, image, setup, fi
 	return data, err
 }
 
-func (v *VMRunner) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
+func (v *VMRunner) FSWrite(ctx context.Context, userID int, key string, spec Spec, file string, content []byte) error {
 	ctx, cancel := context.WithTimeout(ctx, vmSSHTimeout)
 	defer cancel()
-	ip, err := v.EnsureSession(ctx, userID, key, image, setup)
+	ip, err := v.EnsureSession(ctx, userID, key, spec)
 	if err != nil {
 		return err
 	}

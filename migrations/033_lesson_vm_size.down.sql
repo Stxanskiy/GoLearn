@@ -1,0 +1,2 @@
+ALTER TABLE lessons DROP COLUMN IF EXISTS vm_mem_mib;
+ALTER TABLE lessons DROP COLUMN IF EXISTS vm_cpus;

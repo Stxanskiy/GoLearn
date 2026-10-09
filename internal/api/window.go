@@ -60,7 +60,7 @@ func (a *API) serveWindow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handle, err := a.Sandbox.EnsureSession(r.Context(), user.ID, ref.key(), ref.image, ref.setup)
+	handle, err := a.Sandbox.EnsureSession(r.Context(), user.ID, ref.key(), ref.spec)
 	if err != nil {
 		a.sandboxError(w, "window: ensure session", err)
 		return

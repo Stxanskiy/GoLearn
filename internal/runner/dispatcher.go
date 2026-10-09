@@ -73,9 +73,9 @@ func (d *Dispatcher) HasSession(userID int, key string) bool {
 
 // EnsureSession creates the sandbox and returns a handle. VM handles are tagged
 // with a "vm:" prefix so OpenPTY can route back to the same backend.
-func (d *Dispatcher) EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error) {
+func (d *Dispatcher) EnsureSession(ctx context.Context, userID int, key string, spec Spec) (string, error) {
 	e := d.pick()
-	h, err := e.EnsureSession(ctx, userID, key, image, setup)
+	h, err := e.EnsureSession(ctx, userID, key, spec)
 	if err != nil {
 		return "", err
 	}
@@ -100,28 +100,28 @@ func (d *Dispatcher) DialPort(handle string, port int) (*PortConn, error) {
 	return d.Shell.DialPort(handle, port)
 }
 
-func (d *Dispatcher) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
-	return d.pick().Exec(ctx, userID, key, image, setup, command)
+func (d *Dispatcher) Exec(ctx context.Context, userID int, key string, spec Spec, command string) (string, error) {
+	return d.pick().Exec(ctx, userID, key, spec, command)
 }
 
-func (d *Dispatcher) Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error) {
-	return d.pick().Check(ctx, userID, key, image, setup, checkScript)
+func (d *Dispatcher) Check(ctx context.Context, userID int, key string, spec Spec, checkScript string) (bool, string, error) {
+	return d.pick().Check(ctx, userID, key, spec, checkScript)
 }
 
-func (d *Dispatcher) Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error) {
-	return d.pick().Preview(ctx, userID, key, image, setup, port, path)
+func (d *Dispatcher) Preview(ctx context.Context, userID int, key string, spec Spec, port int, path string) ([]byte, string, int, error) {
+	return d.pick().Preview(ctx, userID, key, spec, port, path)
 }
 
-func (d *Dispatcher) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
-	return d.pick().FSList(ctx, userID, key, image, setup, dir)
+func (d *Dispatcher) FSList(ctx context.Context, userID int, key string, spec Spec, dir string) ([]FSEntry, error) {
+	return d.pick().FSList(ctx, userID, key, spec, dir)
 }
 
-func (d *Dispatcher) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
-	return d.pick().FSRead(ctx, userID, key, image, setup, file)
+func (d *Dispatcher) FSRead(ctx context.Context, userID int, key string, spec Spec, file string) ([]byte, error) {
+	return d.pick().FSRead(ctx, userID, key, spec, file)
 }
 
-func (d *Dispatcher) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
-	return d.pick().FSWrite(ctx, userID, key, image, setup, file, content)
+func (d *Dispatcher) FSWrite(ctx context.Context, userID int, key string, spec Spec, file string, content []byte) error {
+	return d.pick().FSWrite(ctx, userID, key, spec, file, content)
 }
 
 // Reset clears the session in every live backend; the ones that do not hold it no-op.

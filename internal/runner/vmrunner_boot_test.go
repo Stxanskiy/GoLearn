@@ -23,7 +23,7 @@ func TestConcurrentEnsureSessionBootsOnce(t *testing.T) {
 		enabled:  true,
 		sessions: map[string]*vmSession{},
 		booting:  map[string]*vmBoot{},
-		bringUpHook: func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
+		bringUpHook: func(ctx context.Context, sid string, userID int, key string, spec Spec) (string, error) {
 			calls.Add(1)
 			<-release // hold the boot open so every caller arrives while it runs
 			return "172.31.7.2", nil
@@ -38,7 +38,7 @@ func TestConcurrentEnsureSessionBootsOnce(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			ips[i], errs[i] = v.EnsureSession(context.Background(), 1, "l644", "golearn/sandbox", "")
+			ips[i], errs[i] = v.EnsureSession(context.Background(), 1, "l644", Spec{Image: "golearn/sandbox"})
 		}(i)
 	}
 	// Let them pile up on the in-flight boot before it finishes.
@@ -68,7 +68,7 @@ func TestWaitersSeeTheBootError(t *testing.T) {
 		enabled:  true,
 		sessions: map[string]*vmSession{},
 		booting:  map[string]*vmBoot{},
-		bringUpHook: func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
+		bringUpHook: func(ctx context.Context, sid string, userID int, key string, spec Spec) (string, error) {
 			<-release
 			return "", boom
 		},
@@ -80,7 +80,7 @@ func TestWaitersSeeTheBootError(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			_, errs[i] = v.EnsureSession(context.Background(), 1, "l644", "golearn/sandbox", "")
+			_, errs[i] = v.EnsureSession(context.Background(), 1, "l644", Spec{Image: "golearn/sandbox"})
 		}(i)
 	}
 	time.Sleep(50 * time.Millisecond)
@@ -105,7 +105,7 @@ func TestGivingUpDoesNotCancelTheBootForOthers(t *testing.T) {
 		enabled:  true,
 		sessions: map[string]*vmSession{},
 		booting:  map[string]*vmBoot{},
-		bringUpHook: func(ctx context.Context, sid string, userID int, key, image, setup string) (string, error) {
+		bringUpHook: func(ctx context.Context, sid string, userID int, key string, spec Spec) (string, error) {
 			<-release
 			return "172.31.7.2", nil
 		},
@@ -119,7 +119,7 @@ func TestGivingUpDoesNotCancelTheBootForOthers(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		close(started)
-		ip, stayed = v.EnsureSession(context.Background(), 1, "l644", "golearn/sandbox", "")
+		ip, stayed = v.EnsureSession(context.Background(), 1, "l644", Spec{Image: "golearn/sandbox"})
 	}()
 	<-started
 	time.Sleep(50 * time.Millisecond)
@@ -127,7 +127,7 @@ func TestGivingUpDoesNotCancelTheBootForOthers(t *testing.T) {
 	gone, cancel := context.WithCancel(context.Background())
 	quit := make(chan error, 1)
 	go func() {
-		_, err := v.EnsureSession(gone, 1, "l644", "golearn/sandbox", "")
+		_, err := v.EnsureSession(gone, 1, "l644", Spec{Image: "golearn/sandbox"})
 		quit <- err
 	}()
 	time.Sleep(50 * time.Millisecond)

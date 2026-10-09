@@ -25,12 +25,12 @@ func newFakeSandbox() *fakeSandbox {
 	return &fakeSandbox{files: map[string]string{}}
 }
 
-func (f *fakeSandbox) FSWrite(_ context.Context, _ int, _, _, _, file string, content []byte) error {
+func (f *fakeSandbox) FSWrite(_ context.Context, _ int, _ string, _ Spec, file string, content []byte) error {
 	f.files[file] = string(content)
 	return nil
 }
 
-func (f *fakeSandbox) Exec(_ context.Context, _ int, _, _, _, command string) (string, error) {
+func (f *fakeSandbox) Exec(_ context.Context, _ int, _ string, _ Spec, command string) (string, error) {
 	f.script = command
 	if f.execErr != nil {
 		return "", f.execErr
@@ -43,7 +43,7 @@ func (f *fakeSandbox) Exec(_ context.Context, _ int, _, _, _, command string) (s
 }
 
 func target() Target {
-	return Target{UserID: 7, Key: "l42", Image: "golearn/sandbox:latest"}
+	return Target{UserID: 7, Key: "l42", Sandbox: Spec{Image: "golearn/sandbox:latest"}}
 }
 
 func TestRunProgramWritesCodeAndStdin(t *testing.T) {

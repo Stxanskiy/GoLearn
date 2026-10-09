@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/backendraz/golearn/internal/lab"
+	"github.com/backendraz/golearn/internal/runner"
 )
 
 // requireSandbox writes 503 and returns false when the sandbox is not configured.
@@ -30,12 +31,12 @@ func (a *API) resetGitTrainer(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) openGitTrainerTerminal(w http.ResponseWriter, r *http.Request) {
 	if a.requireSandbox(w) {
-		a.serveTerminal(w, r, lab.GitTrainerKey, lab.GitTrainerImage, lab.GitTrainerSetup)
+		a.serveTerminal(w, r, lab.GitTrainerKey, runner.Spec{Image: lab.GitTrainerImage, Setup: lab.GitTrainerSetup})
 	}
 }
 
 func (a *API) getGitTrainerGraph(w http.ResponseWriter, r *http.Request) {
 	if a.requireSandbox(w) {
-		a.writeGitGraph(w, r, lab.GitTrainerKey, lab.GitTrainerImage, lab.GitTrainerSetup, lab.GitTrainerRepo)
+		a.writeGitGraph(w, r, lab.GitTrainerKey, runner.Spec{Image: lab.GitTrainerImage, Setup: lab.GitTrainerSetup}, lab.GitTrainerRepo)
 	}
 }

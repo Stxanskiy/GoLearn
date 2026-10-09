@@ -60,7 +60,7 @@ type lessonStore interface {
 	CountsForLesson(ctx context.Context, lessonID int) (questions, tasks int)
 	GetTasks(ctx context.Context, lessonID int) ([]model.Task, error)
 	GetTaskByID(ctx context.Context, taskID int) (*model.Task, error)
-	LessonSandbox(ctx context.Context, lessonID int) (image, setup string, err error)
+	LessonSandbox(ctx context.Context, lessonID int) (runner.Spec, error)
 	GetByModuleAll(ctx context.Context, moduleID int) ([]model.Lesson, error)
 	NextOrder(ctx context.Context, moduleID int) (int, error)
 	Create(ctx context.Context, l model.Lesson) (int, error)
@@ -151,15 +151,15 @@ type sandbox interface {
 	Enabled() bool
 	Session(userID int, key string) (runner.SessionInfo, bool)
 	Touch(userID int, key string)
-	EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error)
+	EnsureSession(ctx context.Context, userID int, key string, spec runner.Spec) (string, error)
 	OpenPTY(handle string, cols, rows int) (*runner.PTYSession, error)
 	DialPort(handle string, port int) (*runner.PortConn, error)
-	Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error)
-	Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error)
-	Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error)
-	FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]runner.FSEntry, error)
-	FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error)
-	FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error
+	Exec(ctx context.Context, userID int, key string, spec runner.Spec, command string) (string, error)
+	Check(ctx context.Context, userID int, key string, spec runner.Spec, checkScript string) (bool, string, error)
+	Preview(ctx context.Context, userID int, key string, spec runner.Spec, port int, path string) ([]byte, string, int, error)
+	FSList(ctx context.Context, userID int, key string, spec runner.Spec, dir string) ([]runner.FSEntry, error)
+	FSRead(ctx context.Context, userID int, key string, spec runner.Spec, file string) ([]byte, error)
+	FSWrite(ctx context.Context, userID int, key string, spec runner.Spec, file string, content []byte) error
 	Reset(ctx context.Context, userID int, key string) error
 }
 

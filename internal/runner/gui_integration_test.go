@@ -60,7 +60,7 @@ func TestStartGUIOpensWindow(t *testing.T) {
 	qtSandboxOrSkip(t)
 	s := localShell(t)
 
-	target := Target{UserID: 4242, Key: "gui-test", Image: qtImage}
+	target := Target{UserID: 4242, Key: "gui-test", Sandbox: Spec{Image: qtImage}}
 	t.Cleanup(func() {
 		_ = StopGUI(context.Background(), s, target)
 		_ = s.Reset(context.Background(), target.UserID, target.Key)
@@ -89,7 +89,7 @@ func TestStartGUIReportsBrokenProgram(t *testing.T) {
 	qtSandboxOrSkip(t)
 	s := localShell(t)
 
-	target := Target{UserID: 4243, Key: "gui-broken", Image: qtImage}
+	target := Target{UserID: 4243, Key: "gui-broken", Sandbox: Spec{Image: qtImage}}
 	t.Cleanup(func() { _ = s.Reset(context.Background(), target.UserID, target.Key) })
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -113,7 +113,7 @@ func TestStartGUIExplainsMissingExec(t *testing.T) {
 	qtSandboxOrSkip(t)
 	s := localShell(t)
 
-	target := Target{UserID: 4244, Key: "gui-noexec", Image: qtImage}
+	target := Target{UserID: 4244, Key: "gui-noexec", Sandbox: Spec{Image: qtImage}}
 	t.Cleanup(func() { _ = s.Reset(context.Background(), target.UserID, target.Key) })
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -138,7 +138,7 @@ func TestGUIFramebufferIsReal(t *testing.T) {
 	qtSandboxOrSkip(t)
 	s := localShell(t)
 
-	target := Target{UserID: 4245, Key: "gui-fb", Image: qtImage}
+	target := Target{UserID: 4245, Key: "gui-fb", Sandbox: Spec{Image: qtImage}}
 	t.Cleanup(func() {
 		_ = StopGUI(context.Background(), s, target)
 		_ = s.Reset(context.Background(), target.UserID, target.Key)
@@ -157,7 +157,7 @@ func TestGUIFramebufferIsReal(t *testing.T) {
 	// and the resulting PNG comes back base64-encoded.
 	grab := `cd /root && cat > grab.py <<'GLEOF'` + "\n" + rfbGrabber + "\nGLEOF\npython3 grab.py && printf 'P:' && base64 window.png"
 
-	out, err := s.Exec(ctx, target.UserID, target.Key, target.Image, target.Setup, grab)
+	out, err := s.Exec(ctx, target.UserID, target.Key, target.Sandbox, grab)
 	if err != nil {
 		t.Fatal(err)
 	}

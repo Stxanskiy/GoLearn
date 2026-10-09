@@ -178,11 +178,11 @@ func (s *ShellRunner) touch(c string) {
 
 // ensure creates the per-(user,task) container if it is not running, applying
 // the task setup script once. Returns the container name.
-func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup string) (string, error) {
-	if image == "" {
-		image = s.image
+func (s *ShellRunner) ensure(ctx context.Context, userID int, key string, spec Spec) (string, error) {
+	if spec.Image == "" {
+		spec.Image = s.image
 	}
-	if needsDocker(image) && !s.privileged && !s.sysbox {
+	if needsDocker(spec.Image) && !s.privileged && !s.sysbox {
 		return "", fmt.Errorf("курсы Docker и Kubernetes на этом сервере отключены: " +
 			"их лаборатории требуют привилегированной песочницы (SANDBOX_PRIVILEGED или SANDBOX_SYSBOX). " +
 			"Проходить их можно в локальной установке")
@@ -205,13 +205,13 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 		s.mu.Unlock()
 		return c, nil
 	}
-	b64 := base64.StdEncoding.EncodeToString([]byte(setup))
+	b64 := base64.StdEncoding.EncodeToString([]byte(spec.Setup))
 	// Courses with their own runtime (Docker, Kubernetes) need elevated
 	// privileges and more headroom than a shell-only lab.
-	opts := s.runOpts(userID, key, image)
-	// The setup script's exit status matters as much as the container's. It used
+	opts := s.runOpts(userID, key, spec.Image)
+	// The spec.Setup script's exit status matters as much as the container's. It used
 	// to be discarded along with its output, and "echo OK" printed either way:
-	// a setup that failed — a tool the image does not carry, a cluster that never
+	// a spec.Setup that failed — a tool the spec.Image does not carry, a cluster that never
 	// came up — left a container with none of the files the tasks name, every
 	// check failed, and nothing anywhere said why. Setup runs once per container,
 	// so the lesson stayed broken for the whole session.
@@ -225,7 +225,7 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 			`out=$(docker exec %s sh -c 'echo %s | base64 -d | bash' 2>&1) || { echo "GLSETUPFAIL $out"; exit 1; }; `+
 			`fi; `+
 			`echo OK`,
-		c, c, opts, image, b64, c, b64,
+		c, c, opts, spec.Image, b64, c, b64,
 	)
 	out, _, err = s.run(ctx, create)
 	if err != nil {
@@ -233,7 +233,7 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 	}
 	if i := strings.Index(out, "GLSETUPFAIL"); i >= 0 {
 		// Drop the container: a half-prepared one is worse than none, because the
-		// next call would find it running and reuse it as if setup had succeeded.
+		// next call would find it running and reuse it as if spec.Setup had succeeded.
 		_, _, _ = s.run(ctx, fmt.Sprintf(`docker rm -f %s >/dev/null 2>&1; true`, c))
 		detail := strings.TrimSpace(out[i+len("GLSETUPFAIL"):])
 		if len(detail) > 400 {
@@ -250,10 +250,10 @@ func (s *ShellRunner) ensure(ctx context.Context, userID int, key, image, setup 
 			return "", fmt.Errorf("Docker не запущен — песочница не может создать контейнер. " +
 				"Запусти Docker Desktop (или `sudo systemctl start docker` на сервере) и открой лабораторную заново")
 		}
-		if strings.Contains(msg, "Unable to find image") || strings.Contains(msg, "No such image") ||
+		if strings.Contains(msg, "Unable to find spec.Image") || strings.Contains(msg, "No such spec.Image") ||
 			strings.Contains(msg, "manifest unknown") || strings.Contains(msg, "pull access denied") {
 			return "", fmt.Errorf("образ песочницы %s не собран на этом хосте — "+
-				"собери его один раз: docker build -t %s -f deploy/sandbox/Dockerfile deploy/sandbox", image, image)
+				"собери его один раз: docker build -t %s -f deploy/sandbox/Dockerfile deploy/sandbox", spec.Image, spec.Image)
 		}
 		return "", fmt.Errorf("sandbox start failed: %s", msg)
 	}
@@ -307,10 +307,10 @@ func (s *ShellRunner) execIn(ctx context.Context, container, script string) (str
 }
 
 // Exec runs a user command in the session container and returns combined output.
-func (s *ShellRunner) Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, execTimeout(image))
+func (s *ShellRunner) Exec(ctx context.Context, userID int, key string, spec Spec, command string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, execTimeout(spec.Image))
 	defer cancel()
-	c, err := s.ensure(ctx, userID, key, image, setup)
+	c, err := s.ensure(ctx, userID, key, spec)
 	if err != nil {
 		return "", err
 	}
@@ -319,10 +319,10 @@ func (s *ShellRunner) Exec(ctx context.Context, userID int, key, image, setup, c
 }
 
 // Check runs the task's check script in the session; passed = exit code 0.
-func (s *ShellRunner) Check(ctx context.Context, userID int, key, image, setup, checkScript string) (bool, string, error) {
-	ctx, cancel := context.WithTimeout(ctx, execTimeout(image))
+func (s *ShellRunner) Check(ctx context.Context, userID int, key string, spec Spec, checkScript string) (bool, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, execTimeout(spec.Image))
 	defer cancel()
-	c, err := s.ensure(ctx, userID, key, image, setup)
+	c, err := s.ensure(ctx, userID, key, spec)
 	if err != nil {
 		return false, "", err
 	}
@@ -339,10 +339,10 @@ func (s *ShellRunner) Check(ctx context.Context, userID int, key, image, setup, 
 // base64'd in the container so binary assets (images, fonts) survive the trip,
 // and the target URL is passed in base64 too, so a hostile path cannot break out
 // of the shell command. Returns body, content-type and HTTP status.
-func (s *ShellRunner) Preview(ctx context.Context, userID int, key, image, setup string, port int, path string) ([]byte, string, int, error) {
+func (s *ShellRunner) Preview(ctx context.Context, userID int, key string, spec Spec, port int, path string) ([]byte, string, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	c, err := s.ensure(ctx, userID, key, image, setup)
+	c, err := s.ensure(ctx, userID, key, spec)
 	if err != nil {
 		return nil, "", 0, err
 	}
@@ -398,10 +398,10 @@ base64 /tmp/.glpb 2>/dev/null
 // base64'd into the container so a hostile name cannot break out of the shell;
 // the handler additionally jails every path under /root before calling here.
 
-func (s *ShellRunner) fsExec(ctx context.Context, userID int, key, image, setup, script string) (string, error) {
+func (s *ShellRunner) fsExec(ctx context.Context, userID int, key string, spec Spec, script string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	c, err := s.ensure(ctx, userID, key, image, setup)
+	c, err := s.ensure(ctx, userID, key, spec)
 	if err != nil {
 		return "", err
 	}
@@ -415,11 +415,11 @@ func (s *ShellRunner) fsExec(ctx context.Context, userID int, key, image, setup,
 }
 
 // FSList returns the immediate children of dir (dirs first, then files).
-func (s *ShellRunner) FSList(ctx context.Context, userID int, key, image, setup, dir string) ([]FSEntry, error) {
+func (s *ShellRunner) FSList(ctx context.Context, userID int, key string, spec Spec, dir string) ([]FSEntry, error) {
 	db := base64.StdEncoding.EncodeToString([]byte(dir))
 	script := fmt.Sprintf(`d=$(printf %%s '%s' | base64 -d)
 find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C sort`, db)
-	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	out, err := s.fsExec(ctx, userID, key, spec, script)
 	if err != nil {
 		return nil, err
 	}
@@ -445,14 +445,14 @@ find "$d" -maxdepth 1 -mindepth 1 -printf '%%y\t%%f\n' 2>/dev/null | LC_ALL=C so
 // a blank document — and saving that blank document overwrote the real file.
 // Oversized files were silently truncated at 512 KB, with the same consequence
 // on save.
-func (s *ShellRunner) FSRead(ctx context.Context, userID int, key, image, setup, file string) ([]byte, error) {
+func (s *ShellRunner) FSRead(ctx context.Context, userID int, key string, spec Spec, file string) ([]byte, error) {
 	fb := base64.StdEncoding.EncodeToString([]byte(file))
 	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
 [ -f "$f" ] || { echo GLNOFILE; exit 0; }
 [ "$(wc -c < "$f")" -gt %d ] && { echo GLTOOBIG; exit 0; }
 echo GLFILE
 base64 "$f"`, fb, MaxFileSize)
-	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	out, err := s.fsExec(ctx, userID, key, spec, script)
 	if err != nil {
 		return nil, err
 	}
@@ -470,12 +470,12 @@ base64 "$f"`, fb, MaxFileSize)
 }
 
 // FSWrite creates/overwrites a file with content (parent dirs are created).
-func (s *ShellRunner) FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error {
+func (s *ShellRunner) FSWrite(ctx context.Context, userID int, key string, spec Spec, file string, content []byte) error {
 	fb := base64.StdEncoding.EncodeToString([]byte(file))
 	cb := base64.StdEncoding.EncodeToString(content)
 	script := fmt.Sprintf(`f=$(printf %%s '%s' | base64 -d)
 mkdir -p "$(dirname "$f")" && printf %%s '%s' | base64 -d > "$f" && echo GLOK`, fb, cb)
-	out, err := s.fsExec(ctx, userID, key, image, setup, script)
+	out, err := s.fsExec(ctx, userID, key, spec, script)
 	if err != nil {
 		return err
 	}
@@ -544,8 +544,8 @@ func (s *ShellRunner) reaper() {
 // ── Interactive PTY terminal (xterm.js over WebSocket) ──
 
 // EnsureSession is a public wrapper to create/get the session container.
-func (s *ShellRunner) EnsureSession(ctx context.Context, userID int, key, image, setup string) (string, error) {
-	return s.ensure(ctx, userID, key, image, setup)
+func (s *ShellRunner) EnsureSession(ctx context.Context, userID int, key string, spec Spec) (string, error) {
+	return s.ensure(ctx, userID, key, spec)
 }
 
 func (s *ShellRunner) signer() (ssh.Signer, error) {

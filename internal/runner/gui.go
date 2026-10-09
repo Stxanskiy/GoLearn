@@ -54,7 +54,7 @@ func StartGUI(ctx context.Context, e CodeSandbox, lang string, t Target, code st
 		return &GUIResult{Errors: err.Error()}, nil
 	}
 
-	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Image, t.Setup, codeDir+"/"+spec.file, []byte(code)); err != nil {
+	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Sandbox, codeDir+"/"+spec.file, []byte(code)); err != nil {
 		return nil, fmt.Errorf("write program: %w", err)
 	}
 
@@ -82,7 +82,7 @@ printf 'O:\n'; base64 %s 2>/dev/null; printf 'E:\n'; base64 %s 2>/dev/null; prin
 		guiPIDFile,
 		guiOutFile, guiErrFile)
 
-	raw, err := e.Exec(ctx, t.UserID, t.Key, t.Image, t.Setup, script)
+	raw, err := e.Exec(ctx, t.UserID, t.Key, t.Sandbox, script)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +152,6 @@ func dropQtNoise(s string) string {
 func StopGUI(ctx context.Context, e CodeSandbox, t Target) error {
 	script := fmt.Sprintf("cd %s; if [ -f %s ]; then kill $(cat %s) 2>/dev/null; rm -f %s; fi; printf 'ok'",
 		codeDir, guiPIDFile, guiPIDFile, guiPIDFile)
-	_, err := e.Exec(ctx, t.UserID, t.Key, t.Image, t.Setup, script)
+	_, err := e.Exec(ctx, t.UserID, t.Key, t.Sandbox, script)
 	return err
 }

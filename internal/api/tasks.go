@@ -63,12 +63,12 @@ func (a *API) checkTask(w http.ResponseWriter, r *http.Request) {
 		writeRateLimited(w, checkLimiter)
 		return
 	}
-	image, setup, err := a.Lessons.LessonSandbox(ctx, t.LessonID)
+	spec, err := a.Lessons.LessonSandbox(ctx, t.LessonID)
 	if err != nil {
 		a.internalError(w, "check: sandbox config", err)
 		return
 	}
-	passed, output, err := a.Sandbox.Check(ctx, uid, lab.Key(t.LessonID), image, setup, t.CheckScript)
+	passed, output, err := a.Sandbox.Check(ctx, uid, lab.Key(t.LessonID), spec, t.CheckScript)
 	if err != nil {
 		a.sandboxError(w, "check", err)
 		return
@@ -215,9 +215,9 @@ func (a *API) runPlayground(w http.ResponseWriter, r *http.Request) {
 	// The playground has no lesson, so it gets a session of its own on the base
 	// image — one per user, like any other sandbox session.
 	target := runner.Target{
-		UserID: userFrom(r.Context()).ID,
-		Key:    lab.PlaygroundKey,
-		Image:  lab.PlaygroundImage,
+		UserID:  userFrom(r.Context()).ID,
+		Key:     lab.PlaygroundKey,
+		Sandbox: runner.Spec{Image: lab.PlaygroundImage},
 	}
 	a.runCode(w, r, lang, target, body)
 }
@@ -246,15 +246,14 @@ func (a *API) runRequest(w http.ResponseWriter, r *http.Request) (apigen.RunRequ
 // codeTarget resolves whose sandbox a program runs in: the same session as the
 // lesson's shell lab, so a code task and a terminal task share one sandbox.
 func (a *API) codeTarget(ctx context.Context, lessonID int) (runner.Target, error) {
-	image, setup, err := a.Lessons.LessonSandbox(ctx, lessonID)
+	spec, err := a.Lessons.LessonSandbox(ctx, lessonID)
 	if err != nil {
 		return runner.Target{}, err
 	}
 	return runner.Target{
-		UserID: userFrom(ctx).ID,
-		Key:    lab.Key(lessonID),
-		Image:  image,
-		Setup:  setup,
+		UserID:  userFrom(ctx).ID,
+		Key:     lab.Key(lessonID),
+		Sandbox: spec,
 	}, nil
 }
 

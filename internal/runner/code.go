@@ -21,8 +21,8 @@ import (
 // one command. Taking the narrow interface keeps the API's own sandbox type
 // usable here without widening it.
 type CodeSandbox interface {
-	FSWrite(ctx context.Context, userID int, key, image, setup, file string, content []byte) error
-	Exec(ctx context.Context, userID int, key, image, setup, command string) (string, error)
+	FSWrite(ctx context.Context, userID int, key string, spec Spec, file string, content []byte) error
+	Exec(ctx context.Context, userID int, key string, spec Spec, command string) (string, error)
 }
 
 // Both runners satisfy it, through Engine.
@@ -34,10 +34,9 @@ var (
 // Target identifies whose sandbox to run in. It mirrors the arguments every
 // other Engine call takes.
 type Target struct {
-	UserID int
-	Key    string
-	Image  string
-	Setup  string
+	UserID  int
+	Key     string
+	Sandbox Spec
 }
 
 const (
@@ -72,10 +71,10 @@ func RunProgram(ctx context.Context, e CodeSandbox, lang string, t Target, code,
 		return &Result{Errors: err.Error()}, nil
 	}
 
-	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Image, t.Setup, codeDir+"/"+spec.file, []byte(code)); err != nil {
+	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Sandbox, codeDir+"/"+spec.file, []byte(code)); err != nil {
 		return nil, fmt.Errorf("write program: %w", err)
 	}
-	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Image, t.Setup, codeDir+"/"+inFile, []byte(stdin)); err != nil {
+	if err := e.FSWrite(ctx, t.UserID, t.Key, t.Sandbox, codeDir+"/"+inFile, []byte(stdin)); err != nil {
 		return nil, fmt.Errorf("write stdin: %w", err)
 	}
 
@@ -89,7 +88,7 @@ func RunProgram(ctx context.Context, e CodeSandbox, lang string, t Target, code,
 		codeDir, spec.run, inFile, outFile, errFile, codeFile,
 		outFile, errFile, codeFile)
 
-	raw, err := e.Exec(ctx, t.UserID, t.Key, t.Image, t.Setup, script)
+	raw, err := e.Exec(ctx, t.UserID, t.Key, t.Sandbox, script)
 	if err != nil {
 		return nil, err
 	}

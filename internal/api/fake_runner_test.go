@@ -66,9 +66,9 @@ func (f *fakeSandbox) Touch(userID int, key string) {
 	f.touches = append(f.touches, sid(userID, key))
 }
 
-func (f *fakeSandbox) EnsureSession(_ context.Context, userID int, key, image, setup string) (string, error) {
+func (f *fakeSandbox) EnsureSession(_ context.Context, userID int, key string, spec runner.Spec) (string, error) {
 	f.mu.Lock()
-	f.ensures = append(f.ensures, sid(userID, key)+"|"+image+"|"+setup)
+	f.ensures = append(f.ensures, sid(userID, key)+"|"+spec.Image+"|"+spec.Setup)
 	f.mu.Unlock()
 	f.running(userID, key)
 	return "10.0.0.2", nil
@@ -79,7 +79,7 @@ func (f *fakeSandbox) OpenPTY(string, int, int) (*runner.PTYSession, error) {
 	return &runner.PTYSession{Stdin: f.pty.inW, Stdout: f.pty.outR}, nil
 }
 
-func (f *fakeSandbox) Exec(_ context.Context, userID int, key, _, _, command string) (string, error) {
+func (f *fakeSandbox) Exec(_ context.Context, userID int, key string, _ runner.Spec, command string) (string, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.execs = append(f.execs, sid(userID, key)+"|"+command)
@@ -116,11 +116,11 @@ func (f *fakeSandbox) DialPort(_ string, port int) (*runner.PortConn, error) {
 	}), nil
 }
 
-func (f *fakeSandbox) Check(context.Context, int, string, string, string, string) (bool, string, error) {
+func (f *fakeSandbox) Check(context.Context, int, string, runner.Spec, string) (bool, string, error) {
 	return f.checkPass, "check output", f.checkErr
 }
 
-func (f *fakeSandbox) Preview(_ context.Context, _ int, _, _, _ string, _ int, path string) ([]byte, string, int, error) {
+func (f *fakeSandbox) Preview(_ context.Context, _ int, _ string, _ runner.Spec, _ int, path string) ([]byte, string, int, error) {
 	f.preview.path = path
 	if f.preview.body == nil {
 		return nil, "", 0, errors.New("preview: no-server")
@@ -128,11 +128,11 @@ func (f *fakeSandbox) Preview(_ context.Context, _ int, _, _, _ string, _ int, p
 	return f.preview.body, f.preview.ct, f.preview.status, nil
 }
 
-func (f *fakeSandbox) FSList(context.Context, int, string, string, string, string) ([]runner.FSEntry, error) {
+func (f *fakeSandbox) FSList(context.Context, int, string, runner.Spec, string) ([]runner.FSEntry, error) {
 	return []runner.FSEntry{{Name: "project", Dir: true}, {Name: "notes.txt"}}, nil
 }
 
-func (f *fakeSandbox) FSRead(_ context.Context, _ int, _, _, _, file string) ([]byte, error) {
+func (f *fakeSandbox) FSRead(_ context.Context, _ int, _ string, _ runner.Spec, file string) ([]byte, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if file == "/root/huge" {
@@ -145,7 +145,7 @@ func (f *fakeSandbox) FSRead(_ context.Context, _ int, _, _, _, file string) ([]
 	return data, nil
 }
 
-func (f *fakeSandbox) FSWrite(_ context.Context, _ int, _, _, _, file string, content []byte) error {
+func (f *fakeSandbox) FSWrite(_ context.Context, _ int, _ string, _ runner.Spec, file string, content []byte) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.files[file] = content

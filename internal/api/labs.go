@@ -30,8 +30,8 @@ var (
 // labRef is a visible lesson with its tasks and sandbox configuration.
 type labRef struct {
 	lessonRef
-	tasks        []model.Task
-	image, setup string
+	tasks []model.Task
+	spec  runner.Spec
 }
 
 func (l labRef) key() string { return lab.Key(l.lesson.ID) }
@@ -52,12 +52,12 @@ func (a *API) labByID(w http.ResponseWriter, r *http.Request) (labRef, bool) {
 		writeError(w, http.StatusNotFound, codeNotFound, "lesson has no lab")
 		return labRef{}, false
 	}
-	image, setup, err := a.Lessons.LessonSandbox(ctx, ref.lesson.ID)
+	spec, err := a.Lessons.LessonSandbox(ctx, ref.lesson.ID)
 	if err != nil {
 		a.internalError(w, "lab: sandbox config", err)
 		return labRef{}, false
 	}
-	return labRef{lessonRef: ref, tasks: tasks, image: image, setup: setup}, true
+	return labRef{lessonRef: ref, tasks: tasks, spec: spec}, true
 }
 
 // sandboxLab is labByID for endpoints that need the sandbox enabled.
@@ -219,11 +219,11 @@ func (a *API) openLabTerminal(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	a.serveTerminal(w, r, ref.key(), ref.image, ref.setup)
+	a.serveTerminal(w, r, ref.key(), ref.spec)
 }
 
 // serveTerminal upgrades to a WebSocket and bridges it to a PTY in the user's sandbox session.
-func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key, image, setup string) {
+func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key string, spec runner.Spec) {
 	user := userFrom(r.Context())
 	if origin := r.Header.Get("Origin"); origin != "" && !a.originAllowed(r, origin) {
 		writeError(w, http.StatusForbidden, codeCSRFRejected, "cross-origin terminal rejected")
@@ -246,7 +246,7 @@ func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key, image, 
 	say := func(text string) { _ = conn.WriteMessage(websocket.TextMessage, []byte(text)) }
 	say(lab.Banner)
 	say("\x1b[90mЗапускаю песочницу…\x1b[0m\r\n")
-	handle, err := a.Sandbox.EnsureSession(r.Context(), user.ID, key, image, setup)
+	handle, err := a.Sandbox.EnsureSession(r.Context(), user.ID, key, spec)
 	if err != nil {
 		a.log.Error("terminal: ensure session", "error", err)
 		say("\r\n\x1b[31m" + err.Error() + "\x1b[0m\r\n")
@@ -275,11 +275,11 @@ func (a *API) getLabGitGraph(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	a.writeGitGraph(w, r, ref.key(), ref.image, ref.setup, lab.LabGitRepo)
+	a.writeGitGraph(w, r, ref.key(), ref.spec, lab.LabGitRepo)
 }
 
 // writeGitGraph returns the parsed commit graph of repo, or an empty graph when no session is running.
-func (a *API) writeGitGraph(w http.ResponseWriter, r *http.Request, key, image, setup, repo string) {
+func (a *API) writeGitGraph(w http.ResponseWriter, r *http.Request, key string, spec runner.Spec, repo string) {
 	ctx := r.Context()
 	uid := userFrom(ctx).ID
 	out := apigen.GitGraph{Commits: []apigen.GitCommit{}}
@@ -287,7 +287,7 @@ func (a *API) writeGitGraph(w http.ResponseWriter, r *http.Request, key, image, 
 		writeJSON(w, http.StatusOK, out)
 		return
 	}
-	log, err := a.Sandbox.Exec(ctx, uid, key, image, setup, lab.GitLogCommand(repo))
+	log, err := a.Sandbox.Exec(ctx, uid, key, spec, lab.GitLogCommand(repo))
 	if err != nil {
 		a.sandboxError(w, "git graph", err)
 		return
@@ -326,7 +326,7 @@ func (a *API) listLabFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	entries, err := a.Sandbox.FSList(ctx, userFrom(ctx).ID, ref.key(), ref.image, ref.setup, p)
+	entries, err := a.Sandbox.FSList(ctx, userFrom(ctx).ID, ref.key(), ref.spec, p)
 	if err != nil {
 		a.sandboxError(w, "fs list", err)
 		return
@@ -344,7 +344,7 @@ func (a *API) readLabFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	data, err := a.Sandbox.FSRead(ctx, userFrom(ctx).ID, ref.key(), ref.image, ref.setup, p)
+	data, err := a.Sandbox.FSRead(ctx, userFrom(ctx).ID, ref.key(), ref.spec, p)
 	if err != nil {
 		a.sandboxError(w, "fs read", err)
 		return
@@ -369,7 +369,7 @@ func (a *API) writeLabFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	if err := a.Sandbox.FSWrite(ctx, userFrom(ctx).ID, ref.key(), ref.image, ref.setup, p, data); err != nil {
+	if err := a.Sandbox.FSWrite(ctx, userFrom(ctx).ID, ref.key(), ref.spec, p, data); err != nil {
 		a.sandboxError(w, "fs write", err)
 		return
 	}
@@ -425,7 +425,7 @@ func (a *API) previewLab(w http.ResponseWriter, r *http.Request) {
 	if r.URL.RawQuery != "" {
 		target += "?" + r.URL.RawQuery
 	}
-	body, ct, status, err := a.Sandbox.Preview(ctx, uid, ref.key(), ref.image, ref.setup, port, target)
+	body, ct, status, err := a.Sandbox.Preview(ctx, uid, ref.key(), ref.spec, port, target)
 	if err != nil {
 		placeholder(err)
 		return
