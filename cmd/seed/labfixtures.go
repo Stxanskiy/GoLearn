@@ -43,6 +43,7 @@ var labFixtures = map[string]map[string]labSpec{
 	"k8s-ckad":               k8sCkadLabs,
 	"helm":                   helmLabs,
 	"gym-linux-troubleshoot": gymTroubleshootLabs,
+	"pg-start":               pgStartLabs,
 	"gym-linux-start": rekey(linuxStartLabs, map[string]string{
 		"ch-lnav-lab1": "gym-lstart-lab1",
 		"ch-lnav-lab2": "gym-lstart-lab2",

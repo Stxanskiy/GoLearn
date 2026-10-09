@@ -1,0 +1,11 @@
+{
+  "n": 14,
+  "id": "ch_pgo_14_explain",
+  "title": "EXPLAIN и поиск медленных запросов",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# EXPLAIN и поиск медленных запросов\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- как читать план запроса\n- `EXPLAIN ANALYZE`\n- `pg_stat_statements`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

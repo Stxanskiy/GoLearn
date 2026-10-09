@@ -90,6 +90,9 @@ func main() {
 			 RETURNING id`,
 			mod.Slug, mod.Title, mod.Description, mod.Order, track, difficulty, prereqJSON,
 			mod.Category, mod.Label, tagsJSON, mod.CoverImage, mod.Accent, mod.EstMinutes, mod.Trainer,
+			// A draft course arrives hidden. Only the first insert decides this: the
+			// update leaves published alone, so publishing stays an admin's act and a
+			// later seed neither hides a course nor releases one.
 			!mod.Draft).Scan(&moduleID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			// The guard above refused the update: an author edited this course in
@@ -300,7 +303,7 @@ type M struct {
 	Accent                   string   // gradient key; empty -> by category
 	EstMinutes               int      // 0 -> derived from lesson count
 	Trainer                  bool     // practice-only course, listed under trainers
-	Draft                    bool     // create unpublished; the author publishes it himself
+	Draft                    bool     // first seeded unpublished; an admin publishes it
 	Lessons                  []L
 }
 type L struct {

@@ -1,0 +1,152 @@
+{
+  "n": 5,
+  "id": "ch_pgs_lab2",
+  "title": "Лабораторная 2: работаем в psql",
+  "kind": "tasks",
+  "format": "md",
+  "content_html": "# Лабораторная 2: работаем в psql\n\nКоллега перенёс на сервер «Переплёта» базы со старого сервера магазина: теперь, кроме твоей базы `pereplet`, там есть `archive` и `old_shop`. Твоя задача — осмотреться в psql, навести порядок и завести себе базу для опытов.\n\n**Что уже есть:** PostgreSQL установлен и запущен, твой пользователь `root` заведён — всё как в конце лабораторной 1. База `pereplet` на месте, но пока пустая. Подключайся как в уроке, без `sudo`:\n\n```bash\npsql pereplet\n```\n\n**Как сдавать:** выполни задание и нажми «Проверить» рядом с ним. Проверка смотрит, какие базы есть на сервере и кто их владелец, поэтому засчитывается любой правильный способ. Задания можно выполнять в любом порядке. Кроме заданий, в лабораторной есть вопросы: чтобы ответить, выполни то, что в них сказано, и посмотри, что ответил psql.\n\n**Если что-то пошло не так:**\n\n- внизу появилось `(END)` или `:` — нажми `q`;\n- psql ждёт продолжения (`pereplet-#`) — допиши `;` и нажми Enter, а если хочешь начать команду заново — нажми Ctrl+C;\n- удалил не ту базу или совсем всё сломал — нажми «Пересоздать», и лабораторная вернётся в исходное состояние. Терминал откроется заново — снова подключись: `psql pereplet`.\n\n> **Осторожно с `DROP DATABASE`:** удаляй только то, что сказано в задании, и перед Enter перечитывай имя базы. Служебные базы `postgres`, `template0` и `template1` не трогай.\n\nПочти всё, что нужно, есть в уроке «Первые шаги в psql», а в его конце — шпаргалка. Подсматривать туда — нормально. Одну настройку команды придётся найти во встроенной справке psql — так и задумано.\n",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Куда ты подключён",
+      "taskid": "pgs_lab2_t1_port",
+      "hint": "",
+      "question_html": "<p>Подключись к базе <code>pereplet</code> и выполни <code>\\conninfo</code>. Какой порт в ответе?</p>",
+      "options": [
+        {
+          "text": "<code>pereplet</code>",
+          "correct": false,
+          "explanation": "Нет: это имя базы — в ответе оно стоит после слов <code>connected to database</code>. Порт — число после <code>at port</code>."
+        },
+        {
+          "text": "<code>5432</code>",
+          "correct": true,
+          "explanation": "Верно: в конце ответа — <code>at port \"5432\"</code>. 5432 — стандартный порт PostgreSQL, ты встречал его в первом уроке."
+        },
+        {
+          "text": "<code>/var/run/postgresql</code>",
+          "correct": false,
+          "explanation": "Нет: это папка, где лежит сокет, — в ответе она стоит после слов <code>via socket in</code>. Порт — число после <code>at port</code>."
+        },
+        {
+          "text": "<code>root</code>",
+          "correct": false,
+          "explanation": "Нет: это пользователь, под которым ты подключён, — он стоит после слов <code>as user</code>. Порт — число после <code>at port</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Чья это база",
+      "taskid": "pgs_lab2_t2_owner",
+      "hint": "",
+      "question_html": "<p>Выведи список баз командой <code>\\l</code> и найди строку базы <code>archive</code>. Кто её владелец?</p>",
+      "options": [
+        {
+          "text": "<code>root</code>",
+          "correct": false,
+          "explanation": "Нет: <code>root</code> — это ты, а базу <code>archive</code> создавал не ты: у неё в столбце <code>Owner</code> стоит другое имя. <code>root</code> там стоит у твоей базы <code>pereplet</code>."
+        },
+        {
+          "text": "<code>archive</code>",
+          "correct": false,
+          "explanation": "Нет: <code>archive</code> — имя базы, оно стоит в столбце <code>Name</code>. Владелец — в соседнем столбце <code>Owner</code>."
+        },
+        {
+          "text": "<code>template0</code>",
+          "correct": false,
+          "explanation": "Нет: <code>template0</code> — служебная база, а не пользователь. В столбце <code>Owner</code> стоят имена пользователей."
+        },
+        {
+          "text": "<code>postgres</code>",
+          "correct": true,
+          "explanation": "Верно: в столбце <code>Owner</code> у <code>archive</code> стоит <code>postgres</code> — главный администратор, который появляется при установке. Эту базу создавали от его имени, а не от твоего."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Что лежит в архиве",
+      "taskid": "pgs_lab2_t3_table",
+      "hint": "",
+      "question_html": "<p>Переключись в базу <code>archive</code> командой <code>\\c</code> и выполни <code>\\dt</code>. Как называется таблица в этой базе?</p>",
+      "options": [
+        {
+          "text": "<code>old_orders</code>",
+          "correct": true,
+          "explanation": "Верно: в базе <code>archive</code> одна таблица — <code>old_orders</code>, старые заказы. Имя таблицы — в столбце <code>Name</code> вывода <code>\\dt</code>."
+        },
+        {
+          "text": "<code>orders</code>",
+          "correct": false,
+          "explanation": "Нет: таблицы с таким именем в <code>archive</code> нет. Посмотри внимательно на столбец <code>Name</code> в выводе <code>\\dt</code>."
+        },
+        {
+          "text": "<code>products</code>",
+          "correct": false,
+          "explanation": "Нет: эта таблица лежит в другой базе — <code>old_shop</code>. Посмотри на приглашение: перед <code>=#</code> должно стоять <code>archive</code>."
+        },
+        {
+          "text": "Таблиц нет: psql ответил <code>Did not find any relations.</code>",
+          "correct": false,
+          "explanation": "Нет: так <code>\\dt</code> отвечает в пустой базе — например, в <code>pereplet</code>. Скорее всего, ты не переключился: после <code>\\c archive</code> приглашение должно стать <code>archive=#</code>."
+        }
+      ]
+    },
+    {
+      "type": "check",
+      "title": "Создай базу для опытов",
+      "taskid": "pgs_lab2_t4_sandbox",
+      "hint": "<p>Базу создаёт SQL-команда <code>CREATE DATABASE</code> — та же, которой ты создавал <code>pereplet</code> в лабораторной 1. Это SQL, поэтому в конце нужна <code>;</code>.</p><p>Если проверка пишет, что владелец не <code>root</code>, значит, базу создавали через <code>sudo -u postgres</code>. Удали её командой <code>DROP DATABASE</code> и создай заново из обычного <code>psql pereplet</code>.</p>",
+      "question_html": "<p>Пробовать новые команды на рабочей базе <code>pereplet</code> опасно — заведи для опытов отдельную базу. Создай SQL-командой базу <code>sandbox</code>.</p><p>Работай как обычно — в <code>psql pereplet</code>, без <code>sudo</code>: тогда владельцем базы станешь ты, <code>root</code>. Проверь себя: в <code>\\l</code> появилась строка <code>sandbox</code>, и в столбце <code>Owner</code> у неё стоит <code>root</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Удали старую базу",
+      "taskid": "pgs_lab2_t5_drop",
+      "hint": "<p>Удаляет базу SQL-команда <code>DROP DATABASE</code>. Переспрашивать сервер не будет, поэтому перед Enter перечитай имя базы.</p><p>Ответ <code>cannot drop the currently open database</code> значит, что ты сейчас подключён к самой <code>old_shop</code> — посмотри на приглашение. Переключись в другую базу командой <code>\\c</code> и повтори.</p><p>Ответ <code>database \"old_shop\" is being accessed by other users</code> значит, что к <code>old_shop</code> подключён ещё один psql — например, в другой вкладке терминала. Выйди из него командой <code>\\q</code> и повтори.</p>",
+      "question_html": "<p>Базу <code>old_shop</code> коллега перенёс зря: старый интернет-магазин больше не работает. Удали её.</p><p>Проверь себя: <code>old_shop</code> пропала из списка <code>\\l</code>. Базы <code>pereplet</code>, <code>archive</code> и служебные не трогай — проверка смотрит, что они на месте.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Найди ответ в справке",
+      "taskid": "pgs_lab2_t6_owner",
+      "hint": "<p>Справку по SQL-команде показывает <code>\\h</code> и имя команды: <code>\\h CREATE DATABASE</code>. Найди в ней строку со словом <code>OWNER</code>.</p><p>Квадратные скобки <code>[ ]</code> в справке отмечают необязательную часть: её дописывают, только когда она нужна, а сами скобки в команду не переносят. <code>user_name</code> — место для имени пользователя. Если psql ответил <code>syntax error at or near \"[\"</code>, в команду попали скобки из справки. Если ответил <code>role \"user_name\" does not exist</code> — вместо <code>user_name</code> не подставлено настоящее имя.</p><p>Если база уже создана с владельцем <code>root</code>, удали её и создай заново.</p>",
+      "question_html": "<p>В «Переплёте» договорились: архивные базы принадлежат администратору <code>postgres</code>, а не тому, кто их завёл. Для архива за 2025 год нужна ещё одна такая база — создай базу <code>archive_2025</code>, владельцем которой будет <code>postgres</code>, а не ты.</p><p>Подключайся как обычно — <code>psql pereplet</code>, без <code>sudo</code>: владельца можно указать прямо в команде <code>CREATE DATABASE</code>. Готовой команды для этого в уроке нет — найди, как это сделать, во встроенной справке psql. Проверь себя: в <code>\\l</code> у <code>archive_2025</code> в столбце <code>Owner</code> стоит <code>postgres</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "quiz",
+      "title": "Неизвестная команда",
+      "taskid": "pgs_lab2_t7_semicolon",
+      "hint": "",
+      "question_html": "<p>Набери в psql <code>\\l;</code> — с точкой с запятой на конце — и прочитай ответ. Почему список баз не появился?</p>",
+      "options": [
+        {
+          "text": "Сервер PostgreSQL остановлен",
+          "correct": false,
+          "explanation": "Нет: до сервера дело даже не дошло. Команды с <code>\\</code> выполняет сам psql — и он ответил, что не знает такой команды."
+        },
+        {
+          "text": "У пользователя <code>root</code> нет прав смотреть список баз",
+          "correct": false,
+          "explanation": "Нет: <code>root</code> — администратор, и <code>\\l</code> без точки с запятой у тебя работает. Дело в самой команде."
+        },
+        {
+          "text": "Точка с запятой прилипла к имени команды: psql искал команду <code>\\l;</code> и не нашёл",
+          "correct": true,
+          "explanation": "Верно: <code>invalid command \\l;</code> — «неизвестная команда \\l;». Команды psql пишутся без <code>;</code>: <code>\\l</code>, <code>\\c</code>, <code>\\q</code>. Точка с запятой нужна только в конце SQL-команд."
+        },
+        {
+          "text": "На сервере нет ни одной базы",
+          "correct": false,
+          "explanation": "Нет: базы на сервере есть — <code>\\l</code> без <code>;</code> их покажет. А здесь psql сообщил, что не знает такой команды."
+        }
+      ]
+    }
+  ],
+  "vm_image": "golearn/sandbox-pg:latest",
+  "vm_init": ""
+}

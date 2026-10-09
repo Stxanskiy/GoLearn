@@ -1,0 +1,302 @@
+{
+  "n": 12,
+  "id": "ch_pgs_12_quiz",
+  "title": "Проверка: таблицы и данные",
+  "kind": "tasks",
+  "format": "md",
+  "content_html": "# Проверка: таблицы и данные\n\nТы уже умеешь создавать таблицы, класть в них строки, искать нужные, менять и удалять их. Здесь 10 вопросов по трём урокам: «Таблицы и типы данных», «Добавляем и смотрим данные: INSERT и SELECT» и «Меняем и удаляем данные: UPDATE, DELETE и WHERE». Почти в каждом вопросе есть SQL-команда: прочитай её внимательно и реши, что ответит сервер, что произошло или что в ней не так.\n\nТерминал не нужен: всё для ответа есть в самом вопросе. Подсматривать в уроки можно — особенно в разделы «Частые ошибки». После ответа появится объяснение: прочитай его, даже если ответил верно.\n",
+  "tasks": [
+    {
+      "type": "quiz",
+      "title": "Типы для новой таблицы",
+      "taskid": "pgs_q12_t1_types",
+      "hint": "",
+      "question_html": "<p>«Переплёт» хочет хранить поставки книг. О каждой поставке нужно знать: когда она пришла (<code>delivered_on</code>), сколько экземпляров привезли (<code>copies</code>), сколько она стоит — в рублях с копейками (<code>total</code>) — и оплачена ли она уже (<code>is_paid</code>).</p><p>Какое описание столбцов подходит?</p>",
+      "options": [
+        {
+          "text": "<code>delivered_on text, copies integer, total numeric(8,2), is_paid boolean</code>",
+          "correct": false,
+          "explanation": "Нет: в столбец <code>text</code> база запишет что угодно — и <code>'15 марта'</code>, и <code>'вчера'</code>, — а проверять, дата ли это, не будет. Для даты есть тип <code>date</code>: с ним неправильную запись база отклонит."
+        },
+        {
+          "text": "<code>delivered_on date, copies integer, total numeric(8,2), is_paid boolean</code>",
+          "correct": true,
+          "explanation": "Верно: дата — <code>date</code>, число экземпляров — целое, <code>integer</code>, деньги — <code>numeric(8,2)</code>, «да или нет» — <code>boolean</code>. Тогда база сама проследит, чтобы в каждый столбец попадало только подходящее значение."
+        },
+        {
+          "text": "<code>delivered_on date, copies numeric(8,2), total integer, is_paid boolean</code>",
+          "correct": false,
+          "explanation": "Нет: типы у <code>copies</code> и <code>total</code> перепутаны. В <code>integer</code> копейки не поместятся: сумму <code>15600.50</code> база молча округлит до <code>15601</code>. А экземпляры — целое число, для них и нужен <code>integer</code>."
+        },
+        {
+          "text": "<code>delivered_on date, copies integer, total numeric(8,2), is_paid text</code>",
+          "correct": false,
+          "explanation": "Нет: «оплачена или нет» — это «да или нет», для этого есть <code>boolean</code>. В столбец <code>text</code> можно записать хоть <code>'наверное'</code> — база не возразит."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Ошибка в CREATE TABLE",
+      "taskid": "pgs_q12_t2_comma",
+      "hint": "",
+      "question_html": "<p>Ты создаёшь таблицу издательств:</p><pre>CREATE TABLE publishers (\n    id   serial PRIMARY KEY,\n    name text,\n    city text,\n);</pre><p>Сервер отвечает:</p><pre>ERROR:  syntax error at or near \")\"\nLINE 5: );\n        ^</pre><p>Что не так в команде?</p>",
+      "options": [
+        {
+          "text": "После последнего столбца, <code>city text</code>, стоит лишняя запятая",
+          "correct": true,
+          "explanation": "Верно: запятые ставят только <strong>между</strong> столбцами. После <code>city text,</code> сервер ждёт ещё один столбец, а находит <code>)</code> — на неё и показывает галочка <code>^</code>. Убери запятую после <code>city text</code>."
+        },
+        {
+          "text": "Между именем столбца и его типом нужна запятая: <code>name, text</code>",
+          "correct": false,
+          "explanation": "Нет: имя и тип — одно описание столбца, между ними только пробел: <code>name text</code>. Запятая отделяет один столбец от другого."
+        },
+        {
+          "text": "Столбцы нельзя писать на разных строках: команда должна быть в одну строку",
+          "correct": false,
+          "explanation": "Нет: psql спокойно принимает команду из нескольких строк — он ждёт продолжения, пока не встретит <code>;</code>. Так даже удобнее читать и искать ошибки."
+        },
+        {
+          "text": "Таблица <code>publishers</code> уже есть в базе, создать её второй раз нельзя",
+          "correct": false,
+          "explanation": "Нет: тогда сервер ответил бы <code>ERROR:  relation \"publishers\" already exists</code>. <code>syntax error</code> значит другое: команда записана с ошибкой, и сервер даже не начал её выполнять."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Новый столбец в таблице с данными",
+      "taskid": "pgs_q12_t3_alter",
+      "hint": "",
+      "question_html": "<p>В таблице <code>books</code> уже 300 книг, терять их нельзя. Директор просит хранить ещё и название издательства каждой книги — текстом, в новом столбце <code>publisher</code>.</p><p>Какой командой это сделать?</p>",
+      "options": [
+        {
+          "text": "<code>DROP TABLE books;</code>, а потом <code>CREATE TABLE books (...)</code> заново, уже с <code>publisher</code>",
+          "correct": false,
+          "explanation": "Нет: <code>DROP TABLE</code> удаляет таблицу вместе со всеми строками и не переспрашивает. Новая таблица будет пустой — все 300 книг пропадут."
+        },
+        {
+          "text": "<code>CREATE TABLE books (...)</code> ещё раз — со старыми столбцами и новым <code>publisher</code>",
+          "correct": false,
+          "explanation": "Нет: таблица <code>books</code> уже есть, и сервер ответит <code>ERROR:  relation \"books\" already exists</code>. Ничего не изменится."
+        },
+        {
+          "text": "<code>ALTER TABLE books ADD COLUMN publisher text;</code>",
+          "correct": true,
+          "explanation": "Верно: <code>ALTER TABLE</code> меняет готовую таблицу. Все 300 книг останутся на месте, а в новом столбце у них пока будет пусто (<code>NULL</code>). Проверить результат — <code>\\d books</code>."
+        },
+        {
+          "text": "<code>INSERT INTO books (publisher) VALUES ('Азбука');</code>",
+          "correct": false,
+          "explanation": "Нет: <code>INSERT</code> добавляет <strong>строки</strong>, а не столбцы. Столбца <code>publisher</code> ещё нет, поэтому сервер ответит <code>ERROR:  column \"publisher\" of relation \"books\" does not exist</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Как записать значения",
+      "taskid": "pgs_q12_t4_quotes",
+      "hint": "",
+      "question_html": "<p>Нужно добавить в <code>books</code> книгу «Идиот» за 450 рублей. Какая из команд выполнится без ошибки?</p>",
+      "options": [
+        {
+          "text": "<code>INSERT INTO books (title, price) VALUES (\"Идиот\", 450.00);</code>",
+          "correct": false,
+          "explanation": "Нет: в двойных кавычках PostgreSQL видит <strong>имя столбца</strong>, а не текст. Сервер ответит <code>ERROR:  column \"Идиот\" does not exist</code>. Текст пишут в одинарных кавычках."
+        },
+        {
+          "text": "<code>INSERT INTO books (title, price) VALUES (Идиот, 450.00);</code>",
+          "correct": false,
+          "explanation": "Нет: слово без кавычек PostgreSQL тоже считает именем столбца — ответ будет тот же: <code>ERROR:  column \"Идиот\" does not exist</code>. Текст пишут в одинарных кавычках."
+        },
+        {
+          "text": "<code>INSERT INTO books (title, price) VALUES ('Идиот', 450,00);</code>",
+          "correct": false,
+          "explanation": "Нет: запятая разделяет значения, поэтому <code>450,00</code> превратилось в два значения — <code>450</code> и <code>00</code>. Сервер ответит <code>ERROR:  INSERT has more expressions than target columns</code>: значений больше, чем столбцов."
+        },
+        {
+          "text": "<code>INSERT INTO books (title, price) VALUES ('Идиот', 450.00);</code>",
+          "correct": true,
+          "explanation": "Верно: текст — в одинарных кавычках, дробная часть — через точку. Сервер ответит <code>INSERT 0 1</code>: добавлена одна строка."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Что значит duplicate key",
+      "taskid": "pgs_q12_t5_pkey",
+      "hint": "",
+      "question_html": "<p>Стажёр добавляет книгу и сам указывает ей номер:</p><pre>INSERT INTO books (id, title, price) VALUES (1, 'Бесы', 640.00);</pre><p>Сервер отвечает:</p><pre>ERROR:  duplicate key value violates unique constraint \"books_pkey\"\nDETAIL:  Key (id)=(1) already exists.</pre><p>Что значит эта ошибка?</p>",
+      "options": [
+        {
+          "text": "Книга «Бесы» уже есть в каталоге, а двух книг с одинаковым названием быть не может",
+          "correct": false,
+          "explanation": "Нет: в строке <code>DETAIL</code> речь о <code>id</code>, а не о названии. Названия как раз могут повторяться — вспомни два «Собачьих сердца» в уроке про <code>UPDATE</code> и <code>DELETE</code>."
+        },
+        {
+          "text": "Книга с <code>id</code> = 1 уже есть в таблице, а номера в <code>id</code> не повторяются",
+          "correct": true,
+          "explanation": "Верно: <code>Key (id)=(1) already exists</code> — «ключ id = 1 уже существует». <code>id</code> — первичный ключ, номера в нём не повторяются. Убери <code>id</code> из списка столбцов, и база сама поставит следующий номер по порядку."
+        },
+        {
+          "text": "Номер нужно писать в кавычках: <code>'1'</code>, а не <code>1</code>",
+          "correct": false,
+          "explanation": "Нет: число пишут без кавычек, а с кавычками ответ будет тот же — <code>Key (id)=(1) already exists</code>. Дело не в записи, а в том, что номер 1 уже занят."
+        },
+        {
+          "text": "В таблице <code>books</code> закончилось место, новые строки в неё не помещаются",
+          "correct": false,
+          "explanation": "Нет: места хватает. <code>duplicate key</code> значит «повторяющийся ключ»: такой <code>id</code> в таблице уже есть."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Что выведет запрос",
+      "taskid": "pgs_q12_t6_select",
+      "hint": "",
+      "question_html": "<p>В таблице <code>books</code> пять книг (здесь показаны только нужные столбцы):</p><pre> id |       title        | price  | in_stock\n----+--------------------+--------+----------\n  1 | Мастер и Маргарита | 690.00 | t\n  2 | Собачье сердце     | 390.00 | t\n  3 | Каштанка           | 250.00 | f\n  4 | Идиот              | 450.00 | t\n  5 | Белые ночи         | 280.00 | t\n(5 rows)</pre><p>Что выведет сервер на такой запрос?</p><pre>SELECT title FROM books\nWHERE price &lt; 500 AND in_stock = true\nORDER BY price DESC;</pre>",
+      "options": [
+        {
+          "text": "«Белые ночи», «Собачье сердце», «Идиот»",
+          "correct": false,
+          "explanation": "Нет: книги те, но порядок обратный. <code>DESC</code> значит «по убыванию» — первой идёт самая дорогая: «Идиот» за 450.00."
+        },
+        {
+          "text": "«Идиот», «Собачье сердце», «Белые ночи», «Каштанка»",
+          "correct": false,
+          "explanation": "Нет: «Каштанка» дешевле 500, но её нет на складе — <code>in_stock</code> у неё <code>f</code>. С <code>AND</code> строка попадает в ответ, только если выполнены <strong>оба</strong> условия."
+        },
+        {
+          "text": "«Идиот», «Собачье сердце», «Белые ночи»",
+          "correct": true,
+          "explanation": "Верно: дешевле 500 и на складе — три книги, «Каштанка» отпала из-за <code>in_stock = f</code>, «Мастер и Маргарита» — из-за цены. <code>DESC</code> ставит их от дорогой к дешёвой: 450.00, 390.00, 280.00."
+        },
+        {
+          "text": "«Мастер и Маргарита», «Идиот», «Собачье сердце», «Белые ночи»",
+          "correct": false,
+          "explanation": "Нет: «Мастер и Маргарита» на складе, но стоит 690.00 — дороже 500. С <code>AND</code> строка попадает в ответ, только если выполнены <strong>оба</strong> условия."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "UPDATE без WHERE",
+      "taskid": "pgs_q12_t7_nowhere",
+      "hint": "",
+      "question_html": "<p>В таблице <code>books</code> семь книг. Стажёр хотел отметить, что «Каштанки» нет на складе, и набрал:</p><pre>UPDATE books SET in_stock = false;</pre><p>Сервер ответил <code>UPDATE 7</code>. Что произошло?</p>",
+      "options": [
+        {
+          "text": "Теперь у всех семи книг <code>in_stock = false</code>: без <code>WHERE</code> команда меняет все строки",
+          "correct": true,
+          "explanation": "Верно: без <code>WHERE</code> нет и условия, поэтому база послушно изменила все семь строк. Число в ответе — сколько строк изменилось. Нужно было <code>WHERE id = ...</code> с номером «Каштанки»."
+        },
+        {
+          "text": "Ничего не изменилось: без <code>WHERE</code> сервер не знает, какие строки менять",
+          "correct": false,
+          "explanation": "Нет: база не переспрашивает и не угадывает. Без <code>WHERE</code> она меняет все строки — об этом и говорит <code>UPDATE 7</code>."
+        },
+        {
+          "text": "Изменилась только «Каштанка», а <code>7</code> — это сколько всего строк в таблице",
+          "correct": false,
+          "explanation": "Нет: число в ответе <code>UPDATE</code> — сколько строк <strong>изменилось</strong>. Изменились все семь."
+        },
+        {
+          "text": "Теперь у всех семи книг <code>in_stock = false</code>, но это можно отменить командой <code>ROLLBACK;</code>",
+          "correct": false,
+          "explanation": "Нет: стажёр не открыл черновик командой <code>BEGIN</code>, поэтому изменение сохранилось сразу. <code>ROLLBACK</code> ничего не вернёт — сервер лишь предупредит: <code>WARNING:  there is no transaction in progress</code> («нет открытой транзакции»)."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Удаляем дубль",
+      "taskid": "pgs_q12_t8_dup",
+      "hint": "",
+      "question_html": "<p>«Собачье сердце» попало в каталог дважды:</p><pre>SELECT id, title, price FROM books WHERE title = 'Собачье сердце' ORDER BY id;\n id |     title      | price\n----+----------------+--------\n  2 | Собачье сердце | 390.00\n  7 | Собачье сердце | 390.00\n(2 rows)</pre><p>Строку 7 нужно удалить, а строку 2 оставить. Стажёр набирает:</p><pre>DELETE FROM books WHERE title = 'Собачье сердце';</pre><p>Что не так?</p>",
+      "options": [
+        {
+          "text": "Всё так: сервер удалит одну из двух строк, а вторая останется в каталоге",
+          "correct": false,
+          "explanation": "Нет: <code>DELETE</code> удаляет <strong>все</strong> строки, которые подходят под условие. Под это условие подходят обе — сервер ответит <code>DELETE 2</code>."
+        },
+        {
+          "text": "Под условие подходят обе строки: удалится и дубль, и нужная книга",
+          "correct": true,
+          "explanation": "Верно: названия одинаковые, поэтому <code>WHERE title = ...</code> попадает в обе строки — сервер ответит <code>DELETE 2</code>. Удалять надо по номеру: <code>id</code> у каждой строки свой, и <code>WHERE id = 7</code> удалит ровно дубль."
+        },
+        {
+          "text": "Удалять строки можно только по <code>id</code>: на условие по названию сервер ответит ошибкой",
+          "correct": false,
+          "explanation": "Нет: в <code>WHERE</code> можно писать любое условие, ошибки не будет. Беда в другом: сервер удалит обе строки и ответит <code>DELETE 2</code>."
+        },
+        {
+          "text": "Без <code>BEGIN</code> команда <code>DELETE</code> не сработает: сначала нужно открыть черновик",
+          "correct": false,
+          "explanation": "Нет: <code>BEGIN</code> — это страховка, а не обязательный шаг. Без него <code>DELETE</code> выполнится сразу — и удалит обе строки, ведь под условие подходят обе."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Условие и пустое значение",
+      "taskid": "pgs_q12_t9_null",
+      "hint": "",
+      "question_html": "<p>Все книги сейчас на складе (<code>in_stock = t</code>), а число страниц у них такое:</p><pre> id |          title           | page_count\n----+--------------------------+------------\n  1 | Мастер и Маргарита       |        480\n  2 | Собачье сердце           |        160\n  3 | Преступление и наказание |        608\n  4 | Каштанка                 |         64\n  5 | Белая гвардия            |\n  6 | Толстый и тонкий         |         12\n(6 rows)</pre><p>Что ответит сервер на команду?</p><pre>UPDATE books SET in_stock = false WHERE page_count &lt; 100;</pre>",
+      "options": [
+        {
+          "text": "<code>UPDATE 3</code>: пустое число страниц считается нулём, а ноль меньше 100",
+          "correct": false,
+          "explanation": "Нет: пустое значение — это <code>NULL</code>, «неизвестно», а не ноль. Меньше ли 100 страниц у «Белой гвардии», неизвестно, поэтому её строка под условие не попадает."
+        },
+        {
+          "text": "<code>ERROR</code>: в столбце <code>page_count</code> есть пустое значение, сравнивать его с числом нельзя",
+          "correct": false,
+          "explanation": "Нет: ошибки не будет. Строка с <code>NULL</code> просто не подойдёт под условие, а остальные строки сравнятся как обычно."
+        },
+        {
+          "text": "<code>UPDATE 0</code>: пока в столбце есть <code>NULL</code>, условие не подходит ни к одной строке",
+          "correct": false,
+          "explanation": "Нет: <code>NULL</code> мешает только своей строке. «Каштанка» (64) и «Толстый и тонкий» (12) под условие подходят."
+        },
+        {
+          "text": "<code>UPDATE 2</code>: у «Белой гвардии» число страниц неизвестно, и под условие она не попадает",
+          "correct": true,
+          "explanation": "Верно: изменятся «Каштанка» и «Толстый и тонкий». Про <code>NULL</code> нельзя сказать, меньше ли он 100, поэтому «Белая гвардия» останется на складе. Найти такие строки можно только через <code>IS NULL</code>."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Ошибка в черновике",
+      "taskid": "pgs_q12_t10_aborted",
+      "hint": "",
+      "question_html": "<p>Ты правишь каталог в черновике:</p><pre>pereplet=# BEGIN;\nBEGIN\npereplet=*# UPDATE books SET price = 750.00 WHERE id = 1;\nUPDATE 1\npereplet=*# UPDATE books SET in_stok = false WHERE id = 4;\nERROR:  column \"in_stok\" of relation \"books\" does not exist\nLINE 1: UPDATE books SET in_stok = false WHERE id = 4;\n                         ^\npereplet=!# UPDATE books SET in_stock = false WHERE id = 4;\nERROR:  current transaction is aborted, commands ignored until end of transaction block</pre><p>Опечатку ты исправил, а сервер всё равно отвечает ошибкой. Что теперь делать?</p>",
+      "options": [
+        {
+          "text": "Подождать: таблица <code>books</code> занята другой командой, через минуту исправленная команда пройдёт",
+          "correct": false,
+          "explanation": "Нет: таблица не занята. <code>current transaction is aborted</code> — «текущая транзакция прервана»: после ошибки сервер не выполнит в этом черновике больше ни одной правки, сколько ни жди."
+        },
+        {
+          "text": "Набрать <code>COMMIT;</code>: цена 750.00 сохранится, а команда с опечаткой просто пропадёт",
+          "correct": false,
+          "explanation": "Нет: прерванный черновик сохранить нельзя. На <code>COMMIT</code> сервер ответит <code>ROLLBACK</code> — отменится всё, и цена 750.00 тоже."
+        },
+        {
+          "text": "Набрать <code>ROLLBACK;</code> и начать заново: цену 750.00 тоже придётся поставить ещё раз",
+          "correct": true,
+          "explanation": "Верно: после ошибки внутри <code>BEGIN</code> черновик испорчен — об этом говорит <code>!</code> в приглашении <code>pereplet=!#</code>. <code>ROLLBACK</code> отменит всё, что было после <code>BEGIN</code>, приглашение снова станет <code>pereplet=#</code>, и можно повторить обе правки."
+        },
+        {
+          "text": "Повторить исправленную команду ещё раз: со второй попытки сервер её примет",
+          "correct": false,
+          "explanation": "Нет: сервер будет отвечать той же ошибкой на любую команду, пока ты не закончишь черновик. Слова <code>commands ignored until end of transaction block</code> значат «команды игнорируются до конца транзакции»."
+        }
+      ]
+    }
+  ],
+  "vm_image": null,
+  "vm_init": ""
+}

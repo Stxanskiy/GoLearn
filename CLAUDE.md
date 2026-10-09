@@ -9,7 +9,12 @@ Course content is JSON in `cmd/seed/content/`, compiled into the seeder with
 `go:embed` and imported by `cmd/seed/import.go`. No course is written in Go any
 more — the Go courses and the last `mod*.go` files are gone.
 
-There is no SQL course. "Экспресс-курс по SQL" was withdrawn in migration `030`:
+The PostgreSQL path is being written: course `pg-start` ("PostgreSQL: старт с
+нуля", `cmd/seed/content/course_pg_start`, labs in `cmd/seed/labs_pg_start*.go`)
+is seeded as a draft (`importSpec.Draft`) and stays hidden until an admin
+publishes it; the plan is `docs/courses/postgresql-plan.md`.
+
+The old SQL course is gone. "Экспресс-курс по SQL" was withdrawn in migration `030`:
 the first task of every one of its labs ran `psql -U student`, and the sandbox
 only ever created a `root` role, so each lab failed on its first command. It was
 never published. Its content, fixtures and reference solutions are deleted; the
@@ -66,8 +71,8 @@ Migrations run automatically on startup (`internal/migrate`, tracked in the
 `schema_migrations` table) — no manual psql step. A migration is identified by
 its full file name, so never rename one that has shipped; `025` exists twice
 (`025_billing`, `025_trainer_flag`) for that reason. Take the next number from
-`ls migrations/ | tail -1` rather than from this file — the latest is `030`, so
-the next one is `031`.
+`ls migrations/ | tail -1` rather than from this file — the latest is `031`, so
+the next one is `032`.
 
 ## Tests
 ```bash

@@ -112,9 +112,11 @@ type importSpec struct {
 	Track      string
 	Difficulty string
 	Category   string
-	Trainer    bool   // practice-only course, listed under trainers
-	Draft      bool   // seed it unpublished; the author publishes it when it is ready
-	Image      string // force this sandbox image on all shell tasks (empty = auto)
+	Trainer    bool // practice-only course, listed under trainers
+	// Draft seeds the course unpublished, so content still being written reaches
+	// production hidden; an admin publishes it when it is ready.
+	Draft bool
+	Image string // force this sandbox image on all shell tasks (empty = auto)
 }
 
 // importedModules builds GoLearn modules from embedded parser content.
@@ -148,10 +150,14 @@ func importedModules() []M {
 		{Dir: "module_pyqt6_data", Slug: "pyqt6-data", Track: "python", Difficulty: "advanced", Category: "PyQt6", Draft: true},
 		{Dir: "module_demo_exam", Slug: "demo-exam", Track: "python", Difficulty: "advanced", Category: "Python", Draft: true},
 		// ── Database section ──
+		{Dir: "course_pg_start", Slug: "pg-start", Track: "database", Difficulty: "beginner", Category: "PostgreSQL"},
+		{Dir: "course_pg_sql", Slug: "pg-sql", Track: "database", Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
+		{Dir: "course_pg_ops", Slug: "pg-ops", Track: "database", Difficulty: "intermediate", Category: "PostgreSQL", Draft: true},
 		// ── Trainers (gyms) — practice-only, shown on /trainers, not in /courses ──
 		{Dir: "gym_linux_start", Slug: "gym-linux-start", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Linux"},
 		{Dir: "gym_linux_troubleshoot", Slug: "gym-linux-troubleshoot", Track: "devops", Trainer: true, Difficulty: "intermediate", Category: "Linux"},
 		{Dir: "gym_git", Slug: "gym-git", Track: "devops", Trainer: true, Difficulty: "beginner", Category: "Git"},
+		{Dir: "gym_sql", Slug: "gym-sql", Track: "database", Trainer: true, Difficulty: "beginner", Category: "PostgreSQL", Draft: true},
 	}
 	var mods []M
 	for _, s := range specs {

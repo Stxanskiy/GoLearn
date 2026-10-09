@@ -1,0 +1,11 @@
+{
+  "n": 5,
+  "id": "ch_pgq_05_functions",
+  "title": "Функции и выражения",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Функции и выражения\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- функции для строк и чисел\n- даты и интервалы: `date_trunc`, `extract`, `age`\n- `CASE`, `COALESCE`, приведение типов `::`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

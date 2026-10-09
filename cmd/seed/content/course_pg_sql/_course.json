@@ -1,0 +1,130 @@
+{
+  "id": "course_pg_sql",
+  "title": "SQL-запросы в PostgreSQL",
+  "meta": {
+    "title": "SQL-запросы в PostgreSQL",
+    "description": "Второй курс пути: отвечаем на вопросы бизнеса запросами. Фильтры, сортировка, функции, группировки, JOIN, подзапросы, CTE и оконные функции — на базе книжного магазина «Переплёт», с автопроверкой в настоящем psql."
+  },
+  "chapter_list": [
+    {
+      "id": "ch_pgq_01_select",
+      "title": "Как устроен SELECT",
+      "position": 1
+    },
+    {
+      "id": "ch_pgq_02_where",
+      "title": "Фильтрация: WHERE",
+      "position": 2
+    },
+    {
+      "id": "ch_pgq_lab1",
+      "title": "Лабораторная 1: первые выборки",
+      "position": 3
+    },
+    {
+      "id": "ch_pgq_04_order",
+      "title": "Сортировка и ограничение: ORDER BY и LIMIT",
+      "position": 4
+    },
+    {
+      "id": "ch_pgq_05_functions",
+      "title": "Функции и выражения",
+      "position": 5
+    },
+    {
+      "id": "ch_pgq_lab2",
+      "title": "Лабораторная 2: сортировка, функции, даты",
+      "position": 6
+    },
+    {
+      "id": "ch_pgq_07_quiz",
+      "title": "Проверка: WHERE, NULL, сортировка, функции",
+      "position": 7
+    },
+    {
+      "id": "ch_pgq_08_group",
+      "title": "Агрегаты и группировка",
+      "position": 8
+    },
+    {
+      "id": "ch_pgq_lab3",
+      "title": "Лабораторная 3: отчёты для директора",
+      "position": 9
+    },
+    {
+      "id": "ch_pgq_10_join",
+      "title": "Соединения таблиц: JOIN",
+      "position": 10
+    },
+    {
+      "id": "ch_pgq_lab4",
+      "title": "Лабораторная 4: соединяем таблицы",
+      "position": 11
+    },
+    {
+      "id": "ch_pgq_12_subqueries",
+      "title": "Подзапросы",
+      "position": 12
+    },
+    {
+      "id": "ch_pgq_lab5",
+      "title": "Лабораторная 5: подзапросы",
+      "position": 13
+    },
+    {
+      "id": "ch_pgq_14_cte",
+      "title": "CTE и операции над множествами",
+      "position": 14
+    },
+    {
+      "id": "ch_pgq_lab6",
+      "title": "Лабораторная 6: CTE и множества",
+      "position": 15
+    },
+    {
+      "id": "ch_pgq_16_quiz",
+      "title": "Проверка: JOIN, подзапросы, CTE",
+      "position": 16
+    },
+    {
+      "id": "ch_pgq_17_window",
+      "title": "Оконные функции",
+      "position": 17
+    },
+    {
+      "id": "ch_pgq_lab7",
+      "title": "Лабораторная 7: аналитика",
+      "position": 18
+    },
+    {
+      "id": "ch_pgq_19_dml",
+      "title": "Изменение данных на продвинутом уровне",
+      "position": 19
+    },
+    {
+      "id": "ch_pgq_lab8",
+      "title": "Лабораторная 8: массовые изменения",
+      "position": 20
+    },
+    {
+      "id": "ch_pgq_21_views",
+      "title": "Представления",
+      "position": 21
+    },
+    {
+      "id": "ch_pgq_lab9",
+      "title": "Лабораторная 9: представления",
+      "position": 22
+    },
+    {
+      "id": "ch_pgq_23_quest",
+      "title": "Финальный квест «Ночь промокодов»",
+      "position": 23
+    },
+    {
+      "id": "ch_pgq_24_final",
+      "title": "Итоговая проверка и что дальше",
+      "position": 24
+    }
+  ]
+}

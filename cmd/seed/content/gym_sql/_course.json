@@ -1,0 +1,35 @@
+{
+  "id": "gym_sql",
+  "title": "Тренажёр: SQL",
+  "meta": {
+    "title": "Тренажёр: SQL",
+    "description": "Только практика: задачи на SQL-запросы в настоящем psql, от простых выборок до оконных функций, на базе «Переплёта»."
+  },
+  "chapter_list": [
+    {
+      "id": "ch_gsql_lab1",
+      "title": "Лёгкий уровень: SELECT, WHERE, ORDER BY",
+      "position": 1
+    },
+    {
+      "id": "ch_gsql_lab2",
+      "title": "Средний уровень: агрегаты и JOIN",
+      "position": 2
+    },
+    {
+      "id": "ch_gsql_lab3",
+      "title": "Сложный уровень: подзапросы, CTE, окна",
+      "position": 3
+    },
+    {
+      "id": "ch_gsql_lab4",
+      "title": "Изменение данных",
+      "position": 4
+    },
+    {
+      "id": "ch_gsql_lab5",
+      "title": "Как на собеседовании",
+      "position": 5
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "n": 21,
+  "id": "ch_pgo_21_replication",
+  "title": "Репликация и отказоустойчивость",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Репликация и отказоустойчивость\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- primary и standby\n- синхронная и асинхронная репликация\n- failover и обзор Patroni\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

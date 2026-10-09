@@ -1,0 +1,11 @@
+{
+  "n": 23,
+  "id": "ch_pgo_23_docker",
+  "title": "PostgreSQL в Docker",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# PostgreSQL в Docker\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- официальный образ и переменные `POSTGRES_*`\n- volume для данных\n- init-скрипты, healthcheck, обновление версии\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

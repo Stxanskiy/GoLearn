@@ -1,0 +1,11 @@
+{
+  "n": 6,
+  "id": "ch_pgo_06_hba",
+  "title": "Аутентификация: pg_hba.conf",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# Аутентификация: pg_hba.conf\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- peer, пароль (scram-sha-256), trust\n- порядок правил: первое совпадение\n- диагностика «no pg_hba.conf entry» и «password authentication failed»\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}

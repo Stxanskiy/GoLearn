@@ -36,6 +36,11 @@ var curriculum = map[string][]string{
 		"pyqt6-data",         // модели, таблицы, база в интерфейсе, потоки
 		"demo-exam",          // сборка и критерии
 	},
+	"database": {
+		"pg-start", // установка, psql, таблицы и данные — с нуля
+		"pg-sql",   // запросы: фильтры, группировки, JOIN, окна
+		"pg-ops",   // эксплуатация: доступы, бэкапы, скорость, реплики
+	},
 	"security": {
 		"security-offense",
 		"security-defense",
@@ -44,6 +49,7 @@ var curriculum = map[string][]string{
 		"gym-linux-start",
 		"gym-linux-troubleshoot",
 		"gym-git",
+		"gym-sql",
 	},
 }
 
@@ -52,9 +58,9 @@ var curriculum = map[string][]string{
 var specBand = map[string]int{
 	"devops": 100,
 	"python": 200,
-	// database остаётся без курсов: SQL убран, но полоса номеров сохранена,
-	// чтобы вернувшийся курс встал на своё место, а не в конец devops.
-	// Полоса 200 занята направлением python (миграция 031).
+	// Полоса 300 держалась пустой, пока SQL-курс был снят (030): чтобы
+	// вернувшийся курс встал на своё место, а не в конец devops. Теперь её
+	// занял PostgreSQL-путь — после DevOps и python, но до security.
 	"database": 300,
 	"security": 400,
 	"gym":      500,

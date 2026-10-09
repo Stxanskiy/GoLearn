@@ -1,0 +1,11 @@
+{
+  "n": 14,
+  "id": "ch_pgq_14_cte",
+  "title": "CTE и операции над множествами",
+  "kind": "lesson",
+  "format": "md",
+  "content_html": "# CTE и операции над множествами\n\n> **Урок в разработке.** Ниже — план: что в нём будет.\n\n## Что будет в уроке\n\n- `WITH` для пошаговых отчётов\n- `WITH RECURSIVE`: иерархия сотрудников, календарь\n- `UNION`, `INTERSECT`, `EXCEPT`\n",
+  "tasks": [],
+  "vm_image": null,
+  "vm_init": ""
+}
