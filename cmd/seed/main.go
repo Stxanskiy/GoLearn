@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/backendraz/golearn/internal/migrate"
+	"github.com/backendraz/golearn/internal/model"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -293,17 +294,17 @@ func main() {
 type M struct {
 	Slug, Title, Description string
 	Order                    int
-	Track                    string   // backend | devops | shared
-	Difficulty               string   // beginner | intermediate | advanced | expert
-	Prerequisites            []string // module slugs
-	Category                 string   // explicit catalog tag; empty -> derived in handler
-	Label                    string   // Старт | Практика | Вызов; empty -> derived
-	Tags                     []string // topic chips
-	CoverImage               string   // real photo URL/path; empty -> generated SVG
-	Accent                   string   // gradient key; empty -> by category
-	EstMinutes               int      // 0 -> derived from lesson count
-	Trainer                  bool     // practice-only course, listed under trainers
-	Draft                    bool     // first seeded unpublished; an admin publishes it
+	Track                    string        // backend | devops | shared
+	Difficulty               string        // beginner | intermediate | advanced | expert
+	Prerequisites            model.Prereqs // courses to take first (required | recommended)
+	Category                 string        // explicit catalog tag; empty -> derived in handler
+	Label                    string        // Старт | Практика | Вызов; empty -> derived
+	Tags                     []string      // topic chips
+	CoverImage               string        // real photo URL/path; empty -> generated SVG
+	Accent                   string        // gradient key; empty -> by category
+	EstMinutes               int           // 0 -> derived from lesson count
+	Trainer                  bool          // practice-only course, listed under trainers
+	Draft                    bool          // first seeded unpublished; an admin publishes it
 	Lessons                  []L
 }
 type L struct {

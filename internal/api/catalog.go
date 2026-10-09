@@ -155,6 +155,11 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 			IsNext:   i == nextIdx,
 		})
 	}
+	prereqs, locked, err := a.prereqState(ctx, *m, up)
+	if err != nil {
+		a.internalError(w, "course: prerequisites", err)
+		return
+	}
 	card := courseCard(c)
 	card.Description = &m.Description
 	writeJSON(w, http.StatusOK, apigen.CourseDetail{
@@ -162,6 +167,8 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 		Items:          items,
 		CompletedCount: c.Completed,
 		ProgressPct:    c.Pct,
+		Prerequisites:  prereqs,
+		Locked:         locked,
 		PrevCourse:     linkRef(prev),
 		NextCourse:     linkRef(next),
 	})

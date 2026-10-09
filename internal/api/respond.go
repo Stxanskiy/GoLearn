@@ -31,6 +31,7 @@ const (
 	codeRegistrationClosed = "registration_closed"
 	codeEmailTaken         = "email_taken"
 	codeCompletionDerived  = "completion_derived"
+	codePrerequisite       = "prerequisite_unmet"
 	codeSandboxDisabled    = "sandbox_disabled"
 	codeStorageDisabled    = "storage_disabled"
 	codeSandboxNotRunning  = "sandbox_not_running"

@@ -294,6 +294,24 @@ func (e LessonKind) Valid() bool {
 	}
 }
 
+// Defines values for PrerequisiteKind.
+const (
+	Recommended PrerequisiteKind = "recommended"
+	Required    PrerequisiteKind = "required"
+)
+
+// Valid indicates whether the value is a known member of the PrerequisiteKind enum.
+func (e PrerequisiteKind) Valid() bool {
+	switch e {
+	case Recommended:
+		return true
+	case Required:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProgressStatus.
 const (
 	Completed  ProgressStatus = "completed"
@@ -1068,9 +1086,14 @@ type CourseDetail struct {
 	CompletedCount int          `json:"completed_count"`
 	Course         CourseCard   `json:"course"`
 	Items          []CourseItem `json:"items"`
-	NextCourse     *LinkRef     `json:"next_course,omitempty"`
-	PrevCourse     *LinkRef     `json:"prev_course,omitempty"`
-	ProgressPct    int          `json:"progress_pct"`
+
+	// Locked A required prerequisite is unfinished. The course page still loads so
+	// the student can see what is missing, but its lessons answer `403`.
+	Locked        bool           `json:"locked"`
+	NextCourse    *LinkRef       `json:"next_course,omitempty"`
+	Prerequisites []Prerequisite `json:"prerequisites"`
+	PrevCourse    *LinkRef       `json:"prev_course,omitempty"`
+	ProgressPct   int            `json:"progress_pct"`
 }
 
 // CourseDocument Portable course format (`internal/courseio`). Order comes from array position.
@@ -1502,6 +1525,25 @@ type Me struct {
 	// Role `author` manages courses they own or co-author; `admin` manages everything.
 	Role Role `json:"role"`
 }
+
+// Prerequisite defines model for Prerequisite.
+type Prerequisite struct {
+	// Completed True once every lesson of that course is completed.
+	Completed bool `json:"completed"`
+
+	// Kind `required` blocks the course until the other one is finished; the lesson
+	// endpoints answer `403`. `recommended` is advice and blocks nothing.
+	Kind PrerequisiteKind `json:"kind"`
+
+	// ProgressPct How far the student is through that course, 0-100.
+	ProgressPct *int   `json:"progress_pct,omitempty"`
+	Slug        string `json:"slug"`
+	Title       string `json:"title"`
+}
+
+// PrerequisiteKind `required` blocks the course until the other one is finished; the lesson
+// endpoints answer `403`. `recommended` is advice and blocks nothing.
+type PrerequisiteKind string
 
 // Profile defines model for Profile.
 type Profile struct {

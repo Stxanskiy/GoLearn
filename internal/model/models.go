@@ -1,6 +1,66 @@
 package model
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
+
+// Prerequisite names a course a student should take before this one.
+//
+// Kind splits "you cannot start this yet" from "you will have a hard time":
+// a required prerequisite is enforced by the API, a recommended one is shown
+// and nothing more.
+type Prerequisite struct {
+	Slug string `json:"slug"`
+	Kind string `json:"kind"` // required | recommended
+}
+
+// Prerequisite kinds.
+const (
+	PrereqRequired    = "required"
+	PrereqRecommended = "recommended"
+)
+
+// Required reports whether this prerequisite blocks the course.
+func (p Prerequisite) Required() bool { return p.Kind == PrereqRequired }
+
+// Prereqs is the stored list. It reads the shape the column held before this
+// was a typed list - a bare array of slugs - as required prerequisites, so old
+// rows and any hand-written JSON keep working.
+type Prereqs []Prerequisite
+
+// UnmarshalJSON accepts both ["slug"] and [{"slug":…,"kind":…}].
+func (ps *Prereqs) UnmarshalJSON(data []byte) error {
+	var raw []json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		// `null`, an object, a number: nothing a list can be made of. An unreadable
+		// prerequisite must not fail the whole course, so it reads as "none".
+		*ps = nil
+		return nil
+	}
+	out := make(Prereqs, 0, len(raw))
+	for _, item := range raw {
+		var slug string
+		if err := json.Unmarshal(item, &slug); err == nil {
+			if slug != "" {
+				out = append(out, Prerequisite{Slug: slug, Kind: PrereqRequired})
+			}
+			continue
+		}
+		var one Prerequisite
+		if err := json.Unmarshal(item, &one); err != nil || one.Slug == "" {
+			continue
+		}
+		if one.Kind != PrereqRecommended {
+			// Anything that is not explicitly "recommended" blocks. Guessing the
+			// other way would silently open a course a typo was meant to gate.
+			one.Kind = PrereqRequired
+		}
+		out = append(out, one)
+	}
+	*ps = out
+	return nil
+}
 
 // Module represents a learning module (group of lessons).
 type Module struct {
@@ -11,7 +71,7 @@ type Module struct {
 	OrderNum      int       `json:"order_num" db:"order_num"`
 	Track         string    `json:"track" db:"track"`                 // backend | devops | shared
 	Difficulty    string    `json:"difficulty" db:"difficulty"`       // beginner | intermediate | advanced | expert
-	Prerequisites []string  `json:"prerequisites" db:"prerequisites"` // module slugs
+	Prerequisites Prereqs   `json:"prerequisites" db:"prerequisites"` // courses to take first
 	Category      string    `json:"category" db:"category"`           // explicit catalog tag; empty -> derived
 	Label         string    `json:"label" db:"label"`                 // Старт | Практика | Вызов; empty -> derived
 	Tags          []string  `json:"tags"`                             // topic chips (JSON array in DB)

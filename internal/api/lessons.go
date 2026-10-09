@@ -81,6 +81,28 @@ func (a *API) visible(w http.ResponseWriter, r *http.Request, ref lessonRef) (le
 	if !a.requireCourseAccess(w, r, ref.module.AccessTier) {
 		return lessonRef{}, false
 	}
+	// Required prerequisites are enforced here for the same reason as the
+	// subscription gate: every lesson endpoint comes through visible(), and a
+	// lesson id is otherwise enough to open the terminal of a course the student
+	// has not earned. The course page itself stays open and reports what is
+	// missing - locking it would leave nothing to explain the lock.
+	//
+	// Anyone who may edit the course is exempt: an author has to be able to open
+	// a lesson of the course they are writing without first sitting through its
+	// prerequisites.
+	user := userFrom(r.Context())
+	if !user.IsAdmin() {
+		locked, err := a.courseLocked(r.Context(), *ref.module, user.ID)
+		if err != nil {
+			a.internalError(w, "lesson: prerequisites", err)
+			return lessonRef{}, false
+		}
+		if locked {
+			writeError(w, http.StatusForbidden, codePrerequisite,
+				"finish the required course first")
+			return lessonRef{}, false
+		}
+	}
 	return ref, true
 }
 

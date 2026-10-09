@@ -2732,7 +2732,11 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Forbidden:
-      description: '`forbidden` or `csrf_rejected`.'
+      description: |
+        `forbidden`, `csrf_rejected`, or - on the lesson endpoints -
+        `prerequisite_unmet`: the course declares a required prerequisite the
+        student has not finished. `GET /courses/{courseSlug}` still answers and
+        reports which one in `prerequisites`, so the block can be explained.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -3166,9 +3170,30 @@ components:
         status: { $ref: '#/components/schemas/ProgressStatus' }
         is_next: { type: boolean, description: First not completed item. }
 
+    PrerequisiteKind:
+      type: string
+      enum: [required, recommended]
+      description: |
+        `required` blocks the course until the other one is finished; the lesson
+        endpoints answer `403`. `recommended` is advice and blocks nothing.
+
+    Prerequisite:
+      type: object
+      required: [slug, title, kind, completed]
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        kind: { $ref: '#/components/schemas/PrerequisiteKind' }
+        completed:
+          type: boolean
+          description: True once every lesson of that course is completed.
+        progress_pct:
+          type: integer
+          description: How far the student is through that course, 0-100.
+
     CourseDetail:
       type: object
-      required: [course, items, completed_count, progress_pct]
+      required: [course, items, completed_count, progress_pct, prerequisites, locked]
       properties:
         course: { $ref: '#/components/schemas/CourseCard' }
         items:
@@ -3176,6 +3201,14 @@ components:
           items: { $ref: '#/components/schemas/CourseItem' }
         completed_count: { type: integer }
         progress_pct: { type: integer }
+        prerequisites:
+          type: array
+          items: { $ref: '#/components/schemas/Prerequisite' }
+        locked:
+          type: boolean
+          description: |
+            A required prerequisite is unfinished. The course page still loads so
+            the student can see what is missing, but its lessons answer `403`.
         prev_course: { oneOf: [{ $ref: '#/components/schemas/LinkRef' }, { type: 'null' }] }
         next_course: { oneOf: [{ $ref: '#/components/schemas/LinkRef' }, { type: 'null' }] }
 
