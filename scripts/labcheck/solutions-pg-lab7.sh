@@ -18,8 +18,8 @@ CREATE TABLE book_genres (
     PRIMARY KEY (book_id, genre_id)
 );
 SQL'
-# The student opens the file in nano, goes to line 11 from CONTEXT and cuts it.
-sol_ch_pgs_lab7_4="sed -i 11d /root/book_genres.csv && psql pereplet <<'SQL'
+# The student opens the file in nano, goes to line 12 from CONTEXT and cuts it.
+sol_ch_pgs_lab7_4="sed -i 12d /root/book_genres.csv && psql pereplet <<'SQL'
 \\copy book_genres (book_id, genre_id) FROM '/root/book_genres.csv' WITH (FORMAT csv, HEADER)
 SQL"
 sol_ch_pgs_lab7_5="psql pereplet <<'SQL'

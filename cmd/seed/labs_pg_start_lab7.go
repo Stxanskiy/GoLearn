@@ -9,13 +9,24 @@ package main
 // genres and book_genres are created and loaded from two files the setup puts
 // in /root, and a report for the manager is exported to /root/in_stock.csv.
 //
+// The catalog runs through labs 4-7 as one story, so the setup is lab 6's
+// setup with every reference solution of lab 6 applied: eight authors and
+// fourteen books, inserted without ids in lab 6's order, each book with its
+// author and «Идиот» at its price again; books_id_seq goes on past lab 5's
+// deleted duplicate (id 15); Анна Смирнова's first order, two copies of
+// «Евгений Онегин» and one of «Анна Каренина». Nothing else changed while the
+// student was away: what is new are the manager's two files in /root, which
+// the introduction names.
+//
 //   - genres.csv comes from the Russian Excel: ';' between the values, ids 1–6.
 //     Loaded the lesson's way, without DELIMITER, it stops on line 2 with
 //     invalid input syntax for type integer: "1;роман";
-//   - book_genres.csv has ',' and one pair written twice (line 11 repeats line
-//     6), so the load stops on the primary key with CONTEXT … line 11 and
-//     nothing is loaded. The student removes the repeat in nano and loads
-//     again. The check looks at the table, never at the file the student edits.
+//   - book_genres.csv has ',' and gives every book of the catalog its genres,
+//     by the books' real ids, with one pair written twice (line 12 repeats
+//     line 7, «Идиот» — роман), so the load stops on the primary key with
+//     CONTEXT … line 12 and nothing is loaded. The student removes the repeat
+//     in nano and loads again. The check looks at the table, never at the
+//     file the student edits.
 //
 // The quizzes have the student read line N in CONTEXT, see that a failed \copy
 // leaves the table empty, and say why genres.id has no serial.
@@ -33,10 +44,8 @@ package main
 // The report is compared with what psql itself exports from the database at
 // check time (COPY … TO STDOUT with the options the task asks for), so any way
 // that writes the same file passes: \copy with the new or the old option
-// syntax, \o with \pset format csv.
-//
-// The catalog of S6 is lab 5's after its tasks: nine books, three of them out
-// of stock, each with its author; one customer with one order of two books.
+// syntax, \o with \pset format csv. Eight books of the catalog are in stock,
+// at eight different prices, so ORDER BY price has one order.
 //
 // Reference solutions: scripts/labcheck/solutions-pg-lab7.sh.
 
@@ -70,9 +79,11 @@ func init() {
 	}
 }
 
-// pgsLab7Schema is state S6: lab 5's catalog after its tasks, with the rules
-// and the author of each book lab 6 adds, and the customers, orders and order
-// items it creates.
+// pgsLab7Schema is state S6 as lab 6 leaves it — its setup with every
+// reference solution applied: the catalog with each book's author, the rules,
+// and the first order. Rows go in without ids in lab 6's order, so the ids are
+// the ones the student has; setval runs inside a DO block, which prints
+// nothing.
 const pgsLab7Schema = `CREATE TABLE authors (
     id         serial PRIMARY KEY,
     full_name  text NOT NULL,
@@ -109,52 +120,67 @@ CREATE TABLE order_items (
     PRIMARY KEY (order_id, book_id)
 );
 INSERT INTO authors (full_name, birth_year, country) VALUES
+    ('Иван Крылов', 1769, 'Россия'),
     ('Александр Пушкин', 1799, 'Россия'),
-    ('Николай Гоголь', 1809, 'Россия'),
     ('Фёдор Достоевский', 1821, 'Россия'),
+    ('Жюль Верн', 1828, 'Франция'),
+    ('Антон Чехов', 1860, 'Россия'),
     ('Лев Толстой', 1828, 'Россия'),
-    ('Антон Чехов', 1860, 'Россия');
+    ('Марк Твен', 1835, 'США'),
+    ('Артур Конан Дойл', 1859, 'Великобритания');
 INSERT INTO books (title, price, page_count, in_stock, published_year, author_id) VALUES
-    ('Евгений Онегин', 495.00, 320, true, 1833, 1),
-    ('Мёртвые души', 520.00, 416, true, 1842, 2),
-    ('Анна Каренина', 780.00, 864, true, 1878, 4),
-    ('Дама с собачкой', 210.00, 48, false, 1899, 5),
-    ('Капитанская дочка', 340.00, 176, true, 1836, 1),
-    ('Шинель', 190.00, 64, false, 1842, 2),
-    ('Идиот', 671.00, 640, true, 1869, 3),
-    ('Ревизор', 280.00, 144, true, 1836, 2),
-    ('Человек в футляре', 160.00, 32, false, 1898, 5);
+    ('Басни', 240.00, 224, true, 1809, 1),
+    ('Евгений Онегин', 460.00, 320, true, 1833, 2),
+    ('Капитанская дочка', 210.00, 192, false, 1836, 2),
+    ('Повести Белкина', 190.00, 160, false, 1831, 2),
+    ('Идиот', 715.00, 640, true, 1869, 3),
+    ('Братья Карамазовы', 990.00, 992, false, 1880, 3),
+    ('Белые ночи', 150.00, 96, false, 1848, 3),
+    ('Таинственный остров', 1350.00, 704, true, 1875, 4),
+    ('Вокруг света за восемьдесят дней', 360.00, 320, false, 1872, 4),
+    ('Дети капитана Гранта', 560.00, 672, true, 1868, 4),
+    ('Собака Баскервилей', 450.00, 256, true, 1902, 8),
+    ('Приключения Тома Сойера', 380.00, 288, false, 1876, 7),
+    ('Анна Каренина', 870.00, 864, true, 1878, 6),
+    ('Затерянный мир', 430.00, 320, true, 1912, 8);
+DO $$ BEGIN PERFORM setval('books_id_seq', 15); END $$;
 INSERT INTO customers (email, full_name, city) VALUES
-    ('anna.smirnova@example.com', 'Анна Смирнова', 'Казань');
-INSERT INTO orders (customer_id, status) VALUES (1, 'new');
+    ('anna.smirnova@example.com', 'Анна Смирнова', 'Москва');
+INSERT INTO orders (customer_id) VALUES (1);
 INSERT INTO order_items (order_id, book_id, quantity) VALUES
-    (1, 1, 1),
-    (1, 7, 2);
+    (1, 2, 2),
+    (1, 13, 1);
 `
 
 // pgsLab7Genres is genres.csv: a genre's id is its place in the list, from 1.
-var pgsLab7Genres = []string{"роман", "повесть", "рассказ", "пьеса", "сатира", "поэзия"}
+var pgsLab7Genres = []string{"роман", "повесть", "поэзия", "приключения", "детектив", "фантастика"}
 
 // pgsLab7Pairs is book_genres.csv without its repeat: (book_id, genre_id), in
-// file order. Every book of the catalog has a genre and every genre a book.
+// file order, by the ids books has after lab 6. Every book of the catalog has
+// a genre and every genre a book.
 var pgsLab7Pairs = [][2]int{
-	{1, 1}, {1, 6}, // Евгений Онегин: роман, поэзия
-	{2, 1}, {2, 5}, // Мёртвые души: роман, сатира
-	{3, 1},         // Анна Каренина: роман — the pair written twice
-	{4, 3},         // Дама с собачкой: рассказ
-	{5, 2},         // Капитанская дочка: повесть
-	{6, 2},         // Шинель: повесть
-	{7, 1},         // Идиот: роман
-	{8, 4}, {8, 5}, // Ревизор: пьеса, сатира
-	{9, 3}, {9, 5}, // Человек в футляре: рассказ, сатира
+	{1, 3},         // Басни: поэзия
+	{2, 1}, {2, 3}, // Евгений Онегин: роман, поэзия
+	{3, 2},         // Капитанская дочка: повесть
+	{4, 2},         // Повести Белкина: повесть
+	{5, 1},         // Идиот: роман — the pair written twice
+	{6, 1},         // Братья Карамазовы: роман
+	{7, 2},         // Белые ночи: повесть
+	{8, 1}, {8, 4}, // Таинственный остров: роман, приключения
+	{9, 1}, {9, 4}, // Вокруг света за восемьдесят дней: роман, приключения
+	{10, 1}, {10, 4}, // Дети капитана Гранта: роман, приключения
+	{11, 2}, {11, 5}, // Собака Баскервилей: повесть, детектив
+	{12, 1}, {12, 4}, // Приключения Тома Сойера: роман, приключения
+	{13, 1},                   // Анна Каренина: роман
+	{14, 1}, {14, 4}, {14, 6}, // Затерянный мир: роман, приключения, фантастика
 }
 
 // The repeat: pgsLab7Pairs[pgsLab7Twice] is written again after the first
-// pgsLab7RepeatAfter pairs. With the header as line 1 that is line 11 of the
-// file repeating line 6, as the quiz on CONTEXT says.
+// pgsLab7RepeatAfter pairs, between two books' lines. With the header as line
+// 1 that is line 12 of the file repeating line 7, as the quiz on CONTEXT says.
 const (
-	pgsLab7Twice       = 4
-	pgsLab7RepeatAfter = 9
+	pgsLab7Twice       = 5
+	pgsLab7RepeatAfter = 10
 )
 
 // pgsLab7GenresCSV is the file from the Russian Excel: ';' between values.
@@ -356,16 +382,24 @@ func pgsLab7Columns(table string, cols []string) string {
 // pgsLab7TableDiag is the bash script of a table check's diagnostic. A rule
 // that cannot get at the table (55P03: an open transaction of the student's
 // holds it) stops the rest, which would each wait out the lock timeout too.
+// So does the first rule, the rows that have to go in: when they do not, every
+// later rule fails on the same rows, whatever it tests — a book_id that points
+// at authors would also read as "a pair is taken twice" — and only the first
+// one says what is wrong.
 func pgsLab7TableDiag(table string, cols []string, rules []pgsLab7Rule) string {
 	var b strings.Builder
 	b.WriteString("s=$(glpg q pereplet " + b64(pgsLab7Columns(table, cols)) + ") || " +
 		"{ echo 'не получается подключиться к базе pereplet (её удалили?) — нажми «Пересоздать»'; exit; }\n")
 	b.WriteString("printf '%s' \"$s\"\n")
-	b.WriteString("busy=\n")
+	b.WriteString("stop=\n")
 	b.WriteString("if [ \"$(glpg q pereplet " + b64(pgsLab7Shape(table, cols)) + ")\" = t ]; then\n")
-	for _, r := range rules {
-		b.WriteString("\t[ -z \"$busy\" ] && st=$(glpg state pereplet " + b64(r.sql) + ") && [ \"$st\" != " + r.want + " ] &&\n\t\tcase $st in\n")
-		b.WriteString("\t\t55P03) busy=1; printf '; %s' " + pgsLab7Sh("проверка не дождалась таблицы "+table+": её держит незакрытая транзакция") + " ;;\n")
+	for i, r := range rules {
+		gate := ""
+		if i == 0 {
+			gate = "stop=1; "
+		}
+		b.WriteString("\t[ -z \"$stop\" ] && st=$(glpg state pereplet " + b64(r.sql) + ") && [ \"$st\" != " + r.want + " ] &&\n\t\t{ " + gate + "case $st in\n")
+		b.WriteString("\t\t55P03) stop=1; printf '; %s' " + pgsLab7Sh("проверка не дождалась таблицы "+table+": её держит незакрытая транзакция") + " ;;\n")
 		states := make([]string, 0, len(r.by))
 		for st := range r.by {
 			states = append(states, st)
@@ -374,7 +408,7 @@ func pgsLab7TableDiag(table string, cols []string, rules []pgsLab7Rule) string {
 		for _, st := range states {
 			b.WriteString("\t\t" + st + ") printf '; %s' " + pgsLab7Sh(r.by[st]) + " ;;\n")
 		}
-		b.WriteString("\t\t*) printf '; %s' " + pgsLab7Sh(r.say) + " ;;\n\t\tesac\n")
+		b.WriteString("\t\t*) printf '; %s' " + pgsLab7Sh(r.say) + " ;;\n\t\tesac; }\n")
 	}
 	b.WriteString("fi\n")
 	b.WriteString("if [ \"$(glpg q postgres " + b64("SELECT to_regclass('"+table+"') IS NOT NULL") + ")\" = t ]; then\n" +
@@ -389,12 +423,16 @@ func pgsLab7TableDiag(table string, cols []string, rules []pgsLab7Rule) string {
 var pgsLab7GenresLoaded = "SELECT (SELECT count(*) FROM genres) = " + strconv.Itoa(len(pgsLab7Genres)) + " " +
 	"AND NOT EXISTS (SELECT id, name FROM " + pgsLab7GenresFile + " EXCEPT SELECT id, name FROM genres)"
 
-// pgsLab7GenresState says what genres holds compared with the file. The file
-// is the student's to read, so its rows may be named.
+// pgsLab7GenresState says what genres holds compared with the file: a genre
+// held twice (a table without its key, loaded twice), genres missing or not
+// from it. The file is the student's to read, so its rows may be named.
 var pgsLab7GenresState = "SELECT CASE " +
 	"WHEN NOT EXISTS (SELECT 1 FROM genres) THEN 'таблица genres пустая. Если \\copy ответил ERROR, в таблицу не попало ничего: " +
 	"прочитай ошибку, исправь команду и выполни её снова' " +
 	"ELSE concat_ws('; ', 'в genres строк: ' || (SELECT count(*) FROM genres) || ', а жанров в файле " + strconv.Itoa(len(pgsLab7Genres)) + "', " +
+	"(SELECT 'жанры, записанные дважды: ' || string_agg(d.id || ';' || d.name, ', ' ORDER BY d.id) || " +
+	"' — у таблицы нет первичного ключа на id (первое задание)' " +
+	"FROM (SELECT id, name FROM genres GROUP BY id, name HAVING count(*) > 1) d), " +
 	"(SELECT 'нет жанров из файла: ' || string_agg(f.id || ';' || f.name, ', ' ORDER BY f.id) FROM " + pgsLab7GenresFile + " " +
 	"WHERE NOT EXISTS (SELECT 1 FROM genres g WHERE g.id = f.id AND g.name = f.name)), " +
 	"(SELECT 'строки не из файла: ' || string_agg(coalesce(g.id::text, 'NULL') || ';' || coalesce(g.name, 'NULL'), ', ' ORDER BY g.id) FROM genres g " +
@@ -405,7 +443,7 @@ var pgsLab7GenresState = "SELECT CASE " +
 var pgsLab7LinksLoaded = "SELECT (SELECT count(*) FROM book_genres) = " + strconv.Itoa(len(pgsLab7Pairs)) + " " +
 	"AND NOT EXISTS (SELECT book_id, genre_id FROM " + pgsLab7LinksFile + " EXCEPT SELECT book_id, genre_id FROM book_genres)"
 
-// pgsLab7Pair is SQL text for a pair the way the file writes it: 3,1.
+// pgsLab7Pair is SQL text for a pair the way the file writes it: 5,1.
 func pgsLab7Pair(t string) string {
 	return "coalesce(" + t + ".book_id::text, 'NULL') || ',' || coalesce(" + t + ".genre_id::text, 'NULL')"
 }
@@ -432,10 +470,17 @@ const pgsLab7ReportSQL = "COPY (SELECT title, price FROM books WHERE in_stock = 
 // pgsLab7Report is the bash script of the report check: silent with exit 0
 // when /root/in_stock.csv is what psql exports, otherwise it says what is
 // wrong with the file — the delimiter, the header, how many books, their
-// order — and exits 1. It never prints the rows the file should hold.
+// order — and exits 1. It never prints the rows the file should hold. An
+// empty file is what a \copy … TO that failed leaves: psql opens the file
+// before the server reads the query, so a stray ';' inside the parentheses
+// empties a report that was right a minute ago.
 var pgsLab7Report = `f=/root/in_stock.csv
+if [ ! -e "$f" ]; then
+	echo "файла $f нет: выгрузи отчёт командой \\copy … TO '$f', а если уже выгружал — проверь путь после TO"
+	exit 1
+fi
 if [ ! -s "$f" ]; then
-	echo "файла $f нет или он пустой — проверь путь после TO: '$f'"
+	echo "файл $f пустой: так бывает, когда \\copy … TO ответил ERROR — файл он уже открыл, а записать ничего не успел. Исправь команду по ошибке и выполни её снова"
 	exit 1
 fi
 want=$(glpg q pereplet ` + b64(pgsLab7ReportSQL) + `)
