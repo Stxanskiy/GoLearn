@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       iproute2 iptables kmod \
       openssh-server \
       e2fsprogs ca-certificates \
-      curl wget vim nano less jq tree htop tmux git make unzip \
+      curl wget vim nano less jq tree htop tmux git make unzip sudo \
       iputils-ping dnsutils netcat-openbsd \
       zsh bash-completion \
       ansible python3 python3-pip \

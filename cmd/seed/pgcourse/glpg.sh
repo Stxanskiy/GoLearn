@@ -12,7 +12,8 @@
 #
 #   glpg start                         start the cluster; root gets a superuser role
 #                                      (no database named root: lessons name theirs)
-#   glpg fixhosts                      make the hostname resolve (quiet sudo)
+#   glpg fixhosts                      make the hostname resolve (quiet sudo) and
+#                                      the prompt show the real user (root@sandbox)
 #   glpg run   DB B64SQL               run SQL, stop at the first error (setups)
 #   glpg q     DB B64SQL               print the result: tuples only, unaligned, '|'
 #   glpg state DB B64SQL               run SQL in a rolled-back transaction and
@@ -56,13 +57,25 @@ fixhosts() {
 	grep -qw -- "$h" /etc/hosts 2>/dev/null || echo "127.0.1.1 $h" >> /etc/hosts 2>/dev/null || true
 }
 
+# rootprompt makes the container's bash prompt say who the student is. The base
+# image prints a fixed "student@sandbox:~$", and this course turns on the Linux
+# user name: psql connects as the PostgreSQL user of the same name, and the
+# first lab has the student create "root" for exactly that reason.
+rootprompt() {
+	grep -q 'glpg rootprompt' /root/.bashrc 2>/dev/null && return 0
+	printf '%s\n' '# glpg rootprompt' \
+		'export PS1="\[\e[1;31m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ "' >> /root/.bashrc
+}
+
 case "$cmd" in
 fixhosts)
 	fixhosts
+	rootprompt
 	;;
 
 start)
 	fixhosts
+	rootprompt
 	VER=$(ls /etc/postgresql 2>/dev/null | head -1)
 	[ -n "$VER" ] || { echo "PostgreSQL не установлен" >&2; exit 1; }
 	pg_ctlcluster "$VER" main start >/dev/null 2>&1 || true
