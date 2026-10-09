@@ -1,0 +1,102 @@
+{
+  "n": 3,
+  "id": "ch_pgs_lab1",
+  "title": "Лабораторная 1: устанавливаем PostgreSQL",
+  "kind": "tasks",
+  "format": "md",
+  "content_html": "# Лабораторная 1: устанавливаем PostgreSQL\n\n«Переплёт» выделил сервер под базу данных. Это чистая Ubuntu 24.04, PostgreSQL на ней пока нет. Твоя задача — повторить шаги из урока установки: поставить PostgreSQL, убедиться, что сервер работает, подключиться к нему и создать базу для магазина.\n\n**Что уже есть:** терминал справа — это и есть сервер. Ты работаешь под администратором `root`, поэтому `sudo` для `apt` не нужен.\n\n**Как сдавать:** выполни задание в терминале и нажми «Проверить» у этого задания. Проверка смотрит на результат — установлен ли пакет, что лежит в файле, есть ли база, — поэтому засчитывается любой правильный способ. Задания идут по порядку: каждое опирается на предыдущее.\n\n**Если что-то пошло не так:**\n\n- внизу появилось `(END)` или `:` — нажми `q`;\n- команда «зависла» или psql ждёт продолжения (`postgres-#`) — нажми Ctrl+C;\n- совсем всё сломал — нажми «Пересоздать», и лабораторная вернётся в исходное состояние.\n\nКоманды для всех заданий есть в уроке «Устанавливаем PostgreSQL и подключаемся к нему». Подсматривать туда — нормально.\n",
+  "tasks": [
+    {
+      "type": "check",
+      "title": "Установи PostgreSQL",
+      "taskid": "pgs_lab1_t1_install",
+      "hint": "<p>Нужны две команды из шага 1 урока: сначала <code>apt update</code>, потом <code>apt install</code> с именем пакета и ключом <code>-y</code>.</p>",
+      "question_html": "<p>Обнови список пакетов и установи PostgreSQL через <code>apt</code>.</p><p>Когда установка закончится, в конце вывода должна быть строка <code>Starting PostgreSQL 16 database server ... [ OK ]</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Проверь, что сервер работает",
+      "taskid": "pgs_lab1_t2_status",
+      "hint": "<p>Сохранить вывод команды в файл можно знаком <code>&gt;</code>: <code>команда &gt; файл</code>. Посмотреть, что получилось: <code>cat /root/status.txt</code>.</p>",
+      "question_html": "<p>Посмотри список серверов PostgreSQL командой <code>pg_lsclusters</code> и сохрани её вывод в файл <code>/root/status.txt</code>.</p><p>В столбце <code>Status</code> должно быть <code>online</code> — значит, сервер работает.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Узнай версию сервера",
+      "taskid": "pgs_lab1_t3_version",
+      "hint": "<p>Проще всего одной командой с ключом <code>-c</code>, как в разделе урока «Команда без входа в psql»: <code>sudo -u postgres psql -c \"...\" &gt; /root/version.txt</code>. Вместо многоточия — сам запрос.</p>",
+      "question_html": "<p>Подключись к серверу от имени пользователя <code>postgres</code>, выполни запрос <code>SELECT version();</code> и сохрани ответ сервера в файл <code>/root/version.txt</code>.</p>",
+      "options": []
+    },
+    {
+      "type": "check",
+      "title": "Создай базу данных магазина",
+      "taskid": "pgs_lab1_t4_createdb",
+      "hint": "<p>Базы создаёт команда <code>createdb</code>, и запускать её нужно от имени <code>postgres</code>, как и psql. Список баз покажет <code>sudo -u postgres psql -l</code>.</p>",
+      "question_html": "<p>Создай базу данных <code>pereplet</code> — в ней будут храниться данные «Переплёта».</p><p>Убедись, что она появилась в списке баз.</p>",
+      "options": []
+    },
+    {
+      "type": "quiz",
+      "title": "Что показывает приглашение",
+      "taskid": "pgs_lab1_t5_prompt",
+      "hint": "",
+      "question_html": "<p>Ты подключился командой <code>sudo -u postgres psql</code> и видишь приглашение <code>postgres=#</code>. Что означает слово <code>postgres</code> в его начале?</p>",
+      "options": [
+        {
+          "text": "Версию PostgreSQL",
+          "correct": false,
+          "explanation": "Нет: версию показывает первая строка приветствия psql или запрос <code>SELECT version();</code>."
+        },
+        {
+          "text": "Имя базы данных, к которой ты подключён",
+          "correct": true,
+          "explanation": "Верно: в начале приглашения psql показывает текущую базу. Сразу после установки на сервере есть служебная база <code>postgres</code>, к ней ты и подключился."
+        },
+        {
+          "text": "Имя компьютера",
+          "correct": false,
+          "explanation": "Нет: имя компьютера psql в приглашении не показывает."
+        },
+        {
+          "text": "Название программы psql",
+          "correct": false,
+          "explanation": "Нет: программа называется psql, а в приглашении стоит имя базы."
+        }
+      ]
+    },
+    {
+      "type": "quiz",
+      "title": "Команда не выполняется",
+      "taskid": "pgs_lab1_t6_semicolon",
+      "hint": "",
+      "question_html": "<p>Ты набрал <code>SELECT 2 + 2</code> и нажал Enter. Ответа нет, а приглашение сменилось на <code>postgres-#</code>. Что сделать?</p>",
+      "options": [
+        {
+          "text": "Перезапустить сервер PostgreSQL",
+          "correct": false,
+          "explanation": "Нет: с сервером всё в порядке. psql просто ждёт, когда ты закончишь команду."
+        },
+        {
+          "text": "Выйти из psql через <code>\\q</code> и переустановить PostgreSQL",
+          "correct": false,
+          "explanation": "Нет: ничего не сломалось, переустанавливать незачем."
+        },
+        {
+          "text": "Набрать <code>;</code> и нажать Enter",
+          "correct": true,
+          "explanation": "Верно: в команде не хватает точки с запятой. psql ждёт продолжения, а <code>;</code> завершит команду, и она выполнится."
+        },
+        {
+          "text": "Подождать: сервер долго считает",
+          "correct": false,
+          "explanation": "Нет: <code>2 + 2</code> считается мгновенно. Приглашение <code>postgres-#</code> значит, что команда не закончена."
+        }
+      ]
+    }
+  ],
+  "vm_image": "golearn/sandbox-pg:latest",
+  "vm_init": ""
+}
