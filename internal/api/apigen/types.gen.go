@@ -638,6 +638,9 @@ type AdminCourse struct {
 	OrderNum int          `json:"order_num"`
 	Owner    *AuthorRef   `json:"owner"`
 
+	// Prerequisites Courses to take first; see PrerequisiteKind.
+	Prerequisites []PrerequisiteInput `json:"prerequisites"`
+
 	// PreviewSlug Slug for the student pages (`/courses/{preview_slug}`); differs from `slug` for drafts.
 	PreviewSlug string `json:"preview_slug"`
 	Published   bool   `json:"published"`
@@ -738,6 +741,9 @@ type AdminCourseRow struct {
 	LessonsCount int          `json:"lessons_count"`
 	OrderNum     int          `json:"order_num"`
 	Owner        *AuthorRef   `json:"owner"`
+
+	// Prerequisites Courses to take first; see PrerequisiteKind.
+	Prerequisites []PrerequisiteInput `json:"prerequisites"`
 
 	// PreviewSlug Slug for the student pages (`/courses/{preview_slug}`); differs from `slug` for drafts.
 	PreviewSlug string `json:"preview_slug"`

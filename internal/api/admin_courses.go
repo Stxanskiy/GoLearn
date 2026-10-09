@@ -523,6 +523,16 @@ func toAdminCourse(m, live model.Module, owner *apigen.AuthorRef, level courseLe
 	if out.Tags == nil {
 		out.Tags = []string{}
 	}
+	// Always an array, never null: the studio edits this list in place, and a
+	// null would make "no prerequisites" indistinguishable from "not loaded".
+	out.Prerequisites = make([]apigen.PrerequisiteInput, 0, len(m.Prerequisites))
+	for _, p := range m.Prerequisites {
+		kind := apigen.Required
+		if !p.Required() {
+			kind = apigen.Recommended
+		}
+		out.Prerequisites = append(out.Prerequisites, apigen.PrerequisiteInput{Slug: p.Slug, Kind: kind})
+	}
 	if m.Label != "" {
 		code := apigen.CourseLabel(catalog.LabelCode(m))
 		out.Label = &code

@@ -3751,7 +3751,7 @@ components:
 
     AdminCourse:
       type: object
-      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, has_custom_cover, cover_preview_url, created_at]
+      required: [id, slug, title, description, track, difficulty, category, label, accent, tags, prerequisites, est_minutes, order_num, published, is_trainer, source, owner, access, review, draft_of, draft_id, preview_slug, cover_url, has_custom_cover, cover_preview_url, created_at]
       properties:
         id: { type: integer }
         slug: { type: string }
@@ -3765,6 +3765,10 @@ components:
         tags:
           type: array
           items: { type: string }
+        prerequisites:
+          type: array
+          description: Courses to take first; see PrerequisiteKind.
+          items: { $ref: '#/components/schemas/PrerequisiteInput' }
         est_minutes: { type: integer }
         order_num: { type: integer }
         published: { type: boolean }
