@@ -52,14 +52,14 @@ SQL"
 sol_ch_pgs_lab4_4="printf \"INSERT INTO books (title, price) VALUES ('Анна Каренина', 870.00);\n\" | psql pereplet"
 sol_ch_pgs_lab4_5="printf \"INSERT INTO books (title, price, page_count, in_stock, published_year) VALUES ('Затерянный мир', 430.00, 320, true, 1912);\n\" | psql pereplet"
 
-# Lab 5 (ch-pgs-lab5): fixing the catalog.
-sol_ch_pgs_lab5_1='printf "UPDATE books SET price = 495.00 WHERE id = 1;\n" | psql pereplet'
-sol_ch_pgs_lab5_2='printf "UPDATE books SET price = price * 1.1 WHERE id = 7;\n" | psql pereplet'
-sol_ch_pgs_lab5_3='printf "UPDATE books SET in_stock = false WHERE page_count < 100;\n" | psql pereplet'
-sol_ch_pgs_lab5_4='printf "UPDATE books SET page_count = 144 WHERE page_count IS NULL;\n" | psql pereplet'
-sol_ch_pgs_lab5_5='psql pereplet <<"SQL"
+# Lab 5 (ch-pgs-lab5): fixing the catalog lab 4 left, plus the intern's duplicate.
+sol_ch_pgs_lab5_1='printf "UPDATE books SET price = 460.00 WHERE id = 2;\n" | psql pereplet'
+sol_ch_pgs_lab5_2='printf "UPDATE books SET price = price * 1.1 WHERE id = 5;\n" | psql pereplet'
+sol_ch_pgs_lab5_3='printf "UPDATE books SET in_stock = false WHERE page_count < 200;\n" | psql pereplet'
+sol_ch_pgs_lab5_4='printf "UPDATE books SET page_count = 864, in_stock = true, published_year = 1878 WHERE id = 13;\n" | psql pereplet'
+sol_ch_pgs_lab5_5="psql pereplet <<'SQL'
 BEGIN;
-DELETE FROM books WHERE id = 10;
-SELECT id, title FROM books ORDER BY title;
+DELETE FROM books WHERE id = 15;
+SELECT id, title FROM books WHERE title = 'Затерянный мир';
 COMMIT;
-SQL'
+SQL"
