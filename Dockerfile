@@ -1,5 +1,14 @@
+# Base images come from AWS's mirror of the Docker official images, not from
+# Docker Hub. The release builds on the production box, and Docker Hub stopped
+# it three times in one evening - a 500 and a 504 from the token endpoint, and
+# an unauthenticated pull-rate limit in CI - none of them anything to do with
+# the commit being released. Same images, no credentials needed. Override
+# GO_IMAGE / ALPINE_IMAGE to build against something else.
+ARG GO_IMAGE=public.ecr.aws/docker/library/golang:1.24-alpine
+ARG ALPINE_IMAGE=public.ecr.aws/docker/library/alpine:3.20
+
 # ═══ Stage 1: build ═══
-FROM golang:1.24-alpine AS builder
+FROM ${GO_IMAGE} AS builder
 ENV GOTOOLCHAIN=auto
 WORKDIR /app
 # Dependencies first: a source-only change then reuses this layer.
@@ -12,7 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /seed ./cmd/seed
 # ═══ Stage 2: runtime ═══
 # alpine rather than the Go image: the toolchain is a build-time need, and
 # carrying it into the runtime was most of the old image's size.
-FROM alpine:3.20
+FROM ${ALPINE_IMAGE}
 RUN apk --no-cache add ca-certificates tzdata openssh-client && \
     adduser -D -g '' appuser && mkdir -p /app/data && chown appuser /app/data
 WORKDIR /app
