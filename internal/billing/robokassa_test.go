@@ -120,3 +120,76 @@ func md5hex(s string) string {
 	r := &Robokassa{}
 	return r.digest(s)
 }
+
+// Robokassa echoes the sum back as text and is not strict about the decimals,
+// so every shape it can send has to come back as the same number of kopeks.
+// Getting this wrong rejects real payments, which is the failure a student
+// notices and we do not.
+func TestParseAmount(t *testing.T) {
+	ok := map[string]int64{
+		"490":        49000,
+		"490.0":      49000,
+		"490.00":     49000,
+		"490.10":     49010,
+		"490,50":     49050, // some locales send a comma
+		"4000.00":    400000,
+		"12000":      1200000,
+		" 490.00 ":   49000,
+		"0.01":       1,
+		"0":          0,
+		"1234567.89": 123456789,
+	}
+	for in, want := range ok {
+		got, valid := ParseAmount(in)
+		if !valid || got != want {
+			t.Errorf("ParseAmount(%q) = %d, %v; want %d, true", in, got, valid, want)
+		}
+	}
+
+	bad := []string{"", "abc", "490.123", "-490.00", "4 90", "490.0x", "1e3"}
+	for _, in := range bad {
+		if got, valid := ParseAmount(in); valid {
+			t.Errorf("ParseAmount(%q) = %d, true; want it refused", in, got)
+		}
+	}
+
+	// Whatever Amount writes, ParseAmount must read back unchanged — the two
+	// are used on opposite ends of the same payment.
+	for _, minor := range []int64{0, 1, 99, 49000, 400000, 1200000} {
+		if got, valid := ParseAmount(Amount(minor)); !valid || got != minor {
+			t.Errorf("round trip of %d gave %d, %v", minor, got, valid)
+		}
+	}
+}
+
+// The plan catalogue is what checkout charges, so the parts that would cost
+// money if wrong are pinned: the free tier cannot be bought, and a price
+// override that is nonsense does not put a plan on sale for nothing.
+func TestPlans(t *testing.T) {
+	free, ok := PlanByID(PlanFree)
+	if !ok || free.Purchasable() {
+		t.Fatalf("free plan = %+v, ok = %v", free, ok)
+	}
+	month, ok := PlanByID(PlanMonth)
+	if !ok || !month.Purchasable() || month.Months != 1 || month.Lifetime() {
+		t.Fatalf("month plan = %+v, ok = %v", month, ok)
+	}
+	life, ok := PlanByID(PlanLifetime)
+	if !ok || !life.Purchasable() || !life.Lifetime() {
+		t.Fatalf("lifetime plan = %+v, ok = %v", life, ok)
+	}
+	if _, ok := PlanByID("gratis"); ok {
+		t.Error("an unknown plan was accepted")
+	}
+
+	t.Setenv("PRICE_MONTH_MINOR", "150000")
+	if p, _ := PlanByID(PlanMonth); p.AmountMinor != 150000 {
+		t.Errorf("override ignored: %d", p.AmountMinor)
+	}
+	for _, junk := range []string{"", "free", "0", "-1"} {
+		t.Setenv("PRICE_MONTH_MINOR", junk)
+		if p, _ := PlanByID(PlanMonth); p.AmountMinor != 400000 {
+			t.Errorf("PRICE_MONTH_MINOR=%q gave %d, want the default", junk, p.AmountMinor)
+		}
+	}
+}

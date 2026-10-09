@@ -218,6 +218,9 @@ type imageStore interface {
 // Config holds API settings.
 type Config struct {
 	AllowedOrigins []string // extra origins accepted for mutating requests, e.g. http://localhost:3000
+	// AppURL is where the site lives. A payment provider returns the student's
+	// browser to the API, which then sends them on to a page here.
+	AppURL string
 }
 
 // API wires handlers to their dependencies.
@@ -260,6 +263,16 @@ func (a *API) Routes() chi.Router {
 	// methods are registered because Robokassa can be configured for either.
 	r.Post("/billing/robokassa/result", a.robokassaResult)
 	r.Get("/billing/robokassa/result", a.robokassaResult)
+	// Where the student's browser comes back to. Unauthenticated for the same
+	// reason: the redirect carries no cookie if the payment page was opened in
+	// another context, and the handler grants nothing anyway.
+	r.Get("/billing/robokassa/success", a.robokassaReturn("success"))
+	r.Post("/billing/robokassa/success", a.robokassaReturn("success"))
+	r.Get("/billing/robokassa/fail", a.robokassaReturn("fail"))
+	r.Post("/billing/robokassa/fail", a.robokassaReturn("fail"))
+
+	// Public: someone deciding whether to sign up has to see what it costs.
+	r.Get("/billing/plans", a.listPlans)
 
 	r.Group(func(r chi.Router) {
 		r.Use(requireUser)

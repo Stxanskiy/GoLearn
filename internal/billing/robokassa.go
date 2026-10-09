@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -67,6 +68,44 @@ func (r *Robokassa) digest(s string) string {
 // of them is wrong.
 func Amount(minor int64) string {
 	return fmt.Sprintf("%d.%02d", minor/100, minor%100)
+}
+
+// ParseAmount reads back what Amount wrote: a decimal sum in roubles, into
+// kopeks. Robokassa is not strict about the number of decimals it echoes, so
+// "490", "490.0" and "490.00" all have to mean the same thing.
+//
+// Parsing as text rather than through a float is deliberate: 490.10 has no
+// exact float representation, and a payment check is the last place to want a
+// rounding argument.
+func ParseAmount(s string) (int64, bool) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, false
+	}
+	whole, frac, hasFrac := strings.Cut(s, ".")
+	if !hasFrac {
+		whole, frac, hasFrac = strings.Cut(s, ",")
+	}
+	if hasFrac {
+		switch len(frac) {
+		case 1:
+			frac += "0"
+		case 2:
+		default:
+			return 0, false
+		}
+	} else {
+		frac = "00"
+	}
+	rub, err := strconv.ParseInt(whole, 10, 64)
+	if err != nil || rub < 0 {
+		return 0, false
+	}
+	kop, err := strconv.ParseInt(frac, 10, 64)
+	if err != nil || kop < 0 {
+		return 0, false
+	}
+	return rub*100 + kop, true
 }
 
 // shpSuffix appends the custom Shp_ parameters to a signature base. Robokassa

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/backendraz/golearn/internal/billing"
@@ -17,29 +18,75 @@ import (
 type billingStore interface {
 	Current(ctx context.Context, userID int) (*repository.Subscription, error)
 	HasAccess(ctx context.Context, userID int) (bool, error)
-	StartPayment(ctx context.Context, userID, months int, amountMinor int64, currency, provider, ref string) (*repository.Payment, error)
+	StartPayment(ctx context.Context, userID int, plan string, months int, amountMinor int64, currency, provider, ref string) (*repository.Payment, error)
 	SetProviderRef(ctx context.Context, paymentID int, ref string) error
-	Confirm(ctx context.Context, provider, ref string) (*repository.Subscription, error)
+	Confirm(ctx context.Context, provider, ref string, paidMinor int64) (*repository.Subscription, error)
 	SetCourseTier(ctx context.Context, moduleID int, tier string) error
+	RecordLaunch(ctx context.Context, userID int, key string) error
+	CountLaunches(ctx context.Context, userID int, since time.Time) (int, error)
+	OldestLaunchSince(ctx context.Context, userID int, since time.Time) (time.Time, bool, error)
 }
 
-// Prices live here until a real provider and a plan table exist. One month, one
-// price: the product is a platform subscription, not a catalogue of tiers.
 // providerRobokassa names the provider in the payments table; the stub keeps
 // its own name so the two can never confirm each other's rows.
 const providerRobokassa = "robokassa"
 
-const (
-	planMonths      = 1
-	planAmountMinor = 49000 // 490.00 RUB
-	planCurrency    = "RUB"
-)
+// freeWindow is the span the free tier's allowance is counted over. Rolling,
+// not calendar: a week that resets on Monday gives a student who arrives on
+// Sunday one day's worth of their first week.
+const freeWindow = 7 * 24 * time.Hour
+
+type planResponse struct {
+	ID          string `json:"id"`
+	AmountMinor int64  `json:"amount_minor"`
+	Currency    string `json:"currency"`
+	Months      int    `json:"months"`
+	Lifetime    bool   `json:"lifetime"`
+	// Launches is how many sandboxes the plan allows in a week; 0 means no limit.
+	Launches int `json:"launches_per_week"`
+}
+
+// quotaResponse is what the free tier has left. It is reported to subscribers
+// too, with Limit 0, so the client has one shape to render rather than two.
+type quotaResponse struct {
+	Limit int `json:"limit"`
+	Used  int `json:"used"`
+	Left  int `json:"left"`
+	// ResetsAt is when the oldest launch leaves the window and one allowance
+	// comes back. Absent when nothing has been used.
+	ResetsAt *time.Time `json:"resets_at,omitempty"`
+}
 
 type subscriptionResponse struct {
 	Active    bool       `json:"active"`
 	Status    string     `json:"status"`
+	Plan      string     `json:"plan,omitempty"`
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Provider  string     `json:"provider,omitempty"`
+	// Quota is the sandbox allowance that applies right now.
+	Quota *quotaResponse `json:"quota,omitempty"`
+}
+
+// listPlans is the pricing page's data. It is public: someone deciding whether
+// to sign up has to be able to see what it costs.
+func (a *API) listPlans(w http.ResponseWriter, _ *http.Request) {
+	all := billing.Plans()
+	out := make([]planResponse, 0, len(all))
+	for _, p := range all {
+		launches := 0 // a paid plan has no sandbox limit
+		if !p.Purchasable() {
+			launches = billing.FreeLaunchesPerWeek
+		}
+		out = append(out, planResponse{
+			ID:          p.ID,
+			AmountMinor: p.AmountMinor,
+			Currency:    p.Currency,
+			Months:      p.Months,
+			Lifetime:    p.Purchasable() && p.Lifetime(),
+			Launches:    launches,
+		})
+	}
+	writeJSON(w, http.StatusOK, out)
 }
 
 // getSubscription reports the caller's subscription. A user who never subscribed
@@ -52,16 +99,50 @@ func (a *API) getSubscription(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "load subscription", err)
 		return
 	}
+	quota, err := a.launchQuota(r.Context(), user.ID, sub.IsActive())
+	if err != nil {
+		a.internalError(w, "load sandbox quota", err)
+		return
+	}
 	if sub == nil {
-		writeJSON(w, http.StatusOK, subscriptionResponse{Status: "none"})
+		writeJSON(w, http.StatusOK, subscriptionResponse{Status: "none", Plan: billing.PlanFree, Quota: quota})
 		return
 	}
 	writeJSON(w, http.StatusOK, subscriptionResponse{
 		Active:    sub.IsActive(),
 		Status:    sub.Status,
-		ExpiresAt: &sub.ExpiresAt,
+		Plan:      sub.Plan,
+		ExpiresAt: sub.ExpiresAt,
 		Provider:  sub.Provider,
+		Quota:     quota,
 	})
+}
+
+// launchQuota reports the sandbox allowance in force. A subscriber has none, and
+// says so with Limit 0 rather than with a missing field, so the client renders
+// one shape either way.
+func (a *API) launchQuota(ctx context.Context, userID int, subscribed bool) (*quotaResponse, error) {
+	if subscribed {
+		return &quotaResponse{}, nil
+	}
+	since := time.Now().Add(-freeWindow)
+	used, err := a.Billing.CountLaunches(ctx, userID, since)
+	if err != nil {
+		return nil, err
+	}
+	q := &quotaResponse{Limit: billing.FreeLaunchesPerWeek, Used: used}
+	if q.Left = q.Limit - used; q.Left < 0 {
+		q.Left = 0
+	}
+	oldest, ok, err := a.Billing.OldestLaunchSince(ctx, userID, since)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		at := oldest.Add(freeWindow)
+		q.ResetsAt = &at
+	}
+	return q, nil
 }
 
 type checkoutResponse struct {
@@ -75,17 +156,47 @@ type checkoutResponse struct {
 	ConfirmURL string `json:"confirm_url"`
 }
 
+// planDescription is the line Robokassa shows the payer. It is not part of any
+// signature, so it is free text — but it is the only thing on the payment page
+// telling them what they are buying.
+func planDescription(p billing.Plan) string {
+	if p.Lifetime() {
+		return "TOT: полный доступ навсегда"
+	}
+	return "TOT: подписка на " + strconv.Itoa(p.Months) + " мес."
+}
+
+type checkoutRequest struct {
+	Plan string `json:"plan"`
+}
+
 // startCheckout opens a payment. With Robokassa configured the student is sent
 // to its page; without it the old stub stays, so development needs no merchant
 // account.
 func (a *API) startCheckout(w http.ResponseWriter, r *http.Request) {
 	user := userFrom(r.Context())
 
+	var req checkoutRequest
+	if !decodeJSON(w, r, &req) {
+		return
+	}
+	// An absent plan means the monthly one: that is what the only caller asked
+	// for before plans existed, and silently charging for the lifetime plan
+	// instead would be the worst possible default.
+	if req.Plan == "" {
+		req.Plan = billing.PlanMonth
+	}
+	plan, ok := billing.PlanByID(req.Plan)
+	if !ok || !plan.Purchasable() {
+		writeError(w, http.StatusBadRequest, codeValidationFailed, "unknown plan")
+		return
+	}
+
 	if a.Robokassa.Configured() {
 		// The payment row is created first: Robokassa's invoice number has to be
 		// something we can look up when the callback arrives, and the row's own id
 		// is the only identifier that is unique and ours.
-		p, err := a.Billing.StartPayment(r.Context(), user.ID, planMonths, planAmountMinor, planCurrency, providerRobokassa, "")
+		p, err := a.Billing.StartPayment(r.Context(), user.ID, plan.ID, plan.Months, plan.AmountMinor, plan.Currency, providerRobokassa, "")
 		if err != nil {
 			a.internalError(w, "start payment", err)
 			return
@@ -97,7 +208,7 @@ func (a *API) startCheckout(w http.ResponseWriter, r *http.Request) {
 		}
 		shp := url.Values{}
 		shp.Set("Shp_user", strconv.Itoa(user.ID))
-		link, err := a.Robokassa.PayLink(int64(p.ID), p.AmountMinor, "Подписка TOT на "+strconv.Itoa(p.Months)+" мес.", shp)
+		link, err := a.Robokassa.PayLink(int64(p.ID), p.AmountMinor, planDescription(plan), shp)
 		if err != nil {
 			a.internalError(w, "robokassa link", err)
 			return
@@ -114,7 +225,7 @@ func (a *API) startCheckout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ref := fmt.Sprintf("stub-%d-%d", user.ID, time.Now().UnixNano())
-	p, err := a.Billing.StartPayment(r.Context(), user.ID, planMonths, planAmountMinor, planCurrency, "stub", ref)
+	p, err := a.Billing.StartPayment(r.Context(), user.ID, plan.ID, plan.Months, plan.AmountMinor, plan.Currency, "stub", ref)
 	if err != nil {
 		a.internalError(w, "start payment", err)
 		return
@@ -169,15 +280,25 @@ func (a *API) robokassaResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// The amount is signed, but a signature only proves Robokassa sent it — not
-	// that it is the amount we asked for. Check it against the plan before
-	// granting anything.
-	if outSum != billing.Amount(planAmountMinor) {
-		a.log.Warn("robokassa: unexpected amount", "inv", invID, "sum", outSum)
-		fail(http.StatusBadRequest, "unexpected amount")
+	// that it is the amount we asked for. With more than one plan the figure to
+	// check against is the one this invoice was opened for, which only the
+	// payment row knows, so the comparison happens inside Confirm.
+	paid, ok := billing.ParseAmount(outSum)
+	if !ok {
+		a.log.Warn("robokassa: unreadable amount", "inv", invID, "sum", outSum)
+		fail(http.StatusBadRequest, "unreadable amount")
 		return
 	}
 
-	if _, err := a.Billing.Confirm(r.Context(), providerRobokassa, strconv.FormatInt(invID, 10)); err != nil {
+	if _, err := a.Billing.Confirm(r.Context(), providerRobokassa, strconv.FormatInt(invID, 10), paid); err != nil {
+		if errors.Is(err, repository.ErrAmountMismatch) {
+			// 400, not 500: Robokassa must stop retrying. Either the invoice was
+			// paid for the wrong sum or the callback was altered, and neither is
+			// fixed by sending it again.
+			a.log.Error("robokassa: amount does not match the invoice", "inv", invID, "sum", outSum)
+			fail(http.StatusBadRequest, "unexpected amount")
+			return
+		}
 		if errors.Is(err, repository.ErrPaymentNotFound) {
 			// 500, not 404: Robokassa retries a non-200 for hours, and this is the
 			// one case where retrying is what we want. A signature verified against
@@ -210,7 +331,7 @@ func (a *API) confirmCheckout(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, codeValidationFailed, "ref is required")
 		return
 	}
-	sub, err := a.Billing.Confirm(r.Context(), "stub", ref)
+	sub, err := a.Billing.Confirm(r.Context(), "stub", ref, repository.AnyAmount)
 	if errors.Is(err, repository.ErrPaymentNotFound) {
 		writeError(w, http.StatusNotFound, codeNotFound, "payment not found")
 		return
@@ -222,9 +343,55 @@ func (a *API) confirmCheckout(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, subscriptionResponse{
 		Active:    sub.IsActive(),
 		Status:    sub.Status,
-		ExpiresAt: &sub.ExpiresAt,
+		Plan:      sub.Plan,
+		ExpiresAt: sub.ExpiresAt,
 		Provider:  sub.Provider,
 	})
+}
+
+// robokassaReturn builds the handler for one of the two pages a student's
+// browser lands on after paying.
+//
+// These exist on the API rather than pointing Robokassa straight at the
+// frontend so the signature can be checked before anyone is told they have
+// paid. It proves only that the link was ours — the student holds this request
+// and can replay it — so nothing is granted here; the Result callback does
+// that. What it buys is that a bookmarked success page cannot be used to fake
+// a receipt.
+func (a *API) robokassaReturn(outcome string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := url.Values{}
+		q.Set("status", outcome)
+
+		if err := r.ParseForm(); err == nil {
+			inv := r.Form.Get("InvId")
+			if outcome == "success" {
+				invID, convErr := strconv.ParseInt(inv, 10, 64)
+				verified := convErr == nil && invID > 0 &&
+					a.Robokassa.VerifySuccess(r.Form.Get("OutSum"), invID,
+						r.Form.Get("SignatureValue"), billing.ShpValues(r.Form))
+				if !verified {
+					// Not an error page: the money may well have gone through, and
+					// the Result callback is what decides. Say "we are checking"
+					// rather than "paid" or "failed", both of which could be a lie.
+					a.log.Warn("robokassa: unverified return", "inv", inv)
+					q.Set("status", "pending")
+				}
+			}
+			if inv != "" {
+				q.Set("invoice", inv)
+			}
+		}
+
+		http.Redirect(w, r, a.appURL("/billing/result")+"?"+q.Encode(), http.StatusFound)
+	}
+}
+
+// appURL turns a site-relative path into an absolute one on the frontend.
+// Without APP_URL configured the path is returned as-is, which is right for
+// development, where the API and the site are the same origin.
+func (a *API) appURL(path string) string {
+	return strings.TrimRight(a.cfg.AppURL, "/") + path
 }
 
 // requireCourseAccess gates content that the subscription covers.

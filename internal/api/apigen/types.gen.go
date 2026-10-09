@@ -81,6 +81,24 @@ func (e AdminLessonSource) Valid() bool {
 	}
 }
 
+// Defines values for CheckoutRequestPlan.
+const (
+	CheckoutRequestPlanLifetime CheckoutRequestPlan = "lifetime"
+	CheckoutRequestPlanMonth    CheckoutRequestPlan = "month"
+)
+
+// Valid indicates whether the value is a known member of the CheckoutRequestPlan enum.
+func (e CheckoutRequestPlan) Valid() bool {
+	switch e {
+	case CheckoutRequestPlanLifetime:
+		return true
+	case CheckoutRequestPlanMonth:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContentFormat.
 const (
 	HTML ContentFormat = "html"
@@ -294,6 +312,27 @@ func (e LessonKind) Valid() bool {
 	}
 }
 
+// Defines values for PlanID.
+const (
+	PlanIDFree     PlanID = "free"
+	PlanIDLifetime PlanID = "lifetime"
+	PlanIDMonth    PlanID = "month"
+)
+
+// Valid indicates whether the value is a known member of the PlanID enum.
+func (e PlanID) Valid() bool {
+	switch e {
+	case PlanIDFree:
+		return true
+	case PlanIDLifetime:
+		return true
+	case PlanIDMonth:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PrerequisiteKind.
 const (
 	Recommended PrerequisiteKind = "recommended"
@@ -408,6 +447,27 @@ func (e SortDirection) Valid() bool {
 	case Asc:
 		return true
 	case Desc:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionPlan.
+const (
+	SubscriptionPlanFree     SubscriptionPlan = "free"
+	SubscriptionPlanLifetime SubscriptionPlan = "lifetime"
+	SubscriptionPlanMonth    SubscriptionPlan = "month"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionPlan enum.
+func (e SubscriptionPlan) Valid() bool {
+	switch e {
+	case SubscriptionPlanFree:
+		return true
+	case SubscriptionPlanLifetime:
+		return true
+	case SubscriptionPlanMonth:
 		return true
 	default:
 		return false
@@ -1016,10 +1076,20 @@ type Checkout struct {
 	AmountMinor int64  `json:"amount_minor"`
 	ConfirmURL  string `json:"confirm_url"`
 	Currency    string `json:"currency"`
+
+	// Months 0 on the lifetime plan.
 	Months      int    `json:"months"`
 	PaymentID   int    `json:"payment_id"`
 	ProviderRef string `json:"provider_ref"`
 }
+
+// CheckoutRequest An absent plan means `month` — the only plan that existed before.
+type CheckoutRequest struct {
+	Plan *CheckoutRequestPlan `json:"plan,omitempty"`
+}
+
+// CheckoutRequestPlan defines model for CheckoutRequest.Plan.
+type CheckoutRequestPlan string
 
 // ContentFormat defines model for ContentFormat.
 type ContentFormat string
@@ -1456,6 +1526,21 @@ type LandingTrack struct {
 	Slug         string `json:"slug"`
 }
 
+// LaunchQuota The sandbox allowance in force right now. A subscriber has none, reported
+// as `limit: 0` rather than as a missing object, so the client renders one
+// shape either way.
+type LaunchQuota struct {
+	Left int `json:"left"`
+
+	// Limit Starts allowed per rolling week; 0 means no limit.
+	Limit int `json:"limit"`
+
+	// ResetsAt When the oldest counted start leaves the window and one allowance
+	// comes back. Absent when nothing has been used.
+	ResetsAt *time.Time `json:"resets_at,omitempty"`
+	Used     int        `json:"used"`
+}
+
 // LessonChange defines model for LessonChange.
 type LessonChange struct {
 	Change        LessonChangeChange `json:"change"`
@@ -1555,6 +1640,25 @@ type Me struct {
 	// Role `author` manages courses they own or co-author; `admin` manages everything.
 	Role Role `json:"role"`
 }
+
+// Plan One line on the pricing page. `free` is listed but cannot be bought:
+// it is what a signed-in student has without paying.
+type Plan struct {
+	// AmountMinor Minor units; 0 means not for sale.
+	AmountMinor int64  `json:"amount_minor"`
+	Currency    string `json:"currency"`
+	ID          PlanID `json:"id"`
+
+	// LaunchesPerWeek Sandbox starts included; 0 means no limit.
+	LaunchesPerWeek int  `json:"launches_per_week"`
+	Lifetime        bool `json:"lifetime"`
+
+	// Months 0 on a plan that never expires.
+	Months int `json:"months"`
+}
+
+// PlanID defines model for Plan.ID.
+type PlanID string
 
 // Prerequisite defines model for Prerequisite.
 type Prerequisite struct {
@@ -1831,12 +1935,24 @@ type SQLTable struct {
 
 // Subscription `active` is status and expiry together: a row left `active` past its
 // expiry is what a missed sweep leaves behind and must not grant access.
+//
+// `expires_at` is absent on the lifetime plan. Absent means never, not
+// unknown.
 type Subscription struct {
-	Active    bool               `json:"active"`
-	ExpiresAt *time.Time         `json:"expires_at,omitempty"`
-	Provider  *string            `json:"provider,omitempty"`
-	Status    SubscriptionStatus `json:"status"`
+	Active    bool              `json:"active"`
+	ExpiresAt *time.Time        `json:"expires_at,omitempty"`
+	Plan      *SubscriptionPlan `json:"plan,omitempty"`
+	Provider  *string           `json:"provider,omitempty"`
+
+	// Quota The sandbox allowance in force right now. A subscriber has none, reported
+	// as `limit: 0` rather than as a missing object, so the client renders one
+	// shape either way.
+	Quota  *LaunchQuota       `json:"quota,omitempty"`
+	Status SubscriptionStatus `json:"status"`
 }
+
+// SubscriptionPlan defines model for Subscription.Plan.
+type SubscriptionPlan string
 
 // SubscriptionStatus defines model for Subscription.Status.
 type SubscriptionStatus string
@@ -2364,6 +2480,9 @@ type LoginJSONRequestBody LoginJSONBody
 
 // RegisterJSONRequestBody defines body for Register for application/json ContentType.
 type RegisterJSONRequestBody RegisterJSONBody
+
+// StartCheckoutJSONRequestBody defines body for StartCheckout for application/json ContentType.
+type StartCheckoutJSONRequestBody = CheckoutRequest
 
 // RobokassaResultFormdataRequestBody defines body for RobokassaResult for application/x-www-form-urlencoded ContentType.
 type RobokassaResultFormdataRequestBody RobokassaResultFormdataBody

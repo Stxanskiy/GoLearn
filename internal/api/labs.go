@@ -233,6 +233,12 @@ func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key string, 
 		writeRateLimited(w, terminalLimiter)
 		return
 	}
+	// Whether this opens a new micro-VM decides both the allowance check and
+	// whether it is counted, so it is read once, before anything can change it.
+	_, live := a.Sandbox.Session(user.ID, key)
+	if !live && !a.requireLaunchAllowance(w, r, key) {
+		return
+	}
 	cols := boundedQueryInt(r, "cols", 100, 20, 500)
 	rows := boundedQueryInt(r, "rows", 28, 5, 200)
 
@@ -251,6 +257,9 @@ func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key string, 
 		a.log.Error("terminal: ensure session", "error", err)
 		say("\r\n\x1b[31m" + err.Error() + "\x1b[0m\r\n")
 		return
+	}
+	if !live {
+		a.noteLaunch(r, key)
 	}
 	pty, err := a.Sandbox.OpenPTY(handle, cols, rows)
 	if err != nil {

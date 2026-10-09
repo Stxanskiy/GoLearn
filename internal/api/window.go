@@ -59,11 +59,18 @@ func (a *API) serveWindow(w http.ResponseWriter, r *http.Request) {
 		writeRateLimited(w, terminalLimiter)
 		return
 	}
+	_, live := a.Sandbox.Session(user.ID, ref.key())
+	if !live && !a.requireLaunchAllowance(w, r, ref.key()) {
+		return
+	}
 
 	handle, err := a.Sandbox.EnsureSession(r.Context(), user.ID, ref.key(), ref.spec)
 	if err != nil {
 		a.sandboxError(w, "window: ensure session", err)
 		return
+	}
+	if !live {
+		a.noteLaunch(r, ref.key())
 	}
 
 	// Upgrade only once the sandbox answered: a failure before this point can

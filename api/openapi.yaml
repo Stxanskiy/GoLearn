@@ -230,6 +230,27 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
 
         '500': { $ref: '#/components/responses/InternalError' }
+  /billing/plans:
+    get:
+      tags: [billing]
+      summary: List the plans
+      description: |
+        What the pricing page shows, cheapest first. Public: someone deciding
+        whether to sign up has to be able to see what it costs.
+
+        Prices come from the environment, so they can change without a release.
+        The client must render what this returns rather than hard-coding a figure.
+      operationId: listPlans
+      security: []
+      responses:
+        '200':
+          description: The plans on offer.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Plan' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /billing/checkout:
     post:
       tags: [billing]
@@ -240,15 +261,22 @@ paths:
         payment stays on the stub provider and `confirm_url` points back at this
         API, so the flow is exercisable before any money moves.
       operationId: startCheckout
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CheckoutRequest' }
       responses:
         '201':
           description: A pending payment.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Checkout' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
         '403': { $ref: '#/components/responses/Forbidden' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '500': { $ref: '#/components/responses/InternalError' }
   /billing/confirm:
     post:
@@ -279,6 +307,75 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+        '500': { $ref: '#/components/responses/InternalError' }
+  /billing/robokassa/success:
+    get:
+      tags: [billing]
+      summary: Where Robokassa returns a paying student
+      description: |
+        The page the student's browser lands on after paying. It grants nothing:
+        the student holds this request and can replay it, so only the Result
+        callback may change a subscription.
+
+        What it does do is check the signature over `OutSum:InvId:password#1`
+        before redirecting, so a bookmarked success URL cannot be used to fake a
+        receipt. An unverified return redirects with `status=pending` rather than
+        `success` — the money may well have gone through, and saying either
+        "paid" or "failed" could be a lie.
+
+        Always answers `302` to `<site>/billing/result?status=…&invoice=…`.
+      operationId: robokassaSuccess
+      security: []
+      responses:
+        '302':
+          description: Redirect to the site's payment result page.
+          headers:
+            Location: { schema: { type: string } }
+        '500': { $ref: '#/components/responses/InternalError' }
+    post:
+      tags: [billing]
+      summary: Where Robokassa returns a paying student (POST)
+      description: |
+        Same as the GET form. Robokassa can be configured to return with either
+        method, so both are accepted and verified identically.
+      operationId: robokassaSuccessPost
+      security: []
+      responses:
+        '302':
+          description: Redirect to the site's payment result page.
+          headers:
+            Location: { schema: { type: string } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+  /billing/robokassa/fail:
+    get:
+      tags: [billing]
+      summary: Where Robokassa returns a student who did not pay
+      description: |
+        The student cancelled or the card was declined. Nothing is checked and
+        nothing is changed; it exists so the site can say so on its own page
+        instead of leaving them on Robokassa.
+      operationId: robokassaFail
+      security: []
+      responses:
+        '302':
+          description: Redirect to the site's payment result page.
+          headers:
+            Location: { schema: { type: string } }
+        '500': { $ref: '#/components/responses/InternalError' }
+    post:
+      tags: [billing]
+      summary: Where Robokassa returns a student who did not pay (POST)
+      description: |
+        Same as the GET form; Robokassa can be configured for either method.
+      operationId: robokassaFailPost
+      security: []
+      responses:
+        '302':
+          description: Redirect to the site's payment result page.
+          headers:
+            Location: { schema: { type: string } }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '500': { $ref: '#/components/responses/InternalError' }
   /billing/robokassa/result:
     post:
@@ -2816,6 +2913,11 @@ components:
         `subscription_required` — the lesson belongs to a course whose access tier the
         current session does not cover. Applies to every lesson, lab, quiz and task
         operation, not only to reading the lesson.
+
+        `launch_quota_exceeded` — the free plan's weekly allowance of sandbox
+        starts is used up. Only starting a *new* micro-VM counts; reopening one
+        that is already running is always allowed. `GET /me/subscription` reports
+        how many are left and when the next one frees up.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -2951,11 +3053,54 @@ components:
       description: |
         `active` is status and expiry together: a row left `active` past its
         expiry is what a missed sweep leaves behind and must not grant access.
+
+        `expires_at` is absent on the lifetime plan. Absent means never, not
+        unknown.
       properties:
         active: { type: boolean }
         status: { type: string, enum: [none, active, expired, canceled] }
+        plan: { type: string, enum: [free, month, lifetime] }
         expires_at: { type: string, format: date-time }
         provider: { type: string }
+        quota: { $ref: '#/components/schemas/LaunchQuota' }
+
+    LaunchQuota:
+      type: object
+      required: [limit, used, left]
+      description: |
+        The sandbox allowance in force right now. A subscriber has none, reported
+        as `limit: 0` rather than as a missing object, so the client renders one
+        shape either way.
+      properties:
+        limit: { type: integer, description: 'Starts allowed per rolling week; 0 means no limit.' }
+        used: { type: integer }
+        left: { type: integer }
+        resets_at:
+          type: string
+          format: date-time
+          description: |
+            When the oldest counted start leaves the window and one allowance
+            comes back. Absent when nothing has been used.
+
+    Plan:
+      type: object
+      required: [id, amount_minor, currency, months, lifetime, launches_per_week]
+      description: |
+        One line on the pricing page. `free` is listed but cannot be bought:
+        it is what a signed-in student has without paying.
+      properties:
+        id: { type: string, enum: [free, month, lifetime] }
+        amount_minor: { type: integer, format: int64, description: 'Minor units; 0 means not for sale.' }
+        currency: { type: string }
+        months: { type: integer, description: '0 on a plan that never expires.' }
+        lifetime: { type: boolean }
+        launches_per_week: { type: integer, description: 'Sandbox starts included; 0 means no limit.' }
+
+    CheckoutRequest:
+      type: object
+      description: 'An absent plan means `month` — the only plan that existed before.'
+      properties:
+        plan: { type: string, enum: [month, lifetime] }
 
     Checkout:
       type: object
@@ -2965,7 +3110,7 @@ components:
         provider_ref: { type: string }
         amount_minor: { type: integer, format: int64, description: 'Minor units, never a float.' }
         currency: { type: string }
-        months: { type: integer }
+        months: { type: integer, description: '0 on the lifetime plan.' }
         confirm_url: { type: string }
 
     AccessTier:

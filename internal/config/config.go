@@ -11,6 +11,10 @@ type Config struct {
 	DatabaseURL string
 	DataDir     string
 	AppOrigins  []string // APP_ORIGINS: extra frontend origins trusted by the API CSRF guard
+	// AppURL is where the site lives, used to send a student back from a payment
+	// provider. It falls back to the first trusted origin, so a deployment that
+	// already lists the frontend needs no second setting.
+	AppURL string
 }
 
 func Load() (*Config, error) {
@@ -22,11 +26,18 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("create data dir: %w", err)
 	}
 
+	origins := splitList(os.Getenv("APP_ORIGINS"))
+	appURL := strings.TrimRight(os.Getenv("APP_URL"), "/")
+	if appURL == "" && len(origins) > 0 {
+		appURL = strings.TrimRight(origins[0], "/")
+	}
+
 	return &Config{
 		Port:        port,
 		DatabaseURL: dbURL,
 		DataDir:     dataDir,
-		AppOrigins:  splitList(os.Getenv("APP_ORIGINS")),
+		AppOrigins:  origins,
+		AppURL:      appURL,
 	}, nil
 }
 

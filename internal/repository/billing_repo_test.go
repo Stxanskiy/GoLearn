@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"os"
 	"sync"
 	"testing"
@@ -81,7 +82,7 @@ func TestConfirmGrantsThenIsIdempotent(t *testing.T) {
 		t.Fatalf("fresh user has access: %v %v", ok, err)
 	}
 
-	if _, err := repo.StartPayment(ctx, user, 1, 49000, "RUB", "stub", "ref-1"); err != nil {
+	if _, err := repo.StartPayment(ctx, user, "month", 1, 49000, "RUB", "stub", "ref-1"); err != nil {
 		t.Fatalf("start: %v", err)
 	}
 	// A pending payment must not open the content.
@@ -89,17 +90,17 @@ func TestConfirmGrantsThenIsIdempotent(t *testing.T) {
 		t.Fatal("pending payment granted access")
 	}
 
-	sub, err := repo.Confirm(ctx, "stub", "ref-1")
+	sub, err := repo.Confirm(ctx, "stub", "ref-1", AnyAmount)
 	if err != nil {
 		t.Fatalf("confirm: %v", err)
 	}
-	first := sub.ExpiresAt
+	first := *sub.ExpiresAt
 	if !sub.IsActive() {
 		t.Fatalf("subscription not active after payment: %+v", sub)
 	}
 
 	// A provider replaying its webhook must not stack free months.
-	again, err := repo.Confirm(ctx, "stub", "ref-1")
+	again, err := repo.Confirm(ctx, "stub", "ref-1", AnyAmount)
 	if err != nil {
 		t.Fatalf("confirm twice: %v", err)
 	}
@@ -108,10 +109,10 @@ func TestConfirmGrantsThenIsIdempotent(t *testing.T) {
 	}
 
 	// A genuinely new payment does extend it.
-	if _, err := repo.StartPayment(ctx, user, 1, 49000, "RUB", "stub", "ref-2"); err != nil {
+	if _, err := repo.StartPayment(ctx, user, "month", 1, 49000, "RUB", "stub", "ref-2"); err != nil {
 		t.Fatalf("start second: %v", err)
 	}
-	extended, err := repo.Confirm(ctx, "stub", "ref-2")
+	extended, err := repo.Confirm(ctx, "stub", "ref-2", AnyAmount)
 	if err != nil {
 		t.Fatalf("confirm second: %v", err)
 	}
@@ -186,5 +187,118 @@ func TestSetCourseTierRejectsUnknown(t *testing.T) {
 	repo := NewBillingRepo(nil)
 	if err := repo.SetCourseTier(context.Background(), 1, "premium"); err != ErrBadTier {
 		t.Fatalf("got %v, want ErrBadTier", err)
+	}
+}
+
+// The lifetime plan has no expiry. The whole scheme rests on NULL meaning
+// "never", so the things that could quietly undo it are worth pinning: the
+// sweep, a later monthly purchase, and which row Current picks.
+func TestLifetimeSubscriptionNeverLapses(t *testing.T) {
+	pool := billingPool(t)
+	repo := NewBillingRepo(pool)
+	ctx := context.Background()
+	user := testUser(t, pool)
+
+	if _, err := repo.StartPayment(ctx, user, "lifetime", 0, 1_200_000, "RUB", "stub", "life-1"); err != nil {
+		t.Fatalf("start: %v", err)
+	}
+	sub, err := repo.Confirm(ctx, "stub", "life-1", AnyAmount)
+	if err != nil {
+		t.Fatalf("confirm: %v", err)
+	}
+	if sub.ExpiresAt != nil {
+		t.Fatalf("lifetime subscription has an expiry: %v", *sub.ExpiresAt)
+	}
+	if !sub.IsActive() || sub.Plan != "lifetime" {
+		t.Fatalf("sub = %+v", sub)
+	}
+
+	// The sweep walks every active row; a NULL expiry must not look overdue.
+	if _, err := repo.SweepExpired(ctx); err != nil {
+		t.Fatalf("sweep: %v", err)
+	}
+	if ok, err := repo.HasAccess(ctx, user); err != nil || !ok {
+		t.Fatalf("sweep took away lifetime access: %v %v", ok, err)
+	}
+
+	// Buying a month on top must not turn "never" into a date. Paying more can
+	// never take access away.
+	if _, err := repo.StartPayment(ctx, user, "month", 1, 400_000, "RUB", "stub", "life-2"); err != nil {
+		t.Fatalf("start month: %v", err)
+	}
+	after, err := repo.Confirm(ctx, "stub", "life-2", AnyAmount)
+	if err != nil {
+		t.Fatalf("confirm month: %v", err)
+	}
+	if after.ExpiresAt != nil {
+		t.Fatalf("a monthly purchase downgraded a lifetime subscription to %v", *after.ExpiresAt)
+	}
+	if after.Plan != "lifetime" {
+		t.Fatalf("plan = %q, want lifetime", after.Plan)
+	}
+}
+
+// A signature proves who sent the callback, not how much they said was paid.
+// Confirming an invoice for less than it was opened for is the cheap attack
+// this guards, and it has to fail before the payment is marked paid.
+func TestConfirmRejectsTheWrongAmount(t *testing.T) {
+	pool := billingPool(t)
+	repo := NewBillingRepo(pool)
+	ctx := context.Background()
+	user := testUser(t, pool)
+
+	if _, err := repo.StartPayment(ctx, user, "month", 1, 400_000, "RUB", "stub", "amt-1"); err != nil {
+		t.Fatalf("start: %v", err)
+	}
+	if _, err := repo.Confirm(ctx, "stub", "amt-1", 100); !errors.Is(err, ErrAmountMismatch) {
+		t.Fatalf("confirm with 1 ₽ = %v, want ErrAmountMismatch", err)
+	}
+	if ok, _ := repo.HasAccess(ctx, user); ok {
+		t.Fatal("underpaying bought a subscription")
+	}
+	// The payment is still open, so paying the right amount still works.
+	if _, err := repo.Confirm(ctx, "stub", "amt-1", 400_000); err != nil {
+		t.Fatalf("confirm with the right amount: %v", err)
+	}
+	if ok, _ := repo.HasAccess(ctx, user); !ok {
+		t.Fatal("paying the right amount granted nothing")
+	}
+}
+
+func TestLaunchesAreCountedInAWindow(t *testing.T) {
+	pool := billingPool(t)
+	repo := NewBillingRepo(pool)
+	ctx := context.Background()
+	user := testUser(t, pool)
+
+	week := time.Now().Add(-7 * 24 * time.Hour)
+	if n, err := repo.CountLaunches(ctx, user, week); err != nil || n != 0 {
+		t.Fatalf("fresh user has %d launches (%v)", n, err)
+	}
+	if _, ok, err := repo.OldestLaunchSince(ctx, user, week); err != nil || ok {
+		t.Fatalf("fresh user has an oldest launch: %v %v", ok, err)
+	}
+
+	for i := 0; i < 3; i++ {
+		if err := repo.RecordLaunch(ctx, user, "l42"); err != nil {
+			t.Fatalf("record: %v", err)
+		}
+	}
+	if n, err := repo.CountLaunches(ctx, user, week); err != nil || n != 3 {
+		t.Fatalf("count = %d (%v), want 3", n, err)
+	}
+	if _, ok, err := repo.OldestLaunchSince(ctx, user, week); err != nil || !ok {
+		t.Fatalf("oldest launch missing: %v %v", ok, err)
+	}
+
+	// A launch that fell out of the window must stop counting — otherwise the
+	// allowance never comes back and the free tier is a one-off, not weekly.
+	if _, err := pool.Exec(ctx,
+		`UPDATE sandbox_launches SET created_at = now() - interval '8 days' WHERE user_id = $1`,
+		user); err != nil {
+		t.Fatalf("age the rows: %v", err)
+	}
+	if n, err := repo.CountLaunches(ctx, user, week); err != nil || n != 0 {
+		t.Fatalf("count after the window = %d (%v), want 0", n, err)
 	}
 }

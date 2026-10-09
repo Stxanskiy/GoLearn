@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"time"
 
 	"github.com/backendraz/golearn/internal/model"
 	"github.com/backendraz/golearn/internal/repository"
@@ -36,6 +37,7 @@ type fakeContent struct {
 	reviews    []repository.Review
 	origins    map[int]int  // draft row id → live row id
 	subscribed map[int]bool // user id → has an active subscription
+	launches   map[int]int  // user id → sandboxes started inside the free window
 	nextID     int
 }
 
@@ -57,6 +59,7 @@ func newFakeContent() *fakeContent {
 		passed: map[int]map[int]bool{}, sandbox: newFakeSandbox(),
 		coauthors: map[int][]int{}, nextID: 5000, origins: map[int]int{},
 		subscribed: map[int]bool{},
+		launches:   map[int]int{},
 	}
 }
 
@@ -435,20 +438,53 @@ func (f fakeQuizAttempts) Latest(_ context.Context, userID, lessonID int) (*repo
 // reachable from the read paths; the rest satisfies the interface.
 type fakeBilling struct{ *fakeContent }
 
-func (f fakeBilling) Current(context.Context, int) (*repository.Subscription, error) { return nil, nil }
+// Current has to agree with HasAccess: the handler reads the subscription once
+// and derives everything from it, so a double that says "no subscription" while
+// HasAccess says yes tests a state that cannot happen.
+func (f fakeBilling) Current(_ context.Context, userID int) (*repository.Subscription, error) {
+	if !f.subscribed[userID] {
+		return nil, nil
+	}
+	until := time.Now().Add(30 * 24 * time.Hour)
+	return &repository.Subscription{
+		ID: userID, Status: "active", Plan: "month",
+		StartedAt: time.Now().Add(-24 * time.Hour), ExpiresAt: &until, Provider: "stub",
+	}, nil
+}
 
 func (f fakeBilling) HasAccess(_ context.Context, userID int) (bool, error) {
 	return f.subscribed[userID], nil
 }
 
-func (f fakeBilling) StartPayment(context.Context, int, int, int64, string, string, string) (*repository.Payment, error) {
+func (f fakeBilling) StartPayment(context.Context, int, string, int, int64, string, string, string) (*repository.Payment, error) {
 	return nil, errors.New("not used in tests")
 }
 
 func (f fakeBilling) SetProviderRef(context.Context, int, string) error { return nil }
 
-func (f fakeBilling) Confirm(context.Context, string, string) (*repository.Subscription, error) {
+func (f fakeBilling) Confirm(context.Context, string, string, int64) (*repository.Subscription, error) {
 	return nil, repository.ErrPaymentNotFound
+}
+
+// The sandbox allowance: launches is a count per user, which is all the gate
+// reads. Tests that never start a sandbox leave it at zero and pass the gate.
+func (f fakeBilling) RecordLaunch(_ context.Context, userID int, _ string) error {
+	if f.launches == nil {
+		return nil
+	}
+	f.launches[userID]++
+	return nil
+}
+
+func (f fakeBilling) CountLaunches(_ context.Context, userID int, _ time.Time) (int, error) {
+	return f.launches[userID], nil
+}
+
+func (f fakeBilling) OldestLaunchSince(_ context.Context, userID int, _ time.Time) (time.Time, bool, error) {
+	if f.launches[userID] == 0 {
+		return time.Time{}, false, nil
+	}
+	return time.Now().Add(-time.Hour), true, nil
 }
 
 func (f fakeBilling) SetCourseTier(_ context.Context, moduleID int, tier string) error {

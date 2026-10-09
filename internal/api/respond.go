@@ -25,6 +25,7 @@ const (
 	codePayloadTooLarge    = "payload_too_large"
 	codeRateLimited        = "rate_limited"
 	codeSubscriptionNeeded = "subscription_required"
+	codeLaunchQuota        = "launch_quota_exceeded"
 	codeInternal           = "internal_error"
 	codeInvalidCredentials = "invalid_credentials"
 	codeAccountBlocked     = "account_blocked"
