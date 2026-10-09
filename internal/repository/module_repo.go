@@ -85,14 +85,29 @@ func (r *ModuleRepo) GetBySlug(ctx context.Context, slug string) (*model.Module,
 // Create inserts an admin-authored module and returns its id.
 func (r *ModuleRepo) Create(ctx context.Context, m model.Module) (int, error) {
 	tags, _ := json.Marshal(m.Tags)
+	prereqs := prereqJSON(m.Prerequisites)
 	var id int
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites,
 		   category, label, tags, cover_image, accent, est_minutes, is_trainer, source, published, owner_id)
-		 VALUES ($1,$2,$3,$4,$5,$6,'[]',$7,$8,$9,$10,$11,$12,$13,'admin',$14,$15) RETURNING id`,
-		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'admin',$15,$16) RETURNING id`,
+		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty, prereqs,
 		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published, m.OwnerID).Scan(&id)
 	return id, err
+}
+
+// prereqJSON marshals the list for the column, which is NOT NULL. A nil slice
+// marshals to `null`, and the rows that hold `null` today are exactly why
+// model.Prereqs has to tolerate it; new rows should not add to them.
+func prereqJSON(ps model.Prereqs) []byte {
+	if ps == nil {
+		ps = model.Prereqs{}
+	}
+	b, err := json.Marshal(ps)
+	if err != nil {
+		return []byte("[]")
+	}
+	return b
 }
 
 // Update modifies an existing module by id.
@@ -101,9 +116,10 @@ func (r *ModuleRepo) Update(ctx context.Context, m model.Module) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE modules SET slug=$1, title=$2, description=$3, order_num=$4, track=$5, difficulty=$6,
 		   category=$7, label=$8, tags=$9, cover_image=$10, accent=$11, est_minutes=$12, is_trainer=$13,
-		   published=$14, edited_at=now() WHERE id=$15`,
+		   published=$14, prerequisites=$15, edited_at=now() WHERE id=$16`,
 		m.Slug, m.Title, m.Description, m.OrderNum, m.Track, m.Difficulty,
-		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published, m.ID)
+		m.Category, m.Label, tags, m.CoverImage, m.Accent, m.EstMinutes, m.IsTrainer, m.Published,
+		prereqJSON(m.Prerequisites), m.ID)
 	return err
 }
 

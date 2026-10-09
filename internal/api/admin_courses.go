@@ -547,6 +547,10 @@ func (a *API) courseFromInput(ctx context.Context, in apigen.AdminCourseInput, c
 		EstMinutes:  deref(in.EstMinutes),
 		Tags:        []string{},
 	}
+	// Omitted means unchanged, like every other optional field here.
+	if cur != nil {
+		m.Prerequisites = cur.Prerequisites
+	}
 	m.IsTrainer = cur != nil && cur.IsTrainer
 	if in.IsTrainer != nil {
 		m.IsTrainer = *in.IsTrainer
@@ -579,6 +583,32 @@ func (a *API) courseFromInput(ctx context.Context, in apigen.AdminCourseInput, c
 		}
 		if len(m.Tags) > 20 {
 			fields["tags"] = fieldTooLong
+		}
+	}
+	if in.Prerequisites != nil {
+		seen := map[string]bool{}
+		m.Prerequisites = make(model.Prereqs, 0, len(*in.Prerequisites))
+		for _, p := range *in.Prerequisites {
+			slug := strings.TrimSpace(p.Slug)
+			switch {
+			case slug == "":
+				continue
+			case slug == m.Slug:
+				// A course gating itself can never be opened again.
+				fields["prerequisites"] = fieldInvalidValue
+				continue
+			case seen[slug]:
+				continue
+			}
+			seen[slug] = true
+			kind := model.PrereqRequired
+			if p.Kind == apigen.Recommended {
+				kind = model.PrereqRecommended
+			}
+			m.Prerequisites = append(m.Prerequisites, model.Prerequisite{Slug: slug, Kind: kind})
+		}
+		if len(m.Prerequisites) > 10 {
+			fields["prerequisites"] = fieldTooLong
 		}
 	}
 	if in.CoverURL != nil && !isHTTPURL(*in.CoverURL) {

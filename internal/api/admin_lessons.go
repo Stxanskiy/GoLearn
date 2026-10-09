@@ -375,12 +375,22 @@ func lessonFromInput(in apigen.AdminLessonInput) (model.Lesson, map[string]strin
 		Content:    deref(in.Content),
 		VMImage:    strings.TrimSpace(deref(in.VMImage)),
 		VMInit:     deref(in.VMInit),
+		VMCPUs:     deref(in.VMCpus),
+		VMMemMiB:   deref(in.VMMemMib),
 	}
 	checkSlug(fields, "slug", l.Slug)
 	checkText(fields, "title", l.Title, 200, true)
 	checkText(fields, "content", l.Content, 500000, false)
 	checkText(fields, "vm_image", l.VMImage, 40, false)
 	checkText(fields, "vm_init", l.VMInit, 64000, false)
+	// Bounds here are the contract's; the runner clamps again to what this host
+	// can actually afford, which is the number that matters at boot.
+	if l.VMCPUs < 0 || l.VMCPUs > 8 {
+		fields["vm_cpus"] = fieldInvalidValue
+	}
+	if l.VMMemMiB < 0 || l.VMMemMiB > 16384 {
+		fields["vm_mem_mib"] = fieldInvalidValue
+	}
 	checkEnum(fields, "kind", in.Kind.Valid())
 	checkEnum(fields, "format", in.Format.Valid())
 	checkEnum(fields, "difficulty", in.Difficulty.Valid())
@@ -475,7 +485,8 @@ func toAdminLesson(l model.Lesson) apigen.AdminLesson {
 	return apigen.AdminLesson{
 		ID: l.ID, CourseID: l.ModuleID, Slug: l.Slug, Title: l.Title, Kind: lessonKind(l.Kind),
 		Format: apigen.ContentFormat(l.Format), Difficulty: apigen.Difficulty(l.Difficulty),
-		Content: l.Content, VMImage: l.VMImage, VMInit: l.VMInit, Published: l.Published,
+		Content: l.Content, VMImage: l.VMImage, VMInit: l.VMInit,
+		VMCpus: l.VMCPUs, VMMemMib: l.VMMemMiB, Published: l.Published,
 		OrderNum: l.OrderNum, Source: apigen.AdminLessonSource(l.Source), CreatedAt: l.CreatedAt,
 	}
 }

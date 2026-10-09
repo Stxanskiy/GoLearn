@@ -20,12 +20,12 @@ func NewLessonRepo(pool *pgxpool.Pool) *LessonRepo {
 	return &LessonRepo{pool: pool}
 }
 
-const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published, created_at`
+const lessonCols = `id, module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, vm_cpus, vm_mem_mib, source, published, created_at`
 
 func scanLesson(row pgx.Row) (model.Lesson, error) {
 	var l model.Lesson
 	err := row.Scan(&l.ID, &l.ModuleID, &l.Slug, &l.Title, &l.Content, &l.OrderNum, &l.Difficulty,
-		&l.Track, &l.Kind, &l.Format, &l.VMImage, &l.VMInit, &l.Source, &l.Published, &l.CreatedAt)
+		&l.Track, &l.Kind, &l.Format, &l.VMImage, &l.VMInit, &l.VMCPUs, &l.VMMemMiB, &l.Source, &l.Published, &l.CreatedAt)
 	return l, err
 }
 
@@ -109,9 +109,10 @@ func (r *LessonRepo) NextOrder(ctx context.Context, moduleID int) (int, error) {
 func (r *LessonRepo) Create(ctx context.Context, l model.Lesson) (int, error) {
 	var id int
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin',$12) RETURNING id`,
-		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published).Scan(&id)
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, vm_cpus, vm_mem_mib, source, published)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'admin',$14) RETURNING id`,
+		l.ModuleID, l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Track, l.Kind, l.Format,
+		l.VMImage, l.VMInit, l.VMCPUs, l.VMMemMiB, l.Published).Scan(&id)
 	return id, err
 }
 
@@ -119,8 +120,9 @@ func (r *LessonRepo) Update(ctx context.Context, l model.Lesson) error {
 	_, err := r.pool.Exec(ctx,
 		// edited_at is what keeps this change: the seeder runs on every deploy and
 		// skips rows a human has touched.
-		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9, published=$10, edited_at=now() WHERE id=$11`,
-		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit, l.Published, l.ID)
+		`UPDATE lessons SET slug=$1, title=$2, content=$3, order_num=$4, difficulty=$5, kind=$6, format=$7, vm_image=$8, vm_init=$9, vm_cpus=$10, vm_mem_mib=$11, published=$12, edited_at=now() WHERE id=$13`,
+		l.Slug, l.Title, l.Content, l.OrderNum, l.Difficulty, l.Kind, l.Format, l.VMImage, l.VMInit,
+		l.VMCPUs, l.VMMemMiB, l.Published, l.ID)
 	return err
 }
 
@@ -192,9 +194,10 @@ func (r *LessonRepo) DuplicateLesson(ctx context.Context, id int) (int, error) {
 
 	var newID int
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'admin',FALSE) RETURNING id`,
-		l.ModuleID, slug, l.Title+" (копия)", l.Content, maxOrd+1, l.Difficulty, l.Track, l.Kind, l.Format, l.VMImage, l.VMInit).Scan(&newID); err != nil {
+		`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, vm_cpus, vm_mem_mib, source, published)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'admin',FALSE) RETURNING id`,
+		l.ModuleID, slug, l.Title+" (копия)", l.Content, maxOrd+1, l.Difficulty, l.Track, l.Kind, l.Format,
+		l.VMImage, l.VMInit, l.VMCPUs, l.VMMemMiB).Scan(&newID); err != nil {
 		return 0, err
 	}
 

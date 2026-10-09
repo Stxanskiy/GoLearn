@@ -89,21 +89,25 @@ type Module struct {
 
 // Lesson represents a single lesson within a module.
 type Lesson struct {
-	ID         int       `json:"id" db:"id"`
-	ModuleID   int       `json:"module_id" db:"module_id"`
-	Slug       string    `json:"slug" db:"slug"`
-	Title      string    `json:"title" db:"title"`
-	Content    string    `json:"content" db:"content"`
-	OrderNum   int       `json:"order_num" db:"order_num"`
-	Difficulty string    `json:"difficulty" db:"difficulty"` // beginner | intermediate | advanced | expert
-	Track      string    `json:"track" db:"track"`           // backend | devops | shared
-	Kind       string    `json:"kind" db:"kind"`             // theory | quiz | lab | sim
-	Format     string    `json:"format" db:"format"`         // html | md
-	VMImage    string    `json:"vm_image" db:"vm_image"`     // lab terminal image
-	VMInit     string    `json:"vm_init" db:"vm_init"`       // lab setup reference/script
-	Source     string    `json:"source" db:"source"`         // seed | admin
-	Published  bool      `json:"published" db:"published"`   // false -> draft, hidden from students
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	ID         int    `json:"id" db:"id"`
+	ModuleID   int    `json:"module_id" db:"module_id"`
+	Slug       string `json:"slug" db:"slug"`
+	Title      string `json:"title" db:"title"`
+	Content    string `json:"content" db:"content"`
+	OrderNum   int    `json:"order_num" db:"order_num"`
+	Difficulty string `json:"difficulty" db:"difficulty"` // beginner | intermediate | advanced | expert
+	Track      string `json:"track" db:"track"`           // backend | devops | shared
+	Kind       string `json:"kind" db:"kind"`             // theory | quiz | lab | sim
+	Format     string `json:"format" db:"format"`         // html | md
+	VMImage    string `json:"vm_image" db:"vm_image"`     // lab terminal image
+	VMInit     string `json:"vm_init" db:"vm_init"`       // lab setup reference/script
+	// Size of this lesson's sandbox. 0 means "whatever the sandbox image
+	// implies"; the runner clamps anything else to what the host can afford.
+	VMCPUs    int       `json:"vm_cpus" db:"vm_cpus"`
+	VMMemMiB  int       `json:"vm_mem_mib" db:"vm_mem_mib"`
+	Source    string    `json:"source" db:"source"`       // seed | admin
+	Published bool      `json:"published" db:"published"` // false -> draft, hidden from students
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 // Specialization is a top-level section (admin-managed).

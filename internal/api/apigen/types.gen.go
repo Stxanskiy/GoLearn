@@ -687,6 +687,10 @@ type AdminCourseInput struct {
 	// it, so an order set here survives a deploy.
 	OrderNum *int `json:"order_num,omitempty"`
 
+	// Prerequisites Courses to take first. A `required` one blocks this course until it
+	// is finished; a `recommended` one is advice. Omit to leave unchanged.
+	Prerequisites *[]PrerequisiteInput `json:"prerequisites,omitempty"`
+
 	// Published Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.
 	Published *bool     `json:"published,omitempty"`
 	Slug      Slug      `json:"slug"`
@@ -765,8 +769,14 @@ type AdminLesson struct {
 	Slug       string            `json:"slug"`
 	Source     AdminLessonSource `json:"source"`
 	Title      string            `json:"title"`
-	VMImage    string            `json:"vm_image"`
-	VMInit     string            `json:"vm_init"`
+
+	// VMCpus vCPUs for the sandbox; 0 → the size the image implies.
+	VMCpus  int    `json:"vm_cpus"`
+	VMImage string `json:"vm_image"`
+	VMInit  string `json:"vm_init"`
+
+	// VMMemMib Sandbox memory in MiB; 0 → the size the image implies.
+	VMMemMib int `json:"vm_mem_mib"`
 }
 
 // AdminLessonSource defines model for AdminLesson.Source.
@@ -787,11 +797,19 @@ type AdminLessonInput struct {
 	Kind       LessonKind    `json:"kind"`
 
 	// Published Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.
-	Published *bool   `json:"published,omitempty"`
-	Slug      Slug    `json:"slug"`
-	Title     string  `json:"title"`
-	VMImage   *string `json:"vm_image,omitempty"`
-	VMInit    *string `json:"vm_init,omitempty"`
+	Published *bool  `json:"published,omitempty"`
+	Slug      Slug   `json:"slug"`
+	Title     string `json:"title"`
+
+	// VMCpus vCPUs for this lesson's sandbox. 0 → the size the sandbox image
+	// implies. Clamped by the host (FC_MAX_VCPUS), so this is a request.
+	VMCpus  *int    `json:"vm_cpus,omitempty"`
+	VMImage *string `json:"vm_image,omitempty"`
+	VMInit  *string `json:"vm_init,omitempty"`
+
+	// VMMemMib Memory in MiB for this lesson's sandbox. 0 → the size the sandbox
+	// image implies. Clamped by the host (FC_MAX_MEM_MIB).
+	VMMemMib *int `json:"vm_mem_mib,omitempty"`
 }
 
 // AdminLessonRow defines model for AdminLessonRow.
@@ -1545,6 +1563,14 @@ type Prerequisite struct {
 	ProgressPct *int   `json:"progress_pct,omitempty"`
 	Slug        string `json:"slug"`
 	Title       string `json:"title"`
+}
+
+// PrerequisiteInput defines model for PrerequisiteInput.
+type PrerequisiteInput struct {
+	// Kind `required` blocks the course until the other one is finished; the lesson
+	// endpoints answer `403`. `recommended` is advice and blocks nothing.
+	Kind PrerequisiteKind `json:"kind"`
+	Slug Slug             `json:"slug"`
 }
 
 // PrerequisiteKind `required` blocks the course until the other one is finished; the lesson

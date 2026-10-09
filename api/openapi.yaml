@@ -3706,6 +3706,13 @@ components:
           type: array
           items: { $ref: '#/components/schemas/AuthorRef' }
 
+    PrerequisiteInput:
+      type: object
+      required: [slug, kind]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        kind: { $ref: '#/components/schemas/PrerequisiteKind' }
+
     AdminCourseInput:
       type: object
       required: [slug, title, track, difficulty]
@@ -3722,6 +3729,13 @@ components:
           type: array
           maxItems: 20
           items: { type: string, maxLength: 40 }
+        prerequisites:
+          type: array
+          maxItems: 10
+          description: |
+            Courses to take first. A `required` one blocks this course until it
+            is finished; a `recommended` one is advice. Omit to leave unchanged.
+          items: { $ref: '#/components/schemas/PrerequisiteInput' }
         est_minutes: { type: integer, minimum: 0, maximum: 100000, description: 0 → lessons × 10. }
         order_num:
           type: integer
@@ -3812,11 +3826,25 @@ components:
         content: { type: string, maxLength: 500000 }
         vm_image: { type: string, maxLength: 40 }
         vm_init: { type: string }
+        vm_cpus:
+          type: integer
+          minimum: 0
+          maximum: 8
+          description: |
+            vCPUs for this lesson's sandbox. 0 → the size the sandbox image
+            implies. Clamped by the host (FC_MAX_VCPUS), so this is a request.
+        vm_mem_mib:
+          type: integer
+          minimum: 0
+          maximum: 16384
+          description: |
+            Memory in MiB for this lesson's sandbox. 0 → the size the sandbox
+            image implies. Clamped by the host (FC_MAX_MEM_MIB).
         published: { type: boolean, description: 'Omitted → unchanged (draft on create). Publishing follows the moderation rules, unpublishing needs `can_unpublish`.' }
 
     AdminLesson:
       type: object
-      required: [id, course_id, slug, title, kind, format, difficulty, content, vm_image, vm_init, published, order_num, source, created_at]
+      required: [id, course_id, slug, title, kind, format, difficulty, content, vm_image, vm_init, vm_cpus, vm_mem_mib, published, order_num, source, created_at]
       properties:
         id: { type: integer }
         course_id: { type: integer }
@@ -3828,6 +3856,8 @@ components:
         content: { type: string }
         vm_image: { type: string }
         vm_init: { type: string }
+        vm_cpus: { type: integer, description: 'vCPUs for the sandbox; 0 → the size the image implies.' }
+        vm_mem_mib: { type: integer, description: 'Sandbox memory in MiB; 0 → the size the image implies.' }
         published: { type: boolean }
         order_num: { type: integer }
         source: { type: string, enum: [seed, admin] }
