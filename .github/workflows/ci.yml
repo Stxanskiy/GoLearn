@@ -11,6 +11,10 @@ name: ci
 on:
   push:
   pull_request:
+  # Restored from the old deploy.yml: a release can fail on something that has
+  # nothing to do with the commit - the last one died on an ETIMEDOUT from the
+  # npm registry - and then it has to be possible to just run it again.
+  workflow_dispatch:
 
 concurrency:
   # Never cancel a release half-way through: the cluster would be left pointing
@@ -109,10 +113,12 @@ jobs:
   deploy:
     # The gate. Without `needs` a red test run still shipped.
     needs: [changes, test]
+    # A manual run always deploys: it exists to retry a release, so the
+    # docs-only skip must not swallow it.
     if: >-
-      github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.changes.outputs.code == 'true'
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' && needs.changes.outputs.code == 'true'))
     runs-on: [self-hosted, berg]
     concurrency:
       group: deploy-berg
