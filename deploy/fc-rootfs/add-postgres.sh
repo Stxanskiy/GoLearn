@@ -116,7 +116,25 @@ apt-get clean
 rm -rf /var/lib/apt/lists/partial
 EOF
 
-rm -f "$mnt/usr/sbin/policy-rc.d" "$mnt/etc/resolv.conf"
+rm -f "$mnt/usr/sbin/policy-rc.d"
+# The image carries an empty one; the host's belongs to the host.
+: > "$mnt/etc/resolv.conf"
+
+# `docker export` cannot carry /etc/hosts — Docker bind-mounts it at runtime —
+# so the goldens have an empty one and `localhost` resolves to nothing in the
+# VM. PostgreSQL listens on localhost, so it cannot bind at all and dies with
+# "could not create any TCP/IP sockets". Harmless-looking, and it stops the
+# whole course.
+if ! grep -qE '^127\.0\.0\.1[[:space:]]+localhost' "$mnt/etc/hosts" 2>/dev/null; then
+	echo "==> /etc/hosts был пуст — прописываю localhost"
+	printf '%s\n' \
+		$'127.0.0.1\tlocalhost' \
+		$'::1\tlocalhost ip6-localhost ip6-loopback' \
+		$'fe00::0\tip6-localnet' \
+		$'ff00::0\tip6-mcastprefix' \
+		$'ff02::1\tip6-allnodes' \
+		$'ff02::2\tip6-allrouters' > "$mnt/etc/hosts"
+fi
 
 # ── prove it before anyone installs it ──
 echo "==> проверяю результат"
@@ -125,6 +143,8 @@ chroot "$mnt" dpkg-query -W -f='${Status}\n' postgresql-16 2>/dev/null | grep -q
 	|| { echo "    !! postgresql-16 не установлен"; fail=1; }
 [ -d "$mnt/etc/postgresql" ] || { echo "    !! нет /etc/postgresql"; fail=1; }
 [ -f "$mnt/var/cache/glpkg/Packages" ] || { echo "    !! нет офлайн-репозитория"; fail=1; }
+grep -qE '^127\.0\.0\.1[[:space:]]+localhost' "$mnt/etc/hosts" \
+	|| { echo "    !! в /etc/hosts нет localhost — PostgreSQL не сможет слушать порт"; fail=1; }
 [ -e "$mnt/etc/systemd/system/multi-user.target.wants/postgresql.service" ] \
 	&& { echo "    !! postgresql остался включённым — он будет стартовать в каждой лабе"; fail=1; }
 # The things a rebuild loses and this must not: they were loaded by hand.

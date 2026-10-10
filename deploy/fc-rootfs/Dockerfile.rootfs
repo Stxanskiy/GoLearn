@@ -12,6 +12,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       zsh bash-completion \
       ansible python3 python3-pip \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
+# ── /etc/hosts ──
+# `docker export` cannot carry this file: Docker bind-mounts it at runtime, so
+# what lands in the image is the empty placeholder, and in the VM `localhost`
+# then resolves to nothing. Most things do not notice. PostgreSQL does: it is
+# configured to listen on localhost, cannot translate the name, and dies with
+# "could not create any TCP/IP sockets" — which reads as a broken database and
+# is a broken hosts file.
+RUN printf '%s\n' \
+      '127.0.0.1\tlocalhost' \
+      '::1\tlocalhost ip6-localhost ip6-loopback' \
+      'fe00::0\tip6-localnet' \
+      'ff00::0\tip6-mcastprefix' \
+      'ff02::1\tip6-allnodes' \
+      'ff02::2\tip6-allrouters' > /etc/hosts
 # ── PostgreSQL + offline apt repository ──
 # The PostgreSQL courses run their labs on golearn/sandbox-pg, which VMRunner
 # maps onto this root filesystem, so the server has to be here. Its unit is
