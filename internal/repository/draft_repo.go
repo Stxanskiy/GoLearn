@@ -31,18 +31,18 @@ func (r *DraftRepo) Create(ctx context.Context, liveID int) (int, error) {
 	}
 	defer tx.Rollback(ctx)
 	var draftID int
+	// The column list comes from draftModuleCols so a new course field cannot be
+	// forgotten here and silently lost; see draft_columns.go.
 	err = tx.QueryRow(ctx, `
-		INSERT INTO modules (slug, title, description, order_num, track, difficulty, prerequisites, category, label,
-		  tags, cover_image, accent, est_minutes, is_trainer, source, published, owner_id, draft_of)
-		SELECT '~draft-' || id, title, description, order_num, track, difficulty, prerequisites, category, label,
-		  tags, cover_image, accent, est_minutes, is_trainer, 'admin', FALSE, owner_id, id
+		INSERT INTO modules (slug, order_num, source, published, owner_id, draft_of, `+columnList(draftModuleCols)+`)
+		SELECT '~draft-' || id, order_num, 'admin', FALSE, owner_id, id, `+columnList(draftModuleCols)+`
 		FROM modules WHERE id = $1 AND draft_of IS NULL RETURNING id`, liveID).Scan(&draftID)
 	if err != nil {
 		return 0, err
 	}
 	steps := []step{
-		{`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published, origin_id)
-		 SELECT $2, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published, id
+		{`INSERT INTO lessons (module_id, source, origin_id, ` + columnList(draftLessonCols) + `)
+		 SELECT $2, source, id, ` + columnList(draftLessonCols) + `
 		 FROM lessons WHERE module_id = $1`, []any{liveID, draftID}},
 		{`INSERT INTO quizzes (lesson_id, title)
 		 SELECT DISTINCT ON (q.lesson_id) dl.id, q.title FROM quizzes q
@@ -99,16 +99,13 @@ func mergeDraft(ctx context.Context, tx pgx.Tx, liveID int) error {
 		return err
 	}
 	steps := []step{
-		{`UPDATE modules l SET title = d.title, description = d.description, track = d.track, difficulty = d.difficulty,
-		   category = d.category, label = d.label, tags = d.tags, cover_image = d.cover_image,
-		   accent = d.accent, est_minutes = d.est_minutes, is_trainer = d.is_trainer
+		{`UPDATE modules l SET ` + assignments("d", draftModuleCols) + `
 		 FROM modules d WHERE l.id = $1 AND d.id = $2`, []any{liveID, draftID}},
 		{`UPDATE lessons SET slug = '~' || id WHERE module_id = $1`, []any{liveID}},
-		{`UPDATE lessons l SET slug = d.slug, title = d.title, content = d.content, order_num = d.order_num, difficulty = d.difficulty,
-		   track = d.track, kind = d.kind, format = d.format, vm_image = d.vm_image, vm_init = d.vm_init, published = d.published
+		{`UPDATE lessons l SET ` + assignments("d", draftLessonCols) + `
 		 FROM lessons d WHERE d.module_id = $2 AND l.id = d.origin_id AND l.module_id = $1`, []any{liveID, draftID}},
-		{`INSERT INTO lessons (module_id, slug, title, content, order_num, difficulty, track, kind, format, vm_image, vm_init, source, published, origin_id)
-		 SELECT $1, d.slug, d.title, d.content, d.order_num, d.difficulty, d.track, d.kind, d.format, d.vm_image, d.vm_init, 'admin', d.published, d.id
+		{`INSERT INTO lessons (module_id, source, origin_id, ` + columnList(draftLessonCols) + `)
+		 SELECT $1, 'admin', d.id, ` + prefixed("d", draftLessonCols) + `
 		 FROM lessons d WHERE d.module_id = $2
 		   AND NOT EXISTS (SELECT 1 FROM lessons l WHERE l.id = d.origin_id AND l.module_id = $1)`, []any{liveID, draftID}},
 		{`DELETE FROM lessons WHERE module_id = $1 AND slug LIKE '~%'`, []any{liveID}},
