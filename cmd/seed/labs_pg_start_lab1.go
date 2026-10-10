@@ -46,7 +46,20 @@ func init() {
 
 // pgsLab1Setup takes the server away and leaves the packages: purge, then the
 // directories a purge keeps (cluster data and logs survive it on purpose).
-var pgsLab1Setup = "set -e\n" + pgInstallGlpg + "glpg fixhosts\n" + `apt-get purge -y -qq postgresql postgresql-16 postgresql-client-16 postgresql-client postgresql-common postgresql-client-common >/dev/null
+//
+// It purges what dpkg says is installed rather than a fixed list of names.
+// A named purge is fatal on an image that has no PostgreSQL — apt answers
+// "Unable to locate package" and exits 100, `set -e` ends the setup, and the
+// boot reports the whole sandbox as failed. Cleanup must never be able to do
+// that: there is nothing to remove, which is a reason to carry on, not to
+// stop.
+//
+// This does not make the course work on such an image. Removing a server that
+// is not there is fine; installing it again needs the packages, and those come
+// from the golden rootfs (deploy/fc-rootfs/Dockerfile.rootfs). It only means a
+// stale image costs the student a failing task instead of no sandbox at all.
+var pgsLab1Setup = "set -e\n" + pgInstallGlpg + "glpg fixhosts\n" + `installed=$(dpkg-query -W -f='${Package} ${Status}\n' 'postgresql*' 2>/dev/null | awk '$3 == "ok" && $4 == "installed" { print $1 }')
+[ -n "$installed" ] && apt-get purge -y -qq $installed >/dev/null || true
 rm -rf /etc/postgresql /var/lib/postgresql /var/log/postgresql /var/run/postgresql
 userdel postgres 2>/dev/null || true
 rm -f /usr/local/bin/pg-start

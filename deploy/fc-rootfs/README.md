@@ -65,6 +65,36 @@ Keep one `.bak` around. Two goldens at 5 GB each plus a backup is 15 GB; the
 host has ~320 GB free, but `rootfs-docker.ext4.pre-nodocker` from an earlier
 hand-edit is still sitting there and can go once this recipe is proven.
 
+## When the live image is older than this recipe
+
+A lesson's setup script runs against whatever the golden contains. Add
+something here, do not rebuild, and every lab whose setup depends on it fails —
+as one opaque line, "песочница не запустилась", because the boot treats a
+failed setup as a failed bring-up.
+
+This happened with PostgreSQL: the server and its offline package repository
+were added to `Dockerfile.rootfs` above, the live `rootfs-docker.ext4` was not
+rebuilt, and every lab of the PostgreSQL course died in setup — `glpg start`
+answers "PostgreSQL не установлен" and `set -e` ends the script.
+
+How to tell this apart from a VM that will not boot, without reading the pod's
+log:
+
+```bash
+curl -s https://learn.prod-factory.ru/metrics | grep vm_start_failures
+# reason="setup"        the VM booted; a lesson's setup script failed  <- this case
+# reason="boot"         Firecracker started and sshd never came up
+# reason="boot-timeout" the VM did not answer in time
+# reason="host"         the SSH to the FC host itself failed
+```
+
+Opening the lab as an **admin** prints the host's own output under the error,
+which names the failing command. A student still sees one line.
+
+The fix is to rebuild and install the golden, as above. Nothing in the backend
+can substitute for it: a lab that needs a package the image does not carry
+cannot be made to work from the application side.
+
 ## The kernel
 
 `build-kernel.sh` builds the guest kernel (`tot.config`). It is separate because
