@@ -776,25 +776,53 @@ echo "GLVMOK %[13]s"
 	if err != nil {
 		vmStartFailed("host")
 		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "err", err)
-		return errStudentBoot
+		return &BootError{Reason: "host", Detail: err.Error()}
 	}
 	if !strings.Contains(out, "GLVMOK") {
 		msg := strings.TrimSpace(out)
+		reason := "boot"
 		switch {
 		case strings.Contains(msg, "boot-timeout"):
-			vmStartFailed("boot-timeout")
+			reason = "boot-timeout"
 		case strings.Contains(msg, "GLVMERR setup"):
-			vmStartFailed("setup")
-		default:
-			vmStartFailed("boot")
+			reason = "setup"
 		}
+		vmStartFailed(reason)
 		// Kept out of the student's error on purpose: this is host paths and shell
 		// output. It used to be shown verbatim, which is how "/opt/fc/sessions/…"
-		// ended up on screen.
+		// ended up on screen. It rides along on the error so an admin — and only
+		// an admin — can be shown it instead of having to read the pod's log.
 		slog.Error("VM boot failed", "sid", s.sid, "slot", s.slot, "profile", s.profile, "detail", tail(msg))
-		return errStudentBoot
+		return &BootError{Reason: reason, Detail: tail(msg)}
 	}
 	return nil
+}
+
+// BootError is a bring-up that did not produce a usable VM.
+//
+// Its Error() is the one line a student may see; Diagnostic() is the host's
+// own output, which names the failing command and is the difference between
+// "try again" and knowing that a setup script exited non-zero. Callers decide
+// who is allowed to see which.
+type BootError struct {
+	// Reason is the coarse category, matching golearn_vm_start_failures_total:
+	// host, boot, boot-timeout or setup.
+	Reason string
+	Detail string
+}
+
+func (e *BootError) Error() string { return errStudentBoot.Error() }
+
+// Is makes errors.Is(err, errStudentBoot) keep working for anything that was
+// comparing against the sentinel.
+func (e *BootError) Is(target error) bool { return target == errStudentBoot }
+
+// Diagnostic reports what actually went wrong, for an operator.
+func (e *BootError) Diagnostic() string {
+	if e.Detail == "" {
+		return e.Reason
+	}
+	return e.Reason + ": " + e.Detail
 }
 
 // errStudentBoot is the one message a failed boot shows; the reason is logged and

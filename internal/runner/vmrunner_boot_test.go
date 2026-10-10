@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -252,5 +253,34 @@ func TestTwoSimultaneousDropsDoNotDeadlock(t *testing.T) {
 	v.mu.Unlock()
 	if left != 0 {
 		t.Errorf("sessions left behind: %d", left)
+	}
+}
+
+// A failed bring-up shows the student one line and carries the host's own
+// output alongside it. Both halves matter: the student must never see
+// "/opt/fc/sessions/…", and an operator must not have to read the pod's log to
+// learn whether the VM never booted or a lesson's setup script exited non-zero.
+func TestBootErrorSeparatesStudentAndOperator(t *testing.T) {
+	err := &BootError{Reason: "setup", Detail: "GLVMERR setup\nE: Unable to locate package postgresql-16"}
+
+	if got := err.Error(); got != errStudentBoot.Error() {
+		t.Errorf("student sees %q, want the one safe line", got)
+	}
+	if strings.Contains(err.Error(), "postgresql") || strings.Contains(err.Error(), "GLVMERR") {
+		t.Errorf("host output leaked to the student: %q", err.Error())
+	}
+	// Anything that compared against the sentinel has to keep working.
+	if !errors.Is(err, errStudentBoot) {
+		t.Error("errors.Is against the sentinel stopped matching")
+	}
+
+	diag := err.Diagnostic()
+	if !strings.Contains(diag, "setup") || !strings.Contains(diag, "postgresql-16") {
+		t.Errorf("diagnostic lost the reason or the detail: %q", diag)
+	}
+
+	// A reason with nothing behind it still says which category it was.
+	if got := (&BootError{Reason: "boot-timeout"}).Diagnostic(); got != "boot-timeout" {
+		t.Errorf("bare diagnostic = %q", got)
 	}
 }

@@ -256,6 +256,16 @@ func (a *API) serveTerminal(w http.ResponseWriter, r *http.Request, key string, 
 	if err != nil {
 		a.log.Error("terminal: ensure session", "error", err)
 		say("\r\n\x1b[31m" + err.Error() + "\x1b[0m\r\n")
+		// An admin gets the real reason. A failed sandbox is otherwise one
+		// opaque line, and finding out whether the VM never booted or a lesson's
+		// setup script exited non-zero meant reading the pod's log — which is
+		// exactly the thing an author debugging their own lab cannot do.
+		if user.IsAdmin() {
+			var boot interface{ Diagnostic() string }
+			if errors.As(err, &boot) {
+				say("\x1b[90m" + boot.Diagnostic() + "\x1b[0m\r\n")
+			}
+		}
 		return
 	}
 	if !live {
