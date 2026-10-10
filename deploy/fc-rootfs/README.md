@@ -91,9 +91,26 @@ curl -s https://learn.prod-factory.ru/metrics | grep vm_start_failures
 Opening the lab as an **admin** prints the host's own output under the error,
 which names the failing command. A student still sees one line.
 
-The fix is to rebuild and install the golden, as above. Nothing in the backend
-can substitute for it: a lab that needs a package the image does not carry
-cannot be made to work from the application side.
+Nothing in the backend can substitute for the image: a lab that needs a package
+the golden does not carry cannot be made to work from the application side.
+
+But a full rebuild is the wrong way to catch up. The live goldens also hold
+container images that were loaded into them by hand — ~2.4 GB under
+`/var/lib/docker`, ~573 MB of k3s airgap images — and this recipe does not
+produce them, which is why `build-rootfs.sh` refuses to install a result poorer
+than the live image. Adding the one missing thing is safer than rebuilding
+everything around it:
+
+```bash
+sudo ./add-postgres.sh --check     # what the live image has now
+sudo ./add-postgres.sh             # -> rootfs-docker.ext4.new, live file untouched
+```
+
+It works on a copy, mirrors the PostgreSQL block of `Dockerfile.rootfs` step
+for step, and refuses to hand over a result where the package did not install,
+the offline repository is missing, or the unit was left enabled — a server
+starting in every lab VM is not what the course wants. Installing the result is
+the same deliberate step as above.
 
 ## The kernel
 
