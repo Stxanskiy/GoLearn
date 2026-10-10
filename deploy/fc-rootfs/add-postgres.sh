@@ -148,7 +148,7 @@ grep -qE '^127\.0\.0\.1[[:space:]]+localhost' "$mnt/etc/hosts" \
 [ -e "$mnt/etc/systemd/system/multi-user.target.wants/postgresql.service" ] \
 	&& { echo "    !! postgresql остался включённым — он будет стартовать в каждой лабе"; fail=1; }
 # The things a rebuild loses and this must not: they were loaded by hand.
-for d in /var/lib/docker /usr/share/zsh-plugins /root/.local/share/nvim/lazy; do
+for d in /var/lib/docker /var/lib/rancher/k3s/agent/images /usr/share/zsh-plugins /root/.local/share/nvim/lazy; do
 	a=$(du -sm "$mnt$d" 2>/dev/null | cut -f1); a=${a:-0}
 	printf "    %-40s %s МБ\n" "$d" "$a"
 done
