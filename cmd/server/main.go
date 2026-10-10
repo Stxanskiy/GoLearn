@@ -166,6 +166,7 @@ func main() {
 		Drafts:       repository.NewDraftRepo(pool),
 		Sandbox:      sandbox,
 		Billing:      billingRepo,
+		SeedDetach:   repository.NewSeedDetachRepo(pool),
 		Robokassa:    billing.RobokassaFromEnv(),
 	}
 

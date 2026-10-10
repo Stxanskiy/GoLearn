@@ -1459,6 +1459,33 @@ paths:
 
         '415': { $ref: '#/components/responses/UnsupportedMedia' }
         '500': { $ref: '#/components/responses/InternalError' }
+  /admin/content/detach-from-seed:
+    post:
+      tags: [admin, admin-courses]
+      summary: Make the database the source of truth for all content
+      description: |
+        Renders every Markdown lesson to the HTML the site already shows, then
+        stamps `edited_at` on every lesson and module that still lacks one.
+
+        The seeder owns anything whose `edited_at` is NULL and rewrites it from
+        `cmd/seed/content` on each deploy, so the two halves belong together:
+        converting without stamping would be undone by the next release.
+
+        **One way.** Afterwards the JSON files no longer reach the site and
+        courses are written in the studio. Idempotent — a second call converts
+        nothing and stamps nothing.
+
+        Admin only: it decides where every course lives from then on.
+      operationId: detachContentFromSeed
+      responses:
+        '200':
+          description: What changed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DetachResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /admin/courses/{courseId}/access-tier:
     patch:
       tags: [admin, billing]
@@ -3112,6 +3139,14 @@ components:
         currency: { type: string }
         months: { type: integer, description: '0 on the lifetime plan.' }
         confirm_url: { type: string }
+
+    DetachResult:
+      type: object
+      required: [converted, lessons_detached, modules_detached]
+      properties:
+        converted: { type: integer, description: 'Markdown lessons rendered to HTML.' }
+        lessons_detached: { type: integer, description: 'Lessons the seeder no longer owns.' }
+        modules_detached: { type: integer, description: 'Courses the seeder no longer owns.' }
 
     AccessTier:
       type: object

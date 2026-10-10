@@ -204,6 +204,7 @@ type Stores struct {
 	Sandbox      sandbox
 	Images       imageStore
 	Billing      billingStore
+	SeedDetach   seedDetachStore
 	// Robokassa is optional: without credentials checkout falls back to the stub
 	// provider, so development needs no merchant account.
 	Robokassa *billing.Robokassa
@@ -338,6 +339,9 @@ func (a *API) Routes() chi.Router {
 			r.With(requireAdmin).Post("/admin/courses/{courseId}/move", a.adminMoveCourse)
 			// What the subscription is worth is an admin decision, not an author's.
 			r.With(requireAdmin).Patch("/admin/courses/{courseId}/access-tier", a.setCourseAccessTier)
+			// One-way, and it decides where every course lives from then on, so
+			// it is an admin's call and not an author's.
+			r.With(requireAdmin).Post("/admin/content/detach-from-seed", a.detachFromSeed)
 			r.Put("/admin/courses/{courseId}/cover", a.adminUploadCourseCover)
 			r.Delete("/admin/courses/{courseId}/cover", a.adminDeleteCourseCover)
 			r.Get("/admin/courses/{courseId}/authors", a.adminListCourseAuthors)

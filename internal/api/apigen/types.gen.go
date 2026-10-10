@@ -1413,6 +1413,18 @@ type DashboardOverview struct {
 	TrainersTotal int `json:"trainers_total"`
 }
 
+// DetachResult defines model for DetachResult.
+type DetachResult struct {
+	// Converted Markdown lessons rendered to HTML.
+	Converted int `json:"converted"`
+
+	// LessonsDetached Lessons the seeder no longer owns.
+	LessonsDetached int `json:"lessons_detached"`
+
+	// ModulesDetached Courses the seeder no longer owns.
+	ModulesDetached int `json:"modules_detached"`
+}
+
 // Difficulty defines model for Difficulty.
 type Difficulty string
 

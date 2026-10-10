@@ -38,6 +38,7 @@ type fakeContent struct {
 	origins    map[int]int  // draft row id → live row id
 	subscribed map[int]bool // user id → has an active subscription
 	launches   map[int]int  // user id → sandboxes started inside the free window
+	detached   int          // how many times content was detached from the seeder
 	nextID     int
 }
 
@@ -80,6 +81,7 @@ func (f *fakeContent) stores(users *fakeUsers) Stores {
 		Drafts:       fakeDrafts{f},
 		Sandbox:      f.sandbox,
 		Billing:      fakeBilling{f},
+		SeedDetach:   fakeSeedDetach{f},
 	}
 	// A typed nil in the interface would look configured, so only set it when present.
 	if f.images != nil {
@@ -495,4 +497,33 @@ func (f fakeBilling) SetCourseTier(_ context.Context, moduleID int, tier string)
 		}
 	}
 	return repository.ErrCourseNotFound
+}
+
+// fakeSeedDetach works on the fixture's own lessons, so a test can see the
+// conversion land rather than only count it.
+type fakeSeedDetach struct{ *fakeContent }
+
+func (f fakeSeedDetach) MarkdownLessons(context.Context) ([]model.Lesson, error) {
+	var out []model.Lesson
+	for _, l := range f.lessons {
+		if l.Format == "md" {
+			out = append(out, l)
+		}
+	}
+	return out, nil
+}
+
+func (f fakeSeedDetach) SetLessonContent(_ context.Context, id int, format, body string) error {
+	for i := range f.lessons {
+		if f.lessons[i].ID == id {
+			f.lessons[i].Format, f.lessons[i].Content = format, body
+			return nil
+		}
+	}
+	return repository.ErrCourseNotFound
+}
+
+func (f fakeSeedDetach) Detach(context.Context) (int64, int64, error) {
+	f.detached++
+	return int64(len(f.lessons)), int64(len(f.modules)), nil
 }
