@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/backendraz/golearn/internal/api/apigen"
+	"github.com/backendraz/golearn/internal/content"
 	"github.com/backendraz/golearn/internal/lab"
 	"github.com/backendraz/golearn/internal/model"
 )
@@ -481,11 +482,24 @@ func checkEnum(fields map[string]string, name string, valid bool) {
 	}
 }
 
+// contentHTML renders a lesson the way the site does, so the studio's editor
+// can open a Markdown lesson and an HTML one through the same control.
+//
+// Rendered rather than converted in the database on purpose. The seeder
+// overwrites any lesson whose edited_at is NULL, so a bulk conversion would
+// either be undone on the next deploy or — if it set edited_at — detach every
+// converted lesson from the JSON it is still being written in. Converting when
+// an author actually saves keeps that decision where it already lives.
+func contentHTML(l model.Lesson) *string {
+	out := content.Render(l.Format, l.Content)
+	return &out
+}
+
 func toAdminLesson(l model.Lesson) apigen.AdminLesson {
 	return apigen.AdminLesson{
 		ID: l.ID, CourseID: l.ModuleID, Slug: l.Slug, Title: l.Title, Kind: lessonKind(l.Kind),
 		Format: apigen.ContentFormat(l.Format), Difficulty: apigen.Difficulty(l.Difficulty),
-		Content: l.Content, VMImage: l.VMImage, VMInit: l.VMInit,
+		Content: l.Content, ContentHTML: contentHTML(l), VMImage: l.VMImage, VMInit: l.VMInit,
 		VMCpus: l.VMCPUs, VMMemMib: l.VMMemMiB, Published: l.Published,
 		OrderNum: l.OrderNum, Source: apigen.AdminLessonSource(l.Source), CreatedAt: l.CreatedAt,
 	}

@@ -4016,7 +4016,16 @@ components:
         kind: { $ref: '#/components/schemas/LessonKind' }
         format: { $ref: '#/components/schemas/ContentFormat' }
         difficulty: { $ref: '#/components/schemas/Difficulty' }
-        content: { type: string }
+        content: { type: string, description: 'Exactly as stored, in `format`.' }
+        content_html:
+          type: string
+          description: |
+            `content` rendered to the HTML a student sees — the same renderer the
+            site uses, so what comes back here is what is on the page today.
+
+            It is what the studio's editor loads, so one editor can open a lesson
+            whatever format it was written in. Saving from that editor stores HTML
+            and sets `format` to `html`.
         vm_image: { type: string }
         vm_init: { type: string }
         vm_cpus: { type: integer, description: 'vCPUs for the sandbox; 0 → the size the image implies.' }

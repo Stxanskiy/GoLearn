@@ -897,18 +897,27 @@ type AdminCourseRowSource string
 
 // AdminLesson defines model for AdminLesson.
 type AdminLesson struct {
-	Content    string            `json:"content"`
-	CourseID   int               `json:"course_id"`
-	CreatedAt  time.Time         `json:"created_at"`
-	Difficulty Difficulty        `json:"difficulty"`
-	Format     ContentFormat     `json:"format"`
-	ID         int               `json:"id"`
-	Kind       LessonKind        `json:"kind"`
-	OrderNum   int               `json:"order_num"`
-	Published  bool              `json:"published"`
-	Slug       string            `json:"slug"`
-	Source     AdminLessonSource `json:"source"`
-	Title      string            `json:"title"`
+	// Content Exactly as stored, in `format`.
+	Content string `json:"content"`
+
+	// ContentHTML `content` rendered to the HTML a student sees — the same renderer the
+	// site uses, so what comes back here is what is on the page today.
+	//
+	// It is what the studio's editor loads, so one editor can open a lesson
+	// whatever format it was written in. Saving from that editor stores HTML
+	// and sets `format` to `html`.
+	ContentHTML *string           `json:"content_html,omitempty"`
+	CourseID    int               `json:"course_id"`
+	CreatedAt   time.Time         `json:"created_at"`
+	Difficulty  Difficulty        `json:"difficulty"`
+	Format      ContentFormat     `json:"format"`
+	ID          int               `json:"id"`
+	Kind        LessonKind        `json:"kind"`
+	OrderNum    int               `json:"order_num"`
+	Published   bool              `json:"published"`
+	Slug        string            `json:"slug"`
+	Source      AdminLessonSource `json:"source"`
+	Title       string            `json:"title"`
 
 	// VMCpus vCPUs for the sandbox; 0 → the size the image implies.
 	VMCpus  int    `json:"vm_cpus"`

@@ -155,3 +155,51 @@ func mustJSON(t *testing.T, v any) string {
 	}
 	return string(b)
 }
+
+// The studio's editor works in HTML whatever the lesson was written in, so a
+// Markdown lesson has to come back rendered as well as raw. Without this the
+// editor would show a Markdown lesson as literal `##` and `**bold**`.
+func TestAdminLessonCarriesRenderedContent(t *testing.T) {
+	h, _ := authorsFixture(t)
+
+	create := func(slug, format, body string) int {
+		t.Helper()
+		in := `{"slug":"` + slug + `","title":"T","kind":"theory","format":"` + format +
+			`","difficulty":"beginner","content":` + body + `}`
+		w := do(h, http.MethodPost, "/admin/courses/12/lessons", in, withCookie(coToken))
+		if w.Code != http.StatusCreated {
+			t.Fatalf("create %s: %d %s", slug, w.Code, w.Body)
+		}
+		return decode[apigen.AdminLesson](t, w).ID
+	}
+	read := func(id int) apigen.AdminLesson {
+		t.Helper()
+		w := do(h, http.MethodGet, "/admin/lessons/"+itoa(id), "", withCookie(coToken))
+		if w.Code != http.StatusOK {
+			t.Fatalf("read %d: %d %s", id, w.Code, w.Body)
+		}
+		return decode[apigen.AdminLessonDetail](t, w).Lesson
+	}
+
+	md := read(create("md-lesson", "md", `"## Заголовок\n\nабзац"`))
+	if md.Content != "## Заголовок\n\nабзац" {
+		t.Errorf("raw content must stay exactly as stored, got %q", md.Content)
+	}
+	if md.ContentHTML == nil || !strings.Contains(*md.ContentHTML, "<h2>") {
+		t.Fatalf("markdown was not rendered: %v", md.ContentHTML)
+	}
+
+	// An HTML lesson must come back unchanged, not re-processed: that is the
+	// bulk of what the studio edits.
+	htmlLesson := read(create("html-lesson", "html", `"<h2>Заголовок</h2>"`))
+	if htmlLesson.ContentHTML == nil || !strings.Contains(*htmlLesson.ContentHTML, "<h2>Заголовок</h2>") {
+		t.Fatalf("html lesson came back as %v", htmlLesson.ContentHTML)
+	}
+
+	// Sanitising still applies, so the editor can never be handed a script to
+	// load back into the page.
+	evil := read(create("evil-lesson", "html", `"<p>ok</p><script>alert(1)</script>"`))
+	if evil.ContentHTML == nil || strings.Contains(*evil.ContentHTML, "<script>") {
+		t.Errorf("script survived into the editor: %v", evil.ContentHTML)
+	}
+}
