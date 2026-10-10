@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 // Fixtures + auto-checks for "Kubernetes: основы" (k8s-intro).
 //
 // These lessons run in golearn/sandbox-k8s: a privileged lab container with a
@@ -37,7 +39,36 @@ func kcheck(cond, good, bad string) string {
 	return `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml; ` +
 		`if ! kubectl get --raw=/readyz >/dev/null 2>&1; then ` +
 		fail("Кластер ещё поднимается. Подожди 10–20 секунд и нажми «Проверить» снова.") +
-		`; fi; ` + check(cond, good, bad)
+		`; fi; ` + check(cond, good, withClusterState(bad))
+}
+
+// withClusterState gives a check that has no diagnostic of its own one that
+// shows what is in the cluster.
+//
+// Without it a failed check says only "не выполнено: <что ожидалось>", and the
+// student is left guessing which half of it is missing. The case that sent me
+// here: `kubectl run … --labels=app=web --env=env=prod` sets an environment
+// variable rather than a label, so the Pod looks right in every way the task
+// describes except the one being tested, and the message could not say so.
+//
+// Of the 124 jsonpath checks in these courses not one carried a diagnostic, so
+// this is done here rather than by writing 124 of them. An author who writes
+// their own keeps it: theirs can name the object that matters, this can only
+// show everything.
+//
+// No double quotes and no apostrophes: the builder escapes quotes for the shell
+// echo that prints this, which is enough to turn an awk program into a syntax
+// error and leak the quotes onto the student's screen.
+func withClusterState(bad string) string {
+	if strings.Contains(bad, "Сейчас") || strings.Contains(bad, "сейчас") {
+		return bad
+	}
+	const state = "Сейчас в кластере: $(out=$(kubectl get pods --show-labels --no-headers 2>/dev/null " +
+		"| tr -s ' ' | cut -d' ' -f1,3,6 | tr '\n' '; '); echo ${out:-Pod-ов нет})"
+	if bad == "" {
+		return state
+	}
+	return bad + ". " + state
 }
 
 // jp runs a kubectl JSONPath query and compares the result with want.
@@ -226,7 +257,20 @@ kdel pod web-prod web-staging db-prod`,
 				jp("get pod web-staging", "{.metadata.labels.env}", "staging")+` && `+
 				jp("get pod db-prod", "{.metadata.labels.app}", "db"),
 				"три Pod'а созданы с нужными labels",
-				"kubectl run web-prod --image=nginx:alpine --labels=app=web,env=prod (аналогично web-staging и db-prod)"),
+				// The diagnostic matters more here than anywhere else in the lab:
+				// `kubectl run --env=env=prod` sets an environment variable, not a
+				// label, so a student who reaches for --env creates exactly the
+				// Pod they were asked for except for the one thing being checked,
+				// and "не выполнено" tells them nothing. Showing the labels they
+				// actually have makes the gap obvious without handing over the
+				// command.
+				//
+				// No double quotes and no apostrophe anywhere in this string: the
+				// fixture builder escapes quotes for the shell echo that prints it,
+				// which turned an awk program using them into "runaway string
+				// constant" and leaked the quotes into the student's screen.
+				"kubectl run web-prod --image=nginx:alpine --labels=app=web,env=prod (аналогично web-staging и db-prod). "+
+					`Сейчас: $(out=$(kubectl get pods web-prod web-staging db-prod --show-labels --no-headers 2>/dev/null | tr -s ' ' | cut -d' ' -f1,6 | tr '\n' '; '); echo ${out:-нужных Pod-ов ещё нет})`),
 			2: kcheck(jp("get pod web-prod", "{.metadata.labels.monitored}", "true"),
 				"label monitored=true добавлен",
 				"kubectl label pod web-prod monitored=true"),
