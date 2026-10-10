@@ -3391,6 +3391,14 @@ components:
         prerequisites:
           type: array
           items: { $ref: '#/components/schemas/Prerequisite' }
+        lock_exempt:
+          type: boolean
+          description: |
+            True when the gate does not apply to this viewer — an admin, who is
+            let through so they can open the course they are writing. Reported
+            rather than folded into `locked`, because an admin testing a
+            prerequisite needs to see both that the course *is* gated and that
+            they personally are not being stopped by it.
         locked:
           type: boolean
           description: |

@@ -169,6 +169,7 @@ func (a *API) getCourse(w http.ResponseWriter, r *http.Request) {
 		ProgressPct:    c.Pct,
 		Prerequisites:  prereqs,
 		Locked:         locked,
+		LockExempt:     adminExempt(userFrom(r.Context())),
 		PrevCourse:     linkRef(prev),
 		NextCourse:     linkRef(next),
 	})

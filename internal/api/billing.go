@@ -211,9 +211,11 @@ func (a *API) startCheckout(w http.ResponseWriter, r *http.Request) {
 			a.internalError(w, "set provider ref", err)
 			return
 		}
-		shp := url.Values{}
-		shp.Set("Shp_user", strconv.Itoa(user.ID))
-		link, err := a.Robokassa.PayLink(int64(p.ID), p.AmountMinor, planDescription(plan), shp)
+		// No Shp_ parameters. They have to be signed identically on both sides
+		// and echoed back untouched, which is a standing way to break a
+		// signature — and this one carried nothing: the invoice is the payment
+		// row's id, and that row already knows whose it is.
+		link, err := a.Robokassa.PayLink(int64(p.ID), p.AmountMinor, planDescription(plan), nil)
 		if err != nil {
 			a.internalError(w, "robokassa link", err)
 			return

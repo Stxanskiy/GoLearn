@@ -1274,6 +1274,13 @@ type CourseDetail struct {
 	Course         CourseCard   `json:"course"`
 	Items          []CourseItem `json:"items"`
 
+	// LockExempt True when the gate does not apply to this viewer — an admin, who is
+	// let through so they can open the course they are writing. Reported
+	// rather than folded into `locked`, because an admin testing a
+	// prerequisite needs to see both that the course *is* gated and that
+	// they personally are not being stopped by it.
+	LockExempt *bool `json:"lock_exempt,omitempty"`
+
 	// Locked A required prerequisite is unfinished. The course page still loads so
 	// the student can see what is missing, but its lessons answer `403`.
 	Locked        bool           `json:"locked"`

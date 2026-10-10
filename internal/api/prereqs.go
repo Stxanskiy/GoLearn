@@ -6,6 +6,7 @@ import (
 	"github.com/backendraz/golearn/internal/api/apigen"
 	"github.com/backendraz/golearn/internal/catalog"
 	"github.com/backendraz/golearn/internal/model"
+	"github.com/backendraz/golearn/internal/repository"
 )
 
 // prereqState resolves a course's prerequisites against one student's progress.
@@ -62,6 +63,17 @@ func (a *API) prereqState(ctx context.Context, m model.Module, up catalog.UserPr
 		})
 	}
 	return out, locked, nil
+}
+
+// adminExempt reports whether the prerequisite gate lets this viewer through.
+//
+// It mirrors the check in visible(), and exists so the course page can say so.
+// An admin who sets a prerequisite and then opens the course sees it open and
+// concludes the feature is broken; what is actually happening is that the gate
+// is working and skipping them.
+func adminExempt(u *repository.User) *bool {
+	exempt := u.IsAdmin()
+	return &exempt
 }
 
 // courseLocked reports whether this student still has a required prerequisite
