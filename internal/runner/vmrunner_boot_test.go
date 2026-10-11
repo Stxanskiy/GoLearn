@@ -366,3 +366,29 @@ func TestBootDeadlineOutlastsWhatTheScriptWaitsFor(t *testing.T) {
 		t.Errorf("vmK8sWait = %v, must be whole seconds — the script loops on them", vmK8sWait)
 	}
 }
+
+// The boot script has to have the cluster up before it runs the lesson setup.
+//
+// It ran them the other way round. On a Kubernetes lab the setup started a
+// couple of seconds after sshd, while k3s was still coming up; the setup then
+// waited its own minute and, when that was not enough, the whole sandbox was
+// reported as having failed to start — "k3s did not become ready in 60s". The
+// wait that came afterwards helped nobody.
+//
+// Pinned as a test because the order is invisible: both orderings read fine,
+// and only one of them works.
+func TestBootScriptWaitsForTheClusterBeforeTheSetup(t *testing.T) {
+	v := &VMRunner{dir: "/opt/fc", kernel: "vmlinux", vmkey: "vmkey"}
+	script := v.bootScript("echo lesson-setup", "k8s.ext4", "console=ttyS0", "AA:FC:00:00:01:02",
+		1, 1536, "172.31.1.2", "172.31.1.1", "gltap1", "/opt/fc/sessions/t",
+		`echo "waiting for k3s..."; kubectl get nodes`)
+
+	cluster := strings.Index(script, "waiting for k3s")
+	setup := strings.Index(script, "apply lesson setup")
+	if cluster < 0 || setup < 0 {
+		t.Fatalf("script is missing a step: cluster=%d setup=%d", cluster, setup)
+	}
+	if cluster > setup {
+		t.Error("the lesson setup runs before the cluster is up; a Kubernetes setup cannot work then")
+	}
+}

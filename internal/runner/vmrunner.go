@@ -734,9 +734,41 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	bootArgs := fmt.Sprintf(
 		"console=ttyS0 reboot=k panic=1 acpi=off idle=halt nopv net.ifnames=0 gl.ip=%s/30 root=/dev/vda rw init=/sbin/init",
 		vmip)
-	setupB64 := base64.StdEncoding.EncodeToString([]byte(setup))
 
-	script := fmt.Sprintf(`set -e
+	script := v.bootScript(setup, rootfs, bootArgs, mac, vcpus, mem, vmip, hostIP, tap, work, k8sWait)
+
+	out, _, err := v.runHost(ctx, script)
+	if err != nil {
+		vmStartFailed("host")
+		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "err", err)
+		return &BootError{Reason: "host", Detail: err.Error()}
+	}
+	if !strings.Contains(out, "GLVMOK") {
+		msg := strings.TrimSpace(out)
+		reason := "boot"
+		switch {
+		case strings.Contains(msg, "boot-timeout"):
+			reason = "boot-timeout"
+		case strings.Contains(msg, "GLVMERR setup"):
+			reason = "setup"
+		}
+		vmStartFailed(reason)
+		// Kept out of the student's error on purpose: this is host paths and shell
+		// output. It used to be shown verbatim, which is how "/opt/fc/sessions/…"
+		// ended up on screen. It rides along on the error so an admin — and only
+		// an admin — can be shown it instead of having to read the pod's log.
+		slog.Error("VM boot failed", "sid", s.sid, "slot", s.slot, "profile", s.profile, "detail", tail(msg))
+		return &BootError{Reason: reason, Detail: tail(msg)}
+	}
+	return nil
+}
+
+// bootScript renders the host script. Split out so its shape can be tested
+// without a host: the order of its steps matters and is not visible from the
+// outside.
+func (v *VMRunner) bootScript(setup, rootfs, bootArgs, mac string, vcpus, mem int, vmip, hostIP, tap, work, k8sWait string) string {
+	setupB64 := base64.StdEncoding.EncodeToString([]byte(setup))
+	return fmt.Sprintf(`set -e
 WORK=%[1]s
 # Скрипт убирает за собой сам, если умрёт или будет убит на любом шаге.
 #
@@ -775,13 +807,18 @@ for i in $(seq 1 %[11]d); do
   ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=2 -o LogLevel=ERROR root@%[13]s true 2>/dev/null && { UP=1; break; }
 done
 [ "${UP:-0}" = 1 ] || { echo "GLVMERR boot-timeout"; tail -5 "$WORK/fc.log" 2>/dev/null; exit 0; }
+# Ждём кластер ДО setup, а не после. Раньше было наоборот, и для урока по
+# Kubernetes это означало, что setup стартовал через пару секунд после sshd —
+# когда k3s ещё поднимается. Setup ждал его сам, своей минутой, и если не
+# укладывался, вся песочница объявлялась незапустившейся: «k3s did not become
+# ready in 60s». Ожидание после setup не помогало никому.
+%[15]s
 # apply lesson setup once
 if [ -n "%[14]s" ]; then
   if ! setup_out=$(ssh -n -i %[4]s/%[12]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=5 -o LogLevel=ERROR root@%[13]s 'echo %[14]s | base64 -d | bash' 2>&1); then
     echo "GLVMERR setup"; echo "$setup_out" | tail -5; exit 0
   fi
 fi
-%[15]s
 # Дошли до конца — разоружаем уборку, VM остаётся жить.
 trap - EXIT HUP TERM INT
 echo "GLVMOK %[13]s"
@@ -802,31 +839,6 @@ echo "GLVMOK %[13]s"
 		setupB64,                    // 14
 		k8sWait,                     // 15
 	)
-
-	out, _, err := v.runHost(ctx, script)
-	if err != nil {
-		vmStartFailed("host")
-		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "err", err)
-		return &BootError{Reason: "host", Detail: err.Error()}
-	}
-	if !strings.Contains(out, "GLVMOK") {
-		msg := strings.TrimSpace(out)
-		reason := "boot"
-		switch {
-		case strings.Contains(msg, "boot-timeout"):
-			reason = "boot-timeout"
-		case strings.Contains(msg, "GLVMERR setup"):
-			reason = "setup"
-		}
-		vmStartFailed(reason)
-		// Kept out of the student's error on purpose: this is host paths and shell
-		// output. It used to be shown verbatim, which is how "/opt/fc/sessions/…"
-		// ended up on screen. It rides along on the error so an admin — and only
-		// an admin — can be shown it instead of having to read the pod's log.
-		slog.Error("VM boot failed", "sid", s.sid, "slot", s.slot, "profile", s.profile, "detail", tail(msg))
-		return &BootError{Reason: reason, Detail: tail(msg)}
-	}
-	return nil
 }
 
 // BootError is a bring-up that did not produce a usable VM.
