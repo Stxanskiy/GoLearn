@@ -51,3 +51,28 @@ func TestStudentFailSeparatesExpectationFromCurrentState(t *testing.T) {
 		t.Errorf("в сообщении больше одного тире, читается двусмысленно: %q", got)
 	}
 }
+
+// A check must not read `kubectl get` output by column number.
+//
+// The diagnostic every Kubernetes check carries did exactly that:
+// `--show-labels | cut -d' ' -f1,3,6`, counting on RESTARTS being one word. A
+// Pod that has restarted prints "4 (73s ago)" there — three words — so every
+// later column shifts, and the student was shown "web-prod ago)" where the
+// labels should have been. It broke precisely when something was wrong, which
+// is the only time the message is read. custom-columns names its fields and
+// cannot drift.
+func TestChecksDoNotReadKubectlOutputByColumn(t *testing.T) {
+	for module, lessons := range labFixtures {
+		for lesson, spec := range lessons {
+			for n, check := range spec.Checks {
+				if !strings.Contains(check, "kubectl get") {
+					continue
+				}
+				if strings.Contains(check, "cut -d' ' -f") || strings.Contains(check, "awk '{print $") {
+					t.Errorf("%s/%s task %d reads kubectl output by column position; "+
+						"use -o custom-columns or jsonpath, which cannot shift", module, lesson, n)
+				}
+			}
+		}
+	}
+}

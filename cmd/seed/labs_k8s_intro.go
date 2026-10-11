@@ -63,8 +63,9 @@ func withClusterState(bad string) string {
 	if strings.Contains(bad, "Сейчас") || strings.Contains(bad, "сейчас") {
 		return bad
 	}
-	const state = "Сейчас в кластере: $(out=$(kubectl get pods --show-labels --no-headers 2>/dev/null " +
-		"| tr -s ' ' | cut -d' ' -f1,3,6 | tr '\n' '; '); echo ${out:-Pod-ов нет})"
+	const state = "Сейчас в кластере: $(out=$(kubectl get pods --no-headers " +
+		"-o 'custom-columns=A:.metadata.name,B:.status.phase,C:.status.containerStatuses[*].restartCount,D:.metadata.labels' 2>/dev/null " +
+		"| tr -s ' ' | tr '\n' '; '); echo ${out:-Pod-ов нет})"
 	if bad == "" {
 		return state
 	}
@@ -270,7 +271,7 @@ kdel pod web-prod web-staging db-prod`,
 				// which turned an awk program using them into "runaway string
 				// constant" and leaked the quotes into the student's screen.
 				"kubectl run web-prod --image=nginx:alpine --labels=app=web,env=prod (аналогично web-staging и db-prod). "+
-					`Сейчас: $(out=$(kubectl get pods web-prod web-staging db-prod --show-labels --no-headers 2>/dev/null | tr -s ' ' | cut -d' ' -f1,6 | tr '\n' '; '); echo ${out:-нужных Pod-ов ещё нет})`),
+					`Сейчас: $(out=$(kubectl get pods web-prod web-staging db-prod --no-headers -o 'custom-columns=A:.metadata.name,B:.status.phase,C:.status.containerStatuses[*].restartCount,D:.metadata.labels' 2>/dev/null | tr -s ' ' | tr '\n' '; '); echo ${out:-нужных Pod-ов ещё нет})`),
 			2: kcheck(jp("get pod web-prod", "{.metadata.labels.monitored}", "true"),
 				"label monitored=true добавлен",
 				"kubectl label pod web-prod monitored=true"),
