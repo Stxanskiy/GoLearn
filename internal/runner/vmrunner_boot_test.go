@@ -337,3 +337,32 @@ func TestWarmVMIsOnlyReusedAtTheRequestedSize(t *testing.T) {
 		t.Error("the warm VM stayed in the pool after being handed out")
 	}
 }
+
+// The deadline around a boot must outlast everything the boot script may
+// legitimately wait for. It did not: 70 seconds, against a Kubernetes boot
+// that can spend 40 waiting for sshd and 45 more for k3s. A cold k8s lab
+// therefore could not finish inside its own deadline and came back as
+// "context deadline exceeded" — which reads like a broken host rather than an
+// arithmetic mistake.
+//
+// It stayed hidden because the warm pool answered first. The moment a lesson
+// asked for a size the pool did not hold, every attempt at that lab failed.
+func TestBootDeadlineOutlastsWhatTheScriptWaitsFor(t *testing.T) {
+	const slack = 30 * time.Second
+
+	lite := vmBootWait + slack
+	k8s := vmBootWait + slack + vmK8sWait
+
+	if k8s <= vmBootWait+vmK8sWait {
+		t.Errorf("a Kubernetes boot gets %v for waits totalling %v — no room for the work itself",
+			k8s, vmBootWait+vmK8sWait)
+	}
+	if lite <= vmBootWait {
+		t.Errorf("a plain boot gets %v for a %v wait", lite, vmBootWait)
+	}
+	// The script counts seconds; a budget that is not a whole number of them
+	// would round against us.
+	if vmK8sWait%time.Second != 0 {
+		t.Errorf("vmK8sWait = %v, must be whole seconds — the script loops on them", vmK8sWait)
+	}
+}

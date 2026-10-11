@@ -162,6 +162,11 @@ const (
 	vmMinMemMiB  = 256
 	vmSSHTimeout = 20 * time.Second
 	vmBootWait   = 40 * time.Second // budget for boot + sshd + setup
+	// vmK8sWait is how long the boot script waits for k3s to register its node
+	// Ready. A Kubernetes lab whose terminal opens onto "connection refused" is
+	// worse than one that takes longer to open, so the script waits — and the
+	// deadline around it has to allow for that wait.
+	vmK8sWait = 45 * time.Second
 )
 
 func NewVMRunner() *VMRunner {
@@ -635,7 +640,21 @@ func vmMAC(slot int) string    { return fmt.Sprintf("AA:FC:00:00:00:%02x", slot&
 // bootVM provisions the tap, a per-session rootfs copy and fc.json, launches
 // Firecracker, waits for SSH and applies the lesson setup once inside the VM.
 func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error {
-	ctx, cancel := context.WithTimeout(ctx, vmBootWait+30*time.Second)
+	// The deadline has to be larger than everything the script may legitimately
+	// wait for, or it kills a boot that was going to succeed. It was
+	// vmBootWait+30s = 70s while a Kubernetes boot can spend 40s waiting for
+	// sshd and another 45 for k3s before the setup even starts — so a cold k8s
+	// lab could not finish inside its own deadline. It almost never had to: the
+	// warm pool answered first, and the bug stayed hidden until a lesson asked
+	// for a size the pool did not have.
+	budget := vmBootWait + 30*time.Second
+	v.mu.Lock()
+	isK8s := s.profile == "k8s"
+	v.mu.Unlock()
+	if isK8s {
+		budget += vmK8sWait
+	}
+	ctx, cancel := context.WithTimeout(ctx, budget)
 	defer cancel()
 
 	// work/tap/profile уже заполнены под v.mu тем, кто создал сессию (bringUp или
@@ -671,11 +690,13 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 		// k3s fits comfortably in ~1.5 GB / 1 vCPU (a single node needs about 1 GB); the
 		// old 3 GB / 2 vCPU was ~3x too generous.
 		rootfs, mem, vcpus = v.rootfsK8s, v.memK8s, 1
+		// The same number the deadline above budgets for, so the script cannot
+		// outlast the context that is waiting on it.
 		k8sWait = fmt.Sprintf(
-			`echo "waiting for k3s..."; for i in $(seq 1 45); do `+
+			`echo "waiting for k3s..."; for i in $(seq 1 %[4]d); do `+
 				`ssh -n -i %[1]s/%[2]s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -o LogLevel=ERROR root@%[3]s `+
 				`'kubectl get nodes 2>/dev/null | grep -q " Ready"' && break; sleep 1; done`,
-			v.dir, v.vmkey, vmip)
+			v.dir, v.vmkey, vmip, int(vmK8sWait/time.Second))
 	}
 	// A lesson may ask for its own size. The profile picked the golden rootfs
 	// above and that stays - the image decides what is installed, which cannot be
