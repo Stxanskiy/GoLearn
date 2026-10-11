@@ -278,7 +278,7 @@ func (a *API) getCourseCover(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "course cover", err)
 		return
 	}
-	catalog.ServeCover(w, r, m.CoverImage, catalog.CourseCoverSVG(*m))
+	a.serveCover(w, r, m.CoverImage, catalog.CourseCoverSVG(*m))
 }
 
 func (a *API) getSpecializationCover(w http.ResponseWriter, r *http.Request) {
@@ -291,5 +291,5 @@ func (a *API) getSpecializationCover(w http.ResponseWriter, r *http.Request) {
 		a.internalError(w, "specialization cover", err)
 		return
 	}
-	catalog.ServeCover(w, r, s.CoverImage, catalog.SpecCoverSVG(*s))
+	a.serveCover(w, r, s.CoverImage, catalog.SpecCoverSVG(*s))
 }

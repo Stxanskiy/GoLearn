@@ -15,6 +15,10 @@ type Config struct {
 	// provider. It falls back to the first trusted origin, so a deployment that
 	// already lists the frontend needs no second setting.
 	AppURL string
+	// MediaURL is the public base of the object store (S3_PUBLIC_URL). Covers
+	// stored there are streamed through this service rather than redirected to,
+	// so an image never becomes cross-origin for the browser.
+	MediaURL string
 }
 
 func Load() (*Config, error) {
@@ -38,6 +42,7 @@ func Load() (*Config, error) {
 		DataDir:     dataDir,
 		AppOrigins:  origins,
 		AppURL:      appURL,
+		MediaURL:    strings.TrimRight(os.Getenv("S3_PUBLIC_URL"), "/"),
 	}, nil
 }
 

@@ -196,7 +196,7 @@ func main() {
 		log.Error("object storage unavailable", "error", err)
 	}
 
-	apiV1 := api.New(stores, api.Config{AllowedOrigins: cfg.AppOrigins, AppURL: cfg.AppURL}, log)
+	apiV1 := api.New(stores, api.Config{AllowedOrigins: cfg.AppOrigins, AppURL: cfg.AppURL, MediaURL: cfg.MediaURL}, log)
 	r.Mount("/api/v1", apiV1.Routes())
 
 	// The contract is the only description of this service now that it renders

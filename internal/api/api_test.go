@@ -102,6 +102,15 @@ func newTestAPIWith(t *testing.T, users *fakeUsers, content *fakeContent) http.H
 	return New(content.stores(users), Config{AllowedOrigins: []string{"http://localhost:3000"}}, log).Routes()
 }
 
+// newTestAPIWithMedia is newTestAPIWith with an object store configured, for
+// the cover tests.
+func newTestAPIWithMedia(t *testing.T, users *fakeUsers, content *fakeContent, mediaURL string) http.Handler {
+	t.Helper()
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cfg := Config{AllowedOrigins: []string{"http://localhost:3000"}, MediaURL: mediaURL}
+	return New(content.stores(users), cfg, log).Routes()
+}
+
 type reqOpt func(*http.Request)
 
 func withCookie(token string) reqOpt {

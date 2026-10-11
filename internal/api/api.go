@@ -222,6 +222,9 @@ type Config struct {
 	// AppURL is where the site lives. A payment provider returns the student's
 	// browser to the API, which then sends them on to a page here.
 	AppURL string
+	// MediaURL is the public base of our object store. Covers under it are
+	// streamed rather than redirected to; see serveCover.
+	MediaURL string
 }
 
 // API wires handlers to their dependencies.
