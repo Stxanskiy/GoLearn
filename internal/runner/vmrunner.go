@@ -739,9 +739,19 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 
 	out, _, err := v.runHost(ctx, script)
 	if err != nil {
-		vmStartFailed("host")
-		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "err", err)
-		return &BootError{Reason: "host", Detail: err.Error()}
+		// A deadline that fires is not a host fault, and saying "host" sent every
+		// slow boot to the wrong place: the metric blamed the FC box and the log
+		// line carried an ssh exit status instead of the one fact that mattered.
+		// The script can still outlast this budget — a lesson setup does its own
+		// waiting (see k8sBoot in cmd/seed), which we cannot see from here — so
+		// this is the one honest thing to report when it does.
+		reason, detail := "host", err.Error()
+		if ctx.Err() != nil {
+			reason, detail = "boot-timeout", fmt.Sprintf("boot did not finish in %s", budget)
+		}
+		vmStartFailed(reason)
+		slog.Error("VM boot: host error", "sid", s.sid, "slot", s.slot, "reason", reason, "err", err)
+		return &BootError{Reason: reason, Detail: detail}
 	}
 	if !strings.Contains(out, "GLVMOK") {
 		msg := strings.TrimSpace(out)
