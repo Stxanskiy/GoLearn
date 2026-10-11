@@ -284,3 +284,56 @@ func TestBootErrorSeparatesStudentAndOperator(t *testing.T) {
 		t.Errorf("bare diagnostic = %q", got)
 	}
 }
+
+// A warm VM carries the profile's size, chosen long before any lesson is
+// known. Handing it to a lesson that asked for a different one is how the
+// sandbox size set in the studio came to do nothing: the pool almost always
+// has a VM ready, so the author's choice was almost always ignored.
+func TestWarmVMIsOnlyReusedAtTheRequestedSize(t *testing.T) {
+	v := &VMRunner{
+		vcpus: 1, memMiB: 1024, memLite: 512, memK8s: 1536,
+		maxMemMiB: 4096, maxVCPUs: 2,
+		pool: map[string][]*vmSession{},
+	}
+
+	// What each profile gives a lesson that asks for nothing.
+	for _, tc := range []struct {
+		profile   string
+		cpus, mem int
+	}{
+		{"lite", 1, 512}, {"docker", 1, 1024}, {"k8s", 1, 1536},
+	} {
+		if c, m := v.sizeFor(tc.profile, Spec{}); c != tc.cpus || m != tc.mem {
+			t.Errorf("sizeFor(%s) = %d/%d, want %d/%d", tc.profile, c, m, tc.cpus, tc.mem)
+		}
+	}
+	// A request wins, and is clamped.
+	if _, m := v.sizeFor("k8s", Spec{MemMiB: 1024}); m != 1024 {
+		t.Errorf("a lesson asking for 1024 got %d", m)
+	}
+	if _, m := v.sizeFor("k8s", Spec{MemMiB: 99999}); m != 4096 {
+		t.Errorf("an unbounded request was not clamped: %d", m)
+	}
+	if _, m := v.sizeFor("k8s", Spec{MemMiB: 16}); m != vmMinMemMiB {
+		t.Errorf("a request below the floor was not raised: %d", m)
+	}
+
+	// The pool holds a default-sized k8s VM. A lesson wanting 1024 must not get
+	// it, and must not consume it either.
+	warm := &vmSession{sid: "warm", profile: "k8s", bootCPUs: 1, bootMemMiB: 1536}
+	v.pool["k8s"] = []*vmSession{warm}
+
+	if got := v.takeWarmLocked("k8s", 1, 1024); got != nil {
+		t.Fatal("a lesson asking for 1 GiB was handed the profile's 1.5 GiB machine")
+	}
+	if len(v.pool["k8s"]) != 1 {
+		t.Fatal("the warm VM was taken out of the pool and given to nobody")
+	}
+	// The lesson that does want that size still gets it instantly.
+	if got := v.takeWarmLocked("k8s", 1, 1536); got != warm {
+		t.Fatal("a matching lesson did not get the warm VM")
+	}
+	if len(v.pool["k8s"]) != 0 {
+		t.Error("the warm VM stayed in the pool after being handed out")
+	}
+}

@@ -114,10 +114,14 @@ type vmSession struct {
 	// What the lesson asked for, 0 when it asked for nothing. Kept on the
 	// session because bootVM sizes the machine and only sees this struct.
 	reqCPUs, reqMemMiB int
-	work               string // host work dir (stored so a re-keyed warm VM tears down correctly)
-	tap                string
-	started            time.Time
-	last               time.Time
+	// What the machine actually booted with. A warm VM is sized before any
+	// lesson is known, so this is what decides whether it can be handed to a
+	// lesson that asked for something particular.
+	bootCPUs, bootMemMiB int
+	work                 string // host work dir (stored so a re-keyed warm VM tears down correctly)
+	tap                  string
+	started              time.Time
+	last                 time.Time
 }
 
 // profileOf returns the pool profile for a sandbox image.
@@ -526,7 +530,13 @@ func (v *VMRunner) bringUp(ctx context.Context, sid string, userID int, key stri
 	v.mu.Lock()
 	// A pre-booted warm VM of the right profile → hand it out instantly, then just
 	// apply the lesson setup (no cp, no boot, no k3s wait).
-	if warm := v.takeWarmLocked(profile); warm != nil {
+	// A warm VM is pre-booted long before the lesson is known, so it carries the
+	// profile's default size. Handing it to a lesson that asked for a different
+	// one silently ignored the author's choice: the sandbox size set in the
+	// studio did nothing whenever the pool happened to have a VM ready, which is
+	// most of the time. Only a warm VM of the right size is handed out now.
+	wantCPUs, wantMem := v.sizeFor(profile, spec)
+	if warm := v.takeWarmLocked(profile, wantCPUs, wantMem); warm != nil {
 		warm.sid, warm.userID, warm.key, warm.image = sid, userID, key, spec.Image
 		warm.started, warm.last = time.Now(), time.Now()
 		v.sessions[sid] = warm
@@ -673,14 +683,14 @@ func (v *VMRunner) bootVM(ctx context.Context, s *vmSession, setup string) error
 	// straight from the machine config, so an author can say what their lab needs
 	// instead of living with one of three sizes.
 	//
-	// Clamped, not trusted: FC_MAX_VMS of these run at once on one host, so an
-	// unbounded request is a way to take the box down with a content edit.
-	if s.reqMemMiB > 0 {
-		mem = clampInt(s.reqMemMiB, vmMinMemMiB, v.maxMemMiB)
-	}
-	if s.reqCPUs > 0 {
-		vcpus = clampInt(s.reqCPUs, 1, v.maxVCPUs)
-	}
+	// sizeFor does the clamping, and the warm pool asks it the same question
+	// before handing a VM over: if these two disagreed, a lesson would get a
+	// machine of one size while the pool believed it had given another.
+	vcpus, mem = v.sizeFor(profile, Spec{CPUs: s.reqCPUs, MemMiB: s.reqMemMiB})
+	// Recorded so the pool can tell what this machine actually is.
+	v.mu.Lock()
+	s.bootCPUs, s.bootMemMiB = vcpus, mem
+	v.mu.Unlock()
 
 	// nopv is what keeps an idle VM from burning a full host core.
 	//
@@ -1164,15 +1174,42 @@ func (v *VMRunner) signalRefill() {
 	}
 }
 
-// takeWarmLocked pops a ready warm VM for the profile (caller holds v.mu).
-func (v *VMRunner) takeWarmLocked(profile string) *vmSession {
+// takeWarmLocked pops a ready warm VM of the profile whose size is the one
+// asked for (caller holds v.mu). A VM of the wrong size is left in the pool:
+// the next lesson that wants that size gets it instantly, and this one boots
+// its own rather than quietly running smaller or larger than its author said.
+func (v *VMRunner) takeWarmLocked(profile string, cpus, mem int) *vmSession {
 	list := v.pool[profile]
-	if len(list) == 0 {
-		return nil
+	for i := len(list) - 1; i >= 0; i-- {
+		s := list[i]
+		if s.bootCPUs != cpus || s.bootMemMiB != mem {
+			continue
+		}
+		v.pool[profile] = append(list[:i], list[i+1:]...)
+		return s
 	}
-	s := list[len(list)-1]
-	v.pool[profile] = list[:len(list)-1]
-	return s
+	return nil
+}
+
+// sizeFor reports the machine a lesson would get on this profile: the profile's
+// own size unless the lesson asked for something, clamped the same way bootVM
+// clamps it. Shared so the pool and the boot cannot disagree about what a
+// lesson needs.
+func (v *VMRunner) sizeFor(profile string, spec Spec) (cpus, mem int) {
+	cpus, mem = v.vcpus, v.memMiB
+	switch profile {
+	case "lite":
+		mem = v.memLite
+	case "k8s":
+		cpus, mem = 1, v.memK8s
+	}
+	if spec.MemMiB > 0 {
+		mem = clampInt(spec.MemMiB, vmMinMemMiB, v.maxMemMiB)
+	}
+	if spec.CPUs > 0 {
+		cpus = clampInt(spec.CPUs, 1, v.maxVCPUs)
+	}
+	return cpus, mem
 }
 
 // applySetup runs the lesson setup on an already-booted VM (used when a warm VM
